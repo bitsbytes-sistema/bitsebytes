@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Clientes</title>
+
+<style>
+body { font-family: Arial; background:#f2f2f2; margin:0; }
+
+.header {
+  background:#2c2c44;
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.container { padding:20px; }
+
+.card {
+  background:white;
+  padding:15px;
+  margin-bottom:10px;
+  border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div>Clientes</div>
+  <a href="/dashboard.html" style="color:white;">Voltar</a>
+</div>
+
+<div class="container">
+  <h2>Lista de Clientes</h2>
+  <div id="lista"></div>
+</div>
+
+<script>
+async function load(){
+  const res = await fetch("/api/clientes/list");
+  const data = await res.json();
+
+  lista.innerHTML="";
+
+  data.forEach(c=>{
+    lista.innerHTML += `
+      <div class="card">
+        <b>${c.nome}</b><br>
+        📱 ${c.telefone}<br>
+        📄 ${c.cpfcnpj}
+      </div>
+    `;
+  });
+}
+
+load();
+</script>
+
+</body>
+</html>

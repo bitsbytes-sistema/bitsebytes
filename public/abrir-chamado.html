@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Abrir Chamado</title>
+
+<style>
+body {
+  font-family: Arial;
+  background:#f2f2f2;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.box {
+  background:white;
+  padding:30px;
+  border-radius:10px;
+  width:300px;
+}
+
+input, textarea {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+}
+
+button {
+  width:100%;
+  padding:10px;
+  background:#4CAF50;
+  color:white;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Abrir Chamado</h2>
+
+<input id="nome" placeholder="Nome">
+<input id="telefone" placeholder="Telefone">
+<input id="cpfcnpj" placeholder="CPF ou CNPJ">
+<input id="equipamento" placeholder="Equipamento">
+<textarea id="problema" placeholder="Descreva o problema"></textarea>
+
+<button onclick="enviar()">Enviar</button>
+
+</div>
+
+<script>
+
+async function enviar(){
+
+  const res = await fetch("/api/public/tickets",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      cliente: nome.value,
+      telefone: telefone.value,
+      cpfcnpj: cpfcnpj.value,
+      equipamento: equipamento.value,
+      problema: problema.value
+    })
+  });
+
+  if(res.ok){
+    alert("Chamado enviado com sucesso!");
+    location.reload();
+  }else{
+    alert("Erro ao enviar");
+  }
+}
+
+</script>
+
+</body>
+</html>

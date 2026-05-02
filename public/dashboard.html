@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+
+<style>
+body { font-family: Arial; margin:0; background:#f2f2f2; }
+
+.header {
+  background:#2c2c44;
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.container { padding:20px; }
+
+.card {
+  background:white;
+  padding:15px;
+  border-radius:8px;
+  margin-bottom:10px;
+}
+
+input { padding:10px; margin:5px; }
+
+button {
+  padding:10px;
+  background:#4CAF50;
+  color:white;
+  border:none;
+}
+
+.whats {
+  background:#25D366;
+  padding:8px;
+  color:white;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div>Bits & Bytes</div>
+  <div>
+    <a href="/clientes.html" style="color:white;">Clientes</a> |
+    <a href="/logout" style="color:white;">Sair</a>
+  </div>
+</div>
+
+<div class="container">
+
+<h3 id="plano"></h3>
+
+<h3>Resumo</h3>
+<div id="stats"></div>
+
+<h3>Criar Chamado</h3>
+
+<input id="cpfcnpj" placeholder="CPF/CNPJ" onblur="buscarCliente()">
+<input id="cliente" placeholder="Cliente">
+<input id="telefone" placeholder="Telefone">
+<input id="equipamento" placeholder="Equipamento">
+<input id="problema" placeholder="Problema">
+
+<button onclick="criar()">Criar</button>
+
+<h3>Chamados</h3>
+<div id="lista"></div>
+
+</div>
+
+<script>
+
+let chamados=[];
+
+async function load(){
+  const res = await fetch("/api/tickets");
+  chamados = await res.json();
+
+  lista.innerHTML="";
+
+  chamados.forEach(c=>{
+    lista.innerHTML += `
+      <div class="card">
+        <b>${c.cliente}</b><br>
+        📱 ${c.telefone}<br>
+        💻 ${c.equipamento}<br>
+        🛠 ${c.problema}<br>
+        📌 <b style="color:${
+          c.status==="aberto"?"red":
+          c.status==="andamento"?"orange":
+          "green"
+        }">${c.status}</b><br>
+
+        <button onclick="status('${c._id}')">Status</button>
+        <button onclick="del('${c._id}')">Excluir</button>
+      </div>
+    `;
+  });
+
+  loadStats();
+}
+
+async function status(id){
+  const t = chamados.find(x=>x._id===id);
+
+  let novo = "aberto";
+  if(t.status==="aberto") novo="andamento";
+  else if(t.status==="andamento") novo="finalizado";
+
+  const res = await fetch("/api/tickets/"+id,{
+    method:"PUT",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({status:novo})
+  });
+
+  const data = await res.json();
+
+  if(data.whatsapp){
+    window.open(data.whatsapp, "_blank");
+  }
+
+  load();
+}
+
+async function criar(){
+
+  await fetch("/api/clientes",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      nome: cliente.value,
+      telefone: telefone.value,
+      cpfcnpj: cpfcnpj.value
+    })
+  });
+
+  const res = await fetch("/api/tickets",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      cliente: cliente.value,
+      telefone: telefone.value,
+      cpfcnpj: cpfcnpj.value,
+      equipamento: equipamento.value,
+      problema: problema.value
+    })
+  });
+
+  if(res.status===403){
+    alert("Limite atingido!");
+    return;
+  }
+
+  load();
+}
+
+async function buscarCliente(){
+  if(!cpfcnpj.value) return;
+
+  const res = await fetch("/api/clientes/"+cpfcnpj.value);
+  const data = await res.json();
+
+  if(data){
+    cliente.value = data.nome;
+    telefone.value = data.telefone;
+  }
+}
+
+async function del(id){
+  await fetch("/api/tickets/"+id,{method:"DELETE"});
+  load();
+}
+
+async function loadStats(){
+  const aberto = chamados.filter(x=>x.status==="aberto").length;
+  const andamento = chamados.filter(x=>x.status==="andamento").length;
+  const finalizado = chamados.filter(x=>x.status==="finalizado").length;
+
+  stats.innerHTML = `
+    🔴 Abertos: ${aberto} |
+    🟡 Andamento: ${andamento} |
+    🟢 Finalizados: ${finalizado}
+  `;
+}
+
+async function loadPlano(){
+  const res = await fetch("/session");
+  const data = await res.json();
+  plano.innerText = "Plano: " + data.company.plan;
+}
+
+load();
+loadPlano();
+
+</script>
+
+</body>
+</html>

@@ -1,82 +1,166 @@
+<h1 style="color:red;font-size:40px;">ESTOU EDITANDO ESSA PASTA</h1>
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Abrir Chamado</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bits & Bytes | Abrir Chamado</title>
 
 <style>
-body {
-  font-family: Arial;
-  background:#f2f2f2;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial, sans-serif;
+}
+
+body{
+  min-height:100vh;
+  background: linear-gradient(135deg,#0f172a,#111827);
   display:flex;
   justify-content:center;
   align-items:center;
-  height:100vh;
+  padding:20px;
 }
 
-.box {
-  background:white;
-  padding:30px;
-  border-radius:10px;
-  width:300px;
+/* topo fixo visual */
+.topbar{
+  position:absolute;
+  top:20px;
+  left:20px;
+  color:#fff;
+  font-weight:bold;
+  font-size:18px;
+  letter-spacing:1px;
 }
 
-input, textarea {
+.card{
+  background:#fff;
   width:100%;
-  padding:10px;
-  margin:5px 0;
+  max-width:450px;
+  border-radius:16px;
+  padding:25px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
 }
 
-button {
+.title{
+  font-size:22px;
+  font-weight:bold;
+  color:#0f172a;
+  margin-bottom:5px;
+  text-align:center;
+}
+
+.subtitle{
+  font-size:13px;
+  color:#64748b;
+  text-align:center;
+  margin-bottom:20px;
+}
+
+input, textarea{
   width:100%;
-  padding:10px;
-  background:#4CAF50;
-  color:white;
+  padding:12px;
+  margin-bottom:10px;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  outline:none;
+  transition:0.2s;
+}
+
+input:focus, textarea:focus{
+  border-color:#0f172a;
+}
+
+textarea{
+  height:90px;
+  resize:none;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  background:#0f172a;
+  color:#fff;
   border:none;
+  border-radius:8px;
+  font-size:15px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+button:hover{
+  background:#1e293b;
+}
+
+.msg{
+  text-align:center;
+  margin-top:10px;
+  font-size:14px;
+  color:green;
+}
+
+.footer{
+  margin-top:15px;
+  text-align:center;
+  font-size:11px;
+  color:#94a3b8;
 }
 </style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="topbar">Bits & Bytes</div>
 
-<h2>Abrir Chamado</h2>
+<div class="card">
 
-<input id="nome" placeholder="Nome">
-<input id="telefone" placeholder="Telefone">
-<input id="cpfcnpj" placeholder="CPF ou CNPJ">
-<input id="equipamento" placeholder="Equipamento">
-<textarea id="problema" placeholder="Descreva o problema"></textarea>
+  <div class="title">Abrir Chamado</div>
+  <div class="subtitle">Descreva seu problema e nossa equipe irá atender</div>
 
-<button onclick="enviar()">Enviar</button>
+  <input id="cliente" placeholder="Nome completo">
+  <input id="telefone" placeholder="Telefone">
+  <input id="cpfcnpj" placeholder="CPF ou CNPJ">
+  <input id="equipamento" placeholder="Equipamento">
+  <textarea id="problema" placeholder="Descreva o problema"></textarea>
+
+  <button onclick="enviar()">Enviar Chamado</button>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="footer">
+    Atendimento técnico Bits & Bytes ©
+  </div>
 
 </div>
 
 <script>
-
 async function enviar(){
 
-  const res = await fetch("/api/public/tickets",{
+  const data = {
+    cliente: document.getElementById("cliente").value,
+    telefone: document.getElementById("telefone").value,
+    cpfcnpj: document.getElementById("cpfcnpj").value,
+    equipamento: document.getElementById("equipamento").value,
+    problema: document.getElementById("problema").value
+  };
+
+  const res = await fetch("/api/public/tickets", {
     method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({
-      cliente: nome.value,
-      telefone: telefone.value,
-      cpfcnpj: cpfcnpj.value,
-      equipamento: equipamento.value,
-      problema: problema.value
-    })
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(data)
   });
 
-  if(res.ok){
-    alert("Chamado enviado com sucesso!");
-    location.reload();
-  }else{
-    alert("Erro ao enviar");
+  const json = await res.json();
+
+  if(json.ok){
+    document.getElementById("msg").style.color = "green";
+    document.getElementById("msg").innerText = "Chamado aberto com sucesso!";
+  } else {
+    document.getElementById("msg").style.color = "red";
+    document.getElementById("msg").innerText = "Erro ao abrir chamado.";
   }
 }
-
 </script>
 
 </body>

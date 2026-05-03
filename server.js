@@ -78,38 +78,21 @@ function getDataHora() {
 }
 
 /* ===================== */
-/* ADMIN AUTO */
-/* ===================== */
-async function createAdmin() {
-  const exists = await User.findOne({ username: "admin" });
-
-  if (!exists) {
-    const company = await Company.create({
-      name: "Minha Empresa",
-      plan: "enterprise"
-    });
-
-    const hash = await bcrypt.hash("1802", 10);
-
-    await User.create({
-      username: "admin",
-      password: hash,
-      role: "admin",
-      companyId: company._id
-    });
-
-    console.log("ADMIN CRIADO: admin / 1802");
-  }
-}
-
-mongoose.connection.once("open", createAdmin);
-
-/* ===================== */
 /* AUTH */
 /* ===================== */
 function auth(req, res, next) {
   if (!req.session.user) {
     return res.status(401).json({ error: "not_logged" });
+  }
+  next();
+}
+
+/* ===================== */
+/* ADMIN ONLY */
+/* ===================== */
+function adminOnly(req, res, next) {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ error: "forbidden" });
   }
   next();
 }
@@ -128,6 +111,15 @@ app.post("/login", async (req, res) => {
 
   req.session.user = user;
   res.json({ success: true });
+});
+
+/* ===================== */
+/* LOGOUT (CORRIGIDO) */
+/* ===================== */
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/"); // ou /login.html se quiser
+  });
 });
 
 /* ===================== */
@@ -172,7 +164,7 @@ app.post("/abrir-chamado", async (req, res) => {
 });
 
 /* ===================== */
-/* UPDATE + WHATSAPP (CONDICIONAL) */
+/* UPDATE + WHATSAPP */
 /* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
   const t = await Ticket.findByIdAndUpdate(
@@ -195,9 +187,6 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
   if (doc.length === 11) tipoDoc = "CPF";
   if (doc.length === 14) tipoDoc = "CNPJ";
 
-  /* ===================== */
-  /* MENSAGEM CONDICIONAL */
-  /* ===================== */
   let msgFinal = "";
 
   if (t.status === "finalizado") {
@@ -212,7 +201,7 @@ Qualquer atualização será informada por aqui.
     `;
   }
 
-const msg = `
+  const msg = `
 Bits & Bytes Assistência Técnica
 
 Status do seu atendimento: ${String(t.status).toUpperCase()}
@@ -220,11 +209,10 @@ Status do seu atendimento: ${String(t.status).toUpperCase()}
 Cliente: ${t.cliente}
 ${tipoDoc}: ${t.cpfcnpj || "Não informado"}
 Equipamento: ${t.equipamento}
-Problema informado: ${t.problema || "Não informado"}
 Atualizado em: ${getDataHora()}
 
 ${msgFinal}
-`.trim();
+  `.trim();
 
   const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
 

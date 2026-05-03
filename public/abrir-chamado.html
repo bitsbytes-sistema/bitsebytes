@@ -86,6 +86,14 @@ button:hover {
   opacity: 0.9;
 }
 
+/* Mensagem de status */
+#msg {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: bold;
+  color: green;
+}
+
 /* Rodapé */
 footer {
   text-align: center;
@@ -99,13 +107,6 @@ footer span {
   font-size: 11px;
   margin-top: 5px;
   color: #999;
-}
-
-/* Texto extra menor */
-.footer-mini {
-  font-size: 8px;
-  opacity: 0.6;
-  margin-top: 5px;
 }
 
 /* Animação */
@@ -122,24 +123,27 @@ footer span {
 
 <div class="container">
   <h2>Abrir Chamado Técnico</h2>
+
   <div class="subtitulo">
     Registre seu chamado e acompanhe o atendimento em tempo real
   </div>
 
-<form action="/abrir-chamado" method="POST">
+  <form id="formChamado">
 
-  <input type="text" name="cliente" placeholder="Nome completo" required>
+    <input type="text" name="cliente" placeholder="Nome completo" required>
 
-  <input type="text" name="telefone" placeholder="Telefone" required>
+    <input type="text" name="telefone" placeholder="Telefone" required>
 
-  <input type="text" name="cpfcnpj" placeholder="CPF ou CNPJ" required>
+    <input type="text" name="cpfcnpj" placeholder="CPF ou CNPJ" required>
 
-  <input type="text" name="equipamento" placeholder="Equipamento" required>
+    <input type="text" name="equipamento" placeholder="Equipamento" required>
 
-  <textarea name="problema" rows="4" placeholder="Descreva o problema" required></textarea>
+    <textarea name="problema" rows="4" placeholder="Descreva o problema" required></textarea>
 
-  <button type="submit">Abrir Chamado</button>
-</form>
+    <button type="submit">Abrir Chamado</button>
+  </form>
+
+  <div id="msg"></div>
 
   <footer>
     <p>Bits & Bytes Tecnology © 2026</p>
@@ -147,6 +151,44 @@ footer span {
     <span class="footer-mini">Sistema desenvolvido por Bits & Bytes Tecnology</span>
   </footer>
 </div>
+
+<script>
+document.getElementById("formChamado").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const form = e.target;
+
+  const data = {
+    cliente: form.cliente.value,
+    telefone: form.telefone.value,
+    cpfcnpj: form.cpfcnpj.value,
+    equipamento: form.equipamento.value,
+    problema: form.problema.value
+  };
+
+  try {
+    const res = await fetch("/abrir-chamado", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+
+    const json = await res.json();
+
+    if (json.ok) {
+      document.getElementById("msg").innerText = "Chamado aberto com sucesso!";
+      form.reset();
+    } else {
+      document.getElementById("msg").innerText = "Erro ao abrir chamado.";
+    }
+
+  } catch (err) {
+    document.getElementById("msg").innerText = "Erro de conexão.";
+  }
+});
+</script>
 
 </body>
 </html>

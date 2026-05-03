@@ -109,7 +109,7 @@ app.post("/login", async (req, res) => {
   res.json({ success: true });
 });
 
-/* LISTAR TICKETS (ADMIN) */
+/* LISTAR TICKETS */
 app.get("/api/tickets", auth, async (req, res) => {
   const data = await Ticket.find().sort({ createdAt: -1 });
   res.json(data);
@@ -121,7 +121,7 @@ app.post("/api/tickets", auth, async (req, res) => {
   res.json(t);
 });
 
-/* CRIAR TICKET PUBLICO */
+/* CRIAR TICKET PADRÃO (API CORRETA) */
 app.post("/api/public/tickets", async (req, res) => {
   const company = await Company.findOne({ plan: "enterprise" });
 
@@ -138,7 +138,24 @@ app.post("/api/public/tickets", async (req, res) => {
   res.json({ ok: true });
 });
 
-/* 🔥 CONSULTA PUBLICA (FALTAVA ISSO) */
+/* 🔥 COMPATIBILIDADE COM SEU FRONT ANTIGO */
+app.post("/abrir-chamado", async (req, res) => {
+  const company = await Company.findOne({ plan: "enterprise" });
+
+  await Ticket.create({
+    companyId: company._id,
+    cliente: req.body.cliente,
+    telefone: req.body.telefone,
+    cpfcnpj: req.body.cpfcnpj,
+    equipamento: req.body.equipamento,
+    problema: req.body.problema,
+    status: "aberto"
+  });
+
+  res.json({ ok: true });
+});
+
+/* CONSULTA PUBLICA */
 app.get("/api/public/tickets/:doc", async (req, res) => {
   const doc = String(req.params.doc).replace(/\D/g, "");
 

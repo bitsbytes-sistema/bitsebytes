@@ -126,15 +126,20 @@ footer span {
     Registre seu chamado e acompanhe o atendimento em tempo real
   </div>
 
-  <form action="/abrir-chamado" method="POST">
-    <input type="text" name="nome" placeholder="Nome completo" required>
-    <input type="text" name="telefone" placeholder="Telefone" required>
-    <input type="text" name="cpf" placeholder="CPF ou CNPJ" required>
-    <input type="text" name="equipamento" placeholder="Equipamento" required>
-    <textarea name="problema" rows="4" placeholder="Descreva o problema" required></textarea>
+<form action="/abrir-chamado" method="POST">
 
-    <button type="submit">Abrir Chamado</button>
-  </form>
+  <input type="text" name="cliente" placeholder="Nome completo" required>
+
+  <input type="text" name="telefone" placeholder="Telefone" required>
+
+  <input type="text" name="cpfcnpj" placeholder="CPF ou CNPJ" required>
+
+  <input type="text" name="equipamento" placeholder="Equipamento" required>
+
+  <textarea name="problema" rows="4" placeholder="Descreva o problema" required></textarea>
+
+  <button type="submit">Abrir Chamado</button>
+</form>
 
   <footer>
     <p>Bits & Bytes Tecnology © 2026</p>

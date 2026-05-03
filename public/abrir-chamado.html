@@ -3,164 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bits & Bytes | Abrir Chamado</title>
+<title>Bits & Bytes Tecnology</title>
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial, sans-serif;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body{
-  min-height:100vh;
-  background: linear-gradient(135deg,#0f172a,#111827);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #fff;
 }
 
-/* topo fixo visual */
-.topbar{
-  position:absolute;
-  top:20px;
-  left:20px;
-  color:#fff;
-  font-weight:bold;
-  font-size:18px;
-  letter-spacing:1px;
+/* Nome da empresa no topo */
+.logo {
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  font-size: 22px;
+  font-weight: bold;
 }
 
-.card{
-  background:#fff;
-  width:100%;
-  max-width:450px;
-  border-radius:16px;
-  padding:25px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+/* Card central */
+.container {
+  background: rgba(255, 255, 255, 0.96);
+  color: #111;
+  border-radius: 18px;
+  padding: 30px;
+  width: 350px;
+  margin: auto;
+  margin-top: 80px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  animation: fadeIn 0.5s ease;
 }
 
-.title{
-  font-size:22px;
-  font-weight:bold;
-  color:#0f172a;
-  margin-bottom:5px;
-  text-align:center;
+h2 {
+  text-align: center;
+  margin-bottom: 5px;
 }
 
-.subtitle{
-  font-size:13px;
-  color:#64748b;
-  text-align:center;
-  margin-bottom:20px;
+.subtitulo {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
 }
 
-input, textarea{
-  width:100%;
-  padding:12px;
-  margin-bottom:10px;
-  border:1px solid #e2e8f0;
-  border-radius:8px;
-  outline:none;
-  transition:0.2s;
+/* Inputs */
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: 0.2s;
+  font-size: 14px;
 }
 
-input:focus, textarea:focus{
-  border-color:#0f172a;
+input:focus, textarea:focus {
+  border-color: #2563eb;
 }
 
-textarea{
-  height:90px;
-  resize:none;
+/* Botão */
+button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-button{
-  width:100%;
-  padding:12px;
-  background:#0f172a;
-  color:#fff;
-  border:none;
-  border-radius:8px;
-  font-size:15px;
-  cursor:pointer;
-  transition:0.2s;
+button:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
 }
 
-button:hover{
-  background:#1e293b;
+/* Rodapé */
+footer {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 12px;
+  color: #777;
 }
 
-.msg{
-  text-align:center;
-  margin-top:10px;
-  font-size:14px;
-  color:green;
+footer span {
+  display: block;
+  font-size: 11px;
+  margin-top: 5px;
+  color: #999;
 }
 
-.footer{
-  margin-top:15px;
-  text-align:center;
-  font-size:11px;
-  color:#94a3b8;
+/* Texto extra menor */
+.footer-mini {
+  font-size: 8px;
+  opacity: 0.6;
+  margin-top: 5px;
+}
+
+/* Animação */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px);}
+  to { opacity: 1; transform: translateY(0);}
 }
 </style>
-</head>
 
+</head>
 <body>
 
-<div class="topbar">Bits & Bytes</div>
+<div class="logo">Bits & Bytes Tecnology</div>
 
-<div class="card">
-
-  <div class="title">Abrir Chamado</div>
-  <div class="subtitle">Descreva seu problema e nossa equipe irá atender</div>
-
-  <input id="cliente" placeholder="Nome completo">
-  <input id="telefone" placeholder="Telefone">
-  <input id="cpfcnpj" placeholder="CPF ou CNPJ">
-  <input id="equipamento" placeholder="Equipamento">
-  <textarea id="problema" placeholder="Descreva o problema"></textarea>
-
-  <button onclick="enviar()">Enviar Chamado</button>
-
-  <div class="msg" id="msg"></div>
-
-  <div class="footer">
-    Atendimento técnico Bits & Bytes ©
+<div class="container">
+  <h2>Abrir Chamado Técnico</h2>
+  <div class="subtitulo">
+    Registre seu chamado e acompanhe o atendimento em tempo real
   </div>
 
+  <form action="/abrir-chamado" method="POST">
+    <input type="text" name="nome" placeholder="Nome completo" required>
+    <input type="text" name="telefone" placeholder="Telefone" required>
+    <input type="text" name="cpf" placeholder="CPF ou CNPJ" required>
+    <input type="text" name="equipamento" placeholder="Equipamento" required>
+    <textarea name="problema" rows="4" placeholder="Descreva o problema" required></textarea>
+
+    <button type="submit">Abrir Chamado</button>
+  </form>
+
+  <footer>
+    <p>Bits & Bytes Tecnology © 2026</p>
+    <span>Soluções inteligentes em assistência técnica</span>
+    <span class="footer-mini">Sistema desenvolvido por Bits & Bytes Tecnology</span>
+  </footer>
 </div>
-
-<script>
-async function enviar(){
-
-  const data = {
-    cliente: document.getElementById("cliente").value,
-    telefone: document.getElementById("telefone").value,
-    cpfcnpj: document.getElementById("cpfcnpj").value,
-    equipamento: document.getElementById("equipamento").value,
-    problema: document.getElementById("problema").value
-  };
-
-  const res = await fetch("/api/public/tickets", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify(data)
-  });
-
-  const json = await res.json();
-
-  if(json.ok){
-    document.getElementById("msg").style.color = "green";
-    document.getElementById("msg").innerText = "Chamado aberto com sucesso!";
-  } else {
-    document.getElementById("msg").style.color = "red";
-    document.getElementById("msg").innerText = "Erro ao abrir chamado.";
-  }
-}
-</script>
 
 </body>
 </html>

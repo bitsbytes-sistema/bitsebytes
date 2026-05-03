@@ -68,7 +68,7 @@ const Ticket = mongoose.model("Ticket", {
 });
 
 /* ===================== */
-/* FUNÇÃO DE DATA (SEM BUG) */
+/* DATA HORA (CUIABÁ) */
 /* ===================== */
 function getDataHora() {
   return new Date().toLocaleString("pt-BR", {
@@ -131,7 +131,7 @@ app.post("/login", async (req, res) => {
 });
 
 /* ===================== */
-/* LISTAR TICKETS */
+/* LISTAR CHAMADOS */
 /* ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
   const data = await Ticket.find().sort({ createdAt: -1 });
@@ -139,7 +139,7 @@ app.get("/api/tickets", auth, async (req, res) => {
 });
 
 /* ===================== */
-/* CRIAR TICKET (ADMIN) */
+/* CRIAR CHAMADO (ADMIN) */
 /* ===================== */
 app.post("/api/tickets", auth, async (req, res) => {
   const t = await Ticket.create(req.body);
@@ -172,7 +172,7 @@ app.post("/abrir-chamado", async (req, res) => {
 });
 
 /* ===================== */
-/* UPDATE + WHATSAPP LINK */
+/* UPDATE + WHATSAPP (CONDICIONAL) */
 /* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
   const t = await Ticket.findByIdAndUpdate(
@@ -195,6 +195,23 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
   if (doc.length === 11) tipoDoc = "CPF";
   if (doc.length === 14) tipoDoc = "CNPJ";
 
+  /* ===================== */
+  /* MENSAGEM CONDICIONAL */
+  /* ===================== */
+  let msgFinal = "";
+
+  if (t.status === "finalizado") {
+    msgFinal = `
+Seu equipamento ja esta pronto para retirada!
+Retire conosco ou entre em contato para mais informacoes.
+    `;
+  } else {
+    msgFinal = `
+Acompanhe seu atendimento em andamento com nossa equipe.
+Qualquer atualização será informada por aqui.
+    `;
+  }
+
   const msg = `
 Bits & Bytes Assistência Técnica
 
@@ -205,7 +222,7 @@ ${tipoDoc}: ${t.cpfcnpj || "Não informado"}
 Equipamento: ${t.equipamento}
 Atualizado em: ${getDataHora()}
 
-Seu equipamento ja esta pronto para retirada!
+${msgFinal}
   `.trim();
 
   const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
@@ -217,7 +234,7 @@ Seu equipamento ja esta pronto para retirada!
 });
 
 /* ===================== */
-/* DELETE TICKET */
+/* DELETE CHAMADO */
 /* ===================== */
 app.delete("/api/tickets/:id", auth, async (req, res) => {
   try {

@@ -182,7 +182,12 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
   const agora = new Date();
 
 // ajusta para horário Brasil (UTC-3 fixo)
-agora.setHours(agora.getHours() - 3);
+const agora = new Date();
+
+const dataHora = agora.toLocaleString("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  hour12: false
+});
 
 const dataHora =
   agora.toLocaleDateString("pt-BR") +

@@ -10,7 +10,7 @@ const bcrypt = require("bcrypt");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-/* CONFIG */
+/* MIDDLEWARES */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -34,7 +34,7 @@ app.use(express.static(path.join(__dirname, "public")));
 /* MONGO */
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("Mongo conectado"))
-  .catch(err => console.log(err));
+  .catch(err => console.log("ERRO MONGO:", err));
 
 /* MODELS */
 const Company = mongoose.model("Company", {
@@ -96,9 +96,11 @@ function auth(req, res, next) {
 /* LOGIN */
 app.post("/login", async (req, res) => {
   const user = await User.findOne({ username: req.body.username });
+
   if (!user) return res.json({ success: false });
 
   const ok = await bcrypt.compare(req.body.password, user.password);
+
   if (!ok) return res.json({ success: false });
 
   req.session.user = user;
@@ -111,66 +113,112 @@ app.get("/api/tickets", auth, async (req, res) => {
   res.json(data);
 });
 
-/* CRIAR */
+/* CRIAR ADMIN */
 app.post("/api/tickets", auth, async (req, res) => {
   const t = await Ticket.create(req.body);
   res.json(t);
 });
 
-/* PUBLICO */
-app.post("/api/public/tickets", async (req, res) => {
-  const company = await Company.findOne({ plan: "enterprise" });
+/* ============================= */
+/* 🔥 ABRIR CHAMADO (CORRIGIDO) */
+/* ============================= */
+app.post("/abrir-chamado", async (req, res) => {
+  try {
+    const company = await Company.findOne({ plan: "enterprise" });
 
-  await Ticket.create({
-    companyId: company._id,
-    cliente: req.body.cliente,
-    telefone: req.body.telefone,
-    cpfcnpj: req.body.cpfcnpj,
-    equipamento: req.body.equipamento,
-    problema: req.body.problema,
-    status: "aberto"
-  });
+    if (!company) {
+      return res.status(500).json({ ok: false, error: "empresa nao encontrada" });
+    }
 
-  res.json({ ok: true });
+    await Ticket.create({
+      companyId: company._id,
+      cliente: req.body.cliente,
+      telefone: req.body.telefone,
+      cpfcnpj: req.body.cpfcnpj,
+      equipamento: req.body.equipamento,
+      problema: req.body.problema,
+      status: "aberto"
+    });
+
+    return res.json({ ok: true });
+
+  } catch (err) {
+    console.log("ERRO abrir chamado:", err);
+    return res.status(500).json({ ok: false, error: "erro interno" });
+  }
 });
 
-/* 🔥 UPDATE STATUS + WHATSAPP */
-app.put("/api/tickets/:id", auth, async (req, res) => {
+/* PUBLICO API */
+app.post("/api/public/tickets", async (req, res) => {
+  try {
+    const company = await Company.findOne({ plan: "enterprise" });
 
-  const ticket = await Ticket.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
+    await Ticket.create({
+      companyId: company._id,
+      cliente: req.body.cliente,
+      telefone: req.body.telefone,
+      cpfcnpj: req.body.cpfcnpj,
+      equipamento: req.body.equipamento,
+      problema: req.body.problema,
+      status: "aberto"
+    });
 
-  // 🔥 ENVIO WHATSAPP (quando mudar status)
-  if (req.body.status) {
-    await enviarWhatsApp(
-      ticket.telefone,
-      `🔔 Status do seu chamado atualizado: ${req.body.status}`
-    );
+    res.json({ ok: true });
+
+  } catch (err) {
+    res.status(500).json({ ok: false });
   }
+});
 
-  res.json(ticket);
+/* ============================= */
+/* 🔥 UPDATE STATUS (SEGURO) */
+/* ============================= */
+app.put("/api/tickets/:id", auth, async (req, res) => {
+  try {
+    const ticket = await Ticket.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    // WhatsApp protegido (não quebra sistema)
+    if (req.body.status) {
+      try {
+        await enviarWhatsApp(
+          ticket.telefone,
+          `🔔 Status atualizado: ${req.body.status}`
+        );
+      } catch (e) {
+        console.log("WhatsApp erro:", e.message);
+      }
+    }
+
+    res.json(ticket);
+
+  } catch (err) {
+    res.status(500).json({ error: "update error" });
+  }
 });
 
 /* ❌ DELETE TICKET */
 app.delete("/api/tickets/:id", auth, async (req, res) => {
-  await Ticket.findByIdAndDelete(req.params.id);
-  res.json({ ok: true });
+  try {
+    await Ticket.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false });
+  }
 });
 
-/* 🔥 FUNÇÃO WHATSAPP (PLACEHOLDER) */
+/* ============================= */
+/* 📲 WHATSAPP (SEGURADO) */
+/* ============================= */
 async function enviarWhatsApp(numero, mensagem) {
-  try {
-    // 👉 AQUI você conecta sua API (Z-API, WPPConnect, Twilio etc.)
+  // NÃO quebra sistema se não tiver integração
+  console.log("📲 WhatsApp:", numero, mensagem);
 
-    console.log("📲 WhatsApp para:", numero);
-    console.log("💬 Mensagem:", mensagem);
-
-  } catch (err) {
-    console.log("Erro WhatsApp:", err.message);
-  }
+  // Aqui você coloca sua API real depois:
+  // Z-API / WPPConnect / Twilio etc.
 }
 
 /* START */

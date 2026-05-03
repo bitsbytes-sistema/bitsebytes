@@ -72,7 +72,7 @@ const Ticket = mongoose.model("Ticket", {
 /* ===================== */
 function getDataHora() {
   return new Date().toLocaleString("pt-BR", {
-    timeZone: "America/Sao_Paulo",
+    timeZone: "America/Cuiaba",
     hour12: false
   });
 }

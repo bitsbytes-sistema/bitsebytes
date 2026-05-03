@@ -68,6 +68,16 @@ const Ticket = mongoose.model("Ticket", {
 });
 
 /* ===================== */
+/* FUNÇÃO DE DATA (SEM BUG) */
+/* ===================== */
+function getDataHora() {
+  return new Date().toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    hour12: false
+  });
+}
+
+/* ===================== */
 /* ADMIN AUTO */
 /* ===================== */
 async function createAdmin() {
@@ -121,7 +131,7 @@ app.post("/login", async (req, res) => {
 });
 
 /* ===================== */
-/* LISTAR CHAMADOS */
+/* LISTAR TICKETS */
 /* ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
   const data = await Ticket.find().sort({ createdAt: -1 });
@@ -129,7 +139,7 @@ app.get("/api/tickets", auth, async (req, res) => {
 });
 
 /* ===================== */
-/* CRIAR CHAMADO (ADMIN) */
+/* CRIAR TICKET (ADMIN) */
 /* ===================== */
 app.post("/api/tickets", auth, async (req, res) => {
   const t = await Ticket.create(req.body);
@@ -162,7 +172,7 @@ app.post("/abrir-chamado", async (req, res) => {
 });
 
 /* ===================== */
-/* UPDATE + WHATSAPP (LINK) */
+/* UPDATE + WHATSAPP LINK */
 /* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
   const t = await Ticket.findByIdAndUpdate(
@@ -179,26 +189,11 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
     return res.json({ ok: true, whatsapp: null });
   }
 
-  const agora = new Date();
-
-// ajusta para horário Brasil (UTC-3 fixo)
-const agora = new Date();
-
-const dataHora = agora.toLocaleString("pt-BR", {
-  timeZone: "America/Sao_Paulo",
-  hour12: false
-});
-
-const dataHora =
-  agora.toLocaleDateString("pt-BR") +
-  ", " +
-  agora.toLocaleTimeString("pt-BR");
-
   let tipoDoc = "Documento";
-  const docNumeros = (t.cpfcnpj || "").replace(/\D/g, "");
+  const doc = String(t.cpfcnpj || "").replace(/\D/g, "");
 
-  if (docNumeros.length === 11) tipoDoc = "CPF";
-  if (docNumeros.length === 14) tipoDoc = "CNPJ";
+  if (doc.length === 11) tipoDoc = "CPF";
+  if (doc.length === 14) tipoDoc = "CNPJ";
 
   const msg = `
 Bits & Bytes Assistência Técnica
@@ -208,10 +203,9 @@ Status do seu atendimento: ${String(t.status).toUpperCase()}
 Cliente: ${t.cliente}
 ${tipoDoc}: ${t.cpfcnpj || "Não informado"}
 Equipamento: ${t.equipamento}
-Atualizado em: ${dataHora}
+Atualizado em: ${getDataHora()}
 
 Seu equipamento ja esta pronto para retirada!
-Retire conosco ou entre em contato para mais informacoes.
   `.trim();
 
   const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
@@ -223,7 +217,7 @@ Retire conosco ou entre em contato para mais informacoes.
 });
 
 /* ===================== */
-/* DELETE CHAMADO */
+/* DELETE TICKET */
 /* ===================== */
 app.delete("/api/tickets/:id", auth, async (req, res) => {
   try {

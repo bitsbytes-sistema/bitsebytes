@@ -212,7 +212,7 @@ Qualquer atualização será informada por aqui.
     `;
   }
 
-  const msg = `
+const msg = `
 Bits & Bytes Assistência Técnica
 
 Status do seu atendimento: ${String(t.status).toUpperCase()}
@@ -220,10 +220,11 @@ Status do seu atendimento: ${String(t.status).toUpperCase()}
 Cliente: ${t.cliente}
 ${tipoDoc}: ${t.cpfcnpj || "Não informado"}
 Equipamento: ${t.equipamento}
+Problema informado: ${t.problema || "Não informado"}
 Atualizado em: ${getDataHora()}
 
 ${msgFinal}
-  `.trim();
+`.trim();
 
   const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
 

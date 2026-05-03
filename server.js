@@ -179,11 +179,15 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
     return res.json({ ok: true, whatsapp: null });
   }
 
-  const dataHora = new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    dateStyle: "short",
-    timeStyle: "medium"
-  }).format(new Date());
+  const agora = new Date();
+
+// ajusta para horário Brasil (UTC-3 fixo)
+agora.setHours(agora.getHours() - 3);
+
+const dataHora =
+  agora.toLocaleDateString("pt-BR") +
+  ", " +
+  agora.toLocaleTimeString("pt-BR");
 
   let tipoDoc = "Documento";
   const docNumeros = (t.cpfcnpj || "").replace(/\D/g, "");

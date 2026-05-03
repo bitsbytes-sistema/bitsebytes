@@ -10,7 +10,9 @@ const bcrypt = require("bcrypt");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+/* ===================== */
 /* MIDDLEWARES */
+/* ===================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -31,12 +33,16 @@ app.use(
 
 app.use(express.static(path.join(__dirname, "public")));
 
+/* ===================== */
 /* MONGO */
+/* ===================== */
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("Mongo conectado"))
   .catch(err => console.log("ERRO MONGO:", err));
 
+/* ===================== */
 /* MODELS */
+/* ===================== */
 const Company = mongoose.model("Company", {
   name: String,
   plan: String
@@ -57,10 +63,13 @@ const Ticket = mongoose.model("Ticket", {
   equipamento: String,
   problema: String,
   status: { type: String, default: "aberto" },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: Date
 });
 
+/* ===================== */
 /* ADMIN AUTO */
+/* ===================== */
 async function createAdmin() {
   const exists = await User.findOne({ username: "admin" });
 
@@ -85,7 +94,9 @@ async function createAdmin() {
 
 mongoose.connection.once("open", createAdmin);
 
+/* ===================== */
 /* AUTH */
+/* ===================== */
 function auth(req, res, next) {
   if (!req.session.user) {
     return res.status(401).json({ error: "not_logged" });
@@ -93,7 +104,9 @@ function auth(req, res, next) {
   next();
 }
 
+/* ===================== */
 /* LOGIN */
+/* ===================== */
 app.post("/login", async (req, res) => {
   const user = await User.findOne({ username: req.body.username });
 
@@ -107,28 +120,28 @@ app.post("/login", async (req, res) => {
   res.json({ success: true });
 });
 
-/* LISTAR */
+/* ===================== */
+/* LISTAR CHAMADOS */
+/* ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
   const data = await Ticket.find().sort({ createdAt: -1 });
   res.json(data);
 });
 
-/* CRIAR ADMIN */
+/* ===================== */
+/* CRIAR CHAMADO (ADMIN) */
+/* ===================== */
 app.post("/api/tickets", auth, async (req, res) => {
   const t = await Ticket.create(req.body);
   res.json(t);
 });
 
-/* ============================= */
-/* 🔥 ABRIR CHAMADO (CORRIGIDO) */
-/* ============================= */
+/* ===================== */
+/* ABRIR CHAMADO (PÚBLICO) */
+/* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
     const company = await Company.findOne({ plan: "enterprise" });
-
-    if (!company) {
-      return res.status(500).json({ ok: false, error: "empresa nao encontrada" });
-    }
 
     await Ticket.create({
       companyId: company._id,
@@ -144,63 +157,65 @@ app.post("/abrir-chamado", async (req, res) => {
 
   } catch (err) {
     console.log("ERRO abrir chamado:", err);
-    return res.status(500).json({ ok: false, error: "erro interno" });
+    return res.status(500).json({ ok: false });
   }
 });
 
-/* PUBLICO API */
-app.post("/api/public/tickets", async (req, res) => {
-  try {
-    const company = await Company.findOne({ plan: "enterprise" });
-
-    await Ticket.create({
-      companyId: company._id,
-      cliente: req.body.cliente,
-      telefone: req.body.telefone,
-      cpfcnpj: req.body.cpfcnpj,
-      equipamento: req.body.equipamento,
-      problema: req.body.problema,
-      status: "aberto"
-    });
-
-    res.json({ ok: true });
-
-  } catch (err) {
-    res.status(500).json({ ok: false });
-  }
-});
-
-/* ============================= */
-/* 🔥 UPDATE STATUS (SEGURO) */
-/* ============================= */
+/* ===================== */
+/* UPDATE + WHATSAPP (LINK) */
+/* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
-  try {
-    const ticket = await Ticket.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+  const t = await Ticket.findByIdAndUpdate(
+    req.params.id,
+    { ...req.body, updatedAt: new Date() },
+    { new: true }
+  );
 
-    // WhatsApp protegido (não quebra sistema)
-    if (req.body.status) {
-      try {
-        await enviarWhatsApp(
-          ticket.telefone,
-          `🔔 Status atualizado: ${req.body.status}`
-        );
-      } catch (e) {
-        console.log("WhatsApp erro:", e.message);
-      }
-    }
+  if (!t) return res.status(404).json({ error: true });
 
-    res.json(ticket);
+  const telefone = String(t.telefone || "").replace(/\D/g, "");
 
-  } catch (err) {
-    res.status(500).json({ error: "update error" });
+  if (!telefone) {
+    return res.json({ ok: true, whatsapp: null });
   }
+
+  const dataHora = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    dateStyle: "short",
+    timeStyle: "medium"
+  }).format(new Date());
+
+  let tipoDoc = "Documento";
+  const docNumeros = (t.cpfcnpj || "").replace(/\D/g, "");
+
+  if (docNumeros.length === 11) tipoDoc = "CPF";
+  if (docNumeros.length === 14) tipoDoc = "CNPJ";
+
+  const msg = `
+Bits & Bytes Assistência Técnica
+
+Status do seu atendimento: ${String(t.status).toUpperCase()}
+
+Cliente: ${t.cliente}
+${tipoDoc}: ${t.cpfcnpj || "Não informado"}
+Equipamento: ${t.equipamento}
+Atualizado em: ${dataHora}
+
+Seu equipamento ja esta pronto para retirada!
+Retire conosco ou entre em contato para mais informacoes.
+  `.trim();
+
+  const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
+
+  return res.json({
+    ok: true,
+    whatsapp
+  });
 });
 
-/* ❌ DELETE TICKET */
+/* ===================== */
+/* DELETE CHAMADO */
+/* ===================== */
 app.delete("/api/tickets/:id", auth, async (req, res) => {
   try {
     await Ticket.findByIdAndDelete(req.params.id);
@@ -210,18 +225,9 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
   }
 });
 
-/* ============================= */
-/* 📲 WHATSAPP (SEGURADO) */
-/* ============================= */
-async function enviarWhatsApp(numero, mensagem) {
-  // NÃO quebra sistema se não tiver integração
-  console.log("📲 WhatsApp:", numero, mensagem);
-
-  // Aqui você coloca sua API real depois:
-  // Z-API / WPPConnect / Twilio etc.
-}
-
+/* ===================== */
 /* START */
+/* ===================== */
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Rodando na porta " + PORT);
 });

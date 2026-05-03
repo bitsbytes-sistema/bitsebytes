@@ -10,12 +10,7 @@ const bcrypt = require("bcrypt");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const PLAN_LIMITS = {
-  free: 20,
-  pro: 200,
-  enterprise: 999999
-};
-
+/* CONFIG */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,6 +31,7 @@ app.use(
 
 app.use(express.static(path.join(__dirname, "public")));
 
+/* MONGO */
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("Mongo conectado"))
   .catch(err => console.log(err));
@@ -109,19 +105,19 @@ app.post("/login", async (req, res) => {
   res.json({ success: true });
 });
 
-/* LISTAR TICKETS */
+/* LISTAR */
 app.get("/api/tickets", auth, async (req, res) => {
   const data = await Ticket.find().sort({ createdAt: -1 });
   res.json(data);
 });
 
-/* CRIAR TICKET ADMIN */
+/* CRIAR */
 app.post("/api/tickets", auth, async (req, res) => {
   const t = await Ticket.create(req.body);
   res.json(t);
 });
 
-/* CRIAR TICKET PADRÃO (API CORRETA) */
+/* PUBLICO */
 app.post("/api/public/tickets", async (req, res) => {
   const company = await Company.findOne({ plan: "enterprise" });
 
@@ -138,37 +134,44 @@ app.post("/api/public/tickets", async (req, res) => {
   res.json({ ok: true });
 });
 
-/* 🔥 COMPATIBILIDADE COM SEU FRONT ANTIGO */
-app.post("/abrir-chamado", async (req, res) => {
-  const company = await Company.findOne({ plan: "enterprise" });
+/* 🔥 UPDATE STATUS + WHATSAPP */
+app.put("/api/tickets/:id", auth, async (req, res) => {
 
-  await Ticket.create({
-    companyId: company._id,
-    cliente: req.body.cliente,
-    telefone: req.body.telefone,
-    cpfcnpj: req.body.cpfcnpj,
-    equipamento: req.body.equipamento,
-    problema: req.body.problema,
-    status: "aberto"
-  });
+  const ticket = await Ticket.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
 
+  // 🔥 ENVIO WHATSAPP (quando mudar status)
+  if (req.body.status) {
+    await enviarWhatsApp(
+      ticket.telefone,
+      `🔔 Status do seu chamado atualizado: ${req.body.status}`
+    );
+  }
+
+  res.json(ticket);
+});
+
+/* ❌ DELETE TICKET */
+app.delete("/api/tickets/:id", auth, async (req, res) => {
+  await Ticket.findByIdAndDelete(req.params.id);
   res.json({ ok: true });
 });
 
-/* CONSULTA PUBLICA */
-app.get("/api/public/tickets/:doc", async (req, res) => {
-  const doc = String(req.params.doc).replace(/\D/g, "");
+/* 🔥 FUNÇÃO WHATSAPP (PLACEHOLDER) */
+async function enviarWhatsApp(numero, mensagem) {
+  try {
+    // 👉 AQUI você conecta sua API (Z-API, WPPConnect, Twilio etc.)
 
-  const data = await Ticket.find({ cpfcnpj: doc }).sort({ createdAt: -1 });
+    console.log("📲 WhatsApp para:", numero);
+    console.log("💬 Mensagem:", mensagem);
 
-  res.json(data);
-});
-
-/* UPDATE STATUS */
-app.put("/api/tickets/:id", auth, async (req, res) => {
-  const t = await Ticket.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(t);
-});
+  } catch (err) {
+    console.log("Erro WhatsApp:", err.message);
+  }
+}
 
 /* START */
 app.listen(PORT, "0.0.0.0", () => {

@@ -6,82 +6,130 @@
 <title>Bits & Bytes Tecnology</title>
 
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body {
-  font-family:'Segoe UI', Arial;
-  background:linear-gradient(135deg,#0f172a,#1e293b);
-  color:#fff;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #fff;
 }
 
+/* Logo topo */
 .logo {
-  position:absolute;
-  top:20px;
-  left:30px;
-  font-size:22px;
-  font-weight:bold;
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  font-size: 22px;
+  font-weight: bold;
 }
 
+/* Card */
 .container {
-  background:rgba(255,255,255,0.96);
-  color:#111;
-  border-radius:18px;
-  padding:30px;
-  width:350px;
-  margin:auto;
-  margin-top:80px;
-  box-shadow:0 15px 40px rgba(0,0,0,0.4);
+  background: rgba(255, 255, 255, 0.96);
+  color: #111;
+  border-radius: 18px;
+  padding: 30px;
+  width: 350px;
+  margin: auto;
+  margin-top: 80px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  animation: fadeIn 0.5s ease;
 }
 
-h2 { text-align:center; margin-bottom:5px; }
+h2 {
+  text-align: center;
+  margin-bottom: 5px;
+}
 
 .subtitulo {
-  text-align:center;
-  font-size:14px;
-  color:#555;
-  margin-bottom:20px;
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
 }
 
+/* Inputs */
 input, textarea {
-  width:100%;
-  padding:12px;
-  margin-bottom:10px;
-  border-radius:10px;
-  border:1px solid #ccc;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
 }
 
+input:focus, textarea:focus {
+  border-color: #2563eb;
+}
+
+/* Botão */
 button {
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(90deg,#2563eb,#1d4ed8);
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-/* ALERTA BONITO */
+button:hover {
+  transform: scale(1.03);
+}
+
+/* ALERTA */
 .alerta {
-  display:none;
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:10px;
-  font-size:14px;
+  display: none;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
 }
 
 .alerta.erro {
-  background:#fee2e2;
-  color:#b91c1c;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .alerta.sucesso {
-  background:#dcfce7;
-  color:#166534;
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* Rodapé (RESTAURADO) */
+footer {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 12px;
+  color: #777;
+}
+
+footer span {
+  display: block;
+  font-size: 11px;
+  margin-top: 5px;
+  color: #999;
+}
+
+.footer-mini {
+  font-size: 8px;
+  opacity: 0.6;
+  margin-top: 5px;
+}
+
+/* Animação */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px);}
+  to { opacity: 1; transform: translateY(0);}
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <div class="logo">Bits & Bytes Tecnology</div>
@@ -90,7 +138,7 @@ button {
   <h2>Abrir Chamado Técnico</h2>
 
   <div class="subtitulo">
-    Registre seu chamado e acompanhe o atendimento
+    Registre seu chamado e acompanhe o atendimento em tempo real
   </div>
 
   <div id="alerta" class="alerta"></div>
@@ -106,6 +154,13 @@ button {
     <button type="submit">Abrir Chamado</button>
 
   </form>
+
+  <!-- RODAPÉ RESTAURADO -->
+  <footer>
+    <p>Bits & Bytes Tecnology © 2026</p>
+    <span>Soluções inteligentes em assistência técnica</span>
+    <span class="footer-mini">Sistema desenvolvido por Bits & Bytes Tecnology</span>
+  </footer>
 
 </div>
 

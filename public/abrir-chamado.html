@@ -6,117 +6,82 @@
 <title>Bits & Bytes Tecnology</title>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: #fff;
+  font-family:'Segoe UI', Arial;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:#fff;
 }
 
-/* Nome da empresa no topo */
 .logo {
-  position: absolute;
-  top: 20px;
-  left: 30px;
-  font-size: 22px;
-  font-weight: bold;
+  position:absolute;
+  top:20px;
+  left:30px;
+  font-size:22px;
+  font-weight:bold;
 }
 
-/* Card central */
 .container {
-  background: rgba(255, 255, 255, 0.96);
-  color: #111;
-  border-radius: 18px;
-  padding: 30px;
-  width: 350px;
-  margin: auto;
-  margin-top: 80px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-  animation: fadeIn 0.5s ease;
+  background:rgba(255,255,255,0.96);
+  color:#111;
+  border-radius:18px;
+  padding:30px;
+  width:350px;
+  margin:auto;
+  margin-top:80px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.4);
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 5px;
-}
+h2 { text-align:center; margin-bottom:5px; }
 
 .subtitulo {
-  text-align: center;
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 20px;
+  text-align:center;
+  font-size:14px;
+  color:#555;
+  margin-bottom:20px;
 }
 
-/* Inputs */
 input, textarea {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  outline: none;
-  transition: 0.2s;
-  font-size: 14px;
+  width:100%;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
 }
 
-input:focus, textarea:focus {
-  border-color: #2563eb;
-}
-
-/* Botão */
 button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #2563eb, #1d4ed8);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg,#2563eb,#1d4ed8);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-button:hover {
-  transform: scale(1.03);
-  opacity: 0.9;
+/* ALERTA BONITO */
+.alerta {
+  display:none;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  font-size:14px;
 }
 
-/* Mensagem de status */
-#msg {
-  text-align: center;
-  margin-top: 10px;
-  font-weight: bold;
-  color: green;
+.alerta.erro {
+  background:#fee2e2;
+  color:#b91c1c;
 }
 
-/* Rodapé */
-footer {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 12px;
-  color: #777;
-}
-
-footer span {
-  display: block;
-  font-size: 11px;
-  margin-top: 5px;
-  color: #999;
-}
-
-/* Animação */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px);}
-  to { opacity: 1; transform: translateY(0);}
+.alerta.sucesso {
+  background:#dcfce7;
+  color:#166534;
 }
 </style>
-
 </head>
+
 <body>
 
 <div class="logo">Bits & Bytes Tecnology</div>
@@ -125,38 +90,33 @@ footer span {
   <h2>Abrir Chamado Técnico</h2>
 
   <div class="subtitulo">
-    Registre seu chamado e acompanhe o atendimento em tempo real
+    Registre seu chamado e acompanhe o atendimento
   </div>
+
+  <div id="alerta" class="alerta"></div>
 
   <form id="formChamado">
 
     <input type="text" name="cliente" placeholder="Nome completo" required>
-
     <input type="text" name="telefone" placeholder="Telefone" required>
-
     <input type="text" name="cpfcnpj" placeholder="CPF ou CNPJ" required>
-
     <input type="text" name="equipamento" placeholder="Equipamento" required>
-
     <textarea name="problema" rows="4" placeholder="Descreva o problema" required></textarea>
 
     <button type="submit">Abrir Chamado</button>
+
   </form>
 
-  <div id="msg"></div>
-
-  <footer>
-    <p>Bits & Bytes Tecnology © 2026</p>
-    <span>Soluções inteligentes em assistência técnica</span>
-    <span class="footer-mini">Sistema desenvolvido por Bits & Bytes Tecnology</span>
-  </footer>
 </div>
 
 <script>
-document.getElementById("formChamado").addEventListener("submit", async (e) => {
+const form = document.getElementById("formChamado");
+const alerta = document.getElementById("alerta");
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const form = e.target;
+  alerta.style.display = "none";
 
   const data = {
     cliente: form.cliente.value,
@@ -177,15 +137,23 @@ document.getElementById("formChamado").addEventListener("submit", async (e) => {
 
     const json = await res.json();
 
-    if (json.ok) {
-      document.getElementById("msg").innerText = "Chamado aberto com sucesso!";
-      form.reset();
-    } else {
-      document.getElementById("msg").innerText = "Erro ao abrir chamado.";
+    if (!res.ok) {
+      alerta.className = "alerta erro";
+      alerta.innerText = json.error || "Erro ao abrir chamado";
+      alerta.style.display = "block";
+      return;
     }
 
+    alerta.className = "alerta sucesso";
+    alerta.innerText = "Chamado aberto com sucesso!";
+    alerta.style.display = "block";
+
+    form.reset();
+
   } catch (err) {
-    document.getElementById("msg").innerText = "Erro de conexão.";
+    alerta.className = "alerta erro";
+    alerta.innerText = "Erro de conexão com o servidor";
+    alerta.style.display = "block";
   }
 });
 </script>

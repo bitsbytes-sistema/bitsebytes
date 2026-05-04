@@ -11,6 +11,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 /* ===================== */
+/* CONFIG */
+/* ===================== */
+const LIMITE_CLIENTE = 3;
+
+/* ===================== */
 /* MIDDLEWARES */
 /* ===================== */
 app.use(express.json());
@@ -68,7 +73,7 @@ const Ticket = mongoose.model("Ticket", {
 });
 
 /* ===================== */
-/* DATA HORA (CUIABÁ) */
+/* DATA (CUIABÁ) */
 /* ===================== */
 function getDataHora() {
   return new Date().toLocaleString("pt-BR", {
@@ -114,11 +119,11 @@ app.post("/login", async (req, res) => {
 });
 
 /* ===================== */
-/* LOGOUT (CORRIGIDO) */
+/* LOGOUT */
 /* ===================== */
 app.get("/logout", (req, res) => {
   req.session.destroy(() => {
-    res.redirect("/"); // ou /login.html se quiser
+    res.redirect("/");
   });
 });
 
@@ -139,17 +144,32 @@ app.post("/api/tickets", auth, async (req, res) => {
 });
 
 /* ===================== */
-/* ABRIR CHAMADO (PÚBLICO) */
+/* ABRIR CHAMADO (PÚBLICO COM LIMITE) */
 /* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
     const company = await Company.findOne({ plan: "enterprise" });
 
+    const doc = String(req.body.cpfcnpj).replace(/\D/g, "");
+
+    const chamadosAbertos = await Ticket.countDocuments({
+      companyId: company._id,
+      cpfcnpj: doc,
+      status: { $ne: "finalizado" }
+    });
+
+    if (chamadosAbertos >= LIMITE_CLIENTE) {
+      return res.status(403).json({
+        ok: false,
+        error: "Você já possui 3 chamados em andamento. Aguarde finalizar um."
+      });
+    }
+
     await Ticket.create({
       companyId: company._id,
       cliente: req.body.cliente,
       telefone: req.body.telefone,
-      cpfcnpj: req.body.cpfcnpj,
+      cpfcnpj: doc,
       equipamento: req.body.equipamento,
       problema: req.body.problema,
       status: "aberto"
@@ -158,7 +178,7 @@ app.post("/abrir-chamado", async (req, res) => {
     return res.json({ ok: true });
 
   } catch (err) {
-    console.log("ERRO abrir chamado:", err);
+    console.log(err);
     return res.status(500).json({ ok: false });
   }
 });
@@ -209,6 +229,7 @@ Status do seu atendimento: ${String(t.status).toUpperCase()}
 Cliente: ${t.cliente}
 ${tipoDoc}: ${t.cpfcnpj || "Não informado"}
 Equipamento: ${t.equipamento}
+Problema informado: ${t.problema || "Não informado"}
 Atualizado em: ${getDataHora()}
 
 ${msgFinal}
@@ -223,13 +244,13 @@ ${msgFinal}
 });
 
 /* ===================== */
-/* DELETE CHAMADO */
+/* DELETE */
 /* ===================== */
 app.delete("/api/tickets/:id", auth, async (req, res) => {
   try {
     await Ticket.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ ok: false });
   }
 });

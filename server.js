@@ -135,6 +135,22 @@ mongoose
   });
 
 /* ===================== */
+/* SESSION CHECK (NOVO - CORRIGE SEU ERRO) */
+/* ===================== */
+app.get("/session", (req, res) => {
+  if (!req.session.user) {
+    return res.json({
+      logged: false
+    });
+  }
+
+  return res.json({
+    logged: true,
+    user: req.session.user
+  });
+});
+
+/* ===================== */
 /* DATA */
 /* ===================== */
 function getDataHora() {
@@ -171,7 +187,7 @@ app.post("/login", async (req, res) => {
 });
 
 /* ===================== */
-/* LOGOUT (CORRIGIDO) */
+/* LOGOUT */
 /* ===================== */
 app.get("/logout", (req, res) => {
   req.session.destroy(() => {
@@ -188,7 +204,7 @@ app.get("/api/tickets", auth, async (req, res) => {
 });
 
 /* ===================== */
-/* ABRIR CHAMADO (CORRIGIDO) */
+/* ABRIR CHAMADO */
 /* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {

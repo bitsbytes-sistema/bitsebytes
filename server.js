@@ -74,7 +74,7 @@ const Ticket = mongoose.model("Ticket", {
 });
 
 /* ===================== */
-/* CREATE ADMIN (TESTE) */
+/* CREATE ADMIN */
 /* ===================== */
 async function createAdmin() {
   try {
@@ -97,11 +97,11 @@ async function createAdmin() {
 }
 
 /* ===================== */
-/* CREATE COMPANY (TESTE) */
+/* CREATE COMPANY */
 /* ===================== */
 async function createCompany() {
   try {
-    const exists = await Company.findOne({ plan: "enterprise" });
+    const exists = await Company.findOne({ name: "Bits & Bytes Teste" });
     if (exists) return;
 
     await Company.create({
@@ -116,7 +116,7 @@ async function createCompany() {
 }
 
 /* ===================== */
-/* MONGO CONNECTION (SEGURO) */
+/* MONGO */
 /* ===================== */
 mongoose
   .connect(process.env.MONGO_URL, {
@@ -125,7 +125,6 @@ mongoose
   .then(() => {
     console.log("Mongo conectado com sucesso");
 
-    // roda depois de estabilizar conexão
     setTimeout(() => {
       createAdmin();
       createCompany();
@@ -172,6 +171,15 @@ app.post("/login", async (req, res) => {
 });
 
 /* ===================== */
+/* LOGOUT (CORRIGIDO) */
+/* ===================== */
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
+});
+
+/* ===================== */
 /* LISTAR CHAMADOS */
 /* ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
@@ -180,14 +188,19 @@ app.get("/api/tickets", auth, async (req, res) => {
 });
 
 /* ===================== */
-/* ABRIR CHAMADO */
+/* ABRIR CHAMADO (CORRIGIDO) */
 /* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
-    const company = await Company.findOne({ plan: "enterprise" });
+    const company = await Company.findOne({
+      name: "Bits & Bytes Teste"
+    });
 
     if (!company) {
-      return res.status(500).json({ ok: false, error: "company_not_found" });
+      return res.status(500).json({
+        ok: false,
+        error: "company_not_found"
+      });
     }
 
     const doc = String(req.body.cpfcnpj).replace(/\D/g, "");
@@ -224,7 +237,7 @@ app.post("/abrir-chamado", async (req, res) => {
 });
 
 /* ===================== */
-/* START SERVER */
+/* START */
 /* ===================== */
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Servidor rodando na porta " + PORT);

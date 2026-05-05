@@ -74,7 +74,7 @@ const Ticket = mongoose.model("Ticket", {
 });
 
 /* ===================== */
-/* CREATE ADMIN (SEGURADO) */
+/* CREATE ADMIN (TESTE) */
 /* ===================== */
 async function createAdmin() {
   try {
@@ -90,14 +90,33 @@ async function createAdmin() {
       companyId: "teste"
     });
 
-    console.log("ADMIN CRIADO NO BANCO DE TESTE");
+    console.log("ADMIN CRIADO");
   } catch (err) {
     console.log("ERRO CREATE ADMIN:", err);
   }
 }
 
 /* ===================== */
-/* CONEXÃO MONGO (SEGURO PRA RENDER) */
+/* CREATE COMPANY (TESTE) */
+/* ===================== */
+async function createCompany() {
+  try {
+    const exists = await Company.findOne({ plan: "enterprise" });
+    if (exists) return;
+
+    await Company.create({
+      name: "Bits & Bytes Teste",
+      plan: "enterprise"
+    });
+
+    console.log("COMPANY CRIADA");
+  } catch (err) {
+    console.log("ERRO CREATE COMPANY:", err);
+  }
+}
+
+/* ===================== */
+/* MONGO CONNECTION (SEGURO) */
 /* ===================== */
 mongoose
   .connect(process.env.MONGO_URL, {
@@ -106,9 +125,10 @@ mongoose
   .then(() => {
     console.log("Mongo conectado com sucesso");
 
-    // 🔥 RODA DEPOIS QUE ESTIVER ESTÁVEL
+    // roda depois de estabilizar conexão
     setTimeout(() => {
       createAdmin();
+      createCompany();
     }, 2000);
   })
   .catch((err) => {
@@ -116,7 +136,7 @@ mongoose
   });
 
 /* ===================== */
-/* DATA (CUIABÁ) */
+/* DATA */
 /* ===================== */
 function getDataHora() {
   return new Date().toLocaleString("pt-BR", {

@@ -16,11 +16,19 @@ const PORT = process.env.PORT || 3000;
 const LIMITE_CLIENTE = 3;
 
 /* ===================== */
+/* DEBUG */
+/* ===================== */
+console.log("ENV MONGO_URL:", process.env.MONGO_URL);
+
+/* ===================== */
 /* MIDDLEWARES */
 /* ===================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* ===================== */
+/* SESSION */
+/* ===================== */
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "segredo",
@@ -39,11 +47,21 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 
 /* ===================== */
-/* MONGO */
+/* MONGO CONNECTION */
 /* ===================== */
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log("Mongo conectado"))
-  .catch(err => console.log("ERRO MONGO:", err));
+mongoose
+  .connect(process.env.MONGO_URL, {
+    serverSelectionTimeoutMS: 5000
+  })
+  .then(async () => {
+    console.log("Mongo conectado com sucesso");
+
+    // 🔥 cria admin automaticamente no banco de TESTE
+    await createAdmin();
+  })
+  .catch((err) => {
+    console.log("ERRO MONGO:", err);
+  });
 
 /* ===================== */
 /* MODELS */
@@ -73,6 +91,29 @@ const Ticket = mongoose.model("Ticket", {
 });
 
 /* ===================== */
+/* CREATE ADMIN (SÓ NO TESTE) */
+/* ===================== */
+async function createAdmin() {
+  try {
+    const exists = await User.findOne({ username: "admin" });
+    if (exists) return;
+
+    const hash = await bcrypt.hash("123456", 10);
+
+    await User.create({
+      username: "admin",
+      password: hash,
+      role: "admin",
+      companyId: "teste"
+    });
+
+    console.log("ADMIN CRIADO NO BANCO DE TESTE");
+  } catch (err) {
+    console.log("ERRO CREATE ADMIN:", err);
+  }
+}
+
+/* ===================== */
 /* DATA (CUIABÁ) */
 /* ===================== */
 function getDataHora() {
@@ -88,16 +129,6 @@ function getDataHora() {
 function auth(req, res, next) {
   if (!req.session.user) {
     return res.status(401).json({ error: "not_logged" });
-  }
-  next();
-}
-
-/* ===================== */
-/* ADMIN ONLY */
-/* ===================== */
-function adminOnly(req, res, next) {
-  if (!req.session.user || req.session.user.role !== "admin") {
-    return res.status(403).json({ error: "forbidden" });
   }
   next();
 }
@@ -119,15 +150,6 @@ app.post("/login", async (req, res) => {
 });
 
 /* ===================== */
-/* LOGOUT */
-/* ===================== */
-app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/");
-  });
-});
-
-/* ===================== */
 /* LISTAR CHAMADOS */
 /* ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
@@ -136,19 +158,15 @@ app.get("/api/tickets", auth, async (req, res) => {
 });
 
 /* ===================== */
-/* CRIAR CHAMADO (ADMIN) */
-/* ===================== */
-app.post("/api/tickets", auth, async (req, res) => {
-  const t = await Ticket.create(req.body);
-  res.json(t);
-});
-
-/* ===================== */
-/* ABRIR CHAMADO (PÚBLICO COM LIMITE) */
+/* ABRIR CHAMADO */
 /* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
     const company = await Company.findOne({ plan: "enterprise" });
+
+    if (!company) {
+      return res.status(500).json({ ok: false, error: "company_not_found" });
+    }
 
     const doc = String(req.body.cpfcnpj).replace(/\D/g, "");
 
@@ -161,7 +179,7 @@ app.post("/abrir-chamado", async (req, res) => {
     if (chamadosAbertos >= LIMITE_CLIENTE) {
       return res.status(403).json({
         ok: false,
-        error: "Você já possui 3 chamados em andamento. Aguarde finalizar um."
+        error: "Você já possui 3 chamados em andamento."
       });
     }
 
@@ -178,80 +196,8 @@ app.post("/abrir-chamado", async (req, res) => {
     return res.json({ ok: true });
 
   } catch (err) {
-    console.log(err);
+    console.log("ERRO ABRIR CHAMADO:", err);
     return res.status(500).json({ ok: false });
-  }
-});
-
-/* ===================== */
-/* UPDATE + WHATSAPP */
-/* ===================== */
-app.put("/api/tickets/:id", auth, async (req, res) => {
-  const t = await Ticket.findByIdAndUpdate(
-    req.params.id,
-    { ...req.body, updatedAt: new Date() },
-    { new: true }
-  );
-
-  if (!t) return res.status(404).json({ error: true });
-
-  const telefone = String(t.telefone || "").replace(/\D/g, "");
-
-  if (!telefone) {
-    return res.json({ ok: true, whatsapp: null });
-  }
-
-  let tipoDoc = "Documento";
-  const doc = String(t.cpfcnpj || "").replace(/\D/g, "");
-
-  if (doc.length === 11) tipoDoc = "CPF";
-  if (doc.length === 14) tipoDoc = "CNPJ";
-
-  let msgFinal = "";
-
-  if (t.status === "finalizado") {
-    msgFinal = `
-Seu equipamento ja esta pronto para retirada!
-Retire conosco ou entre em contato para mais informacoes.
-    `;
-  } else {
-    msgFinal = `
-Acompanhe seu atendimento em andamento com nossa equipe.
-Qualquer atualização será informada por aqui.
-    `;
-  }
-
-  const msg = `
-Bits & Bytes Assistência Técnica
-
-Status do seu atendimento: ${String(t.status).toUpperCase()}
-
-Cliente: ${t.cliente}
-${tipoDoc}: ${t.cpfcnpj || "Não informado"}
-Equipamento: ${t.equipamento}
-Problema informado: ${t.problema || "Não informado"}
-Atualizado em: ${getDataHora()}
-
-${msgFinal}
-  `.trim();
-
-  const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
-
-  return res.json({
-    ok: true,
-    whatsapp
-  });
-});
-
-/* ===================== */
-/* DELETE */
-/* ===================== */
-app.delete("/api/tickets/:id", auth, async (req, res) => {
-  try {
-    await Ticket.findByIdAndDelete(req.params.id);
-    res.json({ ok: true });
-  } catch {
-    res.status(500).json({ ok: false });
   }
 });
 
@@ -259,5 +205,5 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
 /* START */
 /* ===================== */
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Rodando na porta " + PORT);
+  console.log("Servidor rodando na porta " + PORT);
 });

@@ -47,23 +47,6 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 
 /* ===================== */
-/* MONGO CONNECTION */
-/* ===================== */
-mongoose
-  .connect(process.env.MONGO_URL, {
-    serverSelectionTimeoutMS: 5000
-  })
-  .then(async () => {
-    console.log("Mongo conectado com sucesso");
-
-    // 🔥 cria admin automaticamente no banco de TESTE
-    await createAdmin();
-  })
-  .catch((err) => {
-    console.log("ERRO MONGO:", err);
-  });
-
-/* ===================== */
 /* MODELS */
 /* ===================== */
 const Company = mongoose.model("Company", {
@@ -91,7 +74,7 @@ const Ticket = mongoose.model("Ticket", {
 });
 
 /* ===================== */
-/* CREATE ADMIN (SÓ NO TESTE) */
+/* CREATE ADMIN (SEGURADO) */
 /* ===================== */
 async function createAdmin() {
   try {
@@ -112,6 +95,25 @@ async function createAdmin() {
     console.log("ERRO CREATE ADMIN:", err);
   }
 }
+
+/* ===================== */
+/* CONEXÃO MONGO (SEGURO PRA RENDER) */
+/* ===================== */
+mongoose
+  .connect(process.env.MONGO_URL, {
+    serverSelectionTimeoutMS: 5000
+  })
+  .then(() => {
+    console.log("Mongo conectado com sucesso");
+
+    // 🔥 RODA DEPOIS QUE ESTIVER ESTÁVEL
+    setTimeout(() => {
+      createAdmin();
+    }, 2000);
+  })
+  .catch((err) => {
+    console.log("ERRO MONGO:", err);
+  });
 
 /* ===================== */
 /* DATA (CUIABÁ) */
@@ -179,7 +181,7 @@ app.post("/abrir-chamado", async (req, res) => {
     if (chamadosAbertos >= LIMITE_CLIENTE) {
       return res.status(403).json({
         ok: false,
-        error: "Você já possui 3 chamados em andamento."
+        error: "limite atingido"
       });
     }
 
@@ -202,7 +204,7 @@ app.post("/abrir-chamado", async (req, res) => {
 });
 
 /* ===================== */
-/* START */
+/* START SERVER */
 /* ===================== */
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Servidor rodando na porta " + PORT);

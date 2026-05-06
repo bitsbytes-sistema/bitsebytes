@@ -12,19 +12,17 @@ const PORT = process.env.PORT || 3000;
 
 const LIMITE_CLIENTE = 3;
 
-console.log("ENV MONGO_URL:", process.env.MONGO_URL);
+app.set("trust proxy", 1);
 
 /* ===================== */
-/* BODY PARSER */
+/* BODY */
 /* ===================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* ===================== */
-/* SESSION FIX (R E N D E R) */
+/* SESSION FIX DEFINITIVO */
 /* ===================== */
-app.set("trust proxy", 1); // 🔥 IMPORTANTE no Render
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "segredo",
@@ -33,13 +31,13 @@ app.use(
 
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URL,
-      ttl: 60 * 60 * 24 // 1 dia
+      ttl: 60 * 60 * 24
     }),
 
     cookie: {
       httpOnly: true,
-      secure: true,        // 🔥 obrigatório no Render (HTTPS)
-      sameSite: "none",    // 🔥 essencial para não deslogar
+      secure: true,
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24
     }
   })
@@ -56,7 +54,7 @@ app.use(express.static(path.join(__dirname, "public")));
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => console.log("Mongo conectado"))
-  .catch(err => console.log("ERRO MONGO:", err));
+  .catch(err => console.log(err));
 
 /* ===================== */
 /* MODELS */
@@ -85,29 +83,23 @@ const Ticket = mongoose.model("Ticket", {
 });
 
 /* ===================== */
-/* SESSION CHECK */
+/* SESSION ROUTE */
 /* ===================== */
 app.get("/session", async (req, res) => {
-  if (!req.session.user) {
+  if (!req.session.userId) {
     return res.json({ logged: false });
   }
 
-  try {
-    const user = await User.findById(req.session.user._id);
-    if (!user) return res.json({ logged: false });
+  const user = await User.findById(req.session.userId);
+  if (!user) return res.json({ logged: false });
 
-    const company = await Company.findById(user.companyId);
+  const company = await Company.findById(user.companyId);
 
-    return res.json({
-      logged: true,
-      user,
-      company
-    });
-
-  } catch (err) {
-    console.log(err);
-    return res.json({ logged: false });
-  }
+  res.json({
+    logged: true,
+    user,
+    company
+  });
 });
 
 /* ===================== */
@@ -122,8 +114,11 @@ app.post("/login", async (req, res) => {
 
   if (!ok) return res.json({ success: false });
 
-  req.session.user = user;
-  res.json({ success: true });
+  req.session.userId = user._id;
+
+  req.session.save(() => {
+    res.json({ success: true });
+  });
 });
 
 /* ===================== */
@@ -147,43 +142,33 @@ app.get("/api/tickets", async (req, res) => {
 /* ABRIR CHAMADO */
 /* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
-  try {
-    const company = await Company.findOne({
-      name: "Bits & Bytes Teste"
-    });
+  const company = await Company.findOne({ plan: "enterprise" });
 
-    if (!company) {
-      return res.json({ ok: false, error: "empresa não encontrada" });
-    }
+  if (!company) return res.json({ ok: false });
 
-    const doc = String(req.body.cpfcnpj).replace(/\D/g, "");
+  const doc = String(req.body.cpfcnpj).replace(/\D/g, "");
 
-    const count = await Ticket.countDocuments({
-      companyId: company._id,
-      cpfcnpj: doc,
-      status: { $ne: "finalizado" }
-    });
+  const count = await Ticket.countDocuments({
+    companyId: company._id,
+    cpfcnpj: doc,
+    status: { $ne: "finalizado" }
+  });
 
-    if (count >= LIMITE_CLIENTE) {
-      return res.json({ ok: false, error: "limite atingido" });
-    }
-
-    await Ticket.create({
-      companyId: company._id,
-      cliente: req.body.cliente,
-      telefone: req.body.telefone,
-      cpfcnpj: doc,
-      equipamento: req.body.equipamento,
-      problema: req.body.problema,
-      status: "aberto"
-    });
-
-    return res.json({ ok: true });
-
-  } catch (err) {
-    console.log(err);
-    return res.json({ ok: false });
+  if (count >= LIMITE_CLIENTE) {
+    return res.json({ ok: false, error: "limite" });
   }
+
+  await Ticket.create({
+    companyId: company._id,
+    cliente: req.body.cliente,
+    telefone: req.body.telefone,
+    cpfcnpj: doc,
+    equipamento: req.body.equipamento,
+    problema: req.body.problema,
+    status: "aberto"
+  });
+
+  res.json({ ok: true });
 });
 
 /* ===================== */

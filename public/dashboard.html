@@ -1,6 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+
+<style>
+body { font-family: Arial; margin:0; background:#f2f2f2; }
+
+.header {
+  background:#2c2c44;
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.container { padding:20px; }
+
+.card {
+  background:white;
+  padding:15px;
+  border-radius:8px;
+  margin-bottom:10px;
+}
+
+input { padding:10px; margin:5px; }
+
+button {
+  padding:10px;
+  background:#4CAF50;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+button:hover { opacity:0.9; }
+
+.whats {
+  background:#25D366;
+  padding:8px;
+  color:white;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div>Bits & Bytes</div>
+  <div>
+    <a href="/logout" style="color:white;">Sair</a>
+  </div>
+</div>
+
+<div class="container">
+
+<h3 id="plano">Plano: carregando...</h3>
+
+<h3>Resumo</h3>
+<div id="stats"></div>
+
+<h3>Criar Chamado</h3>
+
+<input id="cpfcnpj" placeholder="CPF/CNPJ">
+<input id="cliente" placeholder="Cliente">
+<input id="telefone" placeholder="Telefone">
+<input id="equipamento" placeholder="Equipamento">
+<input id="problema" placeholder="Problema">
+
+<button onclick="criar()">Criar</button>
+
+<h3>Chamados</h3>
+<div id="lista"></div>
+
+</div>
+
 <script>
 
+/* =========================
+   FIX DOM (IMPORTANTE)
+========================= */
+const lista = document.getElementById("lista");
+const stats = document.getElementById("stats");
+const plano = document.getElementById("plano");
+
+const cliente = document.getElementById("cliente");
+const telefone = document.getElementById("telefone");
+const cpfcnpj = document.getElementById("cpfcnpj");
+const equipamento = document.getElementById("equipamento");
+const problema = document.getElementById("problema");
+
+/* ========================= */
 let chamados = [];
+/* ========================= */
 
 async function load() {
   const res = await fetch("/api/tickets");
@@ -21,7 +114,7 @@ async function load() {
           "green"
         }">${c.status}</b><br>
 
-        <button onclick="status('${c._id}')">Status</button>
+        <button onclick="statusTicket('${c._id}')">Status</button>
         <button onclick="del('${c._id}')">Excluir</button>
       </div>
     `;
@@ -30,7 +123,40 @@ async function load() {
   loadStats();
 }
 
-async function status(id) {
+/* ========================= */
+async function criar() {
+  const data = {
+    cliente: cliente.value,
+    telefone: telefone.value,
+    cpfcnpj: cpfcnpj.value,
+    equipamento: equipamento.value,
+    problema: problema.value
+  };
+
+  const res = await fetch("/abrir-chamado", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  const json = await res.json();
+
+  if (!res.ok || json.ok === false) {
+    alert(json.error || "Erro ao criar chamado");
+    return;
+  }
+
+  cliente.value = "";
+  telefone.value = "";
+  cpfcnpj.value = "";
+  equipamento.value = "";
+  problema.value = "";
+
+  load();
+}
+
+/* ========================= */
+async function statusTicket(id) {
   const t = chamados.find(x => x._id === id);
 
   let novo = "aberto";
@@ -52,49 +178,13 @@ async function status(id) {
   load();
 }
 
-/* 🔥 FIX PRINCIPAL AQUI */
-async function criar() {
-
-  const body = {
-    cliente: cliente.value,
-    telefone: telefone.value,
-    cpfcnpj: cpfcnpj.value,
-    equipamento: equipamento.value,
-    problema: problema.value
-  };
-
-  const res = await fetch("/abrir-chamado", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-
-  const data = await res.json();
-
-  if (res.status === 403 || data.error) {
-    alert(data.error || "Limite atingido!");
-    return;
-  }
-
-  cliente.value = "";
-  telefone.value = "";
-  cpfcnpj.value = "";
-  equipamento.value = "";
-  problema.value = "";
-
-  load();
-}
-
-async function buscarCliente() {
-  // REMOVIDO porque /api/clientes NÃO existe no seu backend
-  return;
-}
-
+/* ========================= */
 async function del(id) {
   await fetch("/api/tickets/" + id, { method: "DELETE" });
   load();
 }
 
+/* ========================= */
 async function loadStats() {
   const aberto = chamados.filter(x => x.status === "aberto").length;
   const andamento = chamados.filter(x => x.status === "andamento").length;
@@ -107,13 +197,18 @@ async function loadStats() {
   `;
 }
 
-/* 🔥 FIX PLAN SAFE */
+/* =========================
+   FIX SAFE /SESSION
+========================= */
 async function loadPlano() {
   try {
     const res = await fetch("/session");
     const data = await res.json();
 
-    if (!data.logged) return;
+    if (!data.logged) {
+      window.location.href = "/";
+      return;
+    }
 
     plano.innerText = "Plano: " + (data.company?.plan || "sem plano");
 
@@ -122,7 +217,11 @@ async function loadPlano() {
   }
 }
 
+/* INIT */
 load();
 loadPlano();
 
 </script>
+
+</body>
+</html>

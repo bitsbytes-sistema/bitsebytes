@@ -14,34 +14,53 @@ const LIMITE_CLIENTE = 3;
 
 console.log("ENV MONGO_URL:", process.env.MONGO_URL);
 
+/* ===================== */
+/* BODY PARSER */
+/* ===================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* SESSION */
+/* ===================== */
+/* SESSION FIX (R E N D E R) */
+/* ===================== */
+app.set("trust proxy", 1); // 🔥 IMPORTANTE no Render
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "segredo",
     resave: false,
     saveUninitialized: false,
+
     store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URL
+      mongoUrl: process.env.MONGO_URL,
+      ttl: 60 * 60 * 24 // 1 dia
     }),
+
     cookie: {
       httpOnly: true,
+      secure: true,        // 🔥 obrigatório no Render (HTTPS)
+      sameSite: "none",    // 🔥 essencial para não deslogar
       maxAge: 1000 * 60 * 60 * 24
     }
   })
 );
 
+/* ===================== */
+/* STATIC */
+/* ===================== */
 app.use(express.static(path.join(__dirname, "public")));
 
+/* ===================== */
 /* MONGO */
+/* ===================== */
 mongoose
   .connect(process.env.MONGO_URL)
   .then(() => console.log("Mongo conectado"))
-  .catch(err => console.log(err));
+  .catch(err => console.log("ERRO MONGO:", err));
 
+/* ===================== */
 /* MODELS */
+/* ===================== */
 const Company = mongoose.model("Company", {
   name: String,
   plan: String
@@ -65,7 +84,9 @@ const Ticket = mongoose.model("Ticket", {
   createdAt: { type: Date, default: Date.now }
 });
 
-/* SESSION */
+/* ===================== */
+/* SESSION CHECK */
+/* ===================== */
 app.get("/session", async (req, res) => {
   if (!req.session.user) {
     return res.json({ logged: false });
@@ -89,7 +110,9 @@ app.get("/session", async (req, res) => {
   }
 });
 
+/* ===================== */
 /* LOGIN */
+/* ===================== */
 app.post("/login", async (req, res) => {
   const user = await User.findOne({ username: req.body.username });
 
@@ -103,20 +126,26 @@ app.post("/login", async (req, res) => {
   res.json({ success: true });
 });
 
+/* ===================== */
 /* LOGOUT */
+/* ===================== */
 app.get("/logout", (req, res) => {
   req.session.destroy(() => {
     res.redirect("/");
   });
 });
 
+/* ===================== */
 /* TICKETS */
+/* ===================== */
 app.get("/api/tickets", async (req, res) => {
   const data = await Ticket.find().sort({ createdAt: -1 });
   res.json(data);
 });
 
+/* ===================== */
 /* ABRIR CHAMADO */
+/* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
     const company = await Company.findOne({
@@ -136,10 +165,7 @@ app.post("/abrir-chamado", async (req, res) => {
     });
 
     if (count >= LIMITE_CLIENTE) {
-      return res.json({
-        ok: false,
-        error: "limite atingido"
-      });
+      return res.json({ ok: false, error: "limite atingido" });
     }
 
     await Ticket.create({
@@ -160,7 +186,9 @@ app.post("/abrir-chamado", async (req, res) => {
   }
 });
 
+/* ===================== */
 /* START */
+/* ===================== */
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Servidor rodando na porta " + PORT);
 });

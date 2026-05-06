@@ -72,16 +72,6 @@ app.post("/abrir-chamado", async (req, res) => {
   }
 });
 
-app.put("/api/tickets/:id", async (req, res) => {
-  try {
-    await Ticket.findByIdAndUpdate(req.params.id, req.body);
-    res.json({ ok: true });
-  } catch (err) {
-    console.log("ERRO UPDATE:", err);
-    res.status(500).json({ ok: false });
-  }
-});
-
 app.delete("/api/tickets/:id", async (req, res) => {
   try {
     await Ticket.findByIdAndDelete(req.params.id);

@@ -65,11 +65,28 @@ const Ticket = mongoose.model("Ticket", {
   createdAt: { type: Date, default: Date.now }
 });
 
-/* SESSION CHECK */
-app.get("/session", (req, res) => {
-  if (!req.session.user) return res.json({ logged: false });
+/* SESSION */
+app.get("/session", async (req, res) => {
+  if (!req.session.user) {
+    return res.json({ logged: false });
+  }
 
-  res.json({ logged: true, user: req.session.user });
+  try {
+    const user = await User.findById(req.session.user._id);
+    if (!user) return res.json({ logged: false });
+
+    const company = await Company.findById(user.companyId);
+
+    return res.json({
+      logged: true,
+      user,
+      company
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.json({ logged: false });
+  }
 });
 
 /* LOGIN */
@@ -83,16 +100,17 @@ app.post("/login", async (req, res) => {
   if (!ok) return res.json({ success: false });
 
   req.session.user = user;
-
   res.json({ success: true });
 });
 
 /* LOGOUT */
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => res.redirect("/"));
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
 });
 
-/* LISTAR TICKETS */
+/* TICKETS */
 app.get("/api/tickets", async (req, res) => {
   const data = await Ticket.find().sort({ createdAt: -1 });
   res.json(data);
@@ -101,10 +119,12 @@ app.get("/api/tickets", async (req, res) => {
 /* ABRIR CHAMADO */
 app.post("/abrir-chamado", async (req, res) => {
   try {
-    const company = await Company.findOne({ name: "Bits & Bytes Teste" });
+    const company = await Company.findOne({
+      name: "Bits & Bytes Teste"
+    });
 
     if (!company) {
-      return res.status(500).json({ ok: false, error: "company_not_found" });
+      return res.json({ ok: false, error: "empresa não encontrada" });
     }
 
     const doc = String(req.body.cpfcnpj).replace(/\D/g, "");
@@ -116,7 +136,7 @@ app.post("/abrir-chamado", async (req, res) => {
     });
 
     if (count >= LIMITE_CLIENTE) {
-      return res.status(403).json({
+      return res.json({
         ok: false,
         error: "limite atingido"
       });
@@ -128,18 +148,19 @@ app.post("/abrir-chamado", async (req, res) => {
       telefone: req.body.telefone,
       cpfcnpj: doc,
       equipamento: req.body.equipamento,
-      problema: req.body.problema
+      problema: req.body.problema,
+      status: "aberto"
     });
 
-    res.json({ ok: true });
+    return res.json({ ok: true });
 
   } catch (err) {
     console.log(err);
-    res.status(500).json({ ok: false });
+    return res.json({ ok: false });
   }
 });
 
 /* START */
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Rodando na porta " + PORT);
+  console.log("Servidor rodando na porta " + PORT);
 });

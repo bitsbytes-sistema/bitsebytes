@@ -37,44 +37,41 @@ const Ticket = mongoose.model("Ticket", {
 /* ===================== LOGIN ===================== */
 app.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const user = await User.findOne({ username: req.body.username });
 
-    const user = await User.findOne({ username });
-
-    if (!user || user.password !== password) {
+    if (!user || user.password !== req.body.password) {
       return res.json({ success: false });
     }
 
     res.json({ success: true, user });
+
   } catch (err) {
     console.log("ERRO LOGIN:", err);
     res.status(500).json({ success: false });
   }
 });
 
-/* ===================== LISTAR ===================== */
+/* ===================== TICKETS ===================== */
 app.get("/api/tickets", async (req, res) => {
   try {
     const data = await Ticket.find().sort({ createdAt: -1 });
     res.json(data);
   } catch (err) {
-    console.log("ERRO GET TICKETS:", err);
-    res.status(500).json({ error: true });
+    console.log("ERRO LIST:", err);
+    res.status(500).json([]);
   }
 });
 
-/* ===================== CRIAR ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
     await Ticket.create(req.body);
     res.json({ ok: true });
   } catch (err) {
-    console.log("ERRO CRIAR:", err);
+    console.log("ERRO CREATE:", err);
     res.status(500).json({ ok: false });
   }
 });
 
-/* ===================== UPDATE ===================== */
 app.put("/api/tickets/:id", async (req, res) => {
   try {
     await Ticket.findByIdAndUpdate(req.params.id, req.body);
@@ -85,7 +82,6 @@ app.put("/api/tickets/:id", async (req, res) => {
   }
 });
 
-/* ===================== DELETE ===================== */
 app.delete("/api/tickets/:id", async (req, res) => {
   try {
     await Ticket.findByIdAndDelete(req.params.id);

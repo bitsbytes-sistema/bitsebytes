@@ -6,40 +6,11 @@
 
 <style>
 body { font-family: Arial; margin:0; background:#f2f2f2; }
-
-.header {
-  background:#2c2c44;
-  color:white;
-  padding:15px;
-  display:flex;
-  justify-content:space-between;
-}
-
+.header { background:#2c2c44; color:white; padding:15px; display:flex; justify-content:space-between; }
 .container { padding:20px; }
-
-.card {
-  background:white;
-  padding:15px;
-  border-radius:8px;
-  margin-bottom:10px;
-}
-
+.card { background:white; padding:15px; margin-bottom:10px; border-radius:8px; }
 input { padding:10px; margin:5px; }
-
-button {
-  padding:10px;
-  background:#4CAF50;
-  color:white;
-  border:none;
-  cursor:pointer;
-}
-
-.whats {
-  background:#25D366;
-  padding:8px;
-  color:white;
-  text-decoration:none;
-}
+button { padding:10px; background:#4CAF50; color:white; border:none; cursor:pointer; }
 </style>
 </head>
 
@@ -47,165 +18,87 @@ button {
 
 <div class="header">
   <div>Bits & Bytes</div>
-  <div>
-    <a href="/logout" style="color:white;">Sair</a>
-  </div>
+  <button onclick="logout()">Sair</button>
 </div>
 
 <div class="container">
 
-<h3 id="plano">Plano: carregando...</h3>
-
-<h3>Resumo</h3>
-<div id="stats"></div>
+<h3>Chamados</h3>
+<div id="lista"></div>
 
 <h3>Criar Chamado</h3>
 
-<input id="cpfcnpj" placeholder="CPF/CNPJ" onblur="buscarCliente()">
 <input id="cliente" placeholder="Cliente">
 <input id="telefone" placeholder="Telefone">
+<input id="cpfcnpj" placeholder="CPF/CNPJ">
 <input id="equipamento" placeholder="Equipamento">
 <input id="problema" placeholder="Problema">
 
 <button onclick="criar()">Criar</button>
 
-<h3>Chamados</h3>
-<div id="lista"></div>
-
 </div>
 
 <script>
 
+/* LOGIN CHECK */
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user) window.location.href = "/";
+
+/* LOGOUT */
+function logout() {
+  localStorage.removeItem("user");
+  window.location.href = "/";
+}
+
+/* LISTA */
 let chamados = [];
 
-const lista = document.getElementById("lista");
-const stats = document.getElementById("stats");
-const plano = document.getElementById("plano");
-
 async function load() {
-  const res = await fetch("/api/tickets", {
-    credentials: "include"
-  });
-
+  const res = await fetch("/api/tickets");
   chamados = await res.json();
 
+  const lista = document.getElementById("lista");
   lista.innerHTML = "";
 
   chamados.forEach(c => {
     lista.innerHTML += `
       <div class="card">
         <b>${c.cliente}</b><br>
-        📱 ${c.telefone}<br>
-        💻 ${c.equipamento}<br>
-        🛠 ${c.problema}<br>
-        📌 <b>${c.status}</b><br>
+        ${c.telefone}<br>
+        ${c.equipamento}<br>
+        ${c.problema}<br>
+        <b>${c.status}</b><br>
 
-        <button onclick="status('${c._id}')">Status</button>
         <button onclick="del('${c._id}')">Excluir</button>
       </div>
     `;
   });
-
-  loadStats();
 }
 
-async function status(id) {
-  const t = chamados.find(x => x._id === id);
-
-  let novo = "aberto";
-  if (t.status === "aberto") novo = "andamento";
-  else if (t.status === "andamento") novo = "finalizado";
-
-  const res = await fetch("/api/tickets/" + id, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ status: novo })
-  });
-
-  const data = await res.json();
-
-  if (data.whatsapp) {
-    window.open(data.whatsapp, "_blank");
-  }
-
-  load();
-}
-
+/* CRIAR */
 async function criar() {
-
-  const data = {
-    cliente: cliente.value,
-    telefone: telefone.value,
-    cpfcnpj: cpfcnpj.value,
-    equipamento: equipamento.value,
-    problema: problema.value
-  };
-
-  const res = await fetch("/abrir-chamado", {
+  await fetch("/abrir-chamado", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(data)
+    body: JSON.stringify({
+      cliente: cliente.value,
+      telefone: telefone.value,
+      cpfcnpj: cpfcnpj.value,
+      equipamento: equipamento.value,
+      problema: problema.value
+    })
   });
-
-  const json = await res.json();
-
-  if (!res.ok || json.ok === false) {
-    alert(json.error || "Erro ao criar chamado");
-    return;
-  }
 
   load();
 }
 
-async function buscarCliente() {
-  // removido /api/clientes porque NÃO EXISTE no backend
-  // evitando erro 404
-}
-
+/* DELETE */
 async function del(id) {
-  await fetch("/api/tickets/" + id, {
-    method: "DELETE",
-    credentials: "include"
-  });
-
+  await fetch("/api/tickets/" + id, { method: "DELETE" });
   load();
-}
-
-async function loadStats() {
-  const aberto = chamados.filter(x => x.status === "aberto").length;
-  const andamento = chamados.filter(x => x.status === "andamento").length;
-  const finalizado = chamados.filter(x => x.status === "finalizado").length;
-
-  stats.innerHTML = `
-    🔴 Abertos: ${aberto} |
-    🟡 Andamento: ${andamento} |
-    🟢 Finalizados: ${finalizado}
-  `;
-}
-
-async function loadPlano() {
-  try {
-    const res = await fetch("/session", {
-      credentials: "include"
-    });
-
-    const data = await res.json();
-
-    if (data.logged && data.company) {
-      plano.innerText = "Plano: " + data.company.plan;
-    } else {
-      plano.innerText = "Plano: não identificado";
-    }
-
-  } catch (err) {
-    plano.innerText = "Plano: erro";
-  }
 }
 
 load();
-loadPlano();
 
 </script>
 

@@ -5,26 +5,16 @@
 <title>Dashboard</title>
 
 <style>
-body { font-family: Arial; margin:0; background:#f2f2f2; }
-.header { background:#2c2c44; color:white; padding:15px; display:flex; justify-content:space-between; }
-.container { padding:20px; }
-.card { background:white; padding:15px; margin-bottom:10px; border-radius:8px; }
-input { padding:10px; margin:5px; }
-button { padding:10px; background:#4CAF50; color:white; border:none; cursor:pointer; }
+body { font-family: Arial; background:#f2f2f2; }
+.card { background:white; padding:10px; margin:10px; }
 </style>
+
 </head>
 
 <body>
 
-<div class="header">
-  <div>Bits & Bytes</div>
-  <button onclick="logout()">Sair</button>
-</div>
-
-<div class="container">
-
-<h3>Chamados</h3>
-<div id="lista"></div>
+<h2>Dashboard</h2>
+<button onclick="logout()">Sair</button>
 
 <h3>Criar Chamado</h3>
 
@@ -36,7 +26,8 @@ button { padding:10px; background:#4CAF50; color:white; border:none; cursor:poin
 
 <button onclick="criar()">Criar</button>
 
-</div>
+<h3>Chamados</h3>
+<div id="lista"></div>
 
 <script>
 
@@ -45,56 +36,76 @@ const user = JSON.parse(localStorage.getItem("user"));
 if (!user) window.location.href = "/";
 
 /* LOGOUT */
-function logout() {
+function logout(){
   localStorage.removeItem("user");
   window.location.href = "/";
 }
 
-/* LISTA */
-let chamados = [];
+/* LOAD */
+async function load(){
+  try {
+    const res = await fetch("/api/tickets");
 
-async function load() {
-  const res = await fetch("/api/tickets");
-  chamados = await res.json();
+    if(!res.ok){
+      alert("Erro no servidor");
+      return;
+    }
 
-  const lista = document.getElementById("lista");
-  lista.innerHTML = "";
+    const data = await res.json();
 
-  chamados.forEach(c => {
-    lista.innerHTML += `
-      <div class="card">
-        <b>${c.cliente}</b><br>
-        ${c.telefone}<br>
-        ${c.equipamento}<br>
-        ${c.problema}<br>
-        <b>${c.status}</b><br>
+    lista.innerHTML = "";
 
-        <button onclick="del('${c._id}')">Excluir</button>
-      </div>
-    `;
-  });
+    data.forEach(c=>{
+      lista.innerHTML += `
+        <div class="card">
+          <b>${c.cliente}</b><br>
+          ${c.telefone}<br>
+          ${c.equipamento}<br>
+          ${c.problema}<br>
+          ${c.status}<br>
+          <button onclick="del('${c._id}')">Excluir</button>
+        </div>
+      `;
+    });
+
+  } catch (err) {
+    alert("Erro de conexão");
+  }
 }
 
-/* CRIAR */
-async function criar() {
-  await fetch("/abrir-chamado", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      cliente: cliente.value,
-      telefone: telefone.value,
-      cpfcnpj: cpfcnpj.value,
-      equipamento: equipamento.value,
-      problema: problema.value
-    })
-  });
+/* CREATE */
+async function criar(){
+  try {
+    const res = await fetch("/abrir-chamado",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        cliente: cliente.value,
+        telefone: telefone.value,
+        cpfcnpj: cpfcnpj.value,
+        equipamento: equipamento.value,
+        problema: problema.value
+      })
+    });
 
-  load();
+    const json = await res.json();
+
+    if(!json.ok){
+      alert("Erro ao criar");
+      return;
+    }
+
+    alert("Chamado criado!");
+    load();
+
+  } catch {
+    alert("Erro servidor");
+  }
 }
 
 /* DELETE */
-async function del(id) {
-  await fetch("/api/tickets/" + id, { method: "DELETE" });
+async function del(id){
+  await fetch("/api/tickets/"+id,{method:"DELETE"});
   load();
 }
 

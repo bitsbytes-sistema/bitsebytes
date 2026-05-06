@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -11,10 +12,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-/* ===================== */
+/* ===================== MONGO ===================== */
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("Mongo conectado"))
-  .catch(err => console.log(err));
+  .catch(err => console.log("Erro Mongo:", err));
 
 /* ===================== MODELS ===================== */
 const User = mongoose.model("User", {
@@ -35,43 +36,67 @@ const Ticket = mongoose.model("Ticket", {
 
 /* ===================== LOGIN ===================== */
 app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
+  try {
+    const { username, password } = req.body;
 
-  const user = await User.findOne({ username });
+    const user = await User.findOne({ username });
 
-  if (!user || user.password !== password) {
-    return res.json({ success: false });
+    if (!user || user.password !== password) {
+      return res.json({ success: false });
+    }
+
+    res.json({ success: true, user });
+  } catch (err) {
+    console.log("ERRO LOGIN:", err);
+    res.status(500).json({ success: false });
   }
-
-  res.json({ success: true, user });
 });
 
-/* ===================== CHAMADOS ===================== */
+/* ===================== LISTAR ===================== */
 app.get("/api/tickets", async (req, res) => {
-  const data = await Ticket.find().sort({ createdAt: -1 });
-  res.json(data);
+  try {
+    const data = await Ticket.find().sort({ createdAt: -1 });
+    res.json(data);
+  } catch (err) {
+    console.log("ERRO GET TICKETS:", err);
+    res.status(500).json({ error: true });
+  }
 });
 
+/* ===================== CRIAR ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
     await Ticket.create(req.body);
     res.json({ ok: true });
-  } catch {
-    res.json({ ok: false });
+  } catch (err) {
+    console.log("ERRO CRIAR:", err);
+    res.status(500).json({ ok: false });
   }
 });
 
+/* ===================== UPDATE ===================== */
 app.put("/api/tickets/:id", async (req, res) => {
-  await Ticket.findByIdAndUpdate(req.params.id, req.body);
-  res.json({ ok: true });
+  try {
+    await Ticket.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ ok: true });
+  } catch (err) {
+    console.log("ERRO UPDATE:", err);
+    res.status(500).json({ ok: false });
+  }
 });
 
+/* ===================== DELETE ===================== */
 app.delete("/api/tickets/:id", async (req, res) => {
-  await Ticket.findByIdAndDelete(req.params.id);
-  res.json({ ok: true });
+  try {
+    await Ticket.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    console.log("ERRO DELETE:", err);
+    res.status(500).json({ ok: false });
+  }
 });
 
 /* ===================== START ===================== */
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Rodando na porta " + PORT);
+  console.log("Servidor rodando na porta " + PORT);
 });

@@ -1,121 +1,40 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Login - Bits & Bytes</title>
-
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial, sans-serif;
-}
-
-body{
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:linear-gradient(135deg, #0f172a, #1e293b);
-  color:#fff;
-}
-
-/* CONTAINER */
-.login-box{
-  background:#111827;
-  padding:40px;
-  border-radius:12px;
-  width:320px;
-  text-align:center;
-  box-shadow:0 0 20px rgba(0,0,0,0.5);
-}
-
-/* LOGO */
-.logo{
-  width:100px;
-  margin-bottom:10px;
-}
-
-h2{
-  margin-bottom:20px;
-}
-
-/* INPUTS */
-input{
-  width:100%;
-  padding:12px;
-  margin:10px 0;
-  border:none;
-  border-radius:6px;
-  outline:none;
-}
-
-/* BOTÃO */
-button{
-  width:100%;
-  padding:12px;
-  background:#2563eb;
-  color:#fff;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  margin-top:10px;
-  font-weight:bold;
-}
-
-button:hover{
-  background:#1d4ed8;
-}
-
-/* ERRO */
-.error{
-  color:#f87171;
-  margin-top:10px;
-}
-</style>
+<title>Login</title>
 </head>
 
 <body>
 
-<div class="login-box">
+<h2>Login</h2>
 
-  <!-- LOGO -->
-  <img src="/logo.png" class="logo">
-  <h2>Bits & Bytes Assistência Técnica</h2>
+<input id="user" placeholder="Usuário">
+<input id="pass" type="password" placeholder="Senha">
 
-  <!-- FORM -->
-  <form id="loginForm">
-    <input type="text" id="username" placeholder="Usuário" required>
-    <input type="password" id="password" placeholder="Senha" required>
-    <button type="submit">Entrar</button>
-  </form>
-
-  <div class="error" id="erro"></div>
-
-</div>
+<button onclick="login()">Entrar</button>
 
 <script>
-document.getElementById("loginForm").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  const res = await fetch("/login", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await res.json();
-
-  if(data.success){
-    window.location.href = "/dashboard.html";
-  }else{
-    document.getElementById("erro").innerText = "Login inválido";
-  }
-});
+function login() {
+  fetch("/login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      username: user.value,
+      password: pass.value
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      localStorage.setItem("user", JSON.stringify(data.user));
+      window.location.href = "/dashboard.html";
+    } else {
+      alert("Login inválido");
+    }
+  })
+  .catch(() => alert("Erro no servidor"));
+}
 </script>
 
 </body>

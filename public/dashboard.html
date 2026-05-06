@@ -80,12 +80,12 @@ button:hover {
 
 /* LOGIN CHECK */
 const user = JSON.parse(localStorage.getItem("user"));
-if (!user) window.location.href = "/";
+if (!user) window.location.href = "/login.html";
 
 /* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
-  window.location.href = "/";
+  window.location.href = "/login.html";
 }
 
 /* ===================== STATS ===================== */

@@ -40,7 +40,6 @@ body {
 
 h2 {
   text-align: center;
-  margin-bottom: 5px;
 }
 
 .subtitulo {
@@ -56,7 +55,6 @@ input, textarea {
   margin-bottom: 10px;
   border-radius: 10px;
   border: 1px solid #ccc;
-  outline: none;
 }
 
 input:focus, textarea:focus {
@@ -113,7 +111,6 @@ footer span {
 .footer-mini {
   font-size: 8px;
   opacity: 0.6;
-  margin-top: 5px;
 }
 
 @keyframes fadeIn {
@@ -121,8 +118,8 @@ footer span {
   to { opacity: 1; transform: translateY(0);}
 }
 </style>
-
 </head>
+
 <body>
 
 <div class="logo">Bits & Bytes Tecnology</div>
@@ -137,7 +134,6 @@ footer span {
   <div id="alerta" class="alerta"></div>
 
   <form id="formChamado">
-
     <input type="text" name="cliente" placeholder="Nome completo" required>
     <input type="text" name="telefone" placeholder="Telefone" required>
     <input type="text" name="cpfcnpj" placeholder="CPF ou CNPJ" required>
@@ -145,17 +141,17 @@ footer span {
     <textarea name="problema" rows="4" placeholder="Descreva o problema" required></textarea>
 
     <button type="submit">Abrir Chamado</button>
-
   </form>
 
+  <!-- RODAPÉ -->
   <footer>
     <p>Bits & Bytes Tecnology © 2026</p>
     <span>Soluções inteligentes em assistência técnica</span>
     <span class="footer-mini">Sistema desenvolvido por Bits & Bytes Tecnology</span>
   </footer>
-
 </div>
 
+<!-- SCRIPT DO FORM -->
 <script>
 const form = document.getElementById("formChamado");
 const alerta = document.getElementById("alerta");
@@ -184,9 +180,7 @@ form.addEventListener("submit", async (e) => {
 
     const json = await res.json();
 
-    console.log(json); // DEBUG
-
-    if (!json.ok) {
+    if (!res.ok) {
       alerta.className = "alerta erro";
       alerta.innerText = json.error || "Erro ao abrir chamado";
       alerta.style.display = "block";
@@ -204,6 +198,17 @@ form.addEventListener("submit", async (e) => {
     alerta.innerText = "Erro de conexão com o servidor";
     alerta.style.display = "block";
   }
+});
+</script>
+
+<!-- 🔔 ONESIGNAL (NOTIFICAÇÃO) -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+  await OneSignal.init({
+    appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d",
+  });
 });
 </script>
 

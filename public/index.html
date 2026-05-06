@@ -73,7 +73,7 @@ button:hover {
 <div class="box">
   <div class="logo">Bits & Bytes</div>
 
-  <h2>Login</h2>
+  <h2>Login SaaS</h2>
 
   <form id="loginForm">
     <input type="text" id="username" placeholder="Usuário" required>
@@ -94,36 +94,23 @@ form.addEventListener("submit", async (e) => {
 
   msg.innerText = "Entrando...";
 
-  try {
-    const res = await fetch("/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        username: document.getElementById("username").value,
-        password: document.getElementById("password").value
-      })
-    });
+  const res = await fetch("/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value
+    })
+  });
 
-    if (!res.ok) {
-      msg.innerText = "Erro no servidor";
-      return;
-    }
+  const data = await res.json();
 
-    const data = await res.json();
-
-    if (data.success) {
-      // 🔥 ESSENCIAL (corrige seu problema de logout automático)
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      window.location.href = "/dashboard.html";
-    } else {
-      msg.innerText = "Usuário ou senha inválidos";
-    }
-
-  } catch (err) {
-    msg.innerText = "Erro de conexão com o servidor";
+  if (data.success) {
+    window.location.href = "/dashboard.html";
+  } else {
+    msg.innerText = "Login inválido";
   }
 });
 </script>

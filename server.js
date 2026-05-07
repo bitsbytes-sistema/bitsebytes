@@ -2,7 +2,10 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const path = require("path");
+const bcrypt = require("bcrypt");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +20,21 @@ const LIMITE_CLIENTE = 3;
 /* ===================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "segredo",
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URL,
+    }),
+    cookie: {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24
+    }
+  })
+);
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -55,144 +73,185 @@ const Ticket = mongoose.model("Ticket", {
 });
 
 /* ===================== */
+/* DATA (CUIABÁ) */
+/* ===================== */
+function getDataHora() {
+  return new Date().toLocaleString("pt-BR", {
+    timeZone: "America/Cuiaba",
+    hour12: false
+  });
+}
+
+/* ===================== */
+/* AUTH */
+/* ===================== */
+function auth(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "not_logged" });
+  }
+  next();
+}
+
+/* ===================== */
+/* ADMIN ONLY */
+/* ===================== */
+function adminOnly(req, res, next) {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.status(403).json({ error: "forbidden" });
+  }
+  next();
+}
+
+/* ===================== */
 /* LOGIN */
 /* ===================== */
 app.post("/login", async (req, res) => {
+  const user = await User.findOne({ username: req.body.username });
 
-  const user = await User.findOne({
-    username: req.body.username
-  });
+  if (!user) return res.json({ success: false });
 
-  if (!user) {
-    return res.json({ success:false });
-  }
+  const ok = await bcrypt.compare(req.body.password, user.password);
 
-  if (user.password !== req.body.password) {
-    return res.json({ success:false });
-  }
+  if (!ok) return res.json({ success: false });
 
-  res.json({
-    success:true,
-    user
+  req.session.user = user;
+  res.json({ success: true });
+});
+
+/* ===================== */
+/* LOGOUT */
+/* ===================== */
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/");
   });
 });
 
 /* ===================== */
 /* LISTAR CHAMADOS */
 /* ===================== */
-app.get("/api/tickets", async (req, res) => {
-
-  const data = await Ticket.find()
-    .sort({ createdAt:-1 });
-
+app.get("/api/tickets", auth, async (req, res) => {
+  const data = await Ticket.find().sort({ createdAt: -1 });
   res.json(data);
 });
 
 /* ===================== */
-/* CRIAR CHAMADO */
+/* CRIAR CHAMADO (ADMIN) */
 /* ===================== */
-app.post("/api/tickets", async (req, res) => {
-
+app.post("/api/tickets", auth, async (req, res) => {
   const t = await Ticket.create(req.body);
-
   res.json(t);
 });
 
 /* ===================== */
-/* ABRIR CHAMADO */
+/* ABRIR CHAMADO (PÚBLICO COM LIMITE) */
 /* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
-
   try {
+    const company = await Company.findOne({ plan: "enterprise" });
 
-    const company = await Company.findOne({
-      plan:"enterprise"
+    const doc = String(req.body.cpfcnpj).replace(/\D/g, "");
+
+    const chamadosAbertos = await Ticket.countDocuments({
+      companyId: company._id,
+      cpfcnpj: doc,
+      status: { $ne: "finalizado" }
     });
 
-    const doc = String(
-      req.body.cpfcnpj
-    ).replace(/\D/g, "");
-
-    const chamadosAbertos =
-      await Ticket.countDocuments({
-        companyId: company?._id,
-        cpfcnpj: doc,
-        status: { $ne:"finalizado" }
-      });
-
     if (chamadosAbertos >= LIMITE_CLIENTE) {
-
       return res.status(403).json({
-        ok:false,
-        error:"Você já possui 3 chamados em andamento."
+        ok: false,
+        error: "Você já possui 3 chamados em andamento. Aguarde finalizar um."
       });
     }
 
     await Ticket.create({
-      companyId: company?._id,
+      companyId: company._id,
       cliente: req.body.cliente,
       telefone: req.body.telefone,
       cpfcnpj: doc,
       equipamento: req.body.equipamento,
       problema: req.body.problema,
-      status:"aberto"
+      status: "aberto"
     });
 
-    return res.json({ ok:true });
+    return res.json({ ok: true });
 
   } catch (err) {
-
     console.log(err);
-
-    return res.status(500).json({
-      ok:false
-    });
+    return res.status(500).json({ ok: false });
   }
 });
 
 /* ===================== */
-/* UPDATE STATUS */
+/* UPDATE + WHATSAPP */
 /* ===================== */
-app.put("/api/tickets/:id", async (req, res) => {
+app.put("/api/tickets/:id", auth, async (req, res) => {
+  const t = await Ticket.findByIdAndUpdate(
+    req.params.id,
+    { ...req.body, updatedAt: new Date() },
+    { new: true }
+  );
 
-  try {
+  if (!t) return res.status(404).json({ error: true });
 
-    await Ticket.findByIdAndUpdate(
-      req.params.id,
-      {
-        ...req.body,
-        updatedAt:new Date()
-      }
-    );
+  const telefone = String(t.telefone || "").replace(/\D/g, "");
 
-    res.json({ ok:true });
-
-  } catch {
-
-    res.status(500).json({
-      ok:false
-    });
+  if (!telefone) {
+    return res.json({ ok: true, whatsapp: null });
   }
+
+  let tipoDoc = "Documento";
+  const doc = String(t.cpfcnpj || "").replace(/\D/g, "");
+
+  if (doc.length === 11) tipoDoc = "CPF";
+  if (doc.length === 14) tipoDoc = "CNPJ";
+
+  let msgFinal = "";
+
+  if (t.status === "finalizado") {
+    msgFinal = `
+Seu equipamento ja esta pronto para retirada!
+Retire conosco ou entre em contato para mais informacoes.
+    `;
+  } else {
+    msgFinal = `
+Acompanhe seu atendimento em andamento com nossa equipe.
+Qualquer atualização será informada por aqui.
+    `;
+  }
+
+  const msg = `
+Bits & Bytes Assistência Técnica
+
+Status do seu atendimento: ${String(t.status).toUpperCase()}
+
+Cliente: ${t.cliente}
+${tipoDoc}: ${t.cpfcnpj || "Não informado"}
+Equipamento: ${t.equipamento}
+Problema informado: ${t.problema || "Não informado"}
+Atualizado em: ${getDataHora()}
+
+${msgFinal}
+  `.trim();
+
+  const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
+
+  return res.json({
+    ok: true,
+    whatsapp
+  });
 });
 
 /* ===================== */
 /* DELETE */
 /* ===================== */
-app.delete("/api/tickets/:id", async (req, res) => {
-
+app.delete("/api/tickets/:id", auth, async (req, res) => {
   try {
-
-    await Ticket.findByIdAndDelete(
-      req.params.id
-    );
-
-    res.json({ ok:true });
-
+    await Ticket.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
   } catch {
-
-    res.status(500).json({
-      ok:false
-    });
+    res.status(500).json({ ok: false });
   }
 });
 

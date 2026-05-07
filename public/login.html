@@ -21,7 +21,6 @@ body{
   color:#fff;
 }
 
-/* CONTAINER */
 .login-box{
   background:#111827;
   padding:40px;
@@ -31,7 +30,6 @@ body{
   box-shadow:0 0 20px rgba(0,0,0,0.5);
 }
 
-/* LOGO */
 .logo{
   width:100px;
   margin-bottom:10px;
@@ -41,7 +39,6 @@ h2{
   margin-bottom:20px;
 }
 
-/* INPUTS */
 input{
   width:100%;
   padding:12px;
@@ -51,7 +48,6 @@ input{
   outline:none;
 }
 
-/* BOTÃO */
 button{
   width:100%;
   padding:12px;
@@ -68,7 +64,6 @@ button:hover{
   background:#1d4ed8;
 }
 
-/* ERRO */
 .error{
   color:#f87171;
   margin-top:10px;
@@ -80,11 +75,9 @@ button:hover{
 
 <div class="login-box">
 
-  <!-- LOGO -->
   <img src="/logo.png" class="logo">
   <h2>Bits & Bytes Assistência Técnica</h2>
 
-  <!-- FORM -->
   <form id="loginForm">
     <input type="text" id="username" placeholder="Usuário" required>
     <input type="password" id="password" placeholder="Senha" required>
@@ -102,18 +95,26 @@ document.getElementById("loginForm").addEventListener("submit", async (e)=>{
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
 
-  const res = await fetch("/login", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ username, password })
-  });
+  try {
+    const res = await fetch("/login", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ username, password })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if(data.success){
-    window.location.href = "/dashboard.html";
-  }else{
-    document.getElementById("erro").innerText = "Login inválido";
+    if(data.success){
+      // ESSA LINHA É O QUE FALTAVA
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      window.location.href = "/dashboard.html";
+    }else{
+      document.getElementById("erro").innerText = "Login inválido";
+    }
+
+  } catch {
+    document.getElementById("erro").innerText = "Erro de conexão";
   }
 });
 </script>

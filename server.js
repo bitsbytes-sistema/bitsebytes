@@ -10,13 +10,10 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-/* ===================== */
-/* CONFIG */
-/* ===================== */
 const LIMITE_CLIENTE = 3;
 
 /* ===================== */
-/* MIDDLEWARES */
+/* MIDDLEWARE */
 /* ===================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -43,10 +40,7 @@ app.use(express.static(path.join(__dirname, "public")));
 /* ===================== */
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("✔ Mongo conectado"))
-  .catch(err => {
-    console.log("❌ ERRO MONGO:");
-    console.log(err.message);
-  });
+  .catch(err => console.log("❌ ERRO MONGO:", err.message));
 
 /* ===================== */
 /* MODELS */
@@ -91,64 +85,43 @@ function auth(req, res, next) {
 /* LOGIN */
 /* ===================== */
 app.post("/login", async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.body.username });
 
-  const user = await User.findOne({
-    username: req.body.username
-  });
+    if (!user || user.password !== req.body.password) {
+      return res.json({ success: false });
+    }
 
-  if (!user) return res.json({ success: false });
+    req.session.user = {
+      id: user._id,
+      username: user.username,
+      role: user.role,
+      companyId: user.companyId
+    };
 
-  if (user.password !== req.body.password) {
-    return res.json({ success: false });
+    res.json({ success: true, user });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false });
   }
-
-  req.session.user = {
-    id: user._id,
-    username: user.username,
-    role: user.role,
-    companyId: user.companyId
-  };
-
-  res.json({ success: true, user });
-});
-
-/* ===================== */
-/* LOGOUT */
-/* ===================== */
-app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/");
-  });
 });
 
 /* ===================== */
 /* LISTAR CHAMADOS */
 /* ===================== */
-app.get("/api/tickets", async (req, res) => {
+app.get("/api/tickets", auth, async (req, res) => {
   try {
-    const data = await Ticket.find().sort({ createdAt: -1 });
-    return res.json(data);
+    const data = await Ticket.find({}).sort({ createdAt: -1 });
+    res.json(data);
   } catch (err) {
-    console.log("ERRO /api/tickets:", err);
-    return res.status(500).json({ error: true });
-  }
-});
-
-/* ===================== */
-/* CRIAR CHAMADO (ADMIN) */
-/* ===================== */
-app.post("/api/tickets", auth, async (req, res) => {
-  try {
-    const t = await Ticket.create(req.body);
-    res.json(t);
-  } catch (err) {
-    console.log(err);
+    console.log("❌ ERRO /api/tickets:", err.message);
     res.status(500).json({ error: true });
   }
 });
 
 /* ===================== */
-/* ABRIR CHAMADO (PÚBLICO COM LIMITE) */
+/* ABRIR CHAMADO */
 /* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
@@ -158,22 +131,22 @@ app.post("/abrir-chamado", async (req, res) => {
     if (!company) {
       return res.status(400).json({
         ok: false,
-        error: "Empresa não encontrada (crie uma company com plan enterprise)"
+        error: "Empresa não encontrada"
       });
     }
 
     const doc = String(req.body.cpfcnpj || "").replace(/\D/g, "");
 
-    const chamadosAbertos = await Ticket.countDocuments({
+    const count = await Ticket.countDocuments({
       companyId: company._id,
       cpfcnpj: doc,
       status: { $ne: "finalizado" }
     });
 
-    if (chamadosAbertos >= LIMITE_CLIENTE) {
+    if (count >= LIMITE_CLIENTE) {
       return res.status(403).json({
         ok: false,
-        error: "Você já possui 3 chamados em andamento."
+        error: "Limite de chamados atingido"
       });
     }
 
@@ -187,62 +160,32 @@ app.post("/abrir-chamado", async (req, res) => {
       status: "aberto"
     });
 
-    return res.json({ ok: true });
+    res.json({ ok: true });
 
   } catch (err) {
-    console.log("ERRO /abrir-chamado:", err);
-    return res.status(500).json({ ok: false, error: "Erro interno" });
+    console.log("❌ ERRO /abrir-chamado:", err.message);
+    res.status(500).json({ ok: false });
   }
 });
 
 /* ===================== */
-/* UPDATE + WHATSAPP */
+/* UPDATE */
 /* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
-
   try {
     const t = await Ticket.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, updatedAt: new Date() },
+      { ...req.body },
       { new: true }
     );
 
     if (!t) return res.status(404).json({ error: true });
 
-    const telefone = String(t.telefone || "").replace(/\D/g, "");
-
-    if (!telefone) {
-      return res.json({ ok: true });
-    }
-
-    let tipoDoc = "Documento";
-    const doc = String(t.cpfcnpj || "").replace(/\D/g, "");
-
-    if (doc.length === 11) tipoDoc = "CPF";
-    if (doc.length === 14) tipoDoc = "CNPJ";
-
-    const msg = `
-Bits & Bytes Assistência Técnica
-
-Status: ${String(t.status).toUpperCase()}
-
-Cliente: ${t.cliente}
-${tipoDoc}: ${t.cpfcnpj || "Não informado"}
-Equipamento: ${t.equipamento}
-Problema: ${t.problema || "Não informado"}
-Atualizado em: ${new Date().toLocaleString("pt-BR", {
-  timeZone: "America/Cuiaba",
-  hour12: false
-})}
-    `.trim();
-
-    const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
-
-    return res.json({ ok: true, whatsapp });
+    res.json({ ok: true });
 
   } catch (err) {
-    console.log("ERRO UPDATE:", err);
-    return res.status(500).json({ error: true });
+    console.log("❌ ERRO UPDATE:", err.message);
+    res.status(500).json({ error: true });
   }
 });
 
@@ -263,5 +206,5 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
 /* START */
 /* ===================== */
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Rodando na porta " + PORT);
+  console.log("🚀 Rodando na porta " + PORT);
 });

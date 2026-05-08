@@ -72,7 +72,7 @@ const Ticket = mongoose.model(
 );
 
 /* ===================== */
-/* AUTH */
+/* AUTH (mantido para login futuro) */
 /* ===================== */
 function auth(req, res, next) {
   if (!req.session.user) {
@@ -108,9 +108,9 @@ app.post("/login", async (req, res) => {
 });
 
 /* ===================== */
-/* LISTAR CHAMADOS */
+/* LISTAR CHAMADOS (TEMP SEM AUTH PRA TESTE) */
 /* ===================== */
-app.get("/api/tickets", auth, async (req, res) => {
+app.get("/api/tickets", async (req, res) => {
   try {
     const data = await Ticket.find({}).sort({ createdAt: -1 });
     res.json(data);

@@ -51,13 +51,6 @@ button:hover{
   background:#3d9140;
 }
 
-.whats {
-  background:#25D366;
-  padding:8px;
-  color:white;
-  text-decoration:none;
-}
-
 a{
   color:white;
   text-decoration:none;
@@ -100,14 +93,12 @@ a{
 
 <script>
 
-/* LOGIN CHECK */
 const user = JSON.parse(localStorage.getItem("user"));
 
 if (!user){
   window.location.href = "/login.html";
 }
 
-/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
   window.location.href = "/login.html";
@@ -118,61 +109,59 @@ let chamados = [];
 /* ===================== LOAD ===================== */
 async function load(){
 
-  try {
+  const res = await fetch("/api/tickets");
+  const data = await res.json();
 
-    const res = await fetch("/api/tickets");
-    const data = await res.json();
-
-    // 🔥 se der erro 401 ou outro
-    if (!res.ok) {
-      console.error("Erro API:", data);
-      alert("Sessão expirada ou não autorizado");
-      window.location.href = "/login.html";
-      return;
-    }
-
-    // 🔥 garante array
-    if (!Array.isArray(data)) {
-      console.error("Resposta inválida:", data);
-      return;
-    }
-
-    chamados = data;
-
-    lista.innerHTML = "";
-
-    chamados.forEach(c => {
-
-      lista.innerHTML += `
-        <div class="card">
-
-          <b>${c.cliente}</b><br>
-
-          📱 ${c.telefone}<br>
-          💻 ${c.equipamento}<br>
-          🛠 ${c.problema}<br>
-
-          📌 <b style="color:${
-            c.status==="aberto"?"red":
-            c.status==="andamento"?"orange":
-            "green"
-          }">${c.status}</b><br><br>
-
-          <button onclick="status('${c._id}')">Status</button>
-
-          <button onclick="del('${c._id}')">
-            Excluir
-          </button>
-
-        </div>
-      `;
-    });
-
-    loadStats();
-
-  } catch (err) {
-    console.error("Erro no load:", err);
+  if (!res.ok) {
+    console.error(data);
+    alert("Erro ao carregar chamados");
+    return;
   }
+
+  if (!Array.isArray(data)) {
+    console.error("Resposta inválida:", data);
+    return;
+  }
+
+  chamados = data;
+
+  lista.innerHTML = "";
+
+  chamados.forEach(c => {
+
+    // 🔥 DATA DE ABERTURA FORMATADA
+    const dataAbertura = c.createdAt
+      ? new Date(c.createdAt).toLocaleString("pt-BR", {
+          timeZone: "America/Cuiaba",
+          hour12: false
+        })
+      : "Sem data";
+
+    lista.innerHTML += `
+      <div class="card">
+
+        <b>${c.cliente}</b><br>
+
+        📱 ${c.telefone}<br>
+        💻 ${c.equipamento}<br>
+        🛠 ${c.problema}<br>
+
+        📅 Abertura: ${dataAbertura}<br><br>
+
+        📌 <b style="color:${
+          c.status==="aberto"?"red":
+          c.status==="andamento"?"orange":
+          "green"
+        }">${c.status}</b><br><br>
+
+        <button onclick="status('${c._id}')">Status</button>
+        <button onclick="del('${c._id}')">Excluir</button>
+
+      </div>
+    `;
+  });
+
+  loadStats();
 }
 
 /* ===================== STATUS ===================== */
@@ -222,28 +211,6 @@ async function criar(){
   load();
 }
 
-/* ===================== CLIENTE ===================== */
-async function buscarCliente(){
-
-  if (!cpfcnpj.value) return;
-
-  try {
-
-    const res = await fetch("/api/clientes/" + cpfcnpj.value);
-
-    if (!res.ok) return;
-
-    const data = await res.json();
-
-    if (data) {
-      cliente.value = data.nome || "";
-      telefone.value = data.telefone || "";
-    }
-
-  } catch (err) {}
-
-}
-
 /* ===================== DELETE ===================== */
 async function del(id){
 
@@ -268,7 +235,6 @@ function loadStats(){
   `;
 }
 
-/* INIT */
 load();
 
 </script>

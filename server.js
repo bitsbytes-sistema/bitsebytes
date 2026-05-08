@@ -60,27 +60,20 @@ const User = mongoose.model("User", {
   companyId: String
 });
 
-const Ticket = mongoose.model("Ticket", {
-  companyId: String,
-  cliente: String,
-  telefone: String,
-  cpfcnpj: String,
-  equipamento: String,
-  problema: String,
-  status: { type: String, default: "aberto" },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: Date
-});
-
-/* ===================== */
-/* DATA (CUIABÁ) */
-/* ===================== */
-function getDataHora() {
-  return new Date().toLocaleString("pt-BR", {
-    timeZone: "America/Cuiaba",
-    hour12: false
-  });
-}
+/* 🔥 CORREÇÃO PRINCIPAL AQUI */
+const Ticket = mongoose.model(
+  "Ticket",
+  {
+    companyId: String,
+    cliente: String,
+    telefone: String,
+    cpfcnpj: String,
+    equipamento: String,
+    problema: String,
+    status: { type: String, default: "aberto" }
+  },
+  { timestamps: true } // 👈 cria createdAt e updatedAt automático
+);
 
 /* ===================== */
 /* AUTH */
@@ -103,7 +96,7 @@ function adminOnly(req, res, next) {
 }
 
 /* ===================== */
-/* LOGIN (CORRIGIDO) */
+/* LOGIN */
 /* ===================== */
 app.post("/login", async (req, res) => {
 
@@ -119,7 +112,6 @@ app.post("/login", async (req, res) => {
     return res.json({ success: false });
   }
 
-  // 🔥 CORREÇÃO PRINCIPAL (SESSION)
   req.session.user = {
     id: user._id,
     username: user.username,
@@ -210,6 +202,7 @@ app.post("/abrir-chamado", async (req, res) => {
 /* UPDATE + WHATSAPP */
 /* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
+
   const t = await Ticket.findByIdAndUpdate(
     req.params.id,
     { ...req.body, updatedAt: new Date() },
@@ -233,13 +226,9 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
   let msgFinal = "";
 
   if (t.status === "finalizado") {
-    msgFinal = `
-Seu equipamento já está pronto para retirada!
-    `;
+    msgFinal = `Seu equipamento já está pronto para retirada!`;
   } else {
-    msgFinal = `
-Seu atendimento está em andamento.
-    `;
+    msgFinal = `Seu atendimento está em andamento.`;
   }
 
   const msg = `
@@ -251,7 +240,10 @@ Cliente: ${t.cliente}
 ${tipoDoc}: ${t.cpfcnpj || "Não informado"}
 Equipamento: ${t.equipamento}
 Problema: ${t.problema || "Não informado"}
-Atualizado em: ${getDataHora()}
+Atualizado em: ${new Date().toLocaleString("pt-BR", {
+  timeZone: "America/Cuiaba",
+  hour12: false
+})}
 
 ${msgFinal}
   `.trim();

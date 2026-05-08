@@ -22,23 +22,23 @@ body { font-family: Arial; margin:0; background:#f2f2f2; }
   padding:15px;
   border-radius:8px;
   margin-bottom:10px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-input { padding:10px; margin:5px; }
+input { padding:10px; margin:5px; border-radius:5px; border:1px solid #ccc; }
 
 button {
   padding:10px;
   background:#4CAF50;
   color:white;
   border:none;
+  border-radius:5px;
+  cursor:pointer;
 }
 
-.whats {
-  background:#25D366;
-  padding:8px;
-  color:white;
-  text-decoration:none;
-}
+button:hover { background:#3d9140; }
+
+a { color:white; text-decoration:none; }
 </style>
 </head>
 
@@ -46,15 +46,16 @@ button {
 
 <div class="header">
   <div>Bits & Bytes</div>
+
   <div>
-    <a href="/clientes.html" style="color:white;">Clientes</a> |
-    <a href="/logout" style="color:white;">Sair</a>
+    <a href="/clientes.html">Clientes</a> |
+    <a href="#" onclick="logout()">Sair</a>
   </div>
 </div>
 
 <div class="container">
 
-<h3 id="plano"></h3>
+<h3 id="plano">Plano: Teste</h3>
 
 <h3>Resumo</h3>
 <div id="stats"></div>
@@ -76,111 +77,169 @@ button {
 
 <script>
 
-let chamados=[];
+/* ===================== DOM FIX ===================== */
+const stats = document.getElementById("stats");
+const lista = document.getElementById("lista");
 
-async function load(){
-  const res = await fetch("/api/tickets");
-  chamados = await res.json();
+/* ===================== LOGIN CHECK ===================== */
+const user = JSON.parse(localStorage.getItem("user"));
 
-  lista.innerHTML="";
-
-  chamados.forEach(c=>{
-    lista.innerHTML += `
-      <div class="card">
-        <b>${c.cliente}</b><br>
-        📱 ${c.telefone}<br>
-        💻 ${c.equipamento}<br>
-        🛠 ${c.problema}<br>
-        📌 <b style="color:${
-          c.status==="aberto"?"red":
-          c.status==="andamento"?"orange":
-          "green"
-        }">${c.status}</b><br>
-
-        <button onclick="status('${c._id}')">Status</button>
-        <button onclick="del('${c._id}')">Excluir</button>
-      </div>
-    `;
-  });
-
-  loadStats();
+if (!user){
+  window.location.href = "/login.html";
 }
 
+/* ===================== FUNÇÕES ===================== */
+function buscarCliente(){
+  // futuro
+}
+
+function logout(){
+  localStorage.removeItem("user");
+  window.location.href = "/login.html";
+}
+
+let chamados = [];
+
+/* ===================== LOAD ===================== */
+async function load(){
+
+  try {
+
+    const res = await fetch("/api/tickets", {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error("ERRO BACKEND:", data);
+      alert(data.error || "Erro ao carregar chamados");
+      return;
+    }
+
+    chamados = Array.isArray(data) ? data : [];
+
+    lista.innerHTML = "";
+
+    chamados.forEach(c => {
+
+      const dataAbertura = c.createdAt
+        ? new Date(c.createdAt).toLocaleString("pt-BR", {
+            timeZone: "America/Cuiaba",
+            hour12: false
+          })
+        : "Sem data";
+
+      lista.innerHTML += `
+        <div class="card">
+
+          <b>${c.cliente || ""}</b><br>
+
+          📱 ${c.telefone || ""}<br>
+          💻 ${c.equipamento || ""}<br>
+          🛠 ${c.problema || ""}<br>
+
+          📅 Abertura: ${dataAbertura}<br><br>
+
+          📌 <b style="color:${
+            c.status==="aberto"?"red":
+            c.status==="andamento"?"orange":
+            "green"
+          }">${c.status}</b><br><br>
+
+          <button onclick="status('${c._id}')">Status</button>
+          <button onclick="del('${c._id}')">Excluir</button>
+
+        </div>
+      `;
+    });
+
+    loadStats();
+
+  } catch (err) {
+    console.error("ERRO FETCH:", err);
+    alert("Erro de conexão com servidor");
+  }
+}
+
+/* ===================== STATUS ===================== */
 async function status(id){
-  const t = chamados.find(x=>x._id===id);
+
+  const t = chamados.find(x => x._id === id);
+
+  if (!t) return;
 
   let novo = "aberto";
-  if(t.status==="aberto") novo="andamento";
-  else if(t.status==="andamento") novo="finalizado";
 
-  const res = await fetch("/api/tickets/"+id,{
-    method:"PUT",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({status:novo})
+  if (t.status === "aberto") {
+    novo = "andamento";
+  } else if (t.status === "andamento") {
+    novo = "finalizado";
+  }
+
+  const res = await fetch("/api/tickets/" + id, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      status: novo
+    })
   });
 
   const data = await res.json();
 
-  if(data.whatsapp){
+  if (data.whatsapp) {
     window.open(data.whatsapp, "_blank");
   }
 
   load();
 }
 
+/* ===================== CREATE ===================== */
 async function criar(){
 
-  await fetch("/api/clientes",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
+  const res = await fetch("/abrir-chamado", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    credentials: "include",
     body: JSON.stringify({
-      nome: cliente.value,
-      telefone: telefone.value,
-      cpfcnpj: cpfcnpj.value
+      cliente: document.getElementById("cliente").value,
+      telefone: document.getElementById("telefone").value,
+      cpfcnpj: document.getElementById("cpfcnpj").value,
+      equipamento: document.getElementById("equipamento").value,
+      problema: document.getElementById("problema").value
     })
   });
 
-  const res = await fetch("/api/tickets",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({
-      cliente: cliente.value,
-      telefone: telefone.value,
-      cpfcnpj: cpfcnpj.value,
-      equipamento: equipamento.value,
-      problema: problema.value
-    })
-  });
+  const data = await res.json();
 
-  if(res.status===403){
-    alert("Limite atingido!");
+  if (!data.ok) {
+    alert(data.error || "Erro ao criar chamado");
     return;
   }
 
   load();
 }
 
-async function buscarCliente(){
-  if(!cpfcnpj.value) return;
-
-  const res = await fetch("/api/clientes/"+cpfcnpj.value);
-  const data = await res.json();
-
-  if(data){
-    cliente.value = data.nome;
-    telefone.value = data.telefone;
-  }
-}
-
+/* ===================== DELETE ===================== */
 async function del(id){
-  await fetch("/api/tickets/"+id,{method:"DELETE"});
+
+  await fetch("/api/tickets/" + id, {
+    method: "DELETE",
+    credentials: "include"
+  });
+
   load();
 }
 
-async function loadStats(){
-  const aberto = chamados.filter(x=>x.status==="aberto").length;
-  const andamento = chamados.filter(x=>x.status==="andamento").length;
-  const finalizado = chamados.filter(x=>x.status==="finalizado").length;
+/* ===================== STATS ===================== */
+function loadStats(){
+
+  const aberto = chamados.filter(x => x.status === "aberto").length;
+  const andamento = chamados.filter(x => x.status === "andamento").length;
+  const finalizado = chamados.filter(x => x.status === "finalizado").length;
 
   stats.innerHTML = `
     🔴 Abertos: ${aberto} |
@@ -189,14 +248,8 @@ async function loadStats(){
   `;
 }
 
-async function loadPlano(){
-  const res = await fetch("/session");
-  const data = await res.json();
-  plano.innerText = "Plano: " + data.company.plan;
-}
-
+/* ===================== INIT ===================== */
 load();
-loadPlano();
 
 </script>
 

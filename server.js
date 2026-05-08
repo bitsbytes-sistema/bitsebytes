@@ -42,8 +42,11 @@ app.use(express.static(path.join(__dirname, "public")));
 /* MONGO */
 /* ===================== */
 mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log("Mongo conectado"))
-  .catch(err => console.log("ERRO MONGO:", err));
+  .then(() => console.log("✔ Mongo conectado"))
+  .catch(err => {
+    console.log("❌ ERRO MONGO:");
+    console.log(err.message);
+  });
 
 /* ===================== */
 /* MODELS */
@@ -121,7 +124,7 @@ app.get("/logout", (req, res) => {
 /* ===================== */
 /* LISTAR CHAMADOS */
 /* ===================== */
-app.get("/api/tickets", auth, async (req, res) => {
+app.get("/api/tickets", async (req, res) => {
   try {
     const data = await Ticket.find().sort({ createdAt: -1 });
     return res.json(data);

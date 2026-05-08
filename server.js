@@ -254,6 +254,10 @@ app.post("/abrir-chamado", async (req, res) => {
 /* ===================== */
 /* UPDATE STATUS */
 /* ===================== */
+```js
+/* ===================== */
+/* UPDATE + WHATSAPP */
+/* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
 
   try {
@@ -269,14 +273,77 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
     );
 
     if (!t) {
-
       return res.status(404).json({
         error: true
       });
     }
 
+    const telefone = String(
+      t.telefone || ""
+    ).replace(/\D/g, "");
+
+    let whatsapp = null;
+
+    if (telefone) {
+
+      let tipoDoc = "Documento";
+
+      const doc = String(
+        t.cpfcnpj || ""
+      ).replace(/\D/g, "");
+
+      if (doc.length === 11) tipoDoc = "CPF";
+      if (doc.length === 14) tipoDoc = "CNPJ";
+
+      let msgFinal = "";
+
+      if (t.status === "finalizado") {
+
+        msgFinal =
+          "Seu equipamento já está pronto para retirada!";
+
+      } else {
+
+        msgFinal =
+          "Seu atendimento está em andamento.";
+
+      }
+
+      const dataAtual = new Date().toLocaleString(
+        "pt-BR",
+        {
+          timeZone: "America/Cuiaba",
+          hour12: false
+        }
+      );
+
+      const msg = `
+Bits & Bytes Assistência Técnica
+
+Status do seu atendimento: ${String(
+        t.status
+      ).toUpperCase()}
+
+Cliente: ${t.cliente}
+
+${tipoDoc}: ${t.cpfcnpj || "Não informado"}
+
+Equipamento: ${t.equipamento}
+
+Problema informado: ${t.problema || "Não informado"}
+
+Atualizado em: ${dataAtual}
+
+${msgFinal}
+      `.trim();
+
+      whatsapp =
+        `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
+    }
+
     return res.json({
-      ok: true
+      ok: true,
+      whatsapp
     });
 
   } catch (err) {

@@ -1,10 +1,12 @@
+```html id="5rj0la"
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Login - Bits & Bytes</title>
+<title>Bits & Bytes Assistência Técnica</title>
 
 <style>
+
 *{
   margin:0;
   padding:0;
@@ -13,30 +15,33 @@
 }
 
 body{
-  height:100vh;
+  min-height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
-  background:linear-gradient(135deg, #0f172a, #1e293b);
+  background:linear-gradient(135deg,#0f172a,#1e293b);
   color:#fff;
+  padding:20px;
 }
 
 .login-box{
   background:#111827;
   padding:40px;
   border-radius:12px;
-  width:320px;
+  width:100%;
+  max-width:350px;
   text-align:center;
   box-shadow:0 0 20px rgba(0,0,0,0.5);
 }
 
 .logo{
   width:100px;
-  margin-bottom:10px;
+  margin-bottom:15px;
 }
 
 h2{
-  margin-bottom:20px;
+  margin-bottom:25px;
+  font-size:22px;
 }
 
 input{
@@ -46,6 +51,7 @@ input{
   border:none;
   border-radius:6px;
   outline:none;
+  font-size:15px;
 }
 
 button{
@@ -58,6 +64,7 @@ button{
   cursor:pointer;
   margin-top:10px;
   font-weight:bold;
+  font-size:15px;
 }
 
 button:hover{
@@ -66,8 +73,15 @@ button:hover{
 
 .error{
   color:#f87171;
-  margin-top:10px;
+  margin-top:15px;
+  font-size:14px;
 }
+
+.loading{
+  opacity:0.7;
+  pointer-events:none;
+}
+
 </style>
 </head>
 
@@ -75,9 +89,15 @@ button:hover{
 
 <div class="login-box">
 
-  <img src="/logo.png" class="logo">
+  <img
+    src="/logo.png"
+    class="logo"
+    alt="Logo"
+  >
 
-  <h2>Bits & Bytes Assistência Técnica</h2>
+  <h2>
+    Bits & Bytes Assistência Técnica
+  </h2>
 
   <form id="loginForm">
 
@@ -86,6 +106,7 @@ button:hover{
       id="username"
       placeholder="Usuário"
       required
+      autocomplete="username"
     >
 
     <input
@@ -93,59 +114,116 @@ button:hover{
       id="password"
       placeholder="Senha"
       required
+      autocomplete="current-password"
     >
 
-    <button type="submit">
+    <button
+      type="submit"
+      id="btnLogin"
+    >
       Entrar
     </button>
 
   </form>
 
-  <div class="error" id="erro"></div>
+  <div
+    class="error"
+    id="erro"
+  ></div>
 
 </div>
 
 <script>
 
-document.getElementById("loginForm")
-.addEventListener("submit", async (e)=>{
+/* ===================== AUTO LOGIN ===================== */
+const user = JSON.parse(
+  localStorage.getItem("user")
+);
 
-  e.preventDefault();
+if (user) {
+  window.location.href =
+    "/dashboard.html";
+}
 
-  const username =
-    document.getElementById("username").value;
+/* ===================== LOGIN ===================== */
+document
+  .getElementById("loginForm")
+  .addEventListener(
+    "submit",
+    async (e) => {
 
-  const password =
-    document.getElementById("password").value;
+      e.preventDefault();
 
-  const res = await fetch("/login", {
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({
-      username,
-      password
-    })
-  });
+      const erro =
+        document.getElementById("erro");
 
-  const data = await res.json();
+      const btn =
+        document.getElementById("btnLogin");
 
-  if(data.success){
+      erro.innerText = "";
 
-    window.location.href =
-      "/dashboard.html";
+      btn.innerText = "Entrando...";
+      btn.classList.add("loading");
 
-  }else{
+      try {
 
-    document.getElementById("erro")
-      .innerText = "Login inválido";
+        const username =
+          document.getElementById("username").value;
 
-  }
+        const password =
+          document.getElementById("password").value;
 
-});
+        const res = await fetch(
+          "/login",
+          {
+            method:"POST",
+            credentials:"include",
+            headers:{
+              "Content-Type":"application/json"
+            },
+            body: JSON.stringify({
+              username,
+              password
+            })
+          }
+        );
+
+        const data =
+          await res.json();
+
+        if(data.success){
+
+          localStorage.setItem(
+            "user",
+            JSON.stringify(data.user)
+          );
+
+          window.location.href =
+            "/dashboard.html";
+
+        } else {
+
+          erro.innerText =
+            "Usuário ou senha inválidos";
+        }
+
+      } catch (err) {
+
+        console.error(err);
+
+        erro.innerText =
+          "Erro ao conectar com servidor";
+
+      }
+
+      btn.innerText = "Entrar";
+      btn.classList.remove("loading");
+
+    }
+  );
 
 </script>
 
 </body>
 </html>
+```

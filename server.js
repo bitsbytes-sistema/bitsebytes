@@ -12,7 +12,9 @@ const PORT = process.env.PORT || 3000;
 
 const LIMITE_CLIENTE = 3;
 
-/* ===================== MIDDLEWARE ===================== */
+/* ===================== */
+/* MIDDLEWARE */
+/* ===================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -33,26 +35,29 @@ app.use(
 
 app.use(express.static(path.join(__dirname, "public")));
 
-/* ===================== MONGO ===================== */
+/* ===================== */
+/* MONGO */
+/* ===================== */
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("✔ Mongo conectado"))
   .catch(err => console.log("❌ ERRO MONGO:", err));
 
-/* ===================== MODELS ===================== */
-const Company = mongoose.model("Company", {
+/* ===================== */
+/* SCHEMAS */
+/* ===================== */
+const companySchema = new mongoose.Schema({
   name: String,
   plan: String
 });
 
-const User = mongoose.model("User", {
+const userSchema = new mongoose.Schema({
   username: String,
   password: String,
   role: String,
   companyId: String
 });
 
-const Ticket = mongoose.model(
-  "Ticket",
+const ticketSchema = new mongoose.Schema(
   {
     companyId: String,
     cliente: String,
@@ -60,26 +65,66 @@ const Ticket = mongoose.model(
     cpfcnpj: String,
     equipamento: String,
     problema: String,
-    status: { type: String, default: "aberto" }
+    status: {
+      type: String,
+      default: "aberto"
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
-/* ===================== AUTH ===================== */
+/* ===================== */
+/* MODELS */
+/* ===================== */
+const Company =
+  mongoose.models.Company ||
+  mongoose.model("Company", companySchema);
+
+const User =
+  mongoose.models.User ||
+  mongoose.model("User", userSchema);
+
+const Ticket =
+  mongoose.models.Ticket ||
+  mongoose.model("Ticket", ticketSchema);
+
+/* ===================== */
+/* AUTH */
+/* ===================== */
 function auth(req, res, next) {
+
   if (!req.session.user) {
-    return res.status(401).json({ error: "not_logged" });
+    return res.status(401).json({
+      error: "not_logged"
+    });
   }
+
   next();
 }
 
-/* ===================== LOGIN ===================== */
+/* ===================== */
+/* LOGIN */
+/* ===================== */
 app.post("/login", async (req, res) => {
-  try {
-    const user = await User.findOne({ username: req.body.username });
 
-    if (!user || user.password !== req.body.password) {
-      return res.json({ success: false });
+  try {
+
+    const user = await User.findOne({
+      username: req.body.username
+    });
+
+    if (!user) {
+      return res.json({
+        success: false
+      });
+    }
+
+    if (user.password !== req.body.password) {
+      return res.json({
+        success: false
+      });
     }
 
     req.session.user = {
@@ -89,21 +134,48 @@ app.post("/login", async (req, res) => {
       companyId: user.companyId
     };
 
-    res.json({ success: true, user });
+    return res.json({
+      success: true,
+      user
+    });
 
   } catch (err) {
+
     console.log("❌ LOGIN ERROR:", err);
-    res.status(500).json({ success: false });
+
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 
-/* ===================== LISTAR CHAMADOS ===================== */
+/* ===================== */
+/* LOGOUT */
+/* ===================== */
+app.get("/logout", (req, res) => {
+
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
+
+});
+
+/* ===================== */
+/* LISTAR CHAMADOS */
+/* ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
+
   try {
-    const data = await Ticket.find({}).sort({ createdAt: -1 });
-    res.json(data);
+
+    const data = await Ticket
+      .find({})
+      .sort({ createdAt: -1 });
+
+    return res.json(data);
 
   } catch (err) {
+
     console.log("❌ ERRO /api/tickets:", err);
 
     return res.status(500).json({
@@ -114,28 +186,39 @@ app.get("/api/tickets", auth, async (req, res) => {
   }
 });
 
-/* ===================== ABRIR CHAMADO ===================== */
+/* ===================== */
+/* ABRIR CHAMADO */
+/* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
+
   try {
 
-    const company = await Company.findOne({ plan: "enterprise" });
+    const company = await Company.findOne({
+      plan: "enterprise"
+    });
 
     if (!company) {
+
       return res.status(400).json({
         ok: false,
         error: "Empresa não encontrada"
       });
     }
 
-    const doc = String(req.body.cpfcnpj || "").replace(/\D/g, "");
+    const doc = String(
+      req.body.cpfcnpj || ""
+    ).replace(/\D/g, "");
 
     const count = await Ticket.countDocuments({
       companyId: company._id,
       cpfcnpj: doc,
-      status: { $ne: "finalizado" }
+      status: {
+        $ne: "finalizado"
+      }
     });
 
     if (count >= LIMITE_CLIENTE) {
+
       return res.status(403).json({
         ok: false,
         error: "Limite de chamados atingido"
@@ -152,9 +235,12 @@ app.post("/abrir-chamado", async (req, res) => {
       status: "aberto"
     });
 
-    res.json({ ok: true });
+    return res.json({
+      ok: true
+    });
 
   } catch (err) {
+
     console.log("❌ ERRO /abrir-chamado:", err);
 
     return res.status(500).json({
@@ -165,21 +251,36 @@ app.post("/abrir-chamado", async (req, res) => {
   }
 });
 
-/* ===================== UPDATE ===================== */
+/* ===================== */
+/* UPDATE STATUS */
+/* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
+
   try {
 
     const t = await Ticket.findByIdAndUpdate(
       req.params.id,
-      { ...req.body },
-      { new: true }
+      {
+        ...req.body
+      },
+      {
+        new: true
+      }
     );
 
-    if (!t) return res.status(404).json({ error: true });
+    if (!t) {
 
-    res.json({ ok: true });
+      return res.status(404).json({
+        error: true
+      });
+    }
+
+    return res.json({
+      ok: true
+    });
 
   } catch (err) {
+
     console.log("❌ UPDATE ERROR:", err);
 
     return res.status(500).json({
@@ -189,14 +290,23 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
   }
 });
 
-/* ===================== DELETE ===================== */
+/* ===================== */
+/* DELETE */
+/* ===================== */
 app.delete("/api/tickets/:id", auth, async (req, res) => {
+
   try {
 
-    await Ticket.findByIdAndDelete(req.params.id);
-    res.json({ ok: true });
+    await Ticket.findByIdAndDelete(
+      req.params.id
+    );
+
+    return res.json({
+      ok: true
+    });
 
   } catch (err) {
+
     console.log("❌ DELETE ERROR:", err);
 
     return res.status(500).json({
@@ -206,7 +316,13 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
   }
 });
 
-/* ===================== START ===================== */
+/* ===================== */
+/* START */
+/* ===================== */
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("🚀 Rodando na porta " + PORT);
+
+  console.log(
+    "🚀 Rodando na porta " + PORT
+  );
+
 });

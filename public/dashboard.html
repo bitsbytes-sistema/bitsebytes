@@ -5,11 +5,7 @@
 <title>Dashboard</title>
 
 <style>
-body { 
-  font-family: Arial; 
-  margin:0; 
-  background:#f2f2f2; 
-}
+body { font-family: Arial; margin:0; background:#f2f2f2; }
 
 .header {
   background:#2c2c44;
@@ -19,9 +15,7 @@ body {
   justify-content:space-between;
 }
 
-.container { 
-  padding:20px; 
-}
+.container { padding:20px; }
 
 .card {
   background:white;
@@ -31,12 +25,7 @@ body {
   box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-input { 
-  padding:10px; 
-  margin:5px; 
-  border-radius:5px;
-  border:1px solid #ccc;
-}
+input { padding:10px; margin:5px; border-radius:5px; border:1px solid #ccc; }
 
 button {
   padding:10px;
@@ -47,14 +36,9 @@ button {
   cursor:pointer;
 }
 
-button:hover{
-  background:#3d9140;
-}
+button:hover{ background:#3d9140; }
 
-a{
-  color:white;
-  text-decoration:none;
-}
+a{ color:white; text-decoration:none; }
 </style>
 </head>
 
@@ -99,6 +83,12 @@ if (!user){
   window.location.href = "/login.html";
 }
 
+/* 🔥 FIX: função que faltava */
+function buscarCliente(){
+  // ainda não implementado
+}
+
+/* logout */
 function logout(){
   localStorage.removeItem("user");
   window.location.href = "/login.html";
@@ -109,59 +99,65 @@ let chamados = [];
 /* ===================== LOAD ===================== */
 async function load(){
 
-  const res = await fetch("/api/tickets");
-  const data = await res.json();
+  try {
+    const res = await fetch("/api/tickets");
 
-  if (!res.ok) {
-    console.error(data);
-    alert("Erro ao carregar chamados");
-    return;
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error("ERRO BACKEND:", data);
+      alert(data.error || "Erro ao carregar chamados");
+      return;
+    }
+
+    if (!Array.isArray(data)) {
+      console.error("Resposta inválida:", data);
+      return;
+    }
+
+    chamados = data;
+
+    lista.innerHTML = "";
+
+    chamados.forEach(c => {
+
+      const dataAbertura = c.createdAt
+        ? new Date(c.createdAt).toLocaleString("pt-BR", {
+            timeZone: "America/Cuiaba",
+            hour12: false
+          })
+        : "Sem data";
+
+      lista.innerHTML += `
+        <div class="card">
+
+          <b>${c.cliente}</b><br>
+
+          📱 ${c.telefone}<br>
+          💻 ${c.equipamento}<br>
+          🛠 ${c.problema}<br>
+
+          📅 Abertura: ${dataAbertura}<br><br>
+
+          📌 <b style="color:${
+            c.status==="aberto"?"red":
+            c.status==="andamento"?"orange":
+            "green"
+          }">${c.status}</b><br><br>
+
+          <button onclick="status('${c._id}')">Status</button>
+          <button onclick="del('${c._id}')">Excluir</button>
+
+        </div>
+      `;
+    });
+
+    loadStats();
+
+  } catch (err) {
+    console.error("ERRO FETCH:", err);
+    alert("Erro de conexão com servidor");
   }
-
-  if (!Array.isArray(data)) {
-    console.error("Resposta inválida:", data);
-    return;
-  }
-
-  chamados = data;
-
-  lista.innerHTML = "";
-
-  chamados.forEach(c => {
-
-    // 🔥 DATA DE ABERTURA FORMATADA
-    const dataAbertura = c.createdAt
-      ? new Date(c.createdAt).toLocaleString("pt-BR", {
-          timeZone: "America/Cuiaba",
-          hour12: false
-        })
-      : "Sem data";
-
-    lista.innerHTML += `
-      <div class="card">
-
-        <b>${c.cliente}</b><br>
-
-        📱 ${c.telefone}<br>
-        💻 ${c.equipamento}<br>
-        🛠 ${c.problema}<br>
-
-        📅 Abertura: ${dataAbertura}<br><br>
-
-        📌 <b style="color:${
-          c.status==="aberto"?"red":
-          c.status==="andamento"?"orange":
-          "green"
-        }">${c.status}</b><br><br>
-
-        <button onclick="status('${c._id}')">Status</button>
-        <button onclick="del('${c._id}')">Excluir</button>
-
-      </div>
-    `;
-  });
-
-  loadStats();
 }
 
 /* ===================== STATUS ===================== */
@@ -171,11 +167,8 @@ async function status(id){
 
   let novo = "aberto";
 
-  if (t.status === "aberto") {
-    novo = "andamento";
-  } else if (t.status === "andamento") {
-    novo = "finalizado";
-  }
+  if (t.status === "aberto") novo = "andamento";
+  else if (t.status === "andamento") novo = "finalizado";
 
   await fetch("/api/tickets/" + id, {
     method: "PUT",
@@ -193,11 +186,11 @@ async function criar(){
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
-      cliente: cliente.value,
-      telefone: telefone.value,
-      cpfcnpj: cpfcnpj.value,
-      equipamento: equipamento.value,
-      problema: problema.value
+      cliente: document.getElementById("cliente").value,
+      telefone: document.getElementById("telefone").value,
+      cpfcnpj: document.getElementById("cpfcnpj").value,
+      equipamento: document.getElementById("equipamento").value,
+      problema: document.getElementById("problema").value
     })
   });
 

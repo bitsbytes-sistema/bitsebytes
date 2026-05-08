@@ -60,7 +60,6 @@ const User = mongoose.model("User", {
   companyId: String
 });
 
-/* 🔥 CORREÇÃO PRINCIPAL AQUI */
 const Ticket = mongoose.model(
   "Ticket",
   {
@@ -72,7 +71,7 @@ const Ticket = mongoose.model(
     problema: String,
     status: { type: String, default: "aberto" }
   },
-  { timestamps: true } // 👈 cria createdAt e updatedAt automático
+  { timestamps: true }
 );
 
 /* ===================== */
@@ -86,16 +85,6 @@ function auth(req, res, next) {
 }
 
 /* ===================== */
-/* ADMIN ONLY */
-/* ===================== */
-function adminOnly(req, res, next) {
-  if (!req.session.user || req.session.user.role !== "admin") {
-    return res.status(403).json({ error: "forbidden" });
-  }
-  next();
-}
-
-/* ===================== */
 /* LOGIN */
 /* ===================== */
 app.post("/login", async (req, res) => {
@@ -104,9 +93,7 @@ app.post("/login", async (req, res) => {
     username: req.body.username
   });
 
-  if (!user) {
-    return res.json({ success: false });
-  }
+  if (!user) return res.json({ success: false });
 
   if (user.password !== req.body.password) {
     return res.json({ success: false });
@@ -119,10 +106,7 @@ app.post("/login", async (req, res) => {
     companyId: user.companyId
   };
 
-  res.json({
-    success: true,
-    user
-  });
+  res.json({ success: true, user });
 });
 
 /* ===================== */
@@ -142,6 +126,7 @@ app.get("/api/tickets", auth, async (req, res) => {
     const data = await Ticket.find().sort({ createdAt: -1 });
     return res.json(data);
   } catch (err) {
+    console.log("ERRO /api/tickets:", err);
     return res.status(500).json({ error: true });
   }
 });
@@ -150,8 +135,13 @@ app.get("/api/tickets", auth, async (req, res) => {
 /* CRIAR CHAMADO (ADMIN) */
 /* ===================== */
 app.post("/api/tickets", auth, async (req, res) => {
-  const t = await Ticket.create(req.body);
-  res.json(t);
+  try {
+    const t = await Ticket.create(req.body);
+    res.json(t);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true });
+  }
 });
 
 /* ===================== */
@@ -159,13 +149,17 @@ app.post("/api/tickets", auth, async (req, res) => {
 /* ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
+
     const company = await Company.findOne({ plan: "enterprise" });
 
     if (!company) {
-      return res.status(400).json({ ok: false, error: "Empresa não encontrada" });
+      return res.status(400).json({
+        ok: false,
+        error: "Empresa não encontrada (crie uma company com plan enterprise)"
+      });
     }
 
-    const doc = String(req.body.cpfcnpj).replace(/\D/g, "");
+    const doc = String(req.body.cpfcnpj || "").replace(/\D/g, "");
 
     const chamadosAbertos = await Ticket.countDocuments({
       companyId: company._id,
@@ -182,19 +176,19 @@ app.post("/abrir-chamado", async (req, res) => {
 
     await Ticket.create({
       companyId: company._id,
-      cliente: req.body.cliente,
-      telefone: req.body.telefone,
+      cliente: req.body.cliente || "",
+      telefone: req.body.telefone || "",
       cpfcnpj: doc,
-      equipamento: req.body.equipamento,
-      problema: req.body.problema,
+      equipamento: req.body.equipamento || "",
+      problema: req.body.problema || "",
       status: "aberto"
     });
 
     return res.json({ ok: true });
 
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ ok: false });
+    console.log("ERRO /abrir-chamado:", err);
+    return res.status(500).json({ ok: false, error: "Erro interno" });
   }
 });
 
@@ -203,35 +197,28 @@ app.post("/abrir-chamado", async (req, res) => {
 /* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
 
-  const t = await Ticket.findByIdAndUpdate(
-    req.params.id,
-    { ...req.body, updatedAt: new Date() },
-    { new: true }
-  );
+  try {
+    const t = await Ticket.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, updatedAt: new Date() },
+      { new: true }
+    );
 
-  if (!t) return res.status(404).json({ error: true });
+    if (!t) return res.status(404).json({ error: true });
 
-  const telefone = String(t.telefone || "").replace(/\D/g, "");
+    const telefone = String(t.telefone || "").replace(/\D/g, "");
 
-  if (!telefone) {
-    return res.json({ ok: true, whatsapp: null });
-  }
+    if (!telefone) {
+      return res.json({ ok: true });
+    }
 
-  let tipoDoc = "Documento";
-  const doc = String(t.cpfcnpj || "").replace(/\D/g, "");
+    let tipoDoc = "Documento";
+    const doc = String(t.cpfcnpj || "").replace(/\D/g, "");
 
-  if (doc.length === 11) tipoDoc = "CPF";
-  if (doc.length === 14) tipoDoc = "CNPJ";
+    if (doc.length === 11) tipoDoc = "CPF";
+    if (doc.length === 14) tipoDoc = "CNPJ";
 
-  let msgFinal = "";
-
-  if (t.status === "finalizado") {
-    msgFinal = `Seu equipamento já está pronto para retirada!`;
-  } else {
-    msgFinal = `Seu atendimento está em andamento.`;
-  }
-
-  const msg = `
+    const msg = `
 Bits & Bytes Assistência Técnica
 
 Status: ${String(t.status).toUpperCase()}
@@ -244,16 +231,16 @@ Atualizado em: ${new Date().toLocaleString("pt-BR", {
   timeZone: "America/Cuiaba",
   hour12: false
 })}
+    `.trim();
 
-${msgFinal}
-  `.trim();
+    const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
 
-  const whatsapp = `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
+    return res.json({ ok: true, whatsapp });
 
-  return res.json({
-    ok: true,
-    whatsapp
-  });
+  } catch (err) {
+    console.log("ERRO UPDATE:", err);
+    return res.status(500).json({ error: true });
+  }
 });
 
 /* ===================== */
@@ -263,7 +250,8 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
   try {
     await Ticket.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
-  } catch {
+  } catch (err) {
+    console.log(err);
     res.status(500).json({ ok: false });
   }
 });

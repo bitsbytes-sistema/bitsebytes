@@ -295,12 +295,12 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
 
       if (t.status === "finalizado") {
 
-        msgFinal =
-          "Seu equipamento já está pronto para retirada!";
+        msgFinal = "Seu equipamento já está pronto para retirada ou entrega. Entraremos em contato para confirmar.";
 
       } else {
 
-        msgFinal = "Seu equipamento já está pronto para retirada ou entrega. Entraremos em contato para confirmar.";
+        msgFinal =
+          "Seu atendimento está em andamento.";
 
       }
 

@@ -252,10 +252,6 @@ app.post("/abrir-chamado", async (req, res) => {
 });
 
 /* ===================== */
-/* UPDATE STATUS */
-/* ===================== */
-```js
-/* ===================== */
 /* UPDATE + WHATSAPP */
 /* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {

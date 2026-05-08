@@ -300,8 +300,7 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
 
       } else {
 
-        msgFinal =
-          "Seu atendimento está em andamento.";
+        msgFinal = "Seu equipamento já está pronto para retirada ou entrega. Entraremos em contato para confirmar.";
 
       }
 

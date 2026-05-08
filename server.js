@@ -116,12 +116,7 @@ app.post("/login", async (req, res) => {
     return res.json({ success:false });
   }
 
-  const ok = await bcrypt.compare(
-    req.body.password,
-    user.password
-  );
-
-  if (!ok) {
+  if (user.password !== req.body.password) {
     return res.json({ success:false });
   }
 

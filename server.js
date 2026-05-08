@@ -12,9 +12,7 @@ const PORT = process.env.PORT || 3000;
 
 const LIMITE_CLIENTE = 3;
 
-/* ===================== */
-/* MIDDLEWARE */
-/* ===================== */
+/* ===================== MIDDLEWARE ===================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -35,16 +33,12 @@ app.use(
 
 app.use(express.static(path.join(__dirname, "public")));
 
-/* ===================== */
-/* MONGO */
-/* ===================== */
+/* ===================== MONGO ===================== */
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("✔ Mongo conectado"))
-  .catch(err => console.log("❌ ERRO MONGO:", err.message));
+  .catch(err => console.log("❌ ERRO MONGO:", err));
 
-/* ===================== */
-/* MODELS */
-/* ===================== */
+/* ===================== MODELS ===================== */
 const Company = mongoose.model("Company", {
   name: String,
   plan: String
@@ -71,9 +65,7 @@ const Ticket = mongoose.model(
   { timestamps: true }
 );
 
-/* ===================== */
-/* AUTH (mantido para login futuro) */
-/* ===================== */
+/* ===================== AUTH ===================== */
 function auth(req, res, next) {
   if (!req.session.user) {
     return res.status(401).json({ error: "not_logged" });
@@ -81,9 +73,7 @@ function auth(req, res, next) {
   next();
 }
 
-/* ===================== */
-/* LOGIN */
-/* ===================== */
+/* ===================== LOGIN ===================== */
 app.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ username: req.body.username });
@@ -102,27 +92,29 @@ app.post("/login", async (req, res) => {
     res.json({ success: true, user });
 
   } catch (err) {
-    console.log(err);
+    console.log("❌ LOGIN ERROR:", err);
     res.status(500).json({ success: false });
   }
 });
 
-/* ===================== */
-/* LISTAR CHAMADOS (TEMP SEM AUTH PRA TESTE) */
-/* ===================== */
-app.get("/api/tickets", async (req, res) => {
+/* ===================== LISTAR CHAMADOS ===================== */
+app.get("/api/tickets", auth, async (req, res) => {
   try {
     const data = await Ticket.find({}).sort({ createdAt: -1 });
     res.json(data);
+
   } catch (err) {
-    console.log("❌ ERRO /api/tickets:", err.message);
-    res.status(500).json({ error: true });
+    console.log("❌ ERRO /api/tickets:", err);
+
+    return res.status(500).json({
+      error: true,
+      message: err.message,
+      stack: err.stack
+    });
   }
 });
 
-/* ===================== */
-/* ABRIR CHAMADO */
-/* ===================== */
+/* ===================== ABRIR CHAMADO ===================== */
 app.post("/abrir-chamado", async (req, res) => {
   try {
 
@@ -163,16 +155,20 @@ app.post("/abrir-chamado", async (req, res) => {
     res.json({ ok: true });
 
   } catch (err) {
-    console.log("❌ ERRO /abrir-chamado:", err.message);
-    res.status(500).json({ ok: false });
+    console.log("❌ ERRO /abrir-chamado:", err);
+
+    return res.status(500).json({
+      ok: false,
+      message: err.message,
+      stack: err.stack
+    });
   }
 });
 
-/* ===================== */
-/* UPDATE */
-/* ===================== */
+/* ===================== UPDATE ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
   try {
+
     const t = await Ticket.findByIdAndUpdate(
       req.params.id,
       { ...req.body },
@@ -184,27 +180,33 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
     res.json({ ok: true });
 
   } catch (err) {
-    console.log("❌ ERRO UPDATE:", err.message);
-    res.status(500).json({ error: true });
+    console.log("❌ UPDATE ERROR:", err);
+
+    return res.status(500).json({
+      error: true,
+      message: err.message
+    });
   }
 });
 
-/* ===================== */
-/* DELETE */
-/* ===================== */
+/* ===================== DELETE ===================== */
 app.delete("/api/tickets/:id", auth, async (req, res) => {
   try {
+
     await Ticket.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
+
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ ok: false });
+    console.log("❌ DELETE ERROR:", err);
+
+    return res.status(500).json({
+      ok: false,
+      message: err.message
+    });
   }
 });
 
-/* ===================== */
-/* START */
-/* ===================== */
+/* ===================== START ===================== */
 app.listen(PORT, "0.0.0.0", () => {
   console.log("🚀 Rodando na porta " + PORT);
 });

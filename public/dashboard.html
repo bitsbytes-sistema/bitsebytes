@@ -77,18 +77,23 @@ a{ color:white; text-decoration:none; }
 
 <script>
 
+/* ===================== FIX DOM ===================== */
+const stats = document.getElementById("stats");
+const lista = document.getElementById("lista");
+
+/* ===================== LOGIN CHECK ===================== */
 const user = JSON.parse(localStorage.getItem("user"));
 
 if (!user){
   window.location.href = "/login.html";
 }
 
-/* 🔥 FIX: função que faltava */
+/* ===================== BUSCAR CLIENTE ===================== */
 function buscarCliente(){
-  // ainda não implementado
+  // opcional futuramente
 }
 
-/* logout */
+/* ===================== LOGOUT ===================== */
 function logout(){
   localStorage.removeItem("user");
   window.location.href = "/login.html";
@@ -100,7 +105,10 @@ let chamados = [];
 async function load(){
 
   try {
-    const res = await fetch("/api/tickets");
+
+    const res = await fetch("/api/tickets", {
+      credentials: "include"
+    });
 
     const data = await res.json();
 
@@ -173,6 +181,7 @@ async function status(id){
   await fetch("/api/tickets/" + id, {
     method: "PUT",
     headers: {"Content-Type": "application/json"},
+    credentials: "include",
     body: JSON.stringify({ status: novo })
   });
 
@@ -208,7 +217,8 @@ async function criar(){
 async function del(id){
 
   await fetch("/api/tickets/" + id, {
-    method: "DELETE"
+    method: "DELETE",
+    credentials: "include"
   });
 
   load();
@@ -228,6 +238,7 @@ function loadStats(){
   `;
 }
 
+/* ===================== INIT ===================== */
 load();
 
 </script>

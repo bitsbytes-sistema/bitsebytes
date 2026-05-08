@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 const express = require("express");
@@ -106,16 +107,28 @@ function adminOnly(req, res, next) {
 /* LOGIN */
 /* ===================== */
 app.post("/login", async (req, res) => {
-  const user = await User.findOne({ username: req.body.username });
 
-  if (!user) return res.json({ success: false });
+  const user = await User.findOne({
+    username: req.body.username
+  });
 
-  const ok = await bcrypt.compare(req.body.password, user.password);
+  if (!user) {
+    return res.json({ success:false });
+  }
 
-  if (!ok) return res.json({ success: false });
+  const ok = await bcrypt.compare(
+    req.body.password,
+    user.password
+  );
 
-  req.session.user = user;
-  res.json({ success: true });
+  if (!ok) {
+    return res.json({ success:false });
+  }
+
+  res.json({
+    success:true,
+    user
+  });
 });
 
 /* ===================== */

@@ -7,7 +7,6 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const path = require("path");
 
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -104,7 +103,7 @@ function adminOnly(req, res, next) {
 }
 
 /* ===================== */
-/* LOGIN */
+/* LOGIN (CORRIGIDO) */
 /* ===================== */
 app.post("/login", async (req, res) => {
 
@@ -113,15 +112,23 @@ app.post("/login", async (req, res) => {
   });
 
   if (!user) {
-    return res.json({ success:false });
+    return res.json({ success: false });
   }
 
   if (user.password !== req.body.password) {
-    return res.json({ success:false });
+    return res.json({ success: false });
   }
 
+  // 🔥 CORREÇÃO PRINCIPAL (SESSION)
+  req.session.user = {
+    id: user._id,
+    username: user.username,
+    role: user.role,
+    companyId: user.companyId
+  };
+
   res.json({
-    success:true,
+    success: true,
     user
   });
 });
@@ -139,8 +146,12 @@ app.get("/logout", (req, res) => {
 /* LISTAR CHAMADOS */
 /* ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
-  const data = await Ticket.find().sort({ createdAt: -1 });
-  res.json(data);
+  try {
+    const data = await Ticket.find().sort({ createdAt: -1 });
+    return res.json(data);
+  } catch (err) {
+    return res.status(500).json({ error: true });
+  }
 });
 
 /* ===================== */
@@ -158,6 +169,10 @@ app.post("/abrir-chamado", async (req, res) => {
   try {
     const company = await Company.findOne({ plan: "enterprise" });
 
+    if (!company) {
+      return res.status(400).json({ ok: false, error: "Empresa não encontrada" });
+    }
+
     const doc = String(req.body.cpfcnpj).replace(/\D/g, "");
 
     const chamadosAbertos = await Ticket.countDocuments({
@@ -169,7 +184,7 @@ app.post("/abrir-chamado", async (req, res) => {
     if (chamadosAbertos >= LIMITE_CLIENTE) {
       return res.status(403).json({
         ok: false,
-        error: "Você já possui 3 chamados em andamento. Aguarde finalizar um."
+        error: "Você já possui 3 chamados em andamento."
       });
     }
 
@@ -219,25 +234,23 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
 
   if (t.status === "finalizado") {
     msgFinal = `
-Seu equipamento ja esta pronto para retirada!
-Retire conosco ou entre em contato para mais informacoes.
+Seu equipamento já está pronto para retirada!
     `;
   } else {
     msgFinal = `
-Acompanhe seu atendimento em andamento com nossa equipe.
-Qualquer atualização será informada por aqui.
+Seu atendimento está em andamento.
     `;
   }
 
   const msg = `
 Bits & Bytes Assistência Técnica
 
-Status do seu atendimento: ${String(t.status).toUpperCase()}
+Status: ${String(t.status).toUpperCase()}
 
 Cliente: ${t.cliente}
 ${tipoDoc}: ${t.cpfcnpj || "Não informado"}
 Equipamento: ${t.equipamento}
-Problema informado: ${t.problema || "Não informado"}
+Problema: ${t.problema || "Não informado"}
 Atualizado em: ${getDataHora()}
 
 ${msgFinal}

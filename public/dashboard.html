@@ -113,64 +113,85 @@ function logout(){
   window.location.href = "/login.html";
 }
 
-let chamados=[];
+let chamados = [];
 
 /* ===================== LOAD ===================== */
 async function load(){
 
-  const res = await fetch("/api/tickets");
-  chamados = await res.json();
+  try {
 
-  lista.innerHTML="";
+    const res = await fetch("/api/tickets");
+    const data = await res.json();
 
-  chamados.forEach(c=>{
+    // 🔥 se der erro 401 ou outro
+    if (!res.ok) {
+      console.error("Erro API:", data);
+      alert("Sessão expirada ou não autorizado");
+      window.location.href = "/login.html";
+      return;
+    }
 
-    lista.innerHTML += `
-      <div class="card">
+    // 🔥 garante array
+    if (!Array.isArray(data)) {
+      console.error("Resposta inválida:", data);
+      return;
+    }
 
-        <b>${c.cliente}</b><br>
+    chamados = data;
 
-        📱 ${c.telefone}<br>
-        💻 ${c.equipamento}<br>
-        🛠 ${c.problema}<br>
+    lista.innerHTML = "";
 
-        📌 <b style="color:${
-          c.status==="aberto"?"red":
-          c.status==="andamento"?"orange":
-          "green"
-        }">${c.status}</b><br><br>
+    chamados.forEach(c => {
 
-        <button onclick="status('${c._id}')">Status</button>
+      lista.innerHTML += `
+        <div class="card">
 
-        <button onclick="del('${c._id}')">
-          Excluir
-        </button>
+          <b>${c.cliente}</b><br>
 
-      </div>
-    `;
-  });
+          📱 ${c.telefone}<br>
+          💻 ${c.equipamento}<br>
+          🛠 ${c.problema}<br>
 
-  loadStats();
+          📌 <b style="color:${
+            c.status==="aberto"?"red":
+            c.status==="andamento"?"orange":
+            "green"
+          }">${c.status}</b><br><br>
+
+          <button onclick="status('${c._id}')">Status</button>
+
+          <button onclick="del('${c._id}')">
+            Excluir
+          </button>
+
+        </div>
+      `;
+    });
+
+    loadStats();
+
+  } catch (err) {
+    console.error("Erro no load:", err);
+  }
 }
 
 /* ===================== STATUS ===================== */
 async function status(id){
 
-  const t = chamados.find(x=>x._id===id);
+  const t = chamados.find(x => x._id === id);
 
   let novo = "aberto";
 
-  if(t.status==="aberto"){
-    novo="andamento";
-  }
-  else if(t.status==="andamento"){
-    novo="finalizado";
+  if (t.status === "aberto") {
+    novo = "andamento";
+  } else if (t.status === "andamento") {
+    novo = "finalizado";
   }
 
-  await fetch("/api/tickets/"+id,{
-    method:"PUT",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({status:novo})
+  await fetch("/api/tickets/" + id, {
+    method: "PUT",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ status: novo })
   });
 
   load();
@@ -179,9 +200,9 @@ async function status(id){
 /* ===================== CREATE ===================== */
 async function criar(){
 
-  const res = await fetch("/abrir-chamado",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
+  const res = await fetch("/abrir-chamado", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
       cliente: cliente.value,
       telefone: telefone.value,
@@ -193,8 +214,8 @@ async function criar(){
 
   const data = await res.json();
 
-  if(!data.ok){
-    alert("Erro ao criar");
+  if (!data.ok) {
+    alert(data.error || "Erro ao criar chamado");
     return;
   }
 
@@ -204,29 +225,30 @@ async function criar(){
 /* ===================== CLIENTE ===================== */
 async function buscarCliente(){
 
-  if(!cpfcnpj.value) return;
+  if (!cpfcnpj.value) return;
 
-  try{
+  try {
 
-    const res = await fetch("/api/clientes/"+cpfcnpj.value);
+    const res = await fetch("/api/clientes/" + cpfcnpj.value);
 
-    if(!res.ok) return;
+    if (!res.ok) return;
 
     const data = await res.json();
 
-    if(data){
+    if (data) {
       cliente.value = data.nome || "";
       telefone.value = data.telefone || "";
     }
 
-  }catch{}
+  } catch (err) {}
+
 }
 
 /* ===================== DELETE ===================== */
 async function del(id){
 
-  await fetch("/api/tickets/"+id,{
-    method:"DELETE"
+  await fetch("/api/tickets/" + id, {
+    method: "DELETE"
   });
 
   load();
@@ -235,17 +257,9 @@ async function del(id){
 /* ===================== STATS ===================== */
 function loadStats(){
 
-  const aberto = chamados.filter(
-    x=>x.status==="aberto"
-  ).length;
-
-  const andamento = chamados.filter(
-    x=>x.status==="andamento"
-  ).length;
-
-  const finalizado = chamados.filter(
-    x=>x.status==="finalizado"
-  ).length;
+  const aberto = chamados.filter(x => x.status === "aberto").length;
+  const andamento = chamados.filter(x => x.status === "andamento").length;
+  const finalizado = chamados.filter(x => x.status === "finalizado").length;
 
   stats.innerHTML = `
     🔴 Abertos: ${aberto} |

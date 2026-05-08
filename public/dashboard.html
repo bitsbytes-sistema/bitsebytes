@@ -167,19 +167,32 @@ async function status(id){
 
   const t = chamados.find(x => x._id === id);
 
-  if (!t) return alert("Chamado não encontrado");
+  if (!t) return;
 
   let novo = "aberto";
 
-  if (t.status === "aberto") novo = "andamento";
-  else if (t.status === "andamento") novo = "finalizado";
+  if (t.status === "aberto") {
+    novo = "andamento";
+  } else if (t.status === "andamento") {
+    novo = "finalizado";
+  }
 
-  await fetch("/api/tickets/" + id, {
+  const res = await fetch("/api/tickets/" + id, {
     method: "PUT",
-    headers: {"Content-Type": "application/json"},
+    headers: {
+      "Content-Type": "application/json"
+    },
     credentials: "include",
-    body: JSON.stringify({ status: novo })
+    body: JSON.stringify({
+      status: novo
+    })
   });
+
+  const data = await res.json();
+
+  if (data.whatsapp) {
+    window.open(data.whatsapp, "_blank");
+  }
 
   load();
 }

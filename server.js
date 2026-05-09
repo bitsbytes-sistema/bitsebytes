@@ -18,6 +18,12 @@ const LIMITE_CLIENTE = 3;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* 🔥 IMPORTANTE: necessário para proxy (produção) */
+app.set("trust proxy", 1);
+
+/* ===================== */
+/* SESSÃO (CORRIGIDA) */
+/* ===================== */
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "segredo",
@@ -28,7 +34,15 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24,
+
+      // 🔥 impede vazamento entre ambientes
+      domain:
+        process.env.NODE_ENV === "production"
+          ? ".seudominio.com"
+          : undefined,
     },
   })
 );
@@ -91,7 +105,7 @@ const Ticket =
   mongoose.model("Ticket", ticketSchema);
 
 /* ===================== */
-/* AUTH MIDDLEWARE */
+/* AUTH */
 /* ===================== */
 function auth(req, res, next) {
   if (!req.session.user) {
@@ -101,15 +115,12 @@ function auth(req, res, next) {
 }
 
 /* ===================== */
-/* ROTAS DE PÁGINA */
+/* PÁGINAS */
 /* ===================== */
-
-/* LOGIN (INDEX AGORA É LOGIN) */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-/* DASHBOARD */
 app.get("/dashboard", (req, res) => {
   if (!req.session.user) {
     return res.redirect("/");
@@ -119,7 +130,7 @@ app.get("/dashboard", (req, res) => {
 });
 
 /* ===================== */
-/* LOGIN */
+/* LOGIN (CORRIGIDO) */
 /* ===================== */
 app.post("/login", async (req, res) => {
   try {
@@ -127,24 +138,26 @@ app.post("/login", async (req, res) => {
       username: req.body.username,
     });
 
-    if (!user) {
+    if (!user || user.password !== req.body.password) {
       return res.json({ success: false });
     }
 
-    if (user.password !== req.body.password) {
-      return res.json({ success: false });
-    }
+    /* 🔥 destrói sessão antiga antes de criar nova */
+    req.session.regenerate((err) => {
+      if (err) {
+        return res.status(500).json({ success: false });
+      }
 
-    req.session.user = {
-      id: user._id,
-      username: user.username,
-      role: user.role,
-      companyId: user.companyId,
-    };
+      req.session.user = {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+        companyId: user.companyId,
+      };
 
-    return res.json({ success: true });
+      return res.json({ success: true });
+    });
   } catch (err) {
-    console.log("❌ LOGIN ERROR:", err);
     return res.status(500).json({
       success: false,
       message: err.message,

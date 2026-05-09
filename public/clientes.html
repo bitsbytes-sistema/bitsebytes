@@ -1,3 +1,4 @@
+```html id="r5k0pt"
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,7 +6,12 @@
 <title>Clientes</title>
 
 <style>
-body { font-family: Arial; background:#f2f2f2; margin:0; }
+
+body {
+  font-family: Arial;
+  background:#f2f2f2;
+  margin:0;
+}
 
 .header {
   background:#2c2c44;
@@ -13,51 +19,142 @@ body { font-family: Arial; background:#f2f2f2; margin:0; }
   padding:15px;
   display:flex;
   justify-content:space-between;
+  align-items:center;
 }
 
-.container { padding:20px; }
+.container {
+  padding:20px;
+}
 
 .card {
   background:white;
   padding:15px;
   margin-bottom:10px;
   border-radius:8px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
+
+a {
+  color:white;
+  text-decoration:none;
+}
+
+.info {
+  margin-top:5px;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  <div>Clientes</div>
-  <a href="/dashboard.html" style="color:white;">Voltar</a>
+
+  <div>
+    Clientes
+  </div>
+
+  <div>
+    <a href="/dashboard.html">Voltar</a>
+  </div>
+
 </div>
 
 <div class="container">
+
   <h2>Lista de Clientes</h2>
+
   <div id="lista"></div>
+
 </div>
 
 <script>
-async function load(){
-  const res = await fetch("/api/clientes/list");
-  const data = await res.json();
 
-  lista.innerHTML="";
+/* ===================== LOGIN CHECK ===================== */
+const user = JSON.parse(
+  localStorage.getItem("user")
+);
 
-  data.forEach(c=>{
-    lista.innerHTML += `
-      <div class="card">
-        <b>${c.nome}</b><br>
-        📱 ${c.telefone}<br>
-        📄 ${c.cpfcnpj}
-      </div>
-    `;
-  });
+if (!user) {
+  window.location.href = "/";
 }
 
+/* ===================== DOM ===================== */
+const lista = document.getElementById("lista");
+
+/* ===================== LOAD ===================== */
+async function load(){
+
+  try {
+
+    const res = await fetch(
+      "/api/clientes/list",
+      {
+        credentials: "include"
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+
+      console.error(data);
+
+      alert(
+        data.error ||
+        "Erro ao carregar clientes"
+      );
+
+      return;
+    }
+
+    lista.innerHTML = "";
+
+    if (!Array.isArray(data) || data.length === 0) {
+
+      lista.innerHTML = `
+        <div class="card">
+          Nenhum cliente encontrado.
+        </div>
+      `;
+
+      return;
+    }
+
+    data.forEach(c => {
+
+      lista.innerHTML += `
+        <div class="card">
+
+          <b>${c.nome || "Sem nome"}</b>
+
+          <div class="info">
+            📱 ${c.telefone || "Não informado"}
+          </div>
+
+          <div class="info">
+            📄 ${c.cpfcnpj || "Não informado"}
+          </div>
+
+        </div>
+      `;
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Erro de conexão com servidor"
+    );
+  }
+}
+
+/* ===================== INIT ===================== */
 load();
+
 </script>
 
 </body>
 </html>
+```

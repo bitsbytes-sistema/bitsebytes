@@ -38,18 +38,22 @@ if (!SESSION_SECRET) console.error("❌ SESSION_SECRET não definido");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* =========================
+   🌐 FRONTEND
+========================= */
+
+app.use(express.static(path.join(__dirname, "public")));
+
+/* =========================
+   🔥 CORS
+========================= */
+
 app.use(
   cors({
     origin: true,
     credentials: true,
   })
 );
-
-/* =========================
-   🌐 FRONTEND
-========================= */
-
-app.use(express.static(path.join(__dirname, "public")));
 
 /* =========================
    🔥 SESSION
@@ -83,15 +87,35 @@ mongoose
   .catch((err) => console.log("Erro Mongo:", err));
 
 /* =========================
-   🏠 ROTA PRINCIPAL
+   🏠 ROTAS FRONTEND (CORRIGE SEU 404)
 ========================= */
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+});
+
+app.get("/clientes", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "clientes.html"));
+});
+
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
+app.get("/painel", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "painel.html"));
+});
+
+app.get("/abrir-chamado", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "abrir chamado.html"));
+});
+
 /* =========================
-   🔐 LOGIN (CORRIGIDO JSON)
+   🔐 LOGIN (JSON CORRIGIDO)
 ========================= */
 
 app.post("/login", async (req, res) => {
@@ -133,10 +157,6 @@ app.post("/login", async (req, res) => {
     return res.json({
       success: true,
       message: "Login OK",
-      user: {
-        username: user.username,
-        role: user.role,
-      },
     });
   } catch (err) {
     console.error(err);
@@ -237,7 +257,7 @@ app.post("/logout", (req, res) => {
 });
 
 /* =========================
-   ❌ 404
+   ❌ 404 FINAL
 ========================= */
 
 app.use((req, res) => {

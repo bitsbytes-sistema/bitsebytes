@@ -19,6 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set("trust proxy", 1);
 
+/* arquivos estáticos */
 app.use(express.static(path.join(__dirname, "public")));
 
 /* ===================== */
@@ -82,18 +83,42 @@ const Ticket =
   mongoose.models.Ticket || mongoose.model("Ticket", ticketSchema);
 
 /* ===================== */
-/* LOGIN CORRIGIDO */
+/* ROTAS DE PÁGINA (ANTI-404) */
+/* ===================== */
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/dashboard", (req, res) => {
+  if (!req.session.user) {
+    return res.redirect("/");
+  }
+
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+});
+
+/* fallback opcional (evita erro dashboard.html) */
+app.get("/dashboard.html", (req, res) => {
+  if (!req.session.user) {
+    return res.redirect("/");
+  }
+
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+});
+
+/* ===================== */
+/* LOGIN (CORRIGIDO DEFINITIVO) */
 /* ===================== */
 app.post("/login", async (req, res) => {
   try {
     const username = req.body.username?.trim().toLowerCase();
     const password = req.body.password;
 
-    console.log("LOGIN RECEBIDO:", { username, password });
+    console.log("LOGIN RECEBIDO:", { username });
 
     const user = await User.findOne({ username });
 
-    console.log("USER FOUND:", user);
+    console.log("USER FOUND:", user ? "SIM" : "NÃO");
 
     if (!user) {
       return res.json({ success: false, msg: "Usuário não existe" });
@@ -142,8 +167,12 @@ function auth(req, res, next) {
 /* TICKETS */
 /* ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
-  const data = await Ticket.find({}).sort({ createdAt: -1 });
-  res.json(data);
+  try {
+    const data = await Ticket.find({}).sort({ createdAt: -1 });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: true, message: err.message });
+  }
 });
 
 /* ===================== */

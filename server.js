@@ -13,6 +13,12 @@ const Ticket = require("./models/Ticket");
 const app = express();
 
 /* =========================
+   🔥 PROXY FIX (RENDER)
+========================= */
+
+app.set("trust proxy", 1);
+
+/* =========================
    🔥 ENV SAFE
 ========================= */
 
@@ -56,7 +62,7 @@ app.use(
 );
 
 /* =========================
-   🔥 SESSION
+   🔥 SESSION (CORRIGIDA PRA PRODUÇÃO)
 ========================= */
 
 app.use(
@@ -71,8 +77,10 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
+
+      // 🔥 FIX PRINCIPAL DO SEU BUG
+      secure: isProd, // HTTPS no Render
+      sameSite: "lax",
     },
   })
 );
@@ -87,7 +95,7 @@ mongoose
   .catch((err) => console.log("Erro Mongo:", err));
 
 /* =========================
-   🏠 ROTAS FRONTEND (CORRIGE SEU 404)
+   🏠 FRONT ROUTES
 ========================= */
 
 app.get("/", (req, res) => {
@@ -115,7 +123,7 @@ app.get("/abrir-chamado", (req, res) => {
 });
 
 /* =========================
-   🔐 LOGIN (JSON CORRIGIDO)
+   🔐 LOGIN (ESTÁVEL)
 ========================= */
 
 app.post("/login", async (req, res) => {
@@ -147,6 +155,7 @@ app.post("/login", async (req, res) => {
       });
     }
 
+    // 🔥 CRIA SESSÃO
     req.session.user = {
       _id: user._id,
       username: user.username,
@@ -257,7 +266,7 @@ app.post("/logout", (req, res) => {
 });
 
 /* =========================
-   ❌ 404 FINAL
+   ❌ 404
 ========================= */
 
 app.use((req, res) => {

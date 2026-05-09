@@ -13,13 +13,12 @@ const Ticket = require("./models/Ticket");
 const app = express();
 
 /* =========================
-   🔥 PROXY FIX (RENDER)
+   🔥 FIX IMPORTANTE (RENDER PROXY)
 ========================= */
-
 app.set("trust proxy", 1);
 
 /* =========================
-   🔥 ENV SAFE
+   🔥 ENV
 ========================= */
 
 const isProd = process.env.NODE_ENV === "production";
@@ -31,7 +30,7 @@ const SESSION_SECRET =
   isProd ? process.env.SESSION_SECRET_PROD : process.env.SESSION_SECRET_TESTE;
 
 /* =========================
-   🔥 VALIDATION
+   🔥 CHECK
 ========================= */
 
 if (!MONGO_URL) console.error("❌ MONGO_URL não definido");
@@ -44,16 +43,6 @@ if (!SESSION_SECRET) console.error("❌ SESSION_SECRET não definido");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* =========================
-   🌐 FRONTEND
-========================= */
-
-app.use(express.static(path.join(__dirname, "public")));
-
-/* =========================
-   🔥 CORS
-========================= */
-
 app.use(
   cors({
     origin: true,
@@ -62,7 +51,13 @@ app.use(
 );
 
 /* =========================
-   🔥 SESSION (CORRIGIDA PRA PRODUÇÃO)
+   🌐 FRONTEND
+========================= */
+
+app.use(express.static(path.join(__dirname, "public")));
+
+/* =========================
+   🔥 SESSION FIX DEFINITIVO
 ========================= */
 
 app.use(
@@ -78,7 +73,7 @@ app.use(
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
 
-      // 🔥 FIX PRINCIPAL DO SEU BUG
+      // 🔥 ESSENCIAL PRA NÃO VOLTAR LOGIN
       secure: isProd, // HTTPS no Render
       sameSite: "lax",
     },
@@ -123,7 +118,7 @@ app.get("/abrir-chamado", (req, res) => {
 });
 
 /* =========================
-   🔐 LOGIN (ESTÁVEL)
+   🔐 LOGIN (CORRIGIDO E ESTÁVEL)
 ========================= */
 
 app.post("/login", async (req, res) => {
@@ -133,7 +128,7 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({ username });
 
     if (!user) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         message: "Usuário não encontrado",
       });
@@ -142,20 +137,20 @@ app.post("/login", async (req, res) => {
     const check = await bcrypt.compare(password, user.password);
 
     if (!check) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         message: "Senha inválida",
       });
     }
 
     if (!user.companyId) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         message: "Usuário sem empresa vinculada",
       });
     }
 
-    // 🔥 CRIA SESSÃO
+    // 🔥 CRIA SESSÃO REAL
     req.session.user = {
       _id: user._id,
       username: user.username,
@@ -169,7 +164,7 @@ app.post("/login", async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({
+    return res.json({
       success: false,
       message: "Erro no login",
     });
@@ -177,7 +172,7 @@ app.post("/login", async (req, res) => {
 });
 
 /* =========================
-   🔒 AUTH
+   🔒 AUTH MIDDLEWARE
 ========================= */
 
 function auth(req, res, next) {
@@ -277,7 +272,7 @@ app.use((req, res) => {
 });
 
 /* =========================
-   🚀 START
+   🚀 START SERVER
 ========================= */
 
 app.listen(process.env.PORT || 3000, () => {

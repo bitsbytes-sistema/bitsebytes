@@ -122,60 +122,53 @@ button:hover{
 
 <script>
 
-/* ===================== LOGIN ===================== */
-document
-  .getElementById("loginForm")
-  .addEventListener("submit", async (e) => {
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    e.preventDefault();
+  const erro = document.getElementById("erro");
+  const btn = document.getElementById("btnLogin");
 
-    const erro = document.getElementById("erro");
-    const btn = document.getElementById("btnLogin");
+  erro.innerText = "";
+  btn.innerText = "Entrando...";
+  btn.disabled = true;
 
-    erro.innerText = "";
-    btn.innerText = "Entrando...";
-    btn.classList.add("loading");
+  try {
 
-    try {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
 
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
+    const res = await fetch("/login", {
+      method: "POST",
+      credentials: "include", // 🔥 ESSENCIAL (você já tem, ok)
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username,
+        password
+      })
+    });
 
-      const res = await fetch("/login", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          password
-        })
-      });
+    const data = await res.json();
 
-      const data = await res.json();
+    if (data.success) {
 
-      if (data.success) {
+      // 🔥 IMPORTANTE: força reload limpo de sessão
+      window.location.href = "/dashboard";
 
-        // 🔥 SEM LOCALSTORAGE (isso era o bug do ambiente)
-        window.location.href = "/dashboard";
-
-      } else {
-
-        erro.innerText = "Usuário ou senha inválidos";
-      }
-
-    } catch (err) {
-
-      console.error(err);
-      erro.innerText = "Erro ao conectar com servidor";
-
+    } else {
+      erro.innerText = data.message || "Usuário ou senha inválidos";
     }
 
-    btn.innerText = "Entrar";
-    btn.classList.remove("loading");
+  } catch (err) {
+    console.error(err);
+    erro.innerText = "Erro ao conectar com servidor";
+  }
 
-  });
+  btn.innerText = "Entrar";
+  btn.disabled = false;
+
+});
 
 </script>
 

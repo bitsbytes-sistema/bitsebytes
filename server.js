@@ -13,23 +13,23 @@ const Ticket = require("./models/Ticket");
 const app = express();
 
 /* =========================
-   🔥 FIX IMPORTANTE (RENDER PROXY)
+   🔥 RENDER FIX (OBRIGATÓRIO)
 ========================= */
 app.set("trust proxy", 1);
 
 /* =========================
-   🔥 ENV
+   🔥 CONFIG SIMPLES (SEM ISPROD BUGADO)
 ========================= */
 
 const MONGO_URL = process.env.MONGO_URL;
 const SESSION_SECRET = process.env.SESSION_SECRET;
 
 /* =========================
-   🔥 CHECK
+   🔥 CHECK BÁSICO
 ========================= */
 
-if (!MONGO_URL) console.error("❌ MONGO_URL não definido");
-if (!SESSION_SECRET) console.error("❌ SESSION_SECRET não definido");
+if (!MONGO_URL) console.error("❌ MONGO_URL não definida");
+if (!SESSION_SECRET) console.error("❌ SESSION_SECRET não definida");
 
 /* =========================
    🔥 MIDDLEWARES
@@ -52,7 +52,7 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 
 /* =========================
-   🔥 SESSION FIX DEFINITIVO
+   🔥 SESSION (ESTÁVEL PRA PRODUÇÃO)
 ========================= */
 
 app.use(
@@ -62,14 +62,11 @@ app.use(
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: MONGO_URL,
-      ttl: 60 * 60 * 24,
     }),
     cookie: {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
-
-      // 🔥 ESSENCIAL PRA NÃO VOLTAR LOGIN
-      secure: isProd, // HTTPS no Render
+      secure: true,     // Render usa HTTPS
       sameSite: "lax",
     },
   })
@@ -81,11 +78,11 @@ app.use(
 
 mongoose
   .connect(MONGO_URL)
-  .then(() => console.log("Mongo conectado:", isProd ? "PROD" : "TESTE"))
+  .then(() => console.log("Mongo conectado"))
   .catch((err) => console.log("Erro Mongo:", err));
 
 /* =========================
-   🏠 FRONT ROUTES
+   🏠 ROTAS FRONTEND
 ========================= */
 
 app.get("/", (req, res) => {
@@ -113,7 +110,7 @@ app.get("/abrir-chamado", (req, res) => {
 });
 
 /* =========================
-   🔐 LOGIN (CORRIGIDO E ESTÁVEL)
+   🔐 LOGIN (CORRIGIDO)
 ========================= */
 
 app.post("/login", async (req, res) => {
@@ -123,29 +120,19 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({ username });
 
     if (!user) {
-      return res.json({
-        success: false,
-        message: "Usuário não encontrado",
-      });
+      return res.json({ success: false, message: "Usuário não encontrado" });
     }
 
     const check = await bcrypt.compare(password, user.password);
 
     if (!check) {
-      return res.json({
-        success: false,
-        message: "Senha inválida",
-      });
+      return res.json({ success: false, message: "Senha inválida" });
     }
 
     if (!user.companyId) {
-      return res.json({
-        success: false,
-        message: "Usuário sem empresa vinculada",
-      });
+      return res.json({ success: false, message: "Sem empresa vinculada" });
     }
 
-    // 🔥 CRIA SESSÃO REAL
     req.session.user = {
       _id: user._id,
       username: user.username,
@@ -167,15 +154,12 @@ app.post("/login", async (req, res) => {
 });
 
 /* =========================
-   🔒 AUTH MIDDLEWARE
+   🔒 AUTH
 ========================= */
 
 function auth(req, res, next) {
   if (!req.session.user) {
-    return res.status(401).json({
-      success: false,
-      message: "Não autorizado",
-    });
+    return res.status(401).json({ success: false, message: "Não autorizado" });
   }
   next();
 }
@@ -214,10 +198,7 @@ app.put("/tickets/:id", auth, async (req, res) => {
   );
 
   if (!ticket) {
-    return res.status(404).json({
-      success: false,
-      message: "Ticket não encontrado",
-    });
+    return res.status(404).json({ success: false, message: "Não encontrado" });
   }
 
   res.json(ticket);
@@ -230,16 +211,10 @@ app.delete("/tickets/:id", auth, async (req, res) => {
   });
 
   if (!deleted) {
-    return res.status(404).json({
-      success: false,
-      message: "Ticket não encontrado",
-    });
+    return res.status(404).json({ success: false, message: "Não encontrado" });
   }
 
-  res.json({
-    success: true,
-    message: "Deletado",
-  });
+  res.json({ success: true });
 });
 
 /* =========================
@@ -248,10 +223,7 @@ app.delete("/tickets/:id", auth, async (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
-    res.json({
-      success: true,
-      message: "Logout feito",
-    });
+    res.json({ success: true });
   });
 });
 
@@ -260,16 +232,13 @@ app.post("/logout", (req, res) => {
 ========================= */
 
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Rota não encontrada",
-  });
+  res.status(404).json({ success: false, message: "Rota não encontrada" });
 });
 
 /* =========================
-   🚀 START SERVER
+   🚀 START
 ========================= */
 
 app.listen(process.env.PORT || 3000, () => {
-  console.log("Servidor rodando na porta", process.env.PORT || 3000);
+  console.log("Servidor rodando");
 });

@@ -13,19 +13,19 @@ const Ticket = require("./models/Ticket");
 const app = express();
 
 /* =========================
-   🔥 RENDER FIX (OBRIGATÓRIO)
+   🔥 RENDER FIX
 ========================= */
 app.set("trust proxy", 1);
 
 /* =========================
-   🔥 CONFIG SIMPLES (SEM ISPROD BUGADO)
+   🔥 ENV
 ========================= */
 
 const MONGO_URL = process.env.MONGO_URL;
 const SESSION_SECRET = process.env.SESSION_SECRET;
 
 /* =========================
-   🔥 CHECK BÁSICO
+   🔥 CHECK
 ========================= */
 
 if (!MONGO_URL) console.error("❌ MONGO_URL não definida");
@@ -37,6 +37,10 @@ if (!SESSION_SECRET) console.error("❌ SESSION_SECRET não definida");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+/* =========================
+   🌐 CORS (FIX REAL PRODUÇÃO)
+========================= */
 
 app.use(
   cors({
@@ -52,7 +56,7 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 
 /* =========================
-   🔥 SESSION (ESTÁVEL PRA PRODUÇÃO)
+   🔥 SESSION (PRODUÇÃO ESTÁVEL)
 ========================= */
 
 app.use(
@@ -66,8 +70,10 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
-      secure: true,     // Render usa HTTPS
-      sameSite: "lax",
+
+      // 🔥 CONFIG FINAL QUE EVITA LOGIN VOLTAR
+      secure: true,
+      sameSite: "none",
     },
   })
 );
@@ -82,7 +88,7 @@ mongoose
   .catch((err) => console.log("Erro Mongo:", err));
 
 /* =========================
-   🏠 ROTAS FRONTEND
+   🏠 FRONT ROUTES
 ========================= */
 
 app.get("/", (req, res) => {
@@ -110,7 +116,7 @@ app.get("/abrir-chamado", (req, res) => {
 });
 
 /* =========================
-   🔐 LOGIN (CORRIGIDO)
+   🔐 LOGIN
 ========================= */
 
 app.post("/login", async (req, res) => {
@@ -159,7 +165,10 @@ app.post("/login", async (req, res) => {
 
 function auth(req, res, next) {
   if (!req.session.user) {
-    return res.status(401).json({ success: false, message: "Não autorizado" });
+    return res.status(401).json({
+      success: false,
+      message: "Não autorizado",
+    });
   }
   next();
 }
@@ -198,7 +207,10 @@ app.put("/tickets/:id", auth, async (req, res) => {
   );
 
   if (!ticket) {
-    return res.status(404).json({ success: false, message: "Não encontrado" });
+    return res.status(404).json({
+      success: false,
+      message: "Não encontrado",
+    });
   }
 
   res.json(ticket);
@@ -211,7 +223,10 @@ app.delete("/tickets/:id", auth, async (req, res) => {
   });
 
   if (!deleted) {
-    return res.status(404).json({ success: false, message: "Não encontrado" });
+    return res.status(404).json({
+      success: false,
+      message: "Não encontrado",
+    });
   }
 
   res.json({ success: true });
@@ -232,7 +247,10 @@ app.post("/logout", (req, res) => {
 ========================= */
 
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: "Rota não encontrada" });
+  res.status(404).json({
+    success: false,
+    message: "Rota não encontrada",
+  });
 });
 
 /* =========================

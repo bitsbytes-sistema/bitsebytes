@@ -13,7 +13,7 @@ const Ticket = require("./models/Ticket");
 const app = express();
 
 /* =========================
-   🔥 ENV SAFE (CORRIGIDO)
+   🔥 ENV SAFE
 ========================= */
 
 const isProd = process.env.NODE_ENV === "production";
@@ -25,16 +25,11 @@ const SESSION_SECRET =
   isProd ? process.env.SESSION_SECRET_PROD : process.env.SESSION_SECRET_TESTE;
 
 /* =========================
-   🔥 VALIDATION (EVITA DEPLOY QUEBRADO)
+   🔥 VALIDATION
 ========================= */
 
-if (!MONGO_URL) {
-  console.error("❌ MONGO_URL não definido");
-}
-
-if (!SESSION_SECRET) {
-  console.error("❌ SESSION_SECRET não definido");
-}
+if (!MONGO_URL) console.error("❌ MONGO_URL não definido");
+if (!SESSION_SECRET) console.error("❌ SESSION_SECRET não definido");
 
 /* =========================
    🔥 MIDDLEWARES
@@ -43,22 +38,18 @@ if (!SESSION_SECRET) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* =========================
-   🌐 FRONTEND
-========================= */
-
-app.use(express.static(path.join(__dirname, "public")));
-
-/* =========================
-   🔥 CORS
-========================= */
-
 app.use(
   cors({
     origin: true,
     credentials: true,
   })
 );
+
+/* =========================
+   🌐 FRONTEND
+========================= */
+
+app.use(express.static(path.join(__dirname, "public")));
 
 /* =========================
    🔥 SESSION
@@ -92,7 +83,7 @@ mongoose
   .catch((err) => console.log("Erro Mongo:", err));
 
 /* =========================
-   🏠 ROTA PRINCIPAL (CORREÇÃO DO SEU ERRO)
+   🏠 ROTA PRINCIPAL
 ========================= */
 
 app.get("/", (req, res) => {
@@ -100,7 +91,7 @@ app.get("/", (req, res) => {
 });
 
 /* =========================
-   🔐 LOGIN
+   🔐 LOGIN (CORRIGIDO JSON)
 ========================= */
 
 app.post("/login", async (req, res) => {
@@ -109,14 +100,27 @@ app.post("/login", async (req, res) => {
 
     const user = await User.findOne({ username });
 
-    if (!user) return res.status(400).send("Usuário não encontrado");
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Usuário não encontrado",
+      });
+    }
 
     const check = await bcrypt.compare(password, user.password);
 
-    if (!check) return res.status(400).send("Senha inválida");
+    if (!check) {
+      return res.status(400).json({
+        success: false,
+        message: "Senha inválida",
+      });
+    }
 
     if (!user.companyId) {
-      return res.status(400).send("Usuário sem empresa vinculada");
+      return res.status(400).json({
+        success: false,
+        message: "Usuário sem empresa vinculada",
+      });
     }
 
     req.session.user = {
@@ -126,10 +130,20 @@ app.post("/login", async (req, res) => {
       companyId: user.companyId,
     };
 
-    res.send("Login OK");
+    return res.json({
+      success: true,
+      message: "Login OK",
+      user: {
+        username: user.username,
+        role: user.role,
+      },
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Erro no login");
+    return res.status(500).json({
+      success: false,
+      message: "Erro no login",
+    });
   }
 });
 
@@ -139,7 +153,10 @@ app.post("/login", async (req, res) => {
 
 function auth(req, res, next) {
   if (!req.session.user) {
-    return res.status(401).send("Não autorizado");
+    return res.status(401).json({
+      success: false,
+      message: "Não autorizado",
+    });
   }
   next();
 }
@@ -177,7 +194,12 @@ app.put("/tickets/:id", auth, async (req, res) => {
     { new: true }
   );
 
-  if (!ticket) return res.status(404).send("Ticket não encontrado");
+  if (!ticket) {
+    return res.status(404).json({
+      success: false,
+      message: "Ticket não encontrado",
+    });
+  }
 
   res.json(ticket);
 });
@@ -188,9 +210,17 @@ app.delete("/tickets/:id", auth, async (req, res) => {
     companyId: req.session.user.companyId,
   });
 
-  if (!deleted) return res.status(404).send("Ticket não encontrado");
+  if (!deleted) {
+    return res.status(404).json({
+      success: false,
+      message: "Ticket não encontrado",
+    });
+  }
 
-  res.send("Deletado");
+  res.json({
+    success: true,
+    message: "Deletado",
+  });
 });
 
 /* =========================
@@ -199,16 +229,22 @@ app.delete("/tickets/:id", auth, async (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
-    res.send("Logout feito");
+    res.json({
+      success: true,
+      message: "Logout feito",
+    });
   });
 });
 
 /* =========================
-   ❌ 404 HANDLER (OPCIONAL MAS BOM)
+   ❌ 404
 ========================= */
 
 app.use((req, res) => {
-  res.status(404).send("Página não encontrada");
+  res.status(404).json({
+    success: false,
+    message: "Rota não encontrada",
+  });
 });
 
 /* =========================

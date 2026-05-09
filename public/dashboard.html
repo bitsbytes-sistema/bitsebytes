@@ -62,16 +62,11 @@ a {
 <body>
 
 <div class="header">
-
+  <div>Bits & Bytes</div>
   <div>
-    Bits & Bytes
-  </div>
-
-  <div>
-    <a href="/clientes.html">Clientes</a> |
+    <a href="/clientes">Clientes</a> |
     <a href="#" onclick="logout()">Sair</a>
   </div>
-
 </div>
 
 <div class="container">
@@ -83,7 +78,7 @@ a {
 
   <h3>Criar Chamado</h3>
 
-  <input id="cpfcnpj" placeholder="CPF/CNPJ" onblur="buscarCliente()">
+  <input id="cpfcnpj" placeholder="CPF/CNPJ">
   <input id="cliente" placeholder="Cliente">
   <input id="telefone" placeholder="Telefone">
   <input id="equipamento" placeholder="Equipamento">
@@ -99,73 +94,55 @@ a {
 
 <script>
 
-/* ===================== DOM ===================== */
 const stats = document.getElementById("stats");
 const lista = document.getElementById("lista");
 
-/* ===================== LOGIN ===================== */
-const user = JSON.parse(localStorage.getItem("user"));
-
-if (!user) {
-  window.location.href = "/";
-}
-
-/* ===================== BUSCAR CLIENTE ===================== */
-function buscarCliente(){
-  // futuro
-}
-
-/* ===================== LOGOUT ===================== */
-function logout(){
-
-  localStorage.removeItem("user");
-
-  fetch("/logout", {
+/* ===================== AUTH CHECK ===================== */
+async function checkAuth() {
+  const res = await fetch("/tickets", {
     credentials: "include"
   });
 
-  window.location.href = "/";
+  if (res.status === 401) {
+    window.location.href = "/";
+  }
 }
 
-/* ===================== VAR ===================== */
-let chamados = [];
+/* ===================== LOGOUT ===================== */
+function logout() {
+  fetch("/logout", {
+    method: "POST",
+    credentials: "include"
+  }).then(() => {
+    window.location.href = "/";
+  });
+}
 
 /* ===================== LOAD ===================== */
-async function load(){
+let chamados = [];
 
+async function load() {
   try {
 
-    const res = await fetch("/api/tickets", {
+    const res = await fetch("/tickets", {
       credentials: "include"
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-
-      console.error("ERRO BACKEND:", data);
-
-      alert(data.error || "Erro ao carregar chamados");
-
+    if (res.status === 401) {
+      window.location.href = "/";
       return;
     }
 
-    chamados = Array.isArray(data)
-      ? data
-      : [];
+    const data = await res.json();
+
+    chamados = Array.isArray(data) ? data : [];
 
     lista.innerHTML = "";
 
     chamados.forEach(c => {
 
       const dataAbertura = c.createdAt
-        ? new Date(c.createdAt).toLocaleString(
-            "pt-BR",
-            {
-              timeZone: "America/Cuiaba",
-              hour12: false
-            }
-          )
+        ? new Date(c.createdAt).toLocaleString("pt-BR")
         : "Sem data";
 
       lista.innerHTML += `
@@ -177,7 +154,7 @@ async function load(){
           💻 ${c.equipamento || ""}<br>
           🛠 ${c.problema || ""}<br><br>
 
-          📅 Abertura: ${dataAbertura}<br><br>
+          📅 ${dataAbertura}<br><br>
 
           📌 <b style="color:${
             c.status === "aberto"
@@ -191,13 +168,8 @@ async function load(){
 
           <br><br>
 
-          <button onclick="status('${c._id}')">
-            Status
-          </button>
-
-          <button onclick="del('${c._id}')">
-            Excluir
-          </button>
+          <button onclick="status('${c._id}')">Status</button>
+          <button onclick="del('${c._id}')">Excluir</button>
 
         </div>
       `;
@@ -206,92 +178,53 @@ async function load(){
     loadStats();
 
   } catch (err) {
-
-    console.error("ERRO FETCH:", err);
-
-    alert("Erro de conexão com servidor");
+    console.error(err);
   }
 }
 
 /* ===================== STATUS ===================== */
-async function status(id){
+async function status(id) {
 
-  const t = chamados.find(
-    x => x._id === id
-  );
-
-  if (!t) {
-    return;
-  }
+  const t = chamados.find(x => x._id === id);
+  if (!t) return;
 
   let novo = "aberto";
 
-  if (t.status === "aberto") {
+  if (t.status === "aberto") novo = "andamento";
+  else if (t.status === "andamento") novo = "finalizado";
 
-    novo = "andamento";
+  const res = await fetch("/tickets/" + id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ status: novo })
+  });
 
-  } else if (t.status === "andamento") {
-
-    novo = "finalizado";
-  }
-
-  const res = await fetch(
-    "/api/tickets/" + id,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        status: novo
-      })
-    }
-  );
-
-  const data = await res.json();
-
-  if (data.whatsapp) {
-
-    window.open(
-      data.whatsapp,
-      "_blank"
-    );
-  }
+  await res.json();
 
   load();
 }
 
 /* ===================== CREATE ===================== */
-async function criar(){
+async function criar() {
 
-  const res = await fetch(
-    "/abrir-chamado",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        cliente: document.getElementById("cliente").value,
-        telefone: document.getElementById("telefone").value,
-        cpfcnpj: document.getElementById("cpfcnpj").value,
-        equipamento: document.getElementById("equipamento").value,
-        problema: document.getElementById("problema").value
-      })
-    }
-  );
+  const res = await fetch("/tickets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      cliente: document.getElementById("cliente").value,
+      telefone: document.getElementById("telefone").value,
+      cpfcnpj: document.getElementById("cpfcnpj").value,
+      equipamento: document.getElementById("equipamento").value,
+      problema: document.getElementById("problema").value
+    })
+  });
 
   const data = await res.json();
 
-  if (!data.ok) {
-
-    alert(
-      data.error ||
-      "Erro ao criar chamado"
-    );
-
+  if (!data._id) {
+    alert("Erro ao criar chamado");
     return;
   }
 
@@ -305,48 +238,34 @@ async function criar(){
 }
 
 /* ===================== DELETE ===================== */
-async function del(id){
+async function del(id) {
 
-  if (!confirm("Deseja excluir este chamado?")) {
-    return;
-  }
+  if (!confirm("Excluir chamado?")) return;
 
-  await fetch(
-    "/api/tickets/" + id,
-    {
-      method: "DELETE",
-      credentials: "include"
-    }
-  );
+  await fetch("/tickets/" + id, {
+    method: "DELETE",
+    credentials: "include"
+  });
 
   load();
 }
 
 /* ===================== STATS ===================== */
-function loadStats(){
+function loadStats() {
 
-  const aberto = chamados.filter(
-    x => x.status === "aberto"
-  ).length;
-
-  const andamento = chamados.filter(
-    x => x.status === "andamento"
-  ).length;
-
-  const finalizado = chamados.filter(
-    x => x.status === "finalizado"
-  ).length;
+  const aberto = chamados.filter(x => x.status === "aberto").length;
+  const andamento = chamados.filter(x => x.status === "andamento").length;
+  const finalizado = chamados.filter(x => x.status === "finalizado").length;
 
   stats.innerHTML = `
-    🔴 Abertos: ${aberto}
-    |
-    🟡 Andamento: ${andamento}
-    |
+    🔴 Abertos: ${aberto} |
+    🟡 Andamento: ${andamento} |
     🟢 Finalizados: ${finalizado}
   `;
 }
 
 /* ===================== INIT ===================== */
+checkAuth();
 load();
 
 </script>

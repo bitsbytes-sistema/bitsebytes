@@ -18,7 +18,7 @@ const app = express();
 app.set("trust proxy", 1);
 
 /* =========================
-   🔥 ENV SIMPLES (SEM TESTE)
+   🔥 ENV
 ========================= */
 
 const MONGO_URL = process.env.MONGO_URL;
@@ -56,7 +56,7 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 
 /* =========================
-   🔥 SESSION (ESTÁVEL PRODUÇÃO)
+   🔥 SESSION (ESTÁVEL)
 ========================= */
 
 app.use(
@@ -71,9 +71,9 @@ app.use(
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
 
-      // 🔥 ISSO AQUI É O QUE PARA O "ENTRA E SAI"
+      // 🔥 MAIS ESTÁVEL PRA REDIRECT (SEM "ENTRA E SAI")
       secure: true,
-      sameSite: "none",
+      sameSite: "lax",
     },
   })
 );
@@ -88,7 +88,7 @@ mongoose
   .catch((err) => console.log("Erro Mongo:", err));
 
 /* =========================
-   🏠 ROTAS FRONT
+   🏠 FRONT ROUTES
 ========================= */
 
 app.get("/", (req, res) => {
@@ -146,10 +146,14 @@ app.post("/login", async (req, res) => {
       companyId: user.companyId,
     };
 
-    return res.json({
-      success: true,
-      message: "Login OK",
+    // 🔥 GARANTE QUE A SESSÃO GRAVA ANTES DO RESPONSE
+    req.session.save(() => {
+      return res.json({
+        success: true,
+        message: "Login OK",
+      });
     });
+
   } catch (err) {
     console.error(err);
     return res.json({

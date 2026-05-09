@@ -21,13 +21,8 @@ app.set("trust proxy", 1);
    🔥 ENV
 ========================= */
 
-const isProd = process.env.NODE_ENV === "production";
-
-const MONGO_URL =
-  isProd ? process.env.MONGO_URL_PROD : process.env.MONGO_URL_TESTE;
-
-const SESSION_SECRET =
-  isProd ? process.env.SESSION_SECRET_PROD : process.env.SESSION_SECRET_TESTE;
+const MONGO_URL = process.env.MONGO_URL;
+const SESSION_SECRET = process.env.SESSION_SECRET;
 
 /* =========================
    🔥 CHECK

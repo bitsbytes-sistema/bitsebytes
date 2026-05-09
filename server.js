@@ -1,183 +1,123 @@
-const bcrypt = require("bcrypt");
-require("dotenv").config();
-
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const path = require("path");
+const bcrypt = require("bcrypt");
+require("dotenv").config();
+
+const User = require("./models/User");
+const Ticket = require("./models/Ticket");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-const LIMITE_CLIENTE = 3;
-
-/* ===================== */
-/* MIDDLEWARE */
-/* ===================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set("trust proxy", 1);
 
-/* arquivos estáticos */
-app.use(express.static(path.join(__dirname, "public")));
-
-/* ===================== */
-/* MONGO */
-/* ===================== */
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => {
-    console.log("✔ Mongo conectado");
-    console.log("DB:", mongoose.connection.name);
-  })
-  .catch((err) => console.log("❌ ERRO MONGO:", err));
-
-/* ===================== */
-/* SESSÃO */
-/* ===================== */
+// 🔥 SESSÃO
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "segredo",
+    secret: "bitsebytes_secret",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URL,
     }),
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24,
-    },
+    cookie: { maxAge: 1000 * 60 * 60 * 24 },
   })
 );
 
-/* ===================== */
-/* SCHEMAS */
-/* ===================== */
-const userSchema = new mongoose.Schema({
-  username: String,
-  password: String,
-  role: String,
-  companyId: String,
-});
+// 🔥 CONEXÃO BANCO
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log("Mongo conectado"))
+  .catch(err => console.log(err));
 
-const ticketSchema = new mongoose.Schema(
-  {
-    companyId: String,
-    cliente: String,
-    telefone: String,
-    cpfcnpj: String,
-    equipamento: String,
-    problema: String,
-    status: { type: String, default: "aberto" },
-  },
-  { timestamps: true }
-);
-
-const User =
-  mongoose.models.User || mongoose.model("User", userSchema);
-
-const Ticket =
-  mongoose.models.Ticket || mongoose.model("Ticket", ticketSchema);
-
-/* ===================== */
-/* ROTAS DE PÁGINA (ANTI-404) */
-/* ===================== */
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-app.get("/dashboard", (req, res) => {
-  if (!req.session.user) {
-    return res.redirect("/");
-  }
-
-  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
-});
-
-/* fallback opcional (evita erro dashboard.html) */
-app.get("/dashboard.html", (req, res) => {
-  if (!req.session.user) {
-    return res.redirect("/");
-  }
-
-  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
-});
-
-/* ===================== */
-/* LOGIN (CORRIGIDO DEFINITIVO) */
-/* ===================== */
+/* =========================
+   🔐 LOGIN
+========================= */
 app.post("/login", async (req, res) => {
-  try {
-    const username = req.body.username?.trim().toLowerCase();
-    const password = req.body.password;
+  const { username, password } = req.body;
 
-    console.log("LOGIN RECEBIDO:", { username });
+  const user = await User.findOne({ username });
 
-    const user = await User.findOne({ username });
+  if (!user) return res.status(400).send("Usuário não encontrado");
 
-    console.log("USER FOUND:", user ? "SIM" : "NÃO");
+  const check = await bcrypt.compare(password, user.password);
 
-    if (!user) {
-      return res.json({ success: false, msg: "Usuário não existe" });
-    }
+  if (!check) return res.status(400).send("Senha inválida");
 
-    const senhaOk = await bcrypt.compare(password, user.password);
+  // 🔥 AQUI É O CORAÇÃO DO SISTEMA
+  req.session.user = {
+    _id: user._id,
+    username: user.username,
+    role: user.role,
+    companyId: user.companyId,
+  };
 
-    console.log("SENHA OK:", senhaOk);
-
-    if (!senhaOk) {
-      return res.json({ success: false, msg: "Senha inválida" });
-    }
-
-    req.session.regenerate((err) => {
-      if (err) return res.status(500).json({ success: false });
-
-      req.session.user = {
-        id: user._id,
-        username: user.username,
-        role: user.role,
-        companyId: user.companyId,
-      };
-
-      return res.json({ success: true });
-    });
-  } catch (err) {
-    console.log("ERRO LOGIN:", err);
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
+  res.send("Login OK");
 });
 
-/* ===================== */
-/* AUTH */
-/* ===================== */
+/* =========================
+   🔒 MIDDLEWARE AUTH
+========================= */
 function auth(req, res, next) {
   if (!req.session.user) {
-    return res.status(401).json({ error: "not_logged" });
+    return res.status(401).send("Não autorizado");
   }
   next();
 }
 
-/* ===================== */
-/* TICKETS */
-/* ===================== */
-app.get("/api/tickets", auth, async (req, res) => {
-  try {
-    const data = await Ticket.find({}).sort({ createdAt: -1 });
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: true, message: err.message });
-  }
+/* =========================
+   🎫 TICKETS
+========================= */
+
+// LISTAR
+app.get("/tickets", auth, async (req, res) => {
+  const tickets = await Ticket.find({
+    companyId: req.session.user.companyId,
+  });
+
+  res.json(tickets);
 });
 
-/* ===================== */
-/* START */
-/* ===================== */
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("🚀 Rodando na porta " + PORT);
+// CRIAR
+app.post("/tickets", auth, async (req, res) => {
+  const ticket = await Ticket.create({
+    cliente: req.body.cliente,
+    problema: req.body.problema,
+    status: "aberto",
+    companyId: req.session.user.companyId, // 🔥 ISOLA EMPRESA
+  });
+
+  res.json(ticket);
+});
+
+// ATUALIZAR
+app.put("/tickets/:id", auth, async (req, res) => {
+  const ticket = await Ticket.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      companyId: req.session.user.companyId,
+    },
+    { status: req.body.status },
+    { new: true }
+  );
+
+  res.json(ticket);
+});
+
+// DELETAR
+app.delete("/tickets/:id", auth, async (req, res) => {
+  await Ticket.findOneAndDelete({
+    _id: req.params.id,
+    companyId: req.session.user.companyId,
+  });
+
+  res.send("Deletado");
+});
+
+/* =========================
+   🚀 START SERVER
+========================= */
+app.listen(3000, () => {
+  console.log("Servidor rodando na porta 3000");
 });

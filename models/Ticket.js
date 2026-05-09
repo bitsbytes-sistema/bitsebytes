@@ -1,9 +1,15 @@
 const mongoose = require("mongoose");
 
-module.exports = mongoose.model("Ticket", {
-  companyId: String,
+const ticketSchema = new mongoose.Schema({
   cliente: String,
-  equipamento: String,
+  problema: String,
   status: String,
-  createdAt: { type: Date, default: Date.now }
+
+  // 🔥 ISOLAMENTO SAAS
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
 });
+
+module.exports = mongoose.model("Ticket", ticketSchema);

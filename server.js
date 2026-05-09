@@ -18,7 +18,7 @@ const app = express();
 app.set("trust proxy", 1);
 
 /* =========================
-   🔥 ENV
+   🔥 ENV SIMPLES (SEM TESTE)
 ========================= */
 
 const MONGO_URL = process.env.MONGO_URL;
@@ -39,7 +39,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* =========================
-   🌐 CORS (FIX REAL PRODUÇÃO)
+   🌐 CORS
 ========================= */
 
 app.use(
@@ -56,7 +56,7 @@ app.use(
 app.use(express.static(path.join(__dirname, "public")));
 
 /* =========================
-   🔥 SESSION (PRODUÇÃO ESTÁVEL)
+   🔥 SESSION (ESTÁVEL PRODUÇÃO)
 ========================= */
 
 app.use(
@@ -71,7 +71,7 @@ app.use(
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
 
-      // 🔥 CONFIG FINAL QUE EVITA LOGIN VOLTAR
+      // 🔥 ISSO AQUI É O QUE PARA O "ENTRA E SAI"
       secure: true,
       sameSite: "none",
     },
@@ -88,7 +88,7 @@ mongoose
   .catch((err) => console.log("Erro Mongo:", err));
 
 /* =========================
-   🏠 FRONT ROUTES
+   🏠 ROTAS FRONT
 ========================= */
 
 app.get("/", (req, res) => {

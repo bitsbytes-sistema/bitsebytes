@@ -5,54 +5,45 @@
 <title>Dashboard</title>
 
 <style>
-body {
-  font-family: Arial;
+body{
+  font-family:Arial;
   margin:0;
   background:#f2f2f2;
 }
 
-.header {
+.header{
   background:#2c2c44;
   color:white;
   padding:15px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 
-.container {
+.container{
   padding:20px;
 }
 
-.card {
+.card{
   background:white;
   padding:15px;
   border-radius:8px;
   margin-bottom:10px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-input {
+input{
   padding:10px;
   margin:5px;
-  border-radius:5px;
-  border:1px solid #ccc;
 }
 
-button {
+button{
   padding:10px;
   background:#4CAF50;
   color:white;
   border:none;
-  border-radius:5px;
   cursor:pointer;
 }
 
-button:hover {
-  background:#3d9140;
-}
-
-a {
+a{
   color:white;
   text-decoration:none;
 }
@@ -62,18 +53,28 @@ a {
 <body>
 
 <div class="header">
-  <div>Bits & Bytes</div>
+
+  <div>
+    Bits & Bytes
+  </div>
+
   <div>
     <a href="/clientes">Clientes</a> |
-    <a href="#" onclick="logout()">Sair</a>
+    <a href="#" onclick="logout()">
+      Sair
+    </a>
   </div>
+
 </div>
 
 <div class="container">
 
-  <h3 id="plano">Plano: Teste</h3>
+  <h3 id="plano">
+    Plano: Carregando...
+  </h3>
 
   <h3>Resumo</h3>
+
   <div id="stats"></div>
 
   <h3>Criar Chamado</h3>
@@ -84,7 +85,9 @@ a {
   <input id="equipamento" placeholder="Equipamento">
   <input id="problema" placeholder="Problema">
 
-  <button onclick="criar()">Criar</button>
+  <button onclick="criar()">
+    Criar
+  </button>
 
   <h3>Chamados</h3>
 
@@ -97,175 +100,241 @@ a {
 const stats = document.getElementById("stats");
 const lista = document.getElementById("lista");
 
-/* ===================== AUTH CHECK ===================== */
-async function checkAuth() {
-  const res = await fetch("/tickets", {
-    credentials: "include"
-  });
-
-  if (res.status === 401) {
-    window.location.href = "/";
-  }
-}
-
-/* ===================== LOGOUT ===================== */
-function logout() {
-  fetch("/logout", {
-    method: "POST",
-    credentials: "include"
-  }).then(() => {
-    window.location.href = "/";
-  });
-}
-
-/* ===================== LOAD ===================== */
 let chamados = [];
 
-async function load() {
-  try {
+/* =========================
+   USER
+========================= */
 
-    const res = await fetch("/tickets", {
-      credentials: "include"
-    });
+async function loadUser(){
 
-    if (res.status === 401) {
-      window.location.href = "/";
-      return;
-    }
+  const res = await fetch("/me", {
+    credentials:"include"
+  });
 
-    const data = await res.json();
+  if(res.status === 401){
 
-    chamados = Array.isArray(data) ? data : [];
+    window.location.href="/";
+    return;
 
-    lista.innerHTML = "";
-
-    chamados.forEach(c => {
-
-      const dataAbertura = c.createdAt
-        ? new Date(c.createdAt).toLocaleString("pt-BR")
-        : "Sem data";
-
-      lista.innerHTML += `
-        <div class="card">
-
-          <b>${c.cliente || ""}</b><br><br>
-
-          📱 ${c.telefone || ""}<br>
-          💻 ${c.equipamento || ""}<br>
-          🛠 ${c.problema || ""}<br><br>
-
-          📅 ${dataAbertura}<br><br>
-
-          📌 <b style="color:${
-            c.status === "aberto"
-              ? "red"
-              : c.status === "andamento"
-              ? "orange"
-              : "green"
-          }">
-            ${c.status || ""}
-          </b>
-
-          <br><br>
-
-          <button onclick="status('${c._id}')">Status</button>
-          <button onclick="del('${c._id}')">Excluir</button>
-
-        </div>
-      `;
-    });
-
-    loadStats();
-
-  } catch (err) {
-    console.error(err);
   }
-}
-
-/* ===================== STATUS ===================== */
-async function status(id) {
-
-  const t = chamados.find(x => x._id === id);
-  if (!t) return;
-
-  let novo = "aberto";
-
-  if (t.status === "aberto") novo = "andamento";
-  else if (t.status === "andamento") novo = "finalizado";
-
-  const res = await fetch("/tickets/" + id, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ status: novo })
-  });
-
-  await res.json();
-
-  load();
-}
-
-/* ===================== CREATE ===================== */
-async function criar() {
-
-  const res = await fetch("/tickets", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({
-      cliente: document.getElementById("cliente").value,
-      telefone: document.getElementById("telefone").value,
-      cpfcnpj: document.getElementById("cpfcnpj").value,
-      equipamento: document.getElementById("equipamento").value,
-      problema: document.getElementById("problema").value
-    })
-  });
 
   const data = await res.json();
 
-  if (!data._id) {
-    alert("Erro ao criar chamado");
-    return;
-  }
+  document.getElementById("plano").innerText =
+    "Plano: " + (data.user.role || "Padrão");
 
-  document.getElementById("cliente").value = "";
-  document.getElementById("telefone").value = "";
-  document.getElementById("cpfcnpj").value = "";
-  document.getElementById("equipamento").value = "";
-  document.getElementById("problema").value = "";
-
-  load();
 }
 
-/* ===================== DELETE ===================== */
-async function del(id) {
+/* =========================
+   LOAD
+========================= */
 
-  if (!confirm("Excluir chamado?")) return;
+async function load(){
 
-  await fetch("/tickets/" + id, {
-    method: "DELETE",
-    credentials: "include"
+  const res = await fetch("/tickets", {
+    credentials:"include"
+  });
+
+  if(res.status === 401){
+
+    window.location.href="/";
+    return;
+
+  }
+
+  chamados = await res.json();
+
+  lista.innerHTML = "";
+
+  chamados.forEach(c => {
+
+    lista.innerHTML += `
+      <div class="card">
+
+        <b>${c.cliente || ""}</b><br><br>
+
+        📱 ${c.telefone || ""}<br>
+        💻 ${c.equipamento || ""}<br>
+        🛠 ${c.problema || ""}<br><br>
+
+        📌 ${c.status || ""}
+
+        <br><br>
+
+        <button onclick="status('${c._id}')">
+          Status
+        </button>
+
+        <button onclick="del('${c._id}')">
+          Excluir
+        </button>
+
+      </div>
+    `;
+
+  });
+
+  loadStats();
+
+}
+
+/* =========================
+   STATS
+========================= */
+
+function loadStats(){
+
+  const aberto =
+    chamados.filter(
+      x => x.status === "aberto"
+    ).length;
+
+  const andamento =
+    chamados.filter(
+      x => x.status === "andamento"
+    ).length;
+
+  const finalizado =
+    chamados.filter(
+      x => x.status === "finalizado"
+    ).length;
+
+  stats.innerHTML = `
+    🔴 ${aberto}
+    |
+    🟡 ${andamento}
+    |
+    🟢 ${finalizado}
+  `;
+
+}
+
+/* =========================
+   CREATE
+========================= */
+
+async function criar(){
+
+  await fetch("/tickets", {
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    credentials:"include",
+
+    body:JSON.stringify({
+
+      cliente:
+        document.getElementById("cliente").value,
+
+      telefone:
+        document.getElementById("telefone").value,
+
+      cpfcnpj:
+        document.getElementById("cpfcnpj").value,
+
+      equipamento:
+        document.getElementById("equipamento").value,
+
+      problema:
+        document.getElementById("problema").value
+
+    })
+
   });
 
   load();
+
 }
 
-/* ===================== STATS ===================== */
-function loadStats() {
+/* =========================
+   STATUS
+========================= */
 
-  const aberto = chamados.filter(x => x.status === "aberto").length;
-  const andamento = chamados.filter(x => x.status === "andamento").length;
-  const finalizado = chamados.filter(x => x.status === "finalizado").length;
+async function status(id){
 
-  stats.innerHTML = `
-    🔴 Abertos: ${aberto} |
-    🟡 Andamento: ${andamento} |
-    🟢 Finalizados: ${finalizado}
-  `;
+  const t = chamados.find(
+    x => x._id === id
+  );
+
+  if(!t) return;
+
+  let novo = "aberto";
+
+  if(t.status === "aberto")
+    novo = "andamento";
+
+  else if(t.status === "andamento")
+    novo = "finalizado";
+
+  await fetch("/tickets/" + id, {
+
+    method:"PUT",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    credentials:"include",
+
+    body:JSON.stringify({
+      status:novo
+    })
+
+  });
+
+  load();
+
 }
 
-/* ===================== INIT ===================== */
-checkAuth();
+/* =========================
+   DELETE
+========================= */
+
+async function del(id){
+
+  if(!confirm("Excluir chamado?"))
+    return;
+
+  await fetch("/tickets/" + id, {
+
+    method:"DELETE",
+    credentials:"include"
+
+  });
+
+  load();
+
+}
+
+/* =========================
+   LOGOUT
+========================= */
+
+function logout(){
+
+  fetch("/logout", {
+
+    method:"POST",
+    credentials:"include"
+
+  }).then(() => {
+
+    window.location.href="/";
+
+  });
+
+}
+
+/* =========================
+   INIT
+========================= */
+
+loadUser();
 load();
 
 </script>

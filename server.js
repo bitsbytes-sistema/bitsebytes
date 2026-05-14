@@ -1,54 +1,35 @@
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const path = require("path");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
-const path = require("path");
-
-require("dotenv").config();
-
-const User = require("./models/User");
-const Ticket = require("./models/Ticket");
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-/* =========================
-   TRUST PROXY (RENDER)
-========================= */
+/* ===================== */
+/* TRUST PROXY RENDER */
+/* ===================== */
 
 app.set("trust proxy", 1);
 
-/* =========================
-   ENV
-========================= */
+/* ===================== */
+/* CONFIG */
+/* ===================== */
 
-const MONGO_URL = process.env.MONGO_URL;
-const SESSION_SECRET = process.env.SESSION_SECRET;
+const LIMITE_CLIENTE = 3;
 
-/* =========================
-   CHECK
-========================= */
-
-if (!MONGO_URL) {
-  console.log("❌ MONGO_URL ausente");
-}
-
-if (!SESSION_SECRET) {
-  console.log("❌ SESSION_SECRET ausente");
-}
-
-/* =========================
-   MIDDLEWARES
-========================= */
+/* ===================== */
+/* MIDDLEWARES */
+/* ===================== */
 
 app.use(express.json());
 
-app.use(
-  express.urlencoded({
-    extended: true
-  })
-);
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
@@ -57,168 +38,137 @@ app.use(
   })
 );
 
-/* =========================
-   FRONTEND
-========================= */
-
-app.use(
-  express.static(
-    path.join(__dirname, "public")
-  )
-);
-
-/* =========================
-   SESSION
-========================= */
-
 app.use(
   session({
-
-    secret: SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || "segredo",
 
     resave: false,
 
     saveUninitialized: false,
 
     store: MongoStore.create({
-      mongoUrl: MONGO_URL,
+      mongoUrl: process.env.MONGO_URL,
     }),
 
     cookie: {
+      httpOnly: true,
 
       maxAge: 1000 * 60 * 60 * 24,
 
-      httpOnly: true,
-
       secure: true,
 
-      sameSite: "lax",
-
-    },
-
+      sameSite: "lax"
+    }
   })
 );
 
-/* =========================
-   MONGO
-========================= */
+app.use(express.static(path.join(__dirname, "public")));
 
-mongoose
-  .connect(MONGO_URL)
-  .then(() => {
+/* ===================== */
+/* MONGO */
+/* ===================== */
 
-    console.log("✅ Mongo conectado");
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log("Mongo conectado"))
+  .catch(err => console.log("ERRO MONGO:", err));
 
-  })
-  .catch((err) => {
+/* ===================== */
+/* MODELS */
+/* ===================== */
 
-    console.log("❌ Erro Mongo");
-    console.log(err);
-
-  });
-
-/* =========================
-   ROTAS FRONT
-========================= */
-
-app.get("/", (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "index.html"
-    )
-  );
-
+const Company = mongoose.model("Company", {
+  name: String,
+  plan: String
 });
 
-app.get("/dashboard", (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "dashboard.html"
-    )
-  );
-
+const User = mongoose.model("User", {
+  username: String,
+  password: String,
+  role: String,
+  companyId: String
 });
 
-app.get("/clientes", (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "clientes.html"
-    )
-  );
-
+const Ticket = mongoose.model("Ticket", {
+  companyId: String,
+  cliente: String,
+  telefone: String,
+  cpfcnpj: String,
+  equipamento: String,
+  problema: String,
+  status: {
+    type: String,
+    default: "aberto"
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: Date
 });
 
-app.get("/admin", (req, res) => {
+/* ===================== */
+/* DATA */
+/* ===================== */
 
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "admin.html"
-    )
+function getDataHora() {
+
+  return new Date().toLocaleString(
+    "pt-BR",
+    {
+      timeZone: "America/Cuiaba",
+      hour12: false
+    }
   );
 
-});
+}
 
-app.get("/painel", (req, res) => {
+/* ===================== */
+/* AUTH */
+/* ===================== */
 
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "painel.html"
-    )
-  );
+function auth(req, res, next) {
 
-});
+  if (!req.session.user) {
 
-/* =========================
-   LOGIN
-========================= */
+    return res.status(401).json({
+      error: "not_logged"
+    });
+
+  }
+
+  next();
+
+}
+
+/* ===================== */
+/* LOGIN */
+/* ===================== */
 
 app.post("/login", async (req, res) => {
 
   try {
 
-    const {
-      username,
-      password
-    } = req.body;
-
-    const user =
-      await User.findOne({
-        username
-      });
+    const user = await User.findOne({
+      username: req.body.username
+    });
 
     if (!user) {
 
       return res.json({
-        success: false,
-        message: "Usuário não encontrado"
+        success: false
       });
 
     }
 
-    const check =
-      await bcrypt.compare(
-        password,
-        user.password
-      );
+    const ok = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
 
-    if (!check) {
+    if (!ok) {
 
       return res.json({
-        success: false,
-        message: "Senha inválida"
+        success: false
       });
 
     }
@@ -229,22 +179,16 @@ app.post("/login", async (req, res) => {
 
       username: user.username,
 
-      role:
-        user.role || "Padrão",
+      role: user.role,
 
-      companyId:
-        user.companyId || null,
+      companyId: user.companyId
 
     };
 
     req.session.save(() => {
 
       return res.json({
-
-        success: true,
-
-        message: "Login OK"
-
+        success: true
       });
 
     });
@@ -254,20 +198,30 @@ app.post("/login", async (req, res) => {
     console.log(err);
 
     return res.json({
-
-      success: false,
-
-      message: "Erro login"
-
+      success: false
     });
 
   }
 
 });
 
-/* =========================
-   USER SESSION
-========================= */
+/* ===================== */
+/* LOGOUT */
+/* ===================== */
+
+app.get("/logout", (req, res) => {
+
+  req.session.destroy(() => {
+
+    res.redirect("/");
+
+  });
+
+});
+
+/* ===================== */
+/* USER SESSION */
+/* ===================== */
 
 app.get("/me", (req, res) => {
 
@@ -280,261 +234,244 @@ app.get("/me", (req, res) => {
   }
 
   res.json({
-
     logged: true,
-
     user: req.session.user
-
   });
 
 });
 
-/* =========================
-   AUTH
-========================= */
+/* ===================== */
+/* LISTAR CHAMADOS */
+/* ===================== */
 
-function auth(req, res, next) {
+app.get("/api/tickets", auth, async (req, res) => {
 
-  if (!req.session.user) {
+  const data = await Ticket.find()
+    .sort({ createdAt: -1 });
 
-    return res.status(401).json({
-
-      success: false,
-
-      message: "Não autorizado"
-
-    });
-
-  }
-
-  next();
-
-}
-
-/* =========================
-   TICKETS
-========================= */
-
-/* ===== LISTAR ===== */
-
-app.get("/tickets", auth, async (req, res) => {
-
-  try {
-
-    const tickets =
-      await Ticket.find({})
-      .sort({ _id: -1 });
-
-    res.json(tickets);
-
-  } catch (err) {
-
-    console.log(err);
-
-    res.status(500).json({
-      success: false
-    });
-
-  }
+  res.json(data);
 
 });
 
-/* ===== CRIAR ===== */
+/* ===================== */
+/* CRIAR CHAMADO */
+/* ===================== */
 
-app.post("/tickets", auth, async (req, res) => {
+app.post("/api/tickets", auth, async (req, res) => {
 
-  try {
+  const t = await Ticket.create({
 
-    const ticket =
-      await Ticket.create({
+    cliente: req.body.cliente,
 
-        cliente:
-          req.body.cliente,
+    telefone: req.body.telefone,
 
-        telefone:
-          req.body.telefone,
+    cpfcnpj: req.body.cpfcnpj,
 
-        cpfcnpj:
-          req.body.cpfcnpj,
+    equipamento: req.body.equipamento,
 
-        equipamento:
-          req.body.equipamento,
+    problema: req.body.problema,
 
-        problema:
-          req.body.problema,
+    status: "aberto",
 
-        status: "aberto",
+    createdAt: new Date()
 
-      });
+  });
 
-    res.json({
-
-      success: true,
-
-      ticket
-
-    });
-
-  } catch (err) {
-
-    console.log(err);
-
-    res.status(500).json({
-
-      success: false,
-
-      message: "Erro ao criar chamado"
-
-    });
-
-  }
+  res.json(t);
 
 });
 
-/* ===== STATUS + WHATSAPP ===== */
+/* ===================== */
+/* ABRIR CHAMADO */
+/* ===================== */
 
-app.put("/tickets/:id", auth, async (req, res) => {
+app.post("/abrir-chamado", async (req, res) => {
 
   try {
 
-    const ticket =
-      await Ticket.findByIdAndUpdate(
+    const company = await Company.findOne({
+      plan: "enterprise"
+    });
 
-        req.params.id,
+    const doc = String(
+      req.body.cpfcnpj
+    ).replace(/\D/g, "");
 
-        {
-          status: req.body.status
-        },
+    const chamadosAbertos =
+      await Ticket.countDocuments({
 
-        {
-          new: true
+        companyId: company?._id,
+
+        cpfcnpj: doc,
+
+        status: {
+          $ne: "finalizado"
         }
 
-      );
+      });
 
-    if (!ticket) {
+    if (chamadosAbertos >= LIMITE_CLIENTE) {
 
-      return res.status(404).json({
+      return res.status(403).json({
 
-        success: false,
+        ok: false,
 
-        message: "Chamado não encontrado"
+        error:
+          "Você já possui 3 chamados em andamento."
 
       });
 
     }
 
-    /* =========================
-       MENSAGEM
-    ========================= */
+    await Ticket.create({
 
-    let mensagem = "";
+      companyId: company?._id,
 
-    if (ticket.status === "aberto") {
+      cliente: req.body.cliente,
 
-      mensagem =
-        `Olá ${ticket.cliente}, seu chamado foi aberto com sucesso na Bits & Bytes.`;
+      telefone: req.body.telefone,
 
-    }
+      cpfcnpj: doc,
 
-    else if (ticket.status === "andamento") {
+      equipamento: req.body.equipamento,
 
-      mensagem =
-        `Olá ${ticket.cliente}, seu equipamento está em manutenção na Bits & Bytes.`;
+      problema: req.body.problema,
 
-    }
+      status: "aberto"
 
-    else if (ticket.status === "finalizado") {
+    });
 
-      mensagem =
-        `Olá ${ticket.cliente}, seu equipamento foi finalizado e está pronto para retirada na Bits & Bytes.`;
-
-    }
-
-    /* =========================
-       TELEFONE
-    ========================= */
-
-    const telefoneCliente =
-
-      ticket.telefone ||
-
-      ticket.celular ||
-
-      ticket.fone ||
-
-      ticket.numero ||
-
-      ticket.whatsapp ||
-
-      "";
-
-    let whatsapp = null;
-
-    if (telefoneCliente !== "") {
-
-      let numero =
-        telefoneCliente
-        .replace(/\D/g, "");
-
-      /* REMOVE 55 DUPLICADO */
-      if (numero.startsWith("55")) {
-
-        numero =
-          numero.substring(2);
-
-      }
-
-      /* CORRIGE NÚMERO SEM 9 */
-      if (numero.length === 10) {
-
-        numero =
-          numero.slice(0, 2) +
-          "9" +
-          numero.slice(2);
-
-      }
-
-      /* BRASIL */
-      numero = "55" + numero;
-
-      whatsapp =
-        `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
-
-    }
-
-    console.log("WHATSAPP:");
-    console.log(whatsapp);
-
-    res.json({
-
-      success: true,
-
-      ticket,
-
-      whatsapp
-
+    return res.json({
+      ok: true
     });
 
   } catch (err) {
 
     console.log(err);
 
-    res.status(500).json({
-
-      success: false,
-
-      message: "Erro ao atualizar status"
-
+    return res.status(500).json({
+      ok: false
     });
 
   }
 
 });
 
-/* ===== DELETE ===== */
+/* ===================== */
+/* UPDATE + WHATSAPP */
+/* ===================== */
 
-app.delete("/tickets/:id", auth, async (req, res) => {
+app.put("/api/tickets/:id", auth, async (req, res) => {
+
+  const t = await Ticket.findByIdAndUpdate(
+
+    req.params.id,
+
+    {
+      ...req.body,
+      updatedAt: new Date()
+    },
+
+    {
+      new: true
+    }
+
+  );
+
+  if (!t) {
+
+    return res.status(404).json({
+      error: true
+    });
+
+  }
+
+  let telefone =
+    String(t.telefone || "")
+    .replace(/\D/g, "");
+
+  /* REMOVE 55 DUPLICADO */
+
+  if (telefone.startsWith("55")) {
+
+    telefone =
+      telefone.substring(2);
+
+  }
+
+  /* ADICIONA 9 */
+
+  if (telefone.length === 10) {
+
+    telefone =
+      telefone.slice(0, 2) +
+      "9" +
+      telefone.slice(2);
+
+  }
+
+  /* BRASIL */
+
+  telefone = "55" + telefone;
+
+  let tipoDoc = "Documento";
+
+  const doc =
+    String(t.cpfcnpj || "")
+    .replace(/\D/g, "");
+
+  if (doc.length === 11) tipoDoc = "CPF";
+
+  if (doc.length === 14) tipoDoc = "CNPJ";
+
+  let msgFinal = "";
+
+  if (t.status === "finalizado") {
+
+    msgFinal =
+      "Seu equipamento já está pronto para retirada.";
+
+  } else {
+
+    msgFinal =
+      "Seu atendimento continua em andamento.";
+
+  }
+
+  const msg = `
+Bits & Bytes Assistência Técnica
+
+Status: ${String(t.status).toUpperCase()}
+
+Cliente: ${t.cliente}
+${tipoDoc}: ${t.cpfcnpj || "Não informado"}
+
+Equipamento: ${t.equipamento}
+
+Problema:
+${t.problema || "Não informado"}
+
+Atualizado em:
+${getDataHora()}
+
+${msgFinal}
+`.trim();
+
+  const whatsapp =
+    `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+
+  res.json({
+    ok: true,
+    whatsapp
+  });
+
+});
+
+/* ===================== */
+/* DELETE */
+/* ===================== */
+
+app.delete("/api/tickets/:id", auth, async (req, res) => {
 
   try {
 
@@ -543,62 +480,27 @@ app.delete("/tickets/:id", auth, async (req, res) => {
     );
 
     res.json({
-      success: true
+      ok: true
     });
 
-  } catch (err) {
-
-    console.log(err);
+  } catch {
 
     res.status(500).json({
-      success: false
+      ok: false
     });
 
   }
 
 });
 
-/* =========================
-   LOGOUT
-========================= */
+/* ===================== */
+/* START */
+/* ===================== */
 
-app.post("/logout", (req, res) => {
+app.listen(PORT, "0.0.0.0", () => {
 
-  req.session.destroy(() => {
-
-    res.json({
-      success: true
-    });
-
-  });
+  console.log(
+    "Rodando na porta " + PORT
+  );
 
 });
-
-/* =========================
-   404
-========================= */
-
-app.use((req, res) => {
-
-  res.status(404).json({
-
-    success: false,
-
-    message: "Rota não encontrada"
-
-  });
-
-});
-
-/* =========================
-   START
-========================= */
-
-app.listen(
-  process.env.PORT || 3000,
-  () => {
-
-    console.log("🚀 Servidor rodando");
-
-  }
-);

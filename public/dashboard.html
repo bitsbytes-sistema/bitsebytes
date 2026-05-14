@@ -1,52 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
+
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>Dashboard - Bits & Bytes</title>
 
 <style>
-body{
-  font-family:Arial;
+
+*{
   margin:0;
-  background:#f2f2f2;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#f3f4f6;
 }
 
 .header{
-  background:#2c2c44;
+  background:#111827;
   color:white;
-  padding:15px;
+  padding:15px 25px;
   display:flex;
   justify-content:space-between;
+  align-items:center;
+}
+
+.header a{
+  color:white;
+  text-decoration:none;
+  margin-left:15px;
 }
 
 .container{
-  padding:20px;
+  padding:25px;
+}
+
+h2,h3{
+  margin-bottom:15px;
 }
 
 .card{
   background:white;
   padding:15px;
-  border-radius:8px;
-  margin-bottom:10px;
+  border-radius:10px;
+  margin-bottom:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 
 input{
-  padding:10px;
+  padding:12px;
   margin:5px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  width:220px;
 }
 
 button{
-  padding:10px;
-  background:#4CAF50;
-  color:white;
+  padding:12px 18px;
   border:none;
+  border-radius:6px;
+  background:#2563eb;
+  color:white;
   cursor:pointer;
+  font-weight:bold;
 }
 
-a{
-  color:white;
-  text-decoration:none;
+button:hover{
+  background:#1d4ed8;
 }
+
+.status-aberto{
+  color:red;
+  font-weight:bold;
+}
+
+.status-andamento{
+  color:orange;
+  font-weight:bold;
+}
+
+.status-finalizado{
+  color:green;
+  font-weight:bold;
+}
+
+.stats{
+  margin-bottom:20px;
+  font-size:18px;
+}
+
 </style>
 </head>
 
@@ -55,39 +99,44 @@ a{
 <div class="header">
 
   <div>
-    Bits & Bytes
+    <strong>Bits & Bytes</strong>
   </div>
 
   <div>
-    <a href="/clientes">Clientes</a> |
-    <a href="#" onclick="logout()">
-      Sair
-    </a>
+    <a href="/clientes">Clientes</a>
+    <a href="/admin">Admin</a>
+    <a href="#" onclick="logout()">Sair</a>
   </div>
 
 </div>
 
 <div class="container">
 
-  <h3 id="plano">
+  <h2 id="plano">
     Plano: Carregando...
-  </h3>
+  </h2>
 
-  <h3>Resumo</h3>
+  <div class="stats" id="stats"></div>
 
-  <div id="stats"></div>
+  <div class="card">
 
-  <h3>Criar Chamado</h3>
+    <h3>Criar Chamado</h3>
 
-  <input id="cpfcnpj" placeholder="CPF/CNPJ">
-  <input id="cliente" placeholder="Cliente">
-  <input id="telefone" placeholder="Telefone">
-  <input id="equipamento" placeholder="Equipamento">
-  <input id="problema" placeholder="Problema">
+    <input id="cpfcnpj" placeholder="CPF/CNPJ">
 
-  <button onclick="criar()">
-    Criar
-  </button>
+    <input id="cliente" placeholder="Cliente">
+
+    <input id="telefone" placeholder="Telefone">
+
+    <input id="equipamento" placeholder="Equipamento">
+
+    <input id="problema" placeholder="Problema">
+
+    <button onclick="criar()">
+      Criar Chamado
+    </button>
+
+  </div>
 
   <h3>Chamados</h3>
 
@@ -97,8 +146,8 @@ a{
 
 <script>
 
-const stats = document.getElementById("stats");
 const lista = document.getElementById("lista");
+const stats = document.getElementById("stats");
 
 let chamados = [];
 
@@ -108,21 +157,31 @@ let chamados = [];
 
 async function loadUser(){
 
-  const res = await fetch("/me", {
-    credentials:"include"
-  });
+  try {
 
-  if(res.status === 401){
+    const res = await fetch("/me", {
+      credentials:"include"
+    });
 
-    window.location.href="/";
-    return;
+    if(res.status === 401){
+
+      window.location.href="/";
+      return;
+
+    }
+
+    const data = await res.json();
+
+    document.getElementById("plano").innerText =
+      "Plano: " + (
+        data.user.role || "Padrão"
+      );
+
+  } catch(err){
+
+    console.error(err);
 
   }
-
-  const data = await res.json();
-
-  document.getElementById("plano").innerText =
-    "Plano: " + (data.user.role || "Padrão");
 
 }
 
@@ -132,50 +191,82 @@ async function loadUser(){
 
 async function load(){
 
-  const res = await fetch("/tickets", {
-    credentials:"include"
-  });
+  try {
 
-  if(res.status === 401){
+    const res = await fetch("/tickets", {
+      credentials:"include"
+    });
 
-    window.location.href="/";
-    return;
+    if(res.status === 401){
+
+      window.location.href="/";
+      return;
+
+    }
+
+    chamados = await res.json();
+
+    lista.innerHTML = "";
+
+    chamados.reverse().forEach(c => {
+
+      const statusClass =
+        c.status === "aberto"
+        ? "status-aberto"
+        : c.status === "andamento"
+        ? "status-andamento"
+        : "status-finalizado";
+
+      lista.innerHTML += `
+
+        <div class="card">
+
+          <b>${c.cliente || ""}</b>
+
+          <br><br>
+
+          📱 ${c.telefone || ""}
+
+          <br>
+
+          💻 ${c.equipamento || ""}
+
+          <br>
+
+          🛠 ${c.problema || ""}
+
+          <br><br>
+
+          Status:
+          <span class="${statusClass}">
+            ${c.status || ""}
+          </span>
+
+          <br><br>
+
+          <button onclick="status('${c._id}')">
+            Alterar Status
+          </button>
+
+          <button onclick="del('${c._id}')">
+            Excluir
+          </button>
+
+        </div>
+
+      `;
+
+    });
+
+    loadStats();
+
+  } catch(err){
+
+    console.error(err);
+
+    alert("Erro ao carregar chamados");
 
   }
-
-  chamados = await res.json();
-
-  lista.innerHTML = "";
-
-  chamados.forEach(c => {
-
-    lista.innerHTML += `
-      <div class="card">
-
-        <b>${c.cliente || ""}</b><br><br>
-
-        📱 ${c.telefone || ""}<br>
-        💻 ${c.equipamento || ""}<br>
-        🛠 ${c.problema || ""}<br><br>
-
-        📌 ${c.status || ""}
-
-        <br><br>
-
-        <button onclick="status('${c._id}')">
-          Status
-        </button>
-
-        <button onclick="del('${c._id}')">
-          Excluir
-        </button>
-
-      </div>
-    `;
-
-  });
-
-  loadStats();
 
 }
 
@@ -201,11 +292,11 @@ function loadStats(){
     ).length;
 
   stats.innerHTML = `
-    🔴 ${aberto}
+    🔴 Abertos: ${aberto}
     |
-    🟡 ${andamento}
+    🟡 Andamento: ${andamento}
     |
-    🟢 ${finalizado}
+    🟢 Finalizados: ${finalizado}
   `;
 
 }
@@ -216,43 +307,68 @@ function loadStats(){
 
 async function criar(){
 
-  await fetch("/tickets", {
+  try {
 
-    method:"POST",
+    const res = await fetch("/tickets", {
 
-    headers:{
-      "Content-Type":"application/json"
-    },
+      method:"POST",
 
-    credentials:"include",
+      headers:{
+        "Content-Type":"application/json"
+      },
 
-    body:JSON.stringify({
+      credentials:"include",
 
-      cliente:
-        document.getElementById("cliente").value,
+      body:JSON.stringify({
 
-      telefone:
-        document.getElementById("telefone").value,
+        cliente:
+          document.getElementById("cliente").value,
 
-      cpfcnpj:
-        document.getElementById("cpfcnpj").value,
+        telefone:
+          document.getElementById("telefone").value,
 
-      equipamento:
-        document.getElementById("equipamento").value,
+        cpfcnpj:
+          document.getElementById("cpfcnpj").value,
 
-      problema:
-        document.getElementById("problema").value
+        equipamento:
+          document.getElementById("equipamento").value,
 
-    })
+        problema:
+          document.getElementById("problema").value
 
-  });
+      })
 
-  load();
+    });
+
+    const data = await res.json();
+
+    if(!res.ok){
+
+      alert(data.message || "Erro");
+      return;
+
+    }
+
+    document.getElementById("cliente").value = "";
+    document.getElementById("telefone").value = "";
+    document.getElementById("cpfcnpj").value = "";
+    document.getElementById("equipamento").value = "";
+    document.getElementById("problema").value = "";
+
+    load();
+
+  } catch(err){
+
+    console.error(err);
+
+    alert("Erro ao criar chamado");
+
+  }
 
 }
 
 /* =========================
-   STATUS
+   STATUS + WHATSAPP
 ========================= */
 
 async function status(id){
@@ -265,29 +381,54 @@ async function status(id){
 
   let novo = "aberto";
 
-  if(t.status === "aberto")
+  if(t.status === "aberto"){
+
     novo = "andamento";
 
-  else if(t.status === "andamento")
+  } else if(t.status === "andamento"){
+
     novo = "finalizado";
 
-  await fetch("/tickets/" + id, {
+  }
 
-    method:"PUT",
+  try {
 
-    headers:{
-      "Content-Type":"application/json"
-    },
+    const res = await fetch("/tickets/" + id, {
 
-    credentials:"include",
+      method:"PUT",
 
-    body:JSON.stringify({
-      status:novo
-    })
+      headers:{
+        "Content-Type":"application/json"
+      },
 
-  });
+      credentials:"include",
 
-  load();
+      body:JSON.stringify({
+        status:novo
+      })
+
+    });
+
+    const data = await res.json();
+
+    if(data.whatsapp){
+
+      window.open(
+        data.whatsapp,
+        "_blank"
+      );
+
+    }
+
+    load();
+
+  } catch(err){
+
+    console.error(err);
+
+    alert("Erro ao atualizar status");
+
+  }
 
 }
 
@@ -297,17 +438,27 @@ async function status(id){
 
 async function del(id){
 
-  if(!confirm("Excluir chamado?"))
+  if(!confirm("Deseja excluir este chamado?"))
     return;
 
-  await fetch("/tickets/" + id, {
+  try {
 
-    method:"DELETE",
-    credentials:"include"
+    await fetch("/tickets/" + id, {
 
-  });
+      method:"DELETE",
+      credentials:"include"
 
-  load();
+    });
+
+    load();
+
+  } catch(err){
+
+    console.error(err);
+
+    alert("Erro ao excluir");
+
+  }
 
 }
 

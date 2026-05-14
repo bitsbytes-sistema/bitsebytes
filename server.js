@@ -242,18 +242,46 @@ app.put("/tickets/:id", auth, async (req, res) => {
     }
   );
 
-  res.json(ticket);
+  if (!ticket) {
+    return res.status(404).json({
+      success: false
+    });
+  }
 
-});
+  let mensagem = "";
 
-app.delete("/tickets/:id", auth, async (req, res) => {
+  if (ticket.status === "aberto") {
 
-  await Ticket.findByIdAndDelete(
-    req.params.id
-  );
+    mensagem =
+      `Olá ${ticket.cliente}, seu chamado foi aberto com sucesso na Bits & Bytes.`;
+
+  } else if (ticket.status === "andamento") {
+
+    mensagem =
+      `Olá ${ticket.cliente}, seu equipamento está em andamento na assistência técnica.`;
+
+  } else if (ticket.status === "finalizado") {
+
+    mensagem =
+      `Olá ${ticket.cliente}, seu equipamento foi finalizado e está pronto para retirada.`;
+
+  }
+
+  let whatsapp = null;
+
+  if (ticket.telefone) {
+
+    const numero =
+      ticket.telefone.replace(/\D/g, "");
+
+    whatsapp =
+      `https://wa.me/55${numero}?text=${encodeURIComponent(mensagem)}`;
+  }
 
   res.json({
-    success: true
+    success: true,
+    ticket,
+    whatsapp
   });
 
 });

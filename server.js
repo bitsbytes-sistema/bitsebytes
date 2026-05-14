@@ -450,18 +450,25 @@ app.put("/tickets/:id", auth, async (req, res) => {
     }
 
     /* =========================
-       TELEFONE
+       TELEFONE (NOVO + ANTIGO)
     ========================= */
+
+    const telefoneCliente =
+
+      ticket.telefone ||
+
+      ticket.celular ||
+
+      ticket.fone ||
+
+      "";
 
     let whatsapp = null;
 
-    if (
-      ticket.telefone &&
-      ticket.telefone !== ""
-    ) {
+    if (telefoneCliente !== "") {
 
       let numero =
-        ticket.telefone
+        telefoneCliente
         .replace(/\D/g, "");
 
       if (!numero.startsWith("55")) {

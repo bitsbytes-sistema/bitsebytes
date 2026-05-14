@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 
 /* ===================== */
@@ -29,7 +30,9 @@ const LIMITE_CLIENTE = 3;
 
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({
+  extended: true
+}));
 
 app.use(
   cors({
@@ -38,9 +41,15 @@ app.use(
   })
 );
 
+/* ===================== */
+/* SESSION */
+/* ===================== */
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "segredo",
+
+    secret:
+      process.env.SESSION_SECRET || "segredo",
 
     resave: false,
 
@@ -51,71 +60,182 @@ app.use(
     }),
 
     cookie: {
+
       httpOnly: true,
 
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge:
+        1000 * 60 * 60 * 24,
 
       secure: true,
 
       sameSite: "lax"
+
     }
+
   })
 );
 
-app.use(express.static(path.join(__dirname, "public")));
+/* ===================== */
+/* STATIC */
+/* ===================== */
+
+app.use(
+  express.static(
+    path.join(__dirname, "public")
+  )
+);
+
+/* ===================== */
+/* ROTAS FRONT */
+/* ===================== */
+
+app.get("/", (req, res) => {
+
+  res.sendFile(
+    path.join(
+      __dirname,
+      "public",
+      "index.html"
+    )
+  );
+
+});
+
+app.get("/dashboard", (req, res) => {
+
+  res.sendFile(
+    path.join(
+      __dirname,
+      "public",
+      "dashboard.html"
+    )
+  );
+
+});
+
+app.get("/clientes", (req, res) => {
+
+  res.sendFile(
+    path.join(
+      __dirname,
+      "public",
+      "clientes.html"
+    )
+  );
+
+});
+
+app.get("/admin", (req, res) => {
+
+  res.sendFile(
+    path.join(
+      __dirname,
+      "public",
+      "admin.html"
+    )
+  );
+
+});
+
+app.get("/painel", (req, res) => {
+
+  res.sendFile(
+    path.join(
+      __dirname,
+      "public",
+      "painel.html"
+    )
+  );
+
+});
 
 /* ===================== */
 /* MONGO */
 /* ===================== */
 
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log("Mongo conectado"))
-  .catch(err => console.log("ERRO MONGO:", err));
+mongoose.connect(
+  process.env.MONGO_URL
+)
+.then(() => {
+
+  console.log("Mongo conectado");
+
+})
+.catch(err => {
+
+  console.log(
+    "ERRO MONGO:",
+    err
+  );
+
+});
 
 /* ===================== */
 /* MODELS */
 /* ===================== */
 
-const Company = mongoose.model("Company", {
-  name: String,
-  plan: String
-});
+const Company =
+  mongoose.model(
+    "Company",
+    {
+      name: String,
+      plan: String
+    }
+  );
 
-const User = mongoose.model("User", {
-  username: String,
-  password: String,
-  role: String,
-  companyId: String
-});
+const User =
+  mongoose.model(
+    "User",
+    {
+      username: String,
+      password: String,
+      role: String,
+      companyId: String
+    }
+  );
 
-const Ticket = mongoose.model("Ticket", {
-  companyId: String,
-  cliente: String,
-  telefone: String,
-  cpfcnpj: String,
-  equipamento: String,
-  problema: String,
-  status: {
-    type: String,
-    default: "aberto"
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: Date
-});
+const Ticket =
+  mongoose.model(
+    "Ticket",
+    {
+      companyId: String,
+
+      cliente: String,
+
+      telefone: String,
+
+      cpfcnpj: String,
+
+      equipamento: String,
+
+      problema: String,
+
+      status: {
+        type: String,
+        default: "aberto"
+      },
+
+      createdAt: {
+        type: Date,
+        default: Date.now
+      },
+
+      updatedAt: Date
+    }
+  );
 
 /* ===================== */
 /* DATA */
 /* ===================== */
 
-function getDataHora() {
+function getDataHora(){
 
-  return new Date().toLocaleString(
+  return new Date()
+  .toLocaleString(
     "pt-BR",
     {
-      timeZone: "America/Cuiaba",
+      timeZone:
+        "America/Cuiaba",
       hour12: false
     }
   );
@@ -126,11 +246,13 @@ function getDataHora() {
 /* AUTH */
 /* ===================== */
 
-function auth(req, res, next) {
+function auth(req, res, next){
 
-  if (!req.session.user) {
+  if(!req.session.user){
 
-    return res.status(401).json({
+    return res
+    .status(401)
+    .json({
       error: "not_logged"
     });
 
@@ -148,11 +270,13 @@ app.post("/login", async (req, res) => {
 
   try {
 
-    const user = await User.findOne({
-      username: req.body.username
-    });
+    const user =
+      await User.findOne({
+        username:
+          req.body.username
+      });
 
-    if (!user) {
+    if(!user){
 
       return res.json({
         success: false
@@ -160,12 +284,13 @@ app.post("/login", async (req, res) => {
 
     }
 
-    const ok = await bcrypt.compare(
-      req.body.password,
-      user.password
-    );
+    const ok =
+      await bcrypt.compare(
+        req.body.password,
+        user.password
+      );
 
-    if (!ok) {
+    if(!ok){
 
       return res.json({
         success: false
@@ -177,11 +302,14 @@ app.post("/login", async (req, res) => {
 
       _id: user._id,
 
-      username: user.username,
+      username:
+        user.username,
 
-      role: user.role,
+      role:
+        user.role,
 
-      companyId: user.companyId
+      companyId:
+        user.companyId
 
     };
 
@@ -193,7 +321,7 @@ app.post("/login", async (req, res) => {
 
     });
 
-  } catch (err) {
+  } catch(err){
 
     console.log(err);
 
@@ -225,17 +353,23 @@ app.get("/logout", (req, res) => {
 
 app.get("/me", (req, res) => {
 
-  if (!req.session.user) {
+  if(!req.session.user){
 
-    return res.status(401).json({
+    return res
+    .status(401)
+    .json({
       logged: false
     });
 
   }
 
   res.json({
+
     logged: true,
-    user: req.session.user
+
+    user:
+      req.session.user
+
   });
 
 });
@@ -244,209 +378,275 @@ app.get("/me", (req, res) => {
 /* LISTAR CHAMADOS */
 /* ===================== */
 
-app.get("/api/tickets", auth, async (req, res) => {
+app.get(
+  "/api/tickets",
+  auth,
+  async (req, res) => {
 
-  const data = await Ticket.find()
-    .sort({ createdAt: -1 });
+    const data =
+      await Ticket.find()
+      .sort({
+        createdAt: -1
+      });
 
-  res.json(data);
+    res.json(data);
 
-});
+  }
+);
 
 /* ===================== */
 /* CRIAR CHAMADO */
 /* ===================== */
 
-app.post("/api/tickets", auth, async (req, res) => {
+app.post(
+  "/api/tickets",
+  auth,
+  async (req, res) => {
 
-  const t = await Ticket.create({
+    const t =
+      await Ticket.create({
 
-    cliente: req.body.cliente,
+        cliente:
+          req.body.cliente,
 
-    telefone: req.body.telefone,
+        telefone:
+          req.body.telefone,
 
-    cpfcnpj: req.body.cpfcnpj,
+        cpfcnpj:
+          req.body.cpfcnpj,
 
-    equipamento: req.body.equipamento,
+        equipamento:
+          req.body.equipamento,
 
-    problema: req.body.problema,
+        problema:
+          req.body.problema,
 
-    status: "aberto",
+        status: "aberto"
 
-    createdAt: new Date()
+      });
 
-  });
+    res.json(t);
 
-  res.json(t);
-
-});
+  }
+);
 
 /* ===================== */
 /* ABRIR CHAMADO */
 /* ===================== */
 
-app.post("/abrir-chamado", async (req, res) => {
+app.post(
+  "/abrir-chamado",
+  async (req, res) => {
 
-  try {
+    try {
 
-    const company = await Company.findOne({
-      plan: "enterprise"
-    });
+      const company =
+        await Company.findOne({
+          plan: "enterprise"
+        });
 
-    const doc = String(
-      req.body.cpfcnpj
-    ).replace(/\D/g, "");
+      const doc =
+        String(
+          req.body.cpfcnpj
+        ).replace(/\D/g, "");
 
-    const chamadosAbertos =
-      await Ticket.countDocuments({
+      const chamadosAbertos =
+        await Ticket.countDocuments({
 
-        companyId: company?._id,
+          companyId:
+            company?._id,
+
+          cpfcnpj: doc,
+
+          status: {
+            $ne: "finalizado"
+          }
+
+        });
+
+      if(chamadosAbertos >= LIMITE_CLIENTE){
+
+        return res
+        .status(403)
+        .json({
+
+          ok: false,
+
+          error:
+            "Você já possui 3 chamados em andamento."
+
+        });
+
+      }
+
+      await Ticket.create({
+
+        companyId:
+          company?._id,
+
+        cliente:
+          req.body.cliente,
+
+        telefone:
+          req.body.telefone,
 
         cpfcnpj: doc,
 
-        status: {
-          $ne: "finalizado"
+        equipamento:
+          req.body.equipamento,
+
+        problema:
+          req.body.problema,
+
+        status: "aberto"
+
+      });
+
+      return res.json({
+        ok: true
+      });
+
+    } catch(err){
+
+      console.log(err);
+
+      return res
+      .status(500)
+      .json({
+        ok: false
+      });
+
+    }
+
+  }
+);
+
+/* ===================== */
+/* UPDATE STATUS */
+/* ===================== */
+
+app.put(
+  "/api/tickets/:id",
+  auth,
+  async (req, res) => {
+
+    const t =
+      await Ticket.findByIdAndUpdate(
+
+        req.params.id,
+
+        {
+          ...req.body,
+          updatedAt:
+            new Date()
+        },
+
+        {
+          new: true
         }
 
-      });
+      );
 
-    if (chamadosAbertos >= LIMITE_CLIENTE) {
+    if(!t){
 
-      return res.status(403).json({
-
-        ok: false,
-
-        error:
-          "Você já possui 3 chamados em andamento."
-
+      return res
+      .status(404)
+      .json({
+        error: true
       });
 
     }
 
-    await Ticket.create({
+    let telefone =
+      String(
+        t.telefone || ""
+      )
+      .replace(/\D/g, "");
 
-      companyId: company?._id,
+    if(!telefone){
 
-      cliente: req.body.cliente,
+      return res.json({
+        ok: true,
+        whatsapp: null
+      });
 
-      telefone: req.body.telefone,
-
-      cpfcnpj: doc,
-
-      equipamento: req.body.equipamento,
-
-      problema: req.body.problema,
-
-      status: "aberto"
-
-    });
-
-    return res.json({
-      ok: true
-    });
-
-  } catch (err) {
-
-    console.log(err);
-
-    return res.status(500).json({
-      ok: false
-    });
-
-  }
-
-});
-
-/* ===================== */
-/* UPDATE + WHATSAPP */
-/* ===================== */
-
-app.put("/api/tickets/:id", auth, async (req, res) => {
-
-  const t = await Ticket.findByIdAndUpdate(
-
-    req.params.id,
-
-    {
-      ...req.body,
-      updatedAt: new Date()
-    },
-
-    {
-      new: true
     }
 
-  );
+    /* REMOVE 55 */
 
-  if (!t) {
+    if(
+      telefone.startsWith("55")
+    ){
 
-    return res.status(404).json({
-      error: true
-    });
+      telefone =
+        telefone.substring(2);
 
-  }
+    }
 
-  let telefone =
-    String(t.telefone || "")
-    .replace(/\D/g, "");
+    /* ADICIONA 9 */
 
-  /* REMOVE 55 DUPLICADO */
+    if(
+      telefone.length === 10
+    ){
 
-  if (telefone.startsWith("55")) {
+      telefone =
+        telefone.slice(0, 2)
+        + "9"
+        + telefone.slice(2);
 
-    telefone =
-      telefone.substring(2);
-
-  }
-
-  /* ADICIONA 9 */
-
-  if (telefone.length === 10) {
+    }
 
     telefone =
-      telefone.slice(0, 2) +
-      "9" +
-      telefone.slice(2);
+      "55" + telefone;
 
-  }
+    let tipoDoc = "Documento";
 
-  /* BRASIL */
+    const doc =
+      String(
+        t.cpfcnpj || ""
+      )
+      .replace(/\D/g, "");
 
-  telefone = "55" + telefone;
+    if(doc.length === 11){
 
-  let tipoDoc = "Documento";
+      tipoDoc = "CPF";
 
-  const doc =
-    String(t.cpfcnpj || "")
-    .replace(/\D/g, "");
+    }
 
-  if (doc.length === 11) tipoDoc = "CPF";
+    if(doc.length === 14){
 
-  if (doc.length === 14) tipoDoc = "CNPJ";
+      tipoDoc = "CNPJ";
 
-  let msgFinal = "";
+    }
 
-  if (t.status === "finalizado") {
+    let msgFinal = "";
 
-    msgFinal =
-      "Seu equipamento já está pronto para retirada.";
+    if(
+      t.status === "finalizado"
+    ){
 
-  } else {
+      msgFinal =
+        "Seu equipamento já está pronto para retirada.";
 
-    msgFinal =
-      "Seu atendimento continua em andamento.";
+    }
 
-  }
+    else {
 
-  const msg = `
-Bits & Bytes Assistência Técnica
+      msgFinal =
+        "Seu atendimento continua em andamento.";
+
+    }
+
+    const msg = `Bits & Bytes Assistência Técnica
 
 Status: ${String(t.status).toUpperCase()}
 
 Cliente: ${t.cliente}
+
 ${tipoDoc}: ${t.cpfcnpj || "Não informado"}
 
-Equipamento: ${t.equipamento}
+Equipamento:
+${t.equipamento}
 
 Problema:
 ${t.problema || "Não informado"}
@@ -454,53 +654,67 @@ ${t.problema || "Não informado"}
 Atualizado em:
 ${getDataHora()}
 
-${msgFinal}
-`.trim();
+${msgFinal}`;
 
-  const whatsapp =
-    `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+    const whatsapp =
+      `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
 
-  res.json({
-    ok: true,
-    whatsapp
-  });
+    res.json({
 
-});
+      ok: true,
+
+      whatsapp
+
+    });
+
+  }
+);
 
 /* ===================== */
 /* DELETE */
 /* ===================== */
 
-app.delete("/api/tickets/:id", auth, async (req, res) => {
+app.delete(
+  "/api/tickets/:id",
+  auth,
+  async (req, res) => {
 
-  try {
+    try {
 
-    await Ticket.findByIdAndDelete(
-      req.params.id
-    );
+      await Ticket
+      .findByIdAndDelete(
+        req.params.id
+      );
 
-    res.json({
-      ok: true
-    });
+      res.json({
+        ok: true
+      });
 
-  } catch {
+    } catch {
 
-    res.status(500).json({
-      ok: false
-    });
+      res
+      .status(500)
+      .json({
+        ok: false
+      });
+
+    }
 
   }
-
-});
+);
 
 /* ===================== */
 /* START */
 /* ===================== */
 
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(
+  PORT,
+  "0.0.0.0",
+  () => {
 
-  console.log(
-    "Rodando na porta " + PORT
-  );
+    console.log(
+      "Rodando na porta " + PORT
+    );
 
-});
+  }
+);

@@ -208,7 +208,7 @@ async function load(){
 
     lista.innerHTML = "";
 
-    chamados.reverse().forEach(c => {
+    chamados.forEach(c => {
 
       const statusClass =
         c.status === "aberto"
@@ -377,7 +377,9 @@ async function status(id){
     x => x._id === id
   );
 
-  if(!t) return;
+  if(!t){
+    return;
+  }
 
   let novo = "aberto";
 
@@ -385,11 +387,16 @@ async function status(id){
 
     novo = "andamento";
 
-  } else if(t.status === "andamento"){
+  }
+
+  else if(t.status === "andamento"){
 
     novo = "finalizado";
 
   }
+
+  // 🔥 ABRE POPUP ANTES
+  const popup = window.open("", "_blank");
 
   try {
 
@@ -411,11 +418,18 @@ async function status(id){
 
     const data = await res.json();
 
+    console.log(data);
+
     if(data.whatsapp){
 
-      window.open(
-        data.whatsapp,
-        "_blank"
+      popup.location.href = data.whatsapp;
+
+    } else {
+
+      popup.close();
+
+      alert(
+        "Telefone não encontrado"
       );
 
     }
@@ -426,7 +440,11 @@ async function status(id){
 
     console.error(err);
 
-    alert("Erro ao atualizar status");
+    popup.close();
+
+    alert(
+      "Erro ao atualizar status"
+    );
 
   }
 
@@ -438,14 +456,16 @@ async function status(id){
 
 async function del(id){
 
-  if(!confirm("Deseja excluir este chamado?"))
+  if(!confirm("Deseja excluir este chamado?")){
     return;
+  }
 
   try {
 
     await fetch("/tickets/" + id, {
 
       method:"DELETE",
+
       credentials:"include"
 
     });
@@ -471,6 +491,7 @@ function logout(){
   fetch("/logout", {
 
     method:"POST",
+
     credentials:"include"
 
   }).then(() => {

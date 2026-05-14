@@ -44,9 +44,11 @@ if (!SESSION_SECRET) {
 
 app.use(express.json());
 
-app.use(express.urlencoded({
-  extended: true
-}));
+app.use(
+  express.urlencoded({
+    extended: true
+  })
+);
 
 app.use(
   cors({
@@ -450,7 +452,7 @@ app.put("/tickets/:id", auth, async (req, res) => {
     }
 
     /* =========================
-       TELEFONE (NOVO + ANTIGO)
+       TELEFONE
     ========================= */
 
     const telefoneCliente =
@@ -460,6 +462,10 @@ app.put("/tickets/:id", auth, async (req, res) => {
       ticket.celular ||
 
       ticket.fone ||
+
+      ticket.numero ||
+
+      ticket.whatsapp ||
 
       "";
 
@@ -471,11 +477,26 @@ app.put("/tickets/:id", auth, async (req, res) => {
         telefoneCliente
         .replace(/\D/g, "");
 
-      if (!numero.startsWith("55")) {
+      /* REMOVE 55 DUPLICADO */
+      if (numero.startsWith("55")) {
 
-        numero = "55" + numero;
+        numero =
+          numero.substring(2);
 
       }
+
+      /* CORRIGE NÚMERO SEM 9 */
+      if (numero.length === 10) {
+
+        numero =
+          numero.slice(0, 2) +
+          "9" +
+          numero.slice(2);
+
+      }
+
+      /* BRASIL */
+      numero = "55" + numero;
 
       whatsapp =
         `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
@@ -484,10 +505,6 @@ app.put("/tickets/:id", auth, async (req, res) => {
 
     console.log("WHATSAPP:");
     console.log(whatsapp);
-
-    /* =========================
-       RESPONSE
-    ========================= */
 
     res.json({
 

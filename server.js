@@ -6,53 +6,28 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const path = require("path");
 const bcrypt = require("bcrypt");
-const cors = require("cors");
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
 /* ===================== */
-/* TRUST PROXY RENDER */
+/* TRUST PROXY */
 /* ===================== */
 
 app.set("trust proxy", 1);
-
-/* ===================== */
-/* CONFIG */
-/* ===================== */
-
-const LIMITE_CLIENTE = 3;
 
 /* ===================== */
 /* MIDDLEWARES */
 /* ===================== */
 
 app.use(express.json());
-
-app.use(express.urlencoded({
-  extended: true
-}));
-
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
-
-/* ===================== */
-/* SESSION */
-/* ===================== */
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-
-    secret:
-      process.env.SESSION_SECRET || "segredo",
+    secret: process.env.SESSION_SECRET || "segredo",
 
     resave: false,
-
     saveUninitialized: false,
 
     store: MongoStore.create({
@@ -60,206 +35,87 @@ app.use(
     }),
 
     cookie: {
-
       httpOnly: true,
-
-      maxAge:
-        1000 * 60 * 60 * 24,
-
       secure: true,
-
-      sameSite: "lax"
-
-    }
-
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24,
+    },
   })
 );
 
-/* ===================== */
-/* STATIC */
-/* ===================== */
-
-app.use(
-  express.static(
-    path.join(__dirname, "public")
-  )
-);
-
-/* ===================== */
-/* ROTAS FRONT */
-/* ===================== */
-
-app.get("/", (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "index.html"
-    )
-  );
-
-});
-
-app.get("/dashboard", (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "dashboard.html"
-    )
-  );
-
-});
-
-app.get("/clientes", (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "clientes.html"
-    )
-  );
-
-});
-
-app.get("/admin", (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "admin.html"
-    )
-  );
-
-});
-
-app.get("/painel", (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "painel.html"
-    )
-  );
-
-});
+app.use(express.static(path.join(__dirname, "public")));
 
 /* ===================== */
 /* MONGO */
 /* ===================== */
 
-mongoose.connect(
-  process.env.MONGO_URL
-)
-.then(() => {
-
-  console.log("Mongo conectado");
-
-})
-.catch(err => {
-
-  console.log(
-    "ERRO MONGO:",
-    err
-  );
-
-});
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("Mongo conectado"))
+  .catch((err) => console.log("ERRO MONGO:", err));
 
 /* ===================== */
 /* MODELS */
 /* ===================== */
 
-const Company =
-  mongoose.model(
-    "Company",
-    {
-      name: String,
-      plan: String
-    }
-  );
+const Company = mongoose.model("Company", {
+  name: String,
+  plan: String,
+});
 
-const User =
-  mongoose.model(
-    "User",
-    {
-      username: String,
-      password: String,
-      role: String,
-      companyId: String
-    }
-  );
+const User = mongoose.model("User", {
+  username: String,
+  password: String,
+  role: String,
+  companyId: String,
+});
 
-const Ticket =
-  mongoose.model(
-    "Ticket",
-    {
-      companyId: String,
+const Ticket = mongoose.model("Ticket", {
+  companyId: String,
 
-      cliente: String,
+  cliente: String,
+  telefone: String,
+  cpfcnpj: String,
 
-      telefone: String,
+  equipamento: String,
+  problema: String,
 
-      cpfcnpj: String,
+  status: {
+    type: String,
+    default: "aberto",
+  },
 
-      equipamento: String,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 
-      problema: String,
-
-      status: {
-        type: String,
-        default: "aberto"
-      },
-
-      createdAt: {
-        type: Date,
-        default: Date.now
-      },
-
-      updatedAt: Date
-    }
-  );
+  updatedAt: Date,
+});
 
 /* ===================== */
 /* DATA */
 /* ===================== */
 
-function getDataHora(){
-
-  return new Date()
-  .toLocaleString(
-    "pt-BR",
-    {
-      timeZone:
-        "America/Cuiaba",
-      hour12: false
-    }
-  );
-
+function getDataHora() {
+  return new Date().toLocaleString("pt-BR", {
+    timeZone: "America/Cuiaba",
+    hour12: false,
+  });
 }
 
 /* ===================== */
 /* AUTH */
 /* ===================== */
 
-function auth(req, res, next){
-
-  if(!req.session.user){
-
-    return res
-    .status(401)
-    .json({
-      error: "not_logged"
+function auth(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({
+      error: "not_logged",
     });
-
   }
 
   next();
-
 }
 
 /* ===================== */
@@ -267,111 +123,82 @@ function auth(req, res, next){
 /* ===================== */
 
 app.post("/login", async (req, res) => {
-
   try {
+    const user = await User.findOne({
+      username: req.body.username,
+    });
 
-    const user =
-      await User.findOne({
-        username:
-          req.body.username
-      });
-
-    if(!user){
-
+    if (!user) {
       return res.json({
-        success: false
+        success: false,
       });
-
     }
 
-    const ok =
-      await bcrypt.compare(
-        req.body.password,
-        user.password
-      );
+    const ok = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
 
-    if(!ok){
-
+    if (!ok) {
       return res.json({
-        success: false
+        success: false,
       });
-
     }
 
     req.session.user = {
-
       _id: user._id,
-
-      username:
-        user.username,
-
-      role:
-        user.role,
-
-      companyId:
-        user.companyId
-
+      username: user.username,
+      role: user.role,
+      companyId: user.companyId,
     };
 
     req.session.save(() => {
-
-      return res.json({
-        success: true
+      res.json({
+        success: true,
       });
-
     });
 
-  } catch(err){
+  } catch (err) {
 
     console.log(err);
 
-    return res.json({
-      success: false
+    res.status(500).json({
+      success: false,
     });
 
   }
-
 });
 
 /* ===================== */
-/* LOGOUT */
+/* USER */
 /* ===================== */
 
-app.get("/logout", (req, res) => {
+app.get("/me", auth, async (req, res) => {
 
-  req.session.destroy(() => {
-
-    res.redirect("/");
-
-  });
-
-});
-
-/* ===================== */
-/* USER SESSION */
-/* ===================== */
-
-app.get("/me", (req, res) => {
-
-  if(!req.session.user){
-
-    return res
-    .status(401)
-    .json({
-      logged: false
-    });
-
-  }
+  const company =
+    await Company.findById(
+      req.session.user.companyId
+    );
 
   res.json({
-
-    logged: true,
-
-    user:
-      req.session.user
-
+    user: req.session.user,
+    company,
   });
 
+});
+
+/* ===================== */
+/* DASHBOARD */
+/* ===================== */
+
+app.get("/dashboard", (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "public",
+      "dashboard.html"
+    )
+  );
 });
 
 /* ===================== */
@@ -384,9 +211,12 @@ app.get(
   async (req, res) => {
 
     const data =
-      await Ticket.find()
+      await Ticket.find({
+        companyId:
+          req.session.user.companyId,
+      })
       .sort({
-        createdAt: -1
+        createdAt: -1,
       });
 
     res.json(data);
@@ -403,117 +233,55 @@ app.post(
   auth,
   async (req, res) => {
 
-    const t =
-      await Ticket.create({
-
-        cliente:
-          req.body.cliente,
-
-        telefone:
-          req.body.telefone,
-
-        cpfcnpj:
-          req.body.cpfcnpj,
-
-        equipamento:
-          req.body.equipamento,
-
-        problema:
-          req.body.problema,
-
-        status: "aberto"
-
-      });
-
-    res.json(t);
-
-  }
-);
-
-/* ===================== */
-/* ABRIR CHAMADO */
-/* ===================== */
-
-app.post(
-  "/abrir-chamado",
-  async (req, res) => {
-
     try {
 
       const company =
-        await Company.findOne({
-          plan: "enterprise"
-        });
+        await Company.findById(
+          req.session.user.companyId
+        );
 
-      const doc =
-        String(
-          req.body.cpfcnpj
-        ).replace(/\D/g, "");
+      if (!company) {
 
-      const chamadosAbertos =
-        await Ticket.countDocuments({
-
-          companyId:
-            company?._id,
-
-          cpfcnpj: doc,
-
-          status: {
-            $ne: "finalizado"
-          }
-
-        });
-
-      if(chamadosAbertos >= LIMITE_CLIENTE){
-
-        return res
-        .status(403)
-        .json({
-
+        return res.status(404).json({
           ok: false,
-
-          error:
-            "Você já possui 3 chamados em andamento."
-
+          error: "Empresa não encontrada",
         });
 
       }
 
-      await Ticket.create({
+      const t =
+        await Ticket.create({
 
-        companyId:
-          company?._id,
+          companyId:
+            req.session.user.companyId,
 
-        cliente:
-          req.body.cliente,
+          cliente:
+            req.body.cliente,
 
-        telefone:
-          req.body.telefone,
+          telefone:
+            req.body.telefone,
 
-        cpfcnpj: doc,
+          cpfcnpj:
+            req.body.cpfcnpj,
 
-        equipamento:
-          req.body.equipamento,
+          equipamento:
+            req.body.equipamento,
 
-        problema:
-          req.body.problema,
+          problema:
+            req.body.problema,
 
-        status: "aberto"
+          status: "aberto",
 
-      });
+        });
 
-      return res.json({
-        ok: true
-      });
+      res.json(t);
 
-    } catch(err){
+    } catch (err) {
 
       console.log(err);
 
-      return res
-      .status(500)
-      .json({
-        ok: false
+      res.status(500).json({
+        ok: false,
       });
 
     }
@@ -531,140 +299,103 @@ app.put(
   async (req, res) => {
 
     const t =
-      await Ticket.findByIdAndUpdate(
-
-        req.params.id,
-
+      await Ticket.findOneAndUpdate(
         {
-          ...req.body,
-          updatedAt:
-            new Date()
+          _id: req.params.id,
+
+          companyId:
+            req.session.user.companyId,
         },
 
         {
-          new: true
-        }
+          ...req.body,
+          updatedAt: new Date(),
+        },
 
+        {
+          new: true,
+        }
       );
 
-    if(!t){
+    if (!t) {
 
-      return res
-      .status(404)
-      .json({
-        error: true
+      return res.status(404).json({
+        error: true,
       });
 
     }
 
-    let telefone =
-      String(
-        t.telefone || ""
-      )
+    const telefone =
+      String(t.telefone || "")
       .replace(/\D/g, "");
 
-    if(!telefone){
+    if (!telefone) {
 
       return res.json({
         ok: true,
-        whatsapp: null
+        whatsapp: null,
       });
 
     }
-
-    /* REMOVE 55 */
-
-    if(
-      telefone.startsWith("55")
-    ){
-
-      telefone =
-        telefone.substring(2);
-
-    }
-
-    /* ADICIONA 9 */
-
-    if(
-      telefone.length === 10
-    ){
-
-      telefone =
-        telefone.slice(0, 2)
-        + "9"
-        + telefone.slice(2);
-
-    }
-
-    telefone =
-      "55" + telefone;
 
     let tipoDoc = "Documento";
 
     const doc =
-      String(
-        t.cpfcnpj || ""
-      )
+      String(t.cpfcnpj || "")
       .replace(/\D/g, "");
 
-    if(doc.length === 11){
-
+    if (doc.length === 11) {
       tipoDoc = "CPF";
-
     }
 
-    if(doc.length === 14){
-
+    if (doc.length === 14) {
       tipoDoc = "CNPJ";
-
     }
 
     let msgFinal = "";
 
-    if(
-      t.status === "finalizado"
-    ){
+    if (t.status === "finalizado") {
 
       msgFinal =
-        "Seu equipamento já está pronto para retirada.";
+`Seu equipamento já está pronto para retirada!
+Retire conosco ou entre em contato para mais informações.`;
+
+    } else {
+
+      msgFinal =
+`Acompanhe seu atendimento em andamento com nossa equipe.
+Qualquer atualização será informada por aqui.`;
 
     }
 
-    else {
+    const msg =
+`
+Bits & Bytes Assistência Técnica
 
-      msgFinal =
-        "Seu atendimento continua em andamento.";
-
-    }
-
-    const msg = `Bits & Bytes Assistência Técnica
-
-Status: ${String(t.status).toUpperCase()}
+Status do seu atendimento:
+${String(t.status).toUpperCase()}
 
 Cliente: ${t.cliente}
 
 ${tipoDoc}: ${t.cpfcnpj || "Não informado"}
 
-Equipamento:
-${t.equipamento}
+Equipamento: ${t.equipamento}
 
-Problema:
+Problema informado:
 ${t.problema || "Não informado"}
 
 Atualizado em:
 ${getDataHora()}
 
-${msgFinal}`;
+${msgFinal}
+`.trim();
 
     const whatsapp =
-      `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+      `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
 
-    res.json({
-
+    return res.json({
       ok: true,
-
-      whatsapp
-
+      whatsapp,
     });
 
   }
@@ -681,21 +412,23 @@ app.delete(
 
     try {
 
-      await Ticket
-      .findByIdAndDelete(
-        req.params.id
-      );
+      await Ticket.findOneAndDelete({
+
+        _id: req.params.id,
+
+        companyId:
+          req.session.user.companyId,
+
+      });
 
       res.json({
-        ok: true
+        ok: true,
       });
 
     } catch {
 
-      res
-      .status(500)
-      .json({
-        ok: false
+      res.status(500).json({
+        ok: false,
       });
 
     }
@@ -704,17 +437,27 @@ app.delete(
 );
 
 /* ===================== */
+/* LOGOUT */
+/* ===================== */
+
+app.get("/logout", (req, res) => {
+
+  req.session.destroy(() => {
+
+    res.redirect("/");
+
+  });
+
+});
+
+/* ===================== */
 /* START */
 /* ===================== */
 
-app.listen(
-  PORT,
-  "0.0.0.0",
-  () => {
+app.listen(PORT, "0.0.0.0", () => {
 
-    console.log(
-      "Rodando na porta " + PORT
-    );
+  console.log(
+    "Rodando na porta " + PORT
+  );
 
-  }
-);
+});

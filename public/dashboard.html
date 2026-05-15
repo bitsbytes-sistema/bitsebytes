@@ -78,7 +78,9 @@ a{
 
 <div class="container">
 
-  <h3 id="plano">Plano: Produção</h3>
+  <h3 id="plano">
+    Plano: Carregando...
+  </h3>
 
   <h3>Resumo</h3>
 
@@ -86,15 +88,30 @@ a{
 
   <h3>Criar Chamado</h3>
 
-  <input id="cpfcnpj" placeholder="CPF/CNPJ">
+  <input
+    id="cpfcnpj"
+    placeholder="CPF/CNPJ"
+  >
 
-  <input id="cliente" placeholder="Cliente">
+  <input
+    id="cliente"
+    placeholder="Cliente"
+  >
 
-  <input id="telefone" placeholder="Telefone">
+  <input
+    id="telefone"
+    placeholder="Telefone"
+  >
 
-  <input id="equipamento" placeholder="Equipamento">
+  <input
+    id="equipamento"
+    placeholder="Equipamento"
+  >
 
-  <input id="problema" placeholder="Problema">
+  <input
+    id="problema"
+    placeholder="Problema"
+  >
 
   <button onclick="criar()">
     Criar
@@ -119,10 +136,61 @@ const lista =
   document.getElementById("lista");
 
 /* ===================== */
-/* LOAD */
+/* VAR */
 /* ===================== */
 
 let chamados = [];
+
+/* ===================== */
+/* EMPRESA */
+/* ===================== */
+
+async function carregarEmpresa(){
+
+  try {
+
+    const res =
+      await fetch(
+        "/me",
+        {
+          credentials: "include"
+        }
+      );
+
+    if(res.status === 401){
+
+      window.location.href = "/";
+
+      return;
+    }
+
+    const data =
+      await res.json();
+
+    if(data.company){
+
+      document
+      .getElementById("plano")
+      .innerText =
+        "Plano: " +
+        (
+          data.company.plan ||
+          "Free"
+        );
+
+    }
+
+  } catch(err){
+
+    console.log(err);
+
+  }
+
+}
+
+/* ===================== */
+/* LOAD */
+/* ===================== */
 
 async function load(){
 
@@ -163,7 +231,7 @@ async function load(){
         : "Sem data";
 
       lista.innerHTML += `
-      
+
       <div class="card">
 
         <b>${c.cliente || ""}</b>
@@ -438,6 +506,8 @@ async function logout(){
 /* ===================== */
 /* INIT */
 /* ===================== */
+
+carregarEmpresa();
 
 load();
 

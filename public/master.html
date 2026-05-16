@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Master Admin</title>
+
+<style>
+
+body{
+  font-family:Arial;
+  background:#f2f2f2;
+  margin:0;
+}
+
+.header{
+  background:#111827;
+  color:white;
+  padding:20px;
+  font-size:20px;
+}
+
+.container{
+  padding:20px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  margin-bottom:15px;
+  border-radius:10px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.plan{
+  font-weight:bold;
+  color:#2563eb;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  Painel Master SaaS
+</div>
+
+<div class="container">
+
+  <div id="lista"></div>
+
+</div>
+
+<script>
+
+async function load(){
+
+  const res =
+    await fetch(
+      "/api/master/companies",
+      {
+        credentials: "include"
+      }
+    );
+
+  if(res.status === 403){
+
+    alert("Sem permissão");
+
+    location.href = "/dashboard";
+
+    return;
+  }
+
+  const data =
+    await res.json();
+
+  const lista =
+    document.getElementById("lista");
+
+  lista.innerHTML = "";
+
+  data.forEach(c => {
+
+    lista.innerHTML += `
+
+      <div class="card">
+
+        <h2>
+          ${c.name}
+        </h2>
+
+        <p class="plan">
+          Plano: ${c.plan}
+        </p>
+
+        <p>
+          Usuários:
+          ${c.usuarios}
+        </p>
+
+        <p>
+          Chamados:
+          ${c.chamados}
+        </p>
+
+        <p>
+          Status:
+          ${
+            c.active === false
+            ? "Bloqueado"
+            : "Ativo"
+          }
+        </p>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+load();
+
+</script>
+
+</body>
+</html>

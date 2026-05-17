@@ -1,32 +1,58 @@
 const mongoose = require("mongoose");
 
 const ticketSchema = new mongoose.Schema({
+
   cliente: {
     type: String,
     required: true,
-    trim: true,
+    trim: true
+  },
+
+  telefone: {
+    type: String,
+    default: ""
+  },
+
+  cpfcnpj: {
+    type: String,
+    default: ""
+  },
+
+  equipamento: {
+    type: String,
+    default: ""
   },
 
   problema: {
     type: String,
-    required: true,
+    required: true
   },
 
   status: {
     type: String,
-    enum: ["aberto", "andamento", "fechado"],
-    default: "aberto",
+    enum: [
+      "aberto",
+      "andamento",
+      "finalizado"
+    ],
+    default: "aberto"
   },
 
-  // 🔥 ISOLAMENTO SAAS
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "Company",
-    index: true,
-  },
+    index: true
+  }
+
 }, {
-  timestamps: true, // 🔥 createdAt / updatedAt automático
+
+  timestamps: true
+
 });
 
-module.exports = mongoose.model("Ticket", ticketSchema);
+module.exports =
+  mongoose.model(
+    "Ticket",
+    ticketSchema
+  );

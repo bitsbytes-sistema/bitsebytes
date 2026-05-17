@@ -168,28 +168,97 @@ app.post("/api/tickets", auth, async (req, res) => {
 /* UPDATE TICKET */
 /* ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
-  try {
-    const ticket = await Ticket.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        companyId: String(req.session.user.companyId)
-      },
-      {
-        status: req.body.status,
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
 
-    if (!ticket) {
-      return res.status(404).json({ error: true });
+  try {
+
+    const ticket =
+      await Ticket.findOneAndUpdate(
+
+        {
+          _id: req.params.id,
+          companyId: req.session.user.companyId
+        },
+
+        {
+          status: req.body.status,
+          updatedAt: new Date()
+        },
+
+        {
+          new: true
+        }
+
+      );
+
+    if(!ticket){
+
+      return res.status(404).json({
+        error: true
+      });
+
     }
 
-    res.json({ ok: true });
-  } catch (err) {
+    const telefone =
+      String(ticket.telefone || "")
+      .replace(/\D/g, "");
+
+    let mensagem = "";
+
+    if(ticket.status === "finalizado"){
+
+      mensagem =
+`Olá ${ticket.cliente}!
+
+Seu equipamento já está pronto para retirada.
+
+Equipamento:
+${ticket.equipamento}
+
+Problema:
+${ticket.problema}
+
+Bits & Bytes Assistência Técnica`;
+
+    } else {
+
+      mensagem =
+`Olá ${ticket.cliente}!
+
+Seu chamado agora está EM ANDAMENTO.
+
+Equipamento:
+${ticket.equipamento}
+
+Bits & Bytes Assistência Técnica`;
+
+    }
+
+    let whatsapp = null;
+
+    if(telefone){
+
+      whatsapp =
+`https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
+
+    }
+
+    res.json({
+
+      ok: true,
+      whatsapp
+
+    });
+
+  } catch(err){
+
     console.log(err);
-    res.status(500).json({ error: true });
+
+    res.status(500).json({
+      error: true
+    });
+
   }
+
 });
 
 /* ===================== */

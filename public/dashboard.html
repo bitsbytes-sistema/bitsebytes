@@ -336,10 +336,38 @@ function loadStats(){
 
 async function criar(){
 
+  const cliente =
+    document.getElementById("cliente").value.trim();
+
+  const telefone =
+    document.getElementById("telefone").value.trim();
+
+  const cpfcnpj =
+    document.getElementById("cpfcnpj").value.trim();
+
+  const equipamento =
+    document.getElementById("equipamento").value.trim();
+
+  const problema =
+    document.getElementById("problema").value.trim();
+
+  if(
+    !cliente ||
+    !telefone ||
+    !equipamento ||
+    !problema
+  ){
+    alert(
+      "Preencha todos os campos"
+    );
+    return;
+  }
+
   const res =
     await fetch(
       "/api/tickets",
       {
+
         method: "POST",
 
         headers:{
@@ -351,20 +379,11 @@ async function criar(){
 
         body: JSON.stringify({
 
-          cliente:
-            document.getElementById("cliente").value,
-
-          telefone:
-            document.getElementById("telefone").value,
-
-          cpfcnpj:
-            document.getElementById("cpfcnpj").value,
-
-          equipamento:
-            document.getElementById("equipamento").value,
-
-          problema:
-            document.getElementById("problema").value
+          cliente,
+          telefone,
+          cpfcnpj,
+          equipamento,
+          problema
 
         })
 
@@ -378,16 +397,13 @@ async function criar(){
     );
 
     return;
+
   }
 
   document.getElementById("cliente").value = "";
-
   document.getElementById("telefone").value = "";
-
   document.getElementById("cpfcnpj").value = "";
-
   document.getElementById("equipamento").value = "";
-
   document.getElementById("problema").value = "";
 
   load();

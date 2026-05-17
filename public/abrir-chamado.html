@@ -157,47 +157,112 @@ const form = document.getElementById("formChamado");
 const alerta = document.getElementById("alerta");
 
 form.addEventListener("submit", async (e) => {
+
   e.preventDefault();
 
   alerta.style.display = "none";
 
   const data = {
-    cliente: form.cliente.value,
-    telefone: form.telefone.value,
-    cpfcnpj: form.cpfcnpj.value,
-    equipamento: form.equipamento.value,
-    problema: form.problema.value
+
+    cliente:
+      form.cliente.value.trim(),
+
+    telefone:
+      form.telefone.value.trim(),
+
+    cpfcnpj:
+      form.cpfcnpj.value.trim(),
+
+    equipamento:
+      form.equipamento.value.trim(),
+
+    problema:
+      form.problema.value.trim()
+
   };
 
-  try {
-    const res = await fetch("/abrir-chamado", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data)
-    });
+  if(
+    !data.cliente ||
+    !data.telefone ||
+    !data.equipamento ||
+    !data.problema
+  ){
 
-    const json = await res.json();
+    alerta.className = "alerta erro";
+
+    alerta.innerText =
+      "Preencha todos os campos";
+
+    alerta.style.display = "block";
+
+    return;
+
+  }
+
+  try {
+
+    const res =
+      await fetch(
+        "/api/tickets",
+        {
+
+          method: "POST",
+
+          credentials: "include",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify(data)
+
+        }
+      );
+
+    const json =
+      await res.json();
 
     if (!res.ok) {
-      alerta.className = "alerta erro";
-      alerta.innerText = json.error || "Erro ao abrir chamado";
-      alerta.style.display = "block";
+
+      alerta.className =
+        "alerta erro";
+
+      alerta.innerText =
+        json.error ||
+        "Erro ao abrir chamado";
+
+      alerta.style.display =
+        "block";
+
       return;
+
     }
 
-    alerta.className = "alerta sucesso";
-    alerta.innerText = "Chamado aberto com sucesso!";
-    alerta.style.display = "block";
+    alerta.className =
+      "alerta sucesso";
+
+    alerta.innerText =
+      "Chamado aberto com sucesso!";
+
+    alerta.style.display =
+      "block";
 
     form.reset();
 
   } catch (err) {
-    alerta.className = "alerta erro";
-    alerta.innerText = "Erro de conexão com o servidor";
-    alerta.style.display = "block";
+
+    alerta.className =
+      "alerta erro";
+
+    alerta.innerText =
+      "Erro de conexão com o servidor";
+
+    alerta.style.display =
+      "block";
+
   }
+
 });
 </script>
 

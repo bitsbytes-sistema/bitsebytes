@@ -53,7 +53,7 @@ app.use(
 
       httpOnly: true,
 
-      secure: false,
+      secure: true,
 
       sameSite: "lax",
 

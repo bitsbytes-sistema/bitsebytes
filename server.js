@@ -124,6 +124,45 @@ function auth(
 }
 
 /* ===================== */
+/* MASTER */
+/* ===================== */
+function master(
+  req,
+  res,
+  next
+){
+
+  if(
+    !req.session.user
+  ){
+
+    return res
+    .status(401)
+    .json({
+      error: "not_logged"
+    });
+
+  }
+
+  if(
+    req.session.user.role !==
+    "master"
+  ){
+
+    return res
+    .status(403)
+    .json({
+      error: "not_master"
+    });
+
+  }
+
+  next();
+
+}
+
+
+/* ===================== */
 /* LOGIN */
 /* ===================== */
 app.post(

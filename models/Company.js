@@ -1,9 +1,45 @@
 const mongoose = require("mongoose");
 
-module.exports = mongoose.model("Company", {
+const companySchema = new mongoose.Schema({
+
   name: String,
-  plan: { type: String, default: "free" }, // free | pro
-  paymentStatus: { type: String, default: "pending" }, // pending | paid
+
+  plan: {
+    type: String,
+    default: "free"
+  },
+
+  ticketLimit: {
+    type: Number,
+    default: 10
+  },
+
+  userLimit: {
+    type: Number,
+    default: 1
+  },
+
+  paymentStatus: {
+    type: String,
+    default: "pending"
+  },
+
   mpPaymentId: String,
-  createdAt: { type: Date, default: Date.now }
+
+  active: {
+    type: Boolean,
+    default: true
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+
 });
+
+module.exports =
+  mongoose.model(
+    "Company",
+    companySchema
+  );

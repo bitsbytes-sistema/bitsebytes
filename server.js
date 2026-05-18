@@ -311,6 +311,47 @@ app.post(
 
     try {
 
+      /* ===================== */
+      /* LIMITE DO PLANO */
+      /* ===================== */
+      const company =
+        await Company.findById(
+          req.session.user.companyId
+        );
+
+      if(
+        company.ticketLimit !== -1
+      ){
+
+        const totalTickets =
+          await Ticket.countDocuments({
+
+            companyId:
+              req.session.user.companyId
+
+          });
+
+        if(
+          totalTickets >=
+          company.ticketLimit
+        ){
+
+          return res
+          .status(403)
+          .json({
+
+            error:
+              "Limite do plano atingido"
+
+          });
+
+        }
+
+      }
+
+      /* ===================== */
+      /* LIMITE POR CPF/CNPJ */
+      /* ===================== */
       const ativos =
         await Ticket.countDocuments({
 

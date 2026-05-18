@@ -239,16 +239,31 @@ form.addEventListener("submit", async (e) => {
 
     }
 
-    alerta.className =
-      "alerta sucesso";
+    const whatsappLink = json.whatsapp || "#";
 
-    alerta.innerText =
-      "Chamado aberto com sucesso!";
+alerta.className = "alerta sucesso";
 
-    alerta.style.display =
-      "block";
+alerta.innerHTML = `
+  <strong>Chamado aberto com sucesso!</strong><br><br>
 
-    form.reset();
+  <a href="${whatsappLink}"
+     target="_blank"
+     style="
+      display:inline-block;
+      background:#25d366;
+      color:#fff;
+      padding:12px 18px;
+      border-radius:10px;
+      text-decoration:none;
+      font-weight:bold;
+     ">
+     Receber confirmação no WhatsApp
+  </a>
+`;
+
+alerta.style.display = "block";
+
+form.reset();
 
   } catch (err) {
 

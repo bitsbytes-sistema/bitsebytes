@@ -126,23 +126,11 @@ function auth(
 /* ===================== */
 /* MASTER */
 /* ===================== */
-function master(
+function masterOnly(
   req,
   res,
   next
 ){
-
-  if(
-    !req.session.user
-  ){
-
-    return res
-    .status(401)
-    .json({
-      error: "not_logged"
-    });
-
-  }
 
   if(
     req.session.user.role !==
@@ -299,7 +287,8 @@ app.get(
 /* ===================== */
 app.get(
   "/admin",
-  master,
+  auth,
+  masterOnly,
   (
     req,
     res
@@ -312,6 +301,114 @@ app.get(
         "admin.html"
       )
     );
+
+  }
+);
+
+/* ===================== */
+/* ADMIN STATS */
+/* ===================== */
+app.get(
+  "/api/admin/stats",
+  auth,
+  masterOnly,
+  async (
+    req,
+    res
+  ) => {
+
+    const empresas =
+      await Company.countDocuments();
+
+    const usuarios =
+      await User.countDocuments();
+
+    const chamados =
+      await Ticket.countDocuments();
+
+    const companies =
+      await Company.find();
+
+    res.json({
+
+      empresas,
+      usuarios,
+      chamados,
+      companies
+
+    });
+
+  }
+);
+
+/* ===================== */
+/* ALTERAR PLANO */
+/* ===================== */
+app.put(
+  "/api/admin/company/:id/plan",
+  auth,
+  masterOnly,
+  async (
+    req,
+    res
+  ) => {
+
+    const planos = {
+
+      free: {
+        plan: "free",
+        ticketLimit: 10,
+        userLimit: 1
+      },
+
+      basic: {
+        plan: "basic",
+        ticketLimit: 30,
+        userLimit: 3
+      },
+
+      pro: {
+        plan: "pro",
+        ticketLimit: -1,
+        userLimit: -1
+      }
+
+    };
+
+    const plano =
+      planos[
+        req.body.plan
+      ];
+
+    if(!plano){
+
+      return res.status(400)
+      .json({
+        error: "Plano inválido"
+      });
+
+    }
+
+    await Company.findByIdAndUpdate(
+
+      req.params.id,
+
+      {
+        plan:
+          plano.plan,
+
+        ticketLimit:
+          plano.ticketLimit,
+
+        userLimit:
+          plano.userLimit
+      }
+
+    );
+
+    res.json({
+      ok: true
+    });
 
   }
 );
@@ -359,7 +456,7 @@ app.get(
 );
 
 /* ===================== */
-/* CRIAR TICKET */
+/* CRIAR TICKET DASHBOARD */
 /* ===================== */
 app.post(
   "/api/tickets",
@@ -371,47 +468,34 @@ app.post(
 
     try {
 
-      /* ===================== */
-      /* LIMITE DO PLANO */
-      /* ===================== */
       const company =
         await Company.findById(
           req.session.user.companyId
         );
 
+      const totalTickets =
+        await Ticket.countDocuments({
+
+          companyId:
+            req.session.user.companyId
+
+        });
+
       if(
-        company.ticketLimit !== -1
+        company.ticketLimit !== -1 &&
+        totalTickets >= company.ticketLimit
       ){
 
-        const totalTickets =
-          await Ticket.countDocuments({
+        return res.status(400)
+        .json({
 
-            companyId:
-              req.session.user.companyId
+          error:
+            "Limite do plano atingido."
 
-          });
-
-        if(
-          totalTickets >=
-          company.ticketLimit
-        ){
-
-          return res
-          .status(403)
-          .json({
-
-            error:
-              "Limite do plano atingido"
-
-          });
-
-        }
+        });
 
       }
 
-      /* ===================== */
-      /* LIMITE POR CPF/CNPJ */
-      /* ===================== */
       const ativos =
         await Ticket.countDocuments({
 
@@ -475,6 +559,159 @@ app.post(
       res.status(500)
       .json({
         ok: false
+      });
+
+    }
+
+  }
+);
+
+/* ===================== */
+/* ABRIR CHAMADO SITE */
+/* ===================== */
+app.post(
+  "/abrir-chamado",
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      const company =
+        await Company.findOne();
+
+      const totalTickets =
+        await Ticket.countDocuments({
+
+          companyId:
+            company._id
+
+        });
+
+      if(
+        company.ticketLimit !== -1 &&
+        totalTickets >= company.ticketLimit
+      ){
+
+        return res.status(400)
+        .json({
+
+          error:
+            "Limite do plano atingido."
+
+        });
+
+      }
+
+      const ativos =
+        await Ticket.countDocuments({
+
+          cpfcnpj:
+            req.body.cpfcnpj,
+
+          status: {
+            $in: [
+              "aberto",
+              "andamento"
+            ]
+          }
+
+        });
+
+      if(ativos >= 3){
+
+        return res.status(400).json({
+
+          error:
+            "Você já possui 3 chamados em aberto."
+
+        });
+
+      }
+
+      const ticket =
+        await Ticket.create({
+
+          companyId:
+            company._id,
+
+          cliente:
+            req.body.cliente,
+
+          telefone:
+            req.body.telefone,
+
+          cpfcnpj:
+            req.body.cpfcnpj,
+
+          equipamento:
+            req.body.equipamento,
+
+          problema:
+            req.body.problema,
+
+          status:
+            "aberto"
+
+        });
+
+      const telefone =
+        String(
+          ticket.telefone || ""
+        )
+        .replace(/\D/g, "");
+
+      const dataAtual =
+        new Date()
+        .toLocaleString(
+          "pt-BR",
+          {
+            timeZone:
+              "America/Cuiaba"
+          }
+        );
+
+      const mensagem =
+`Bits & Bytes Assistência Técnica
+
+Status do seu atendimento:
+ABERTO
+
+Cliente:
+${ticket.cliente}
+
+CPF/CNPJ:
+${ticket.cpfcnpj}
+
+Equipamento:
+${ticket.equipamento}
+
+Problema informado:
+${ticket.problema}
+
+Atualizado em:
+${dataAtual}
+
+Seu chamado foi aberto com sucesso e aguarda análise técnica.`;
+
+      const whatsapp =
+`https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
+
+      res.json({
+
+        ok: true,
+        whatsapp
+
+      });
+
+    } catch(err){
+
+      console.log(err);
+
+      res.status(500)
+      .json({
+        error: true
       });
 
     }
@@ -667,126 +904,6 @@ app.delete(
       res.status(500)
       .json({
         ok: false
-      });
-
-    }
-
-  }
-);
-
-/* ===================== */
-/* ADMIN API */
-/* ===================== */
-
-app.get(
-  "/api/admin/companies",
-  master,
-  async (
-    req,
-    res
-  ) => {
-
-    try {
-
-      const companies =
-        await Company.find();
-
-      const totalCompanies =
-        await Company.countDocuments();
-
-      const totalUsers =
-        await User.countDocuments();
-
-      const totalTickets =
-        await Ticket.countDocuments();
-
-      res.json({
-
-        companies,
-
-        totalCompanies,
-
-        totalUsers,
-
-        totalTickets
-
-      });
-
-    } catch(err){
-
-      console.log(err);
-
-      res.status(500)
-      .json({
-        error: true
-      });
-
-    }
-
-  }
-);
-
-app.put(
-  "/api/admin/company/:id",
-  master,
-  async (
-    req,
-    res
-  ) => {
-
-    try {
-
-      let ticketLimit = 10;
-      let userLimit = 1;
-
-      if(
-        req.body.plan ===
-        "basic"
-      ){
-
-        ticketLimit = 30;
-        userLimit = 3;
-
-      }
-
-      if(
-        req.body.plan ===
-        "pro"
-      ){
-
-        ticketLimit = -1;
-        userLimit = -1;
-
-      }
-
-      await Company.findByIdAndUpdate(
-
-        req.params.id,
-
-        {
-
-          plan:
-            req.body.plan,
-
-          ticketLimit,
-
-          userLimit
-
-        }
-
-      );
-
-      res.json({
-        ok: true
-      });
-
-    } catch(err){
-
-      console.log(err);
-
-      res.status(500)
-      .json({
-        error: true
       });
 
     }

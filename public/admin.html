@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Painel Master</title>
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+body{
+  background:#0f172a;
+  color:white;
+}
+
+.header{
+  background:#111827;
+  padding:20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.menu a{
+  color:white;
+  text-decoration:none;
+  margin-left:15px;
+}
+
+.container{
+  padding:20px;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+  margin-bottom:30px;
+}
+
+.card{
+  background:#1e293b;
+  padding:25px;
+  border-radius:14px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.3);
+}
+
+.card h2{
+  font-size:32px;
+  margin-bottom:10px;
+}
+
+.card p{
+  color:#cbd5e1;
+}
+
+.table{
+  width:100%;
+  border-collapse:collapse;
+  background:#1e293b;
+  border-radius:12px;
+  overflow:hidden;
+}
+
+.table th{
+  background:#111827;
+  padding:15px;
+  text-align:left;
+}
+
+.table td{
+  padding:15px;
+  border-top:1px solid #334155;
+}
+
+.badge{
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.free{
+  background:#991b1b;
+}
+
+.basic{
+  background:#92400e;
+}
+
+.pro{
+  background:#065f46;
+}
+
+button{
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  color:white;
+  font-weight:bold;
+}
+
+.btnFree{
+  background:#dc2626;
+}
+
+.btnBasic{
+  background:#ea580c;
+}
+
+.btnPro{
+  background:#16a34a;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+  <div class="logo">
+    Painel Master
+  </div>
+
+  <div class="menu">
+
+    <a href="/dashboard">
+      Dashboard
+    </a>
+
+    <a href="/logout">
+      Sair
+    </a>
+
+  </div>
+
+</div>
+
+<div class="container">
+
+  <div class="cards">
+
+    <div class="card">
+      <h2 id="empresas">0</h2>
+      <p>Empresas</p>
+    </div>
+
+    <div class="card">
+      <h2 id="usuarios">0</h2>
+      <p>Usuários</p>
+    </div>
+
+    <div class="card">
+      <h2 id="tickets">0</h2>
+      <p>Chamados</p>
+    </div>
+
+  </div>
+
+  <h2 style="margin-bottom:20px;">
+    Empresas
+  </h2>
+
+  <table class="table">
+
+    <thead>
+
+      <tr>
+        <th>Empresa</th>
+        <th>Plano</th>
+        <th>Chamados</th>
+        <th>Usuários</th>
+        <th>Ações</th>
+      </tr>
+
+    </thead>
+
+    <tbody id="listaEmpresas">
+
+    </tbody>
+
+  </table>
+
+</div>
+
+<script>
+
+async function load(){
+
+  const res =
+    await fetch(
+      "/api/admin/companies",
+      {
+        credentials:"include"
+      }
+    );
+
+  const data =
+    await res.json();
+
+  document
+  .getElementById("empresas")
+  .innerText =
+    data.totalCompanies;
+
+  document
+  .getElementById("usuarios")
+  .innerText =
+    data.totalUsers;
+
+  document
+  .getElementById("tickets")
+  .innerText =
+    data.totalTickets;
+
+  const lista =
+    document.getElementById(
+      "listaEmpresas"
+    );
+
+  lista.innerHTML = "";
+
+  data.companies.forEach(c => {
+
+    lista.innerHTML += `
+
+    <tr>
+
+      <td>
+        ${c.name}
+      </td>
+
+      <td>
+
+        <span class="badge ${c.plan}">
+          ${c.plan}
+        </span>
+
+      </td>
+
+      <td>
+        ${c.ticketLimit}
+      </td>
+
+      <td>
+        ${c.userLimit}
+      </td>
+
+      <td>
+
+        <button
+          class="btnFree"
+          onclick="alterarPlano(
+            '${c._id}',
+            'free'
+          )"
+        >
+          Free
+        </button>
+
+        <button
+          class="btnBasic"
+          onclick="alterarPlano(
+            '${c._id}',
+            'basic'
+          )"
+        >
+          Basic
+        </button>
+
+        <button
+          class="btnPro"
+          onclick="alterarPlano(
+            '${c._id}',
+            'pro'
+          )"
+        >
+          Pro
+        </button>
+
+      </td>
+
+    </tr>
+
+    `;
+
+  });
+
+}
+
+async function alterarPlano(
+  id,
+  plan
+){
+
+  await fetch(
+
+    "/api/admin/company/" + id,
+
+    {
+
+      method:"PUT",
+
+      headers:{
+        "Content-Type":
+          "application/json"
+      },
+
+      credentials:"include",
+
+      body: JSON.stringify({
+        plan
+      })
+
+    }
+
+  );
+
+  load();
+
+}
+
+load();
+
+</script>
+
+</body>
+</html>

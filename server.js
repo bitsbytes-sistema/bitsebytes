@@ -161,7 +161,6 @@ function master(
 
 }
 
-
 /* ===================== */
 /* LOGIN */
 /* ===================== */
@@ -289,6 +288,28 @@ app.get(
         __dirname,
         "public",
         "dashboard.html"
+      )
+    );
+
+  }
+);
+
+/* ===================== */
+/* ADMIN */
+/* ===================== */
+app.get(
+  "/admin",
+  master,
+  (
+    req,
+    res
+  ) => {
+
+    res.sendFile(
+      path.join(
+        __dirname,
+        "public",
+        "admin.html"
       )
     );
 
@@ -646,6 +667,126 @@ app.delete(
       res.status(500)
       .json({
         ok: false
+      });
+
+    }
+
+  }
+);
+
+/* ===================== */
+/* ADMIN API */
+/* ===================== */
+
+app.get(
+  "/api/admin/companies",
+  master,
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      const companies =
+        await Company.find();
+
+      const totalCompanies =
+        await Company.countDocuments();
+
+      const totalUsers =
+        await User.countDocuments();
+
+      const totalTickets =
+        await Ticket.countDocuments();
+
+      res.json({
+
+        companies,
+
+        totalCompanies,
+
+        totalUsers,
+
+        totalTickets
+
+      });
+
+    } catch(err){
+
+      console.log(err);
+
+      res.status(500)
+      .json({
+        error: true
+      });
+
+    }
+
+  }
+);
+
+app.put(
+  "/api/admin/company/:id",
+  master,
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      let ticketLimit = 10;
+      let userLimit = 1;
+
+      if(
+        req.body.plan ===
+        "basic"
+      ){
+
+        ticketLimit = 30;
+        userLimit = 3;
+
+      }
+
+      if(
+        req.body.plan ===
+        "pro"
+      ){
+
+        ticketLimit = -1;
+        userLimit = -1;
+
+      }
+
+      await Company.findByIdAndUpdate(
+
+        req.params.id,
+
+        {
+
+          plan:
+            req.body.plan,
+
+          ticketLimit,
+
+          userLimit
+
+        }
+
+      );
+
+      res.json({
+        ok: true
+      });
+
+    } catch(err){
+
+      console.log(err);
+
+      res.status(500)
+      .json({
+        error: true
       });
 
     }

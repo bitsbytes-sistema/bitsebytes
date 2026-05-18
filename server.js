@@ -312,6 +312,33 @@ app.post(
     try {
 
       const ticket =
+
+const ativos =
+  await Ticket.countDocuments({
+
+    cpfcnpj:
+      req.body.cpfcnpj,
+
+    status: {
+      $in: [
+        "aberto",
+        "andamento"
+      ]
+    }
+
+  });
+
+if(ativos >= 3){
+
+  return res.status(400).json({
+
+    error:
+      "Você já possui 3 chamados em aberto."
+
+  });
+
+}
+
         await Ticket.create({
 
           companyId:

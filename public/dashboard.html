@@ -47,10 +47,20 @@ button{
   border:none;
   border-radius:5px;
   cursor:pointer;
+  margin-right:5px;
+  margin-top:5px;
 }
 
 button:hover{
   background:#3d9140;
+}
+
+.btn-laudo{
+  background:#2563eb;
+}
+
+.btn-laudo:hover{
+  background:#1d4ed8;
 }
 
 a{
@@ -242,6 +252,10 @@ async function load(){
 
         <br>
 
+        📄 ${c.cpfcnpj || ""}
+
+        <br>
+
         💻 ${c.equipamento || ""}
 
         <br>
@@ -263,7 +277,7 @@ async function load(){
           : "green"
         }">
 
-          ${c.status}
+          ${String(c.status).toUpperCase()}
 
         </b>
 
@@ -275,6 +289,13 @@ async function load(){
 
         <button onclick="del('${c._id}')">
           Excluir
+        </button>
+
+        <button
+          class="btn-laudo"
+          onclick="gerarLaudo('${c._id}')"
+        >
+          Gerar Laudo
         </button>
 
       </div>
@@ -390,9 +411,13 @@ async function criar(){
       }
     );
 
+  const data =
+    await res.json();
+
   if(!res.ok){
 
     alert(
+      data.error ||
       "Erro ao criar chamado"
     );
 
@@ -499,6 +524,19 @@ async function del(id){
   );
 
   load();
+
+}
+
+/* ===================== */
+/* LAUDO */
+/* ===================== */
+
+function gerarLaudo(id){
+
+  window.open(
+    "/laudo.html?id=" + id,
+    "_blank"
+  );
 
 }
 

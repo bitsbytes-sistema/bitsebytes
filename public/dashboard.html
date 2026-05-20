@@ -291,12 +291,20 @@ async function load(){
           Excluir
         </button>
 
-        <button
-          class="btn-laudo"
-          onclick="gerarLaudo('${c._id}')"
-        >
-          Gerar Laudo
-        </button>
+        ${
+          c.status === "finalizado"
+          ?
+          `
+            <button
+              class="btn-laudo"
+              onclick="gerarLaudo('${c._id}')"
+            >
+              Gerar Laudo
+            </button>
+          `
+          :
+          ""
+        }
 
       </div>
 

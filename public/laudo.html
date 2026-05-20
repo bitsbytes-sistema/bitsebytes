@@ -107,6 +107,18 @@ button:hover{
   opacity:0.9;
 }
 
+textarea{
+  width:100%;
+  min-height:140px;
+  border:none;
+  resize:vertical;
+  outline:none;
+  background:transparent;
+  font-size:15px;
+  font-family:Arial;
+  line-height:1.8;
+}
+
 @media print{
 
   button{
@@ -120,6 +132,10 @@ button:hover{
 
   .laudo{
     box-shadow:none;
+  }
+
+  textarea{
+    border:none;
   }
 
 }
@@ -201,11 +217,10 @@ button:hover{
 
     <div class="info">
 
-      Equipamento analisado pela equipe técnica da
-      Bits & Bytes Tecnology.
-
-      Foi identificado defeito conforme descrição
-      informada acima.
+      <textarea
+        id="diagnostico"
+        placeholder="Descreva detalhadamente o diagnóstico técnico realizado..."
+      ></textarea>
 
     </div>
 
@@ -217,8 +232,10 @@ button:hover{
 
     <div class="info">
 
-      Serviço técnico executado conforme necessidade
-      do equipamento.
+      <textarea
+        id="servico"
+        placeholder="Descreva o serviço executado, peças trocadas, reparos realizados..."
+      ></textarea>
 
     </div>
 

@@ -6,126 +6,141 @@
 <title>Bits & Bytes Tecnology</title>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
 
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: #fff;
+body{
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:#fff;
 }
 
-.logo {
-  position: absolute;
-  top: 20px;
-  left: 30px;
-  font-size: 22px;
-  font-weight: bold;
+.logo{
+  position:absolute;
+  top:20px;
+  left:30px;
+  font-size:22px;
+  font-weight:bold;
 }
 
-.container {
-  background: rgba(255, 255, 255, 0.96);
-  color: #111;
-  border-radius: 18px;
-  padding: 30px;
-  width: 350px;
-  margin: auto;
-  margin-top: 80px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-  animation: fadeIn 0.5s ease;
+.container{
+  background:rgba(255,255,255,0.96);
+  color:#111;
+  border-radius:18px;
+  padding:30px;
+  width:350px;
+  margin:auto;
+  margin-top:80px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.4);
+  animation:fadeIn 0.5s ease;
 }
 
-h2 {
-  text-align: center;
+h2{
+  text-align:center;
 }
 
-.subtitulo {
-  text-align: center;
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 20px;
+.subtitulo{
+  text-align:center;
+  font-size:14px;
+  color:#555;
+  margin-bottom:20px;
 }
 
-input, textarea {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+input,textarea{
+  width:100%;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
 }
 
-input:focus, textarea:focus {
-  border-color: #2563eb;
+input:focus,
+textarea:focus{
+  border-color:#2563eb;
+  outline:none;
 }
 
-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #2563eb, #1d4ed8);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg,#2563eb,#1d4ed8);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.2s;
 }
 
-button:hover {
-  transform: scale(1.03);
+button:hover{
+  transform:scale(1.03);
 }
 
-.alerta {
-  display: none;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
+.alerta{
+  display:none;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:10px;
+  font-size:14px;
 }
 
-.alerta.erro {
-  background: #fee2e2;
-  color: #b91c1c;
+.alerta.erro{
+  background:#fee2e2;
+  color:#b91c1c;
 }
 
-.alerta.sucesso {
-  background: #dcfce7;
-  color: #166534;
+.alerta.sucesso{
+  background:#dcfce7;
+  color:#166534;
 }
 
-footer {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 12px;
-  color: #777;
+footer{
+  text-align:center;
+  margin-top:15px;
+  font-size:12px;
+  color:#777;
 }
 
-footer span {
-  display: block;
-  font-size: 11px;
-  margin-top: 5px;
-  color: #999;
+footer span{
+  display:block;
+  font-size:11px;
+  margin-top:5px;
+  color:#999;
 }
 
-.footer-mini {
-  font-size: 8px;
-  opacity: 0.6;
+.footer-mini{
+  font-size:8px;
+  opacity:0.6;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px);}
-  to { opacity: 1; transform: translateY(0);}
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(10px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div class="logo">Bits & Bytes Tecnology</div>
+<div class="logo">
+  Bits & Bytes Tecnology
+</div>
 
 <div class="container">
-  <h2>Abrir Chamado Técnico</h2>
+
+  <h2>
+    Abrir Chamado Técnico
+  </h2>
 
   <div class="subtitulo">
     Registre seu chamado e acompanhe o atendimento em tempo real
@@ -134,103 +149,117 @@ footer span {
   <div id="alerta" class="alerta"></div>
 
   <form id="formChamado">
-    <input type="text" name="cliente" placeholder="Nome completo" required>
-    <input type="text" name="telefone" placeholder="Telefone" required>
-    <input type="text" name="cpfcnpj" placeholder="CPF ou CNPJ" required>
-    <input type="text" name="equipamento" placeholder="Equipamento" required>
-    <textarea name="problema" rows="4" placeholder="Descreva o problema" required></textarea>
 
-    <button type="submit">Abrir Chamado</button>
+    <input
+      type="text"
+      name="cliente"
+      placeholder="Nome completo"
+      required
+    >
+
+    <input
+      type="text"
+      name="telefone"
+      placeholder="Telefone"
+      required
+    >
+
+    <input
+      type="text"
+      name="cpfcnpj"
+      placeholder="CPF ou CNPJ"
+      required
+    >
+
+    <input
+      type="text"
+      name="equipamento"
+      placeholder="Equipamento"
+      required
+    >
+
+    <textarea
+      name="problema"
+      rows="4"
+      placeholder="Descreva o problema"
+      required
+    ></textarea>
+
+    <button type="submit">
+      Abrir Chamado
+    </button>
+
   </form>
 
-  <!-- RODAPÉ -->
   <footer>
-    <p>Bits & Bytes Tecnology © 2026</p>
-    <span>Soluções inteligentes em assistência técnica</span>
-    <span class="footer-mini">Sistema desenvolvido por Bits & Bytes Tecnology</span>
+    <p>
+      Bits & Bytes Tecnology © 2026
+    </p>
+
+    <span>
+      Soluções inteligentes em assistência técnica
+    </span>
+
+    <span class="footer-mini">
+      Sistema desenvolvido por Bits & Bytes Tecnology
+    </span>
   </footer>
+
 </div>
 
-<!-- SCRIPT DO FORM -->
 <script>
-const form = document.getElementById("formChamado");
-const alerta = document.getElementById("alerta");
 
-form.addEventListener("submit", async (e) => {
+const form =
+  document.getElementById(
+    "formChamado"
+  );
 
-  e.preventDefault();
+const alerta =
+  document.getElementById(
+    "alerta"
+  );
 
-  alerta.style.display = "none";
+form.addEventListener(
+  "submit",
+  async (e) => {
 
-  const data = {
+    e.preventDefault();
 
-    cliente:
-      form.cliente.value.trim(),
+    alerta.style.display =
+      "none";
 
-    telefone:
-      form.telefone.value.trim(),
+    const data = {
 
-    cpfcnpj:
-      form.cpfcnpj.value.trim(),
+      cliente:
+        form.cliente.value.trim(),
 
-    equipamento:
-      form.equipamento.value.trim(),
+      telefone:
+        form.telefone.value.trim(),
 
-    problema:
-      form.problema.value.trim()
+      cpfcnpj:
+        form.cpfcnpj.value.trim(),
 
-  };
+      equipamento:
+        form.equipamento.value.trim(),
 
-  if(
-    !data.cliente ||
-    !data.telefone ||
-    !data.equipamento ||
-    !data.problema
-  ){
+      problema:
+        form.problema.value.trim()
 
-    alerta.className = "alerta erro";
+    };
 
-    alerta.innerText =
-      "Preencha todos os campos";
-
-    alerta.style.display = "block";
-
-    return;
-
-  }
-
-  try {
-
-    const res =
-      await fetch(
-        "/api/tickets",
-        {
-
-          method: "POST",
-
-          credentials: "include",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body: JSON.stringify(data)
-
-        }
-      );
-
-    const json =
-      await res.json();
-
-    if (!res.ok) {
+    if(
+      !data.cliente ||
+      !data.telefone ||
+      !data.cpfcnpj ||
+      !data.equipamento ||
+      !data.problema
+    ){
 
       alerta.className =
         "alerta erro";
 
       alerta.innerText =
-        json.error ||
-        "Erro ao abrir chamado";
+        "Preencha todos os campos";
 
       alerta.style.display =
         "block";
@@ -239,57 +268,119 @@ form.addEventListener("submit", async (e) => {
 
     }
 
-    const whatsappLink = json.whatsapp || "#";
+    try{
 
-alerta.className = "alerta sucesso";
+      const res =
+        await fetch(
+          "/abrir-chamado",
+          {
 
-alerta.innerHTML = `
-  <strong>Chamado aberto com sucesso!</strong><br><br>
+            method:"POST",
 
-  <a href="${whatsappLink}"
-     target="_blank"
-     style="
-      display:inline-block;
-      background:#25d366;
-      color:#fff;
-      padding:12px 18px;
-      border-radius:10px;
-      text-decoration:none;
-      font-weight:bold;
-     ">
-     Receber confirmação no WhatsApp
-  </a>
-`;
+            headers:{
+              "Content-Type":
+                "application/json"
+            },
 
-alerta.style.display = "block";
+            body:
+              JSON.stringify(data)
 
-form.reset();
+          }
+        );
 
-  } catch (err) {
+      const json =
+        await res.json();
 
-    alerta.className =
-      "alerta erro";
+      if(!res.ok){
 
-    alerta.innerText =
-      "Erro de conexão com o servidor";
+        alerta.className =
+          "alerta erro";
 
-    alerta.style.display =
-      "block";
+        alerta.innerText =
+          json.error ||
+          "Erro ao abrir chamado";
+
+        alerta.style.display =
+          "block";
+
+        return;
+
+      }
+
+      const whatsappLink =
+        json.whatsapp || "#";
+
+      alerta.className =
+        "alerta sucesso";
+
+      alerta.innerHTML = `
+        <strong>
+          Chamado aberto com sucesso!
+        </strong>
+
+        <br><br>
+
+        <a
+          href="${whatsappLink}"
+          target="_blank"
+          style="
+            display:inline-block;
+            background:#25d366;
+            color:#fff;
+            padding:12px 18px;
+            border-radius:10px;
+            text-decoration:none;
+            font-weight:bold;
+          "
+        >
+          Receber confirmação no WhatsApp
+        </a>
+      `;
+
+      alerta.style.display =
+        "block";
+
+      form.reset();
+
+    }catch(err){
+
+      alerta.className =
+        "alerta erro";
+
+      alerta.innerText =
+        "Erro de conexão com o servidor";
+
+      alerta.style.display =
+        "block";
+
+    }
 
   }
+);
 
-});
 </script>
 
-<!-- 🔔 ONESIGNAL (NOTIFICAÇÃO) -->
+<!-- ONESIGNAL -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
 <script>
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(async function(OneSignal) {
-  await OneSignal.init({
-    appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d",
-  });
-});
+
+window.OneSignalDeferred =
+  window.OneSignalDeferred || [];
+
+OneSignalDeferred.push(
+  async function(OneSignal){
+
+    await OneSignal.init({
+
+      appId:
+        "6711c89e-0dc5-48c3-b31a-b70f6c64902d"
+
+    });
+
+  }
+);
+
 </script>
 
 </body>

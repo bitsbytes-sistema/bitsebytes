@@ -37,21 +37,6 @@ const ticketSchema = new mongoose.Schema({
     trim: true
   },
 
-  diagnostico: {
-    type: String,
-    default: ""
-  },
-
-  servico: {
-    type: String,
-    default: ""
-  },
-
-  conclusao: {
-    type: String,
-    default: ""
-  },
-
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -63,7 +48,6 @@ const ticketSchema = new mongoose.Schema({
   timestamps: true
 });
 
-/* ÍNDICE MELHORADO */
 ticketSchema.index({ companyId: 1, status: 1 });
 
 module.exports = mongoose.model("Ticket", ticketSchema);

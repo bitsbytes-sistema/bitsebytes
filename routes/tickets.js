@@ -23,10 +23,19 @@ router.get("/", async (req, res) => {
   }
 });
 
-/* ===================== BUSCAR POR ID (LAUDO FUNCIONANDO) ===================== */
+/* ===================== BUSCAR POR ID ===================== */
 router.get("/:id", async (req, res) => {
   try {
-    const ticket = await Ticket.findById(req.params.id);
+    const companyId = req.session?.user?.companyId;
+
+    if (!companyId) {
+      return res.status(401).json({ error: "Sessão inválida" });
+    }
+
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId
+    });
 
     if (!ticket) {
       return res.status(404).json({ error: "Ticket não encontrado" });
@@ -56,11 +65,6 @@ router.post("/", async (req, res) => {
       telefone: req.body.telefone,
       problema: req.body.problema,
       status: req.body.status || "aberto",
-
-      diagnostico: req.body.diagnostico || "",
-      servico: req.body.servico || "",
-      conclusao: req.body.conclusao || "",
-
       companyId
     });
 
@@ -96,39 +100,6 @@ router.put("/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao atualizar chamado" });
-  }
-});
-
-/* ===================== SALVAR LAUDO ===================== */
-router.put("/:id/laudo", async (req, res) => {
-  try {
-    const companyId = req.session?.user?.companyId;
-
-    if (!companyId) {
-      return res.status(401).json({ error: "Sessão inválida" });
-    }
-
-    const update = {
-      ...(req.body.diagnostico !== undefined && { diagnostico: req.body.diagnostico }),
-      ...(req.body.servico !== undefined && { servico: req.body.servico }),
-      ...(req.body.conclusao !== undefined && { conclusao: req.body.conclusao })
-    };
-
-    const ticket = await Ticket.findOneAndUpdate(
-      { _id: req.params.id, companyId },
-      { $set: update },
-      { new: true }
-    );
-
-    if (!ticket) {
-      return res.status(404).json({ error: "Ticket não encontrado" });
-    }
-
-    res.json(ticket);
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao salvar laudo" });
   }
 });
 

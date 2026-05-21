@@ -8,11 +8,7 @@
 
 <style>
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
 body{
   font-family:Arial,sans-serif;
@@ -39,33 +35,14 @@ body{
   padding-bottom:20px;
 }
 
-.logo{
-  font-size:28px;
-  font-weight:bold;
-  color:#2563eb;
-}
+.logo{font-size:28px;font-weight:bold;color:#2563eb;}
 
-.titulo{
-  text-align:right;
-}
+.titulo{text-align:right;}
+.titulo h1{font-size:28px;}
+.titulo p{color:#6b7280;}
 
-.titulo h1{
-  font-size:28px;
-}
-
-.titulo p{
-  color:#6b7280;
-}
-
-.bloco{
-  margin-top:25px;
-}
-
-.bloco h2{
-  font-size:18px;
-  margin-bottom:10px;
-  color:#2563eb;
-}
+.bloco{margin-top:25px;}
+.bloco h2{font-size:18px;margin-bottom:10px;color:#2563eb;}
 
 .info{
   background:#f9fafb;
@@ -79,10 +56,6 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-}
-
-.assinatura{
-  margin-top:50px;
 }
 
 .linha{
@@ -103,10 +76,6 @@ button{
   font-weight:bold;
 }
 
-button:hover{
-  opacity:0.9;
-}
-
 textarea{
   width:100%;
   min-height:140px;
@@ -115,7 +84,6 @@ textarea{
   outline:none;
   background:transparent;
   font-size:15px;
-  font-family:Arial;
   line-height:1.8;
 }
 
@@ -127,18 +95,10 @@ textarea{
   display:inline-block;
 }
 
-/* PRINT */
 @media print{
-  button{ display:none; }
-
-  body{
-    background:#fff;
-    padding:0;
-  }
-
-  .laudo{
-    box-shadow:none;
-  }
+  button{display:none;}
+  body{background:#fff;padding:0;}
+  .laudo{box-shadow:none;}
 }
 
 </style>
@@ -149,41 +109,29 @@ textarea{
 <div class="laudo">
 
   <div class="topo">
-
-    <div class="logo">
-      Bits & Bytes Tecnology
-    </div>
-
+    <div class="logo">Bits & Bytes Tecnology</div>
     <div class="titulo">
       <h1>LAUDO TÉCNICO</h1>
       <p>OS: <strong id="osid"></strong></p>
       <p id="dataAtual"></p>
     </div>
-
   </div>
 
   <div class="bloco">
-
     <h2>Dados do Cliente</h2>
-
     <div class="info">
       <strong>Cliente:</strong> <span id="cliente"></span><br>
       <strong>CPF/CNPJ:</strong> <span id="cpfcnpj"></span><br>
       <strong>Telefone:</strong> <span id="telefone"></span>
     </div>
-
   </div>
 
   <div class="bloco">
-
     <h2>Equipamento</h2>
-
     <div class="info">
       <strong>Equipamento:</strong> <span id="equipamento"></span><br>
-      <strong>Status:</strong>
-      <span id="status" class="status"></span>
+      <strong>Status:</strong> <span id="status" class="status"></span>
     </div>
-
   </div>
 
   <div class="bloco">
@@ -215,17 +163,11 @@ textarea{
   </div>
 
   <div class="footer">
+    <button onclick="window.print()">Baixar / Imprimir PDF</button>
 
-    <button onclick="window.print()">
-      Baixar / Imprimir PDF
-    </button>
-
-    <div class="assinatura">
-      <div class="linha">
-        Responsável Técnico
-      </div>
+    <div class="linha">
+      Responsável Técnico
     </div>
-
   </div>
 
 </div>
@@ -233,9 +175,9 @@ textarea{
 <script>
 
 let ticketId = null;
-let timeout;
+let timeout = null;
 
-/* CARREGAR */
+/* ===================== CARREGAR ===================== */
 async function carregarLaudo(){
 
   const params = new URLSearchParams(window.location.search);
@@ -264,7 +206,7 @@ async function carregarLaudo(){
   document.getElementById("equipamento").innerText = ticket.equipamento || "";
 
   document.getElementById("status").innerText =
-    String(ticket.status || "").toUpperCase();
+    (ticket.status || "").toUpperCase();
 
   document.getElementById("problema").innerText = ticket.problema || "";
 
@@ -274,10 +216,9 @@ async function carregarLaudo(){
 
   document.getElementById("dataAtual").innerText =
     new Date().toLocaleString("pt-BR");
-
 }
 
-/* SALVAR (CORRIGIDO) */
+/* ===================== SALVAR (CORRIGIDO FINAL) ===================== */
 function salvarLaudo(){
 
   clearTimeout(timeout);
@@ -286,25 +227,20 @@ function salvarLaudo(){
 
     if(!ticketId) return;
 
-    const diagnostico = document.getElementById("diagnostico").value;
-    const servico = document.getElementById("servico").value;
-    const conclusao = document.getElementById("conclusao").value;
+    const payload = {
+      diagnostico: document.getElementById("diagnostico").value || "",
+      servico: document.getElementById("servico").value || "",
+      conclusao: document.getElementById("conclusao").value || ""
+    };
 
-    // evita sobrescrever banco com vazio
-    if(!diagnostico && !servico && !conclusao) return;
-
-    await fetch("/api/tickets/" + ticketId + "/laudo",{
-      method:"PUT",
-      headers:{ "Content-Type":"application/json" },
-      credentials:"include",
-      body: JSON.stringify({
-        diagnostico,
-        servico,
-        conclusao
-      })
+    await fetch("/api/tickets/" + ticketId + "/laudo", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload)
     });
 
-  }, 800);
+  }, 700);
 
 }
 

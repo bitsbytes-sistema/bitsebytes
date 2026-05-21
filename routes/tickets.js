@@ -23,19 +23,10 @@ router.get("/", async (req, res) => {
   }
 });
 
-/* ===================== BUSCAR POR ID (ESSENCIAL) ===================== */
+/* ===================== BUSCAR POR ID (LAUDO FUNCIONANDO) ===================== */
 router.get("/:id", async (req, res) => {
   try {
-    const companyId = req.session?.user?.companyId;
-
-    if (!companyId) {
-      return res.status(401).json({ error: "Sessão inválida" });
-    }
-
-    const ticket = await Ticket.findOne({
-      _id: req.params.id,
-      companyId
-    });
+    const ticket = await Ticket.findById(req.params.id);
 
     if (!ticket) {
       return res.status(404).json({ error: "Ticket não encontrado" });
@@ -91,13 +82,8 @@ router.put("/:id", async (req, res) => {
     }
 
     const ticket = await Ticket.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        companyId
-      },
-      {
-        $set: { status: req.body.status }
-      },
+      { _id: req.params.id, companyId },
+      { $set: { status: req.body.status } },
       { new: true }
     );
 
@@ -116,35 +102,21 @@ router.put("/:id", async (req, res) => {
 /* ===================== SALVAR LAUDO ===================== */
 router.put("/:id/laudo", async (req, res) => {
   try {
-
     const companyId = req.session?.user?.companyId;
 
     if (!companyId) {
-      return res.status(401).json({
-        error: "Sessão inválida"
-      });
+      return res.status(401).json({ error: "Sessão inválida" });
     }
 
     const update = {
-      ...(req.body.diagnostico !== undefined && {
-        diagnostico: req.body.diagnostico
-      }),
-      ...(req.body.servico !== undefined && {
-        servico: req.body.servico
-      }),
-      ...(req.body.conclusao !== undefined && {
-        conclusao: req.body.conclusao
-      })
+      ...(req.body.diagnostico !== undefined && { diagnostico: req.body.diagnostico }),
+      ...(req.body.servico !== undefined && { servico: req.body.servico }),
+      ...(req.body.conclusao !== undefined && { conclusao: req.body.conclusao })
     };
 
     const ticket = await Ticket.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        companyId
-      },
-      {
-        $set: update
-      },
+      { _id: req.params.id, companyId },
+      { $set: update },
       { new: true }
     );
 

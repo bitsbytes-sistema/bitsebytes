@@ -152,17 +152,15 @@ async function carregarLaudo() {
   try {
 
     const res = await fetch("/api/tickets/" + ticketId, {
-      credentials: "include"
-    });
+  credentials: "include"
+});
 
-    console.log("Status API:", res.status);
+if (!res.ok) {
+  console.error("Erro API:", res.status);
+  return;
+}
 
-    if (!res.ok) {
-      console.error("Erro na API ao carregar ticket");
-      return;
-    }
-
-    const t = await res.json();
+const t = await res.json();
 
     console.log("DADOS RECEBIDOS:", t);
 

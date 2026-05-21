@@ -6,11 +6,14 @@ const router = express.Router();
 /* ===================== LISTAR ===================== */
 router.get("/", async (req, res) => {
   try {
-    const companyId = req.session.user.companyId;
+    const companyId = req.session?.user?.companyId;
 
-    const tickets = await Ticket.find({
-      companyId
-    }).sort({ createdAt: -1 });
+    if (!companyId) {
+      return res.status(401).json({ error: "Sessão inválida" });
+    }
+
+    const tickets = await Ticket.find({ companyId })
+      .sort({ createdAt: -1 });
 
     res.json(tickets);
 
@@ -20,10 +23,40 @@ router.get("/", async (req, res) => {
   }
 });
 
+/* ===================== BUSCAR POR ID (ESSENCIAL) ===================== */
+router.get("/:id", async (req, res) => {
+  try {
+    const companyId = req.session?.user?.companyId;
+
+    if (!companyId) {
+      return res.status(401).json({ error: "Sessão inválida" });
+    }
+
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ error: "Ticket não encontrado" });
+    }
+
+    res.json(ticket);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao buscar ticket" });
+  }
+});
+
 /* ===================== CRIAR ===================== */
 router.post("/", async (req, res) => {
   try {
-    const companyId = req.session.user.companyId;
+    const companyId = req.session?.user?.companyId;
+
+    if (!companyId) {
+      return res.status(401).json({ error: "Sessão inválida" });
+    }
 
     const ticket = await Ticket.create({
       cliente: req.body.cliente,
@@ -51,16 +84,26 @@ router.post("/", async (req, res) => {
 /* ===================== ATUALIZAR STATUS ===================== */
 router.put("/:id", async (req, res) => {
   try {
-    const companyId = req.session.user.companyId;
+    const companyId = req.session?.user?.companyId;
+
+    if (!companyId) {
+      return res.status(401).json({ error: "Sessão inválida" });
+    }
 
     const ticket = await Ticket.findOneAndUpdate(
       {
         _id: req.params.id,
         companyId
       },
-      { status: req.body.status },
+      {
+        $set: { status: req.body.status }
+      },
       { new: true }
     );
+
+    if (!ticket) {
+      return res.status(404).json({ error: "Ticket não encontrado" });
+    }
 
     res.json(ticket);
 
@@ -70,7 +113,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-/* ===================== SALVAR LAUDO (CORRIGIDO DEFINITIVO) ===================== */
+/* ===================== SALVAR LAUDO ===================== */
 router.put("/:id/laudo", async (req, res) => {
   try {
 
@@ -120,12 +163,20 @@ router.put("/:id/laudo", async (req, res) => {
 /* ===================== DELETE ===================== */
 router.delete("/:id", async (req, res) => {
   try {
-    const companyId = req.session.user.companyId;
+    const companyId = req.session?.user?.companyId;
 
-    await Ticket.findOneAndDelete({
+    if (!companyId) {
+      return res.status(401).json({ error: "Sessão inválida" });
+    }
+
+    const deleted = await Ticket.findOneAndDelete({
       _id: req.params.id,
       companyId
     });
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Ticket não encontrado" });
+    }
 
     res.json({ ok: true });
 

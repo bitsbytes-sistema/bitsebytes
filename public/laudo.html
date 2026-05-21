@@ -137,55 +137,90 @@ button{
 let ticketId = null;
 let timeout = null;
 
-/* ===================== CARREGAR (CORRETO AGORA) ===================== */
-async function carregarLaudo(){
+/* ===================== CARREGAR ===================== */
+async function carregarLaudo() {
 
   ticketId = new URLSearchParams(window.location.search).get("id");
 
-  if(!ticketId) return;
+  console.log("Ticket ID:", ticketId);
 
-  const res = await fetch("/api/tickets/" + ticketId, {
-    credentials:"include"
-  });
+  if (!ticketId) {
+    alert("ID do ticket não encontrado na URL");
+    return;
+  }
 
-  const t = await res.json();
+  try {
 
-  document.getElementById("osid").innerText = t._id;
+    const res = await fetch("/api/tickets/" + ticketId, {
+      credentials: "include"
+    });
 
-  document.getElementById("cliente").innerText = t.cliente || "";
-  document.getElementById("equipamento").innerText = t.equipamento || "";
-  document.getElementById("status").innerText = (t.status || "").toUpperCase();
-  document.getElementById("problema").innerText = t.problema || "";
+    console.log("Status API:", res.status);
 
-  document.getElementById("diagnostico").value = t.diagnostico || "";
-  document.getElementById("servico").value = t.servico || "";
-  document.getElementById("conclusao").value = t.conclusao || "";
+    if (!res.ok) {
+      console.error("Erro na API ao carregar ticket");
+      return;
+    }
 
-  document.getElementById("dataAtual").innerText =
-    new Date().toLocaleString("pt-BR");
+    const t = await res.json();
+
+    console.log("DADOS RECEBIDOS:", t);
+
+    if (!t) {
+      console.error("Ticket vazio");
+      return;
+    }
+
+    document.getElementById("osid").innerText = t._id || "";
+
+    document.getElementById("cliente").innerText = t.cliente || "";
+    document.getElementById("equipamento").innerText = t.equipamento || "";
+    document.getElementById("status").innerText = (t.status || "").toUpperCase();
+    document.getElementById("problema").innerText = t.problema || "";
+
+    document.getElementById("diagnostico").value = t.diagnostico || "";
+    document.getElementById("servico").value = t.servico || "";
+    document.getElementById("conclusao").value = t.conclusao || "";
+
+    document.getElementById("dataAtual").innerText =
+      new Date().toLocaleString("pt-BR");
+
+  } catch (err) {
+    console.error("Erro ao carregar laudo:", err);
+  }
 }
 
-/* ===================== SALVAR (ESTÁVEL) ===================== */
-function salvarLaudo(){
+/* ===================== SALVAR ===================== */
+function salvarLaudo() {
 
-  if(!ticketId) return;
+  if (!ticketId) return;
 
   clearTimeout(timeout);
 
   timeout = setTimeout(async () => {
 
-    const payload = {
-      diagnostico: document.getElementById("diagnostico").value || "",
-      servico: document.getElementById("servico").value || "",
-      conclusao: document.getElementById("conclusao").value || ""
-    };
+    try {
 
-    await fetch("/api/tickets/" + ticketId + "/laudo", {
-      method:"PUT",
-      headers:{ "Content-Type":"application/json" },
-      credentials:"include",
-      body: JSON.stringify(payload)
-    });
+      const payload = {
+        diagnostico: document.getElementById("diagnostico").value || "",
+        servico: document.getElementById("servico").value || "",
+        conclusao: document.getElementById("conclusao").value || ""
+      };
+
+      const res = await fetch("/api/tickets/" + ticketId + "/laudo", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        console.error("Erro ao salvar laudo");
+      }
+
+    } catch (err) {
+      console.error("Erro no salvamento:", err);
+    }
 
   }, 500);
 

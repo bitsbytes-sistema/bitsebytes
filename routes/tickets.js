@@ -78,6 +78,8 @@ router.put("/:id", async (req, res) => {
 router.put("/:id/laudo", async (req, res) => {
   try {
 
+    console.log("BODY RECEBIDO:", req.body);
+
     const companyId = req.session.user.companyId;
 
     const updateData = {};

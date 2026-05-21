@@ -129,9 +129,7 @@ textarea{
 
 /* PRINT */
 @media print{
-  button{
-    display:none;
-  }
+  button{ display:none; }
 
   body{
     background:#fff;
@@ -181,64 +179,39 @@ textarea{
     <h2>Equipamento</h2>
 
     <div class="info">
-
       <strong>Equipamento:</strong> <span id="equipamento"></span><br>
-
       <strong>Status:</strong>
       <span id="status" class="status"></span>
-
     </div>
 
   </div>
 
   <div class="bloco">
-
     <h2>Problema Relatado</h2>
-
     <div class="info">
       <span id="problema"></span>
     </div>
-
   </div>
 
   <div class="bloco">
-
     <h2>Diagnóstico Técnico</h2>
-
     <div class="info">
-
-      <textarea id="diagnostico"
-        placeholder="Descreva detalhadamente o diagnóstico técnico realizado..."></textarea>
-
+      <textarea id="diagnostico"></textarea>
     </div>
-
   </div>
 
   <div class="bloco">
-
     <h2>Serviço Realizado</h2>
-
     <div class="info">
-
-      <textarea id="servico"
-        placeholder="Descreva o serviço executado, peças trocadas, reparos realizados..."></textarea>
-
+      <textarea id="servico"></textarea>
     </div>
-
   </div>
 
-  <!-- NOVO: CONCLUSÃO PROFISSIONAL -->
   <div class="bloco">
-
     <h2>Conclusão Técnica</h2>
-
     <div class="info">
-
-      <textarea id="conclusao"
-        placeholder="Conclusão final do atendimento técnico e situação do equipamento..."></textarea>
-
+      <textarea id="conclusao"></textarea>
     </div>
-
   </div>
 
   <div class="footer">
@@ -248,11 +221,9 @@ textarea{
     </button>
 
     <div class="assinatura">
-
       <div class="linha">
         Responsável Técnico
       </div>
-
     </div>
 
   </div>
@@ -262,6 +233,7 @@ textarea{
 <script>
 
 let ticketId = null;
+let timeout;
 
 /* CARREGAR */
 async function carregarLaudo(){
@@ -305,31 +277,38 @@ async function carregarLaudo(){
 
 }
 
-/* SALVAR */
-async function salvarLaudo(){
+/* SALVAR (CORRIGIDO) */
+function salvarLaudo(){
 
-  if(!ticketId) return;
+  clearTimeout(timeout);
 
-  try{
+  timeout = setTimeout(async () => {
+
+    if(!ticketId) return;
+
+    const diagnostico = document.getElementById("diagnostico").value;
+    const servico = document.getElementById("servico").value;
+    const conclusao = document.getElementById("conclusao").value;
+
+    // evita sobrescrever banco com vazio
+    if(!diagnostico && !servico && !conclusao) return;
 
     await fetch("/api/tickets/" + ticketId + "/laudo",{
       method:"PUT",
       headers:{ "Content-Type":"application/json" },
       credentials:"include",
       body: JSON.stringify({
-        diagnostico: document.getElementById("diagnostico").value,
-        servico: document.getElementById("servico").value,
-        conclusao: document.getElementById("conclusao").value
+        diagnostico,
+        servico,
+        conclusao
       })
     });
 
-  }catch(err){
-    console.log(err);
-  }
+  }, 800);
 
 }
 
-/* AUTO SAVE */
+/* EVENTS */
 document.getElementById("diagnostico").addEventListener("input", salvarLaudo);
 document.getElementById("servico").addEventListener("input", salvarLaudo);
 document.getElementById("conclusao").addEventListener("input", salvarLaudo);

@@ -6,7 +6,6 @@ const router = express.Router();
 /* ===================== LISTAR ===================== */
 router.get("/", async (req, res) => {
   try {
-
     const companyId = req.session.user.companyId;
 
     const tickets = await Ticket.find({
@@ -24,7 +23,6 @@ router.get("/", async (req, res) => {
 /* ===================== CRIAR ===================== */
 router.post("/", async (req, res) => {
   try {
-
     const companyId = req.session.user.companyId;
 
     const ticket = await Ticket.create({
@@ -35,12 +33,11 @@ router.post("/", async (req, res) => {
       problema: req.body.problema,
       status: req.body.status || "aberto",
 
-      // LAUDO (opcional na criação)
       diagnostico: req.body.diagnostico || "",
       servico: req.body.servico || "",
       conclusao: req.body.conclusao || "",
 
-      companyId: companyId
+      companyId
     });
 
     res.json(ticket);
@@ -54,13 +51,12 @@ router.post("/", async (req, res) => {
 /* ===================== ATUALIZAR STATUS ===================== */
 router.put("/:id", async (req, res) => {
   try {
-
     const companyId = req.session.user.companyId;
 
     const ticket = await Ticket.findOneAndUpdate(
       {
         _id: req.params.id,
-        companyId: companyId
+        companyId
       },
       { status: req.body.status },
       { new: true }
@@ -74,23 +70,36 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-/* ===================== SALVAR LAUDO ===================== */
+/* ===================== SALVAR LAUDO (CORRIGIDO DEFINITIVO) ===================== */
 router.put("/:id/laudo", async (req, res) => {
   try {
-
     const companyId = req.session.user.companyId;
 
     const updateFields = {};
 
-    if (typeof req.body.diagnostico !== "undefined") {
+    // 🔥 REGRA: nunca sobrescrever com vazio
+
+    if (
+      req.body.diagnostico !== undefined &&
+      req.body.diagnostico !== null &&
+      req.body.diagnostico !== ""
+    ) {
       updateFields.diagnostico = req.body.diagnostico;
     }
 
-    if (typeof req.body.servico !== "undefined") {
+    if (
+      req.body.servico !== undefined &&
+      req.body.servico !== null &&
+      req.body.servico !== ""
+    ) {
       updateFields.servico = req.body.servico;
     }
 
-    if (typeof req.body.conclusao !== "undefined") {
+    if (
+      req.body.conclusao !== undefined &&
+      req.body.conclusao !== null &&
+      req.body.conclusao !== ""
+    ) {
       updateFields.conclusao = req.body.conclusao;
     }
 
@@ -116,12 +125,11 @@ router.put("/:id/laudo", async (req, res) => {
 /* ===================== DELETE ===================== */
 router.delete("/:id", async (req, res) => {
   try {
-
     const companyId = req.session.user.companyId;
 
     await Ticket.findOneAndDelete({
       _id: req.params.id,
-      companyId: companyId
+      companyId
     });
 
     res.json({ ok: true });

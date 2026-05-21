@@ -734,8 +734,97 @@ app.put(
 
       }
 
+      /* ===================== */
+      /* WHATSAPP */
+      /* ===================== */
+
+      const telefone =
+        String(
+          ticket.telefone || ""
+        )
+        .replace(/\D/g, "");
+
+      const dataAtual =
+        new Date()
+        .toLocaleString(
+          "pt-BR",
+          {
+            timeZone:
+              "America/Cuiaba"
+          }
+        );
+
+      let mensagemFinal = "";
+
+      if(
+        ticket.status ===
+        "finalizado"
+      ){
+
+        mensagemFinal =
+`Seu equipamento já está pronto para retirada!
+
+Retire conosco ou entre em contato para mais informações.`;
+
+      }
+
+      else if(
+        ticket.status ===
+        "andamento"
+      ){
+
+        mensagemFinal =
+`Seu equipamento está em manutenção pela nossa equipe técnica.
+
+Em breve teremos novas atualizações.`;
+
+      }
+
+      else {
+
+        mensagemFinal =
+`Seu chamado foi aberto com sucesso e aguarda análise técnica.`;
+
+      }
+
+      const mensagem =
+`Bits & Bytes Assistência Técnica
+
+Status do seu atendimento:
+${String(ticket.status).toUpperCase()}
+
+Cliente:
+${ticket.cliente}
+
+CPF/CNPJ:
+${ticket.cpfcnpj || "Não informado"}
+
+Equipamento:
+${ticket.equipamento}
+
+Problema informado:
+${ticket.problema || "Não informado"}
+
+Atualizado em:
+${dataAtual}
+
+${mensagemFinal}`;
+
+      let whatsapp = null;
+
+      if(telefone){
+
+        whatsapp =
+`https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
+
+      }
+
       res.json({
-        ok: true
+
+        ok: true,
+
+        whatsapp
+
       });
 
     } catch(err){

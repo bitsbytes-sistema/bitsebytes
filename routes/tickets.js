@@ -35,7 +35,7 @@ router.post("/", async (req, res) => {
       problema: req.body.problema,
       status: req.body.status || "aberto",
 
-      // 🔥 LAUDO (já preparado desde criação)
+      // LAUDO (opcional na criação)
       diagnostico: req.body.diagnostico || "",
       servico: req.body.servico || "",
       conclusao: req.body.conclusao || "",
@@ -80,16 +80,26 @@ router.put("/:id/laudo", async (req, res) => {
 
     const companyId = req.session.user.companyId;
 
+    const updateData = {};
+
+    if (req.body.diagnostico !== undefined) {
+      updateData.diagnostico = req.body.diagnostico;
+    }
+
+    if (req.body.servico !== undefined) {
+      updateData.servico = req.body.servico;
+    }
+
+    if (req.body.conclusao !== undefined) {
+      updateData.conclusao = req.body.conclusao;
+    }
+
     const ticket = await Ticket.findOneAndUpdate(
       {
         _id: req.params.id,
         companyId: companyId
       },
-      {
-        diagnostico: req.body.diagnostico,
-        servico: req.body.servico,
-        conclusao: req.body.conclusao
-      },
+      updateData,
       { new: true }
     );
 

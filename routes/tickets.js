@@ -30,9 +30,16 @@ router.post("/", async (req, res) => {
     const ticket = await Ticket.create({
       cliente: req.body.cliente,
       equipamento: req.body.equipamento,
+      cpfcnpj: req.body.cpfcnpj,
+      telefone: req.body.telefone,
+      problema: req.body.problema,
       status: req.body.status || "aberto",
 
-      // 🔥 ESSENCIAL
+      // 🔥 LAUDO (já preparado desde criação)
+      diagnostico: req.body.diagnostico || "",
+      servico: req.body.servico || "",
+      conclusao: req.body.conclusao || "",
+
       companyId: companyId
     });
 
@@ -44,7 +51,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-/* ===================== ATUALIZAR ===================== */
+/* ===================== ATUALIZAR STATUS ===================== */
 router.put("/:id", async (req, res) => {
   try {
 
@@ -53,7 +60,7 @@ router.put("/:id", async (req, res) => {
     const ticket = await Ticket.findOneAndUpdate(
       {
         _id: req.params.id,
-        companyId: companyId // 🔥 impede mexer em outra empresa
+        companyId: companyId
       },
       { status: req.body.status },
       { new: true }
@@ -67,6 +74,33 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+/* ===================== SALVAR LAUDO ===================== */
+router.put("/:id/laudo", async (req, res) => {
+  try {
+
+    const companyId = req.session.user.companyId;
+
+    const ticket = await Ticket.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        companyId: companyId
+      },
+      {
+        diagnostico: req.body.diagnostico,
+        servico: req.body.servico,
+        conclusao: req.body.conclusao
+      },
+      { new: true }
+    );
+
+    res.json(ticket);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao salvar laudo" });
+  }
+});
+
 /* ===================== DELETE ===================== */
 router.delete("/:id", async (req, res) => {
   try {
@@ -75,7 +109,7 @@ router.delete("/:id", async (req, res) => {
 
     await Ticket.findOneAndDelete({
       _id: req.params.id,
-      companyId: companyId // 🔥 segurança total
+      companyId: companyId
     });
 
     res.json({ ok: true });

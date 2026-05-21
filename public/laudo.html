@@ -3,15 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Laudo Técnico</title>
 
 <style>
-
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body{
-  font-family:Arial,sans-serif;
+  font-family:Arial;
   background:#f3f4f6;
   padding:30px;
   color:#111827;
@@ -21,86 +19,60 @@ body{
   max-width:900px;
   margin:auto;
   background:#fff;
-  border-radius:15px;
   padding:40px;
+  border-radius:15px;
   box-shadow:0 10px 30px rgba(0,0,0,0.1);
 }
 
 .topo{
   display:flex;
   justify-content:space-between;
-  align-items:center;
-  margin-bottom:30px;
   border-bottom:2px solid #e5e7eb;
   padding-bottom:20px;
+  margin-bottom:20px;
 }
 
-.logo{font-size:28px;font-weight:bold;color:#2563eb;}
+.logo{font-size:24px;font-weight:bold;color:#2563eb;}
 
 .titulo{text-align:right;}
-.titulo h1{font-size:28px;}
-.titulo p{color:#6b7280;}
 
-.bloco{margin-top:25px;}
-.bloco h2{font-size:18px;margin-bottom:10px;color:#2563eb;}
+.bloco{margin-top:20px;}
+
+h2{color:#2563eb;font-size:18px;margin-bottom:10px;}
 
 .info{
   background:#f9fafb;
-  border-radius:10px;
   padding:15px;
-  line-height:1.8;
-}
-
-.footer{
-  margin-top:50px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.linha{
-  width:250px;
-  border-top:1px solid #000;
-  margin-top:50px;
-  padding-top:5px;
-  text-align:center;
-}
-
-button{
-  background:#2563eb;
-  color:#fff;
-  border:none;
-  padding:14px 20px;
   border-radius:10px;
-  cursor:pointer;
-  font-weight:bold;
 }
 
 textarea{
   width:100%;
-  min-height:140px;
+  min-height:120px;
   border:none;
-  resize:vertical;
   outline:none;
   background:transparent;
   font-size:15px;
-  line-height:1.8;
+  resize:vertical;
 }
 
 .status{
-  font-weight:bold;
+  background:#e5e7eb;
   padding:4px 10px;
   border-radius:8px;
-  background:#e5e7eb;
   display:inline-block;
+  font-weight:bold;
 }
 
-@media print{
-  button{display:none;}
-  body{background:#fff;padding:0;}
-  .laudo{box-shadow:none;}
+button{
+  margin-top:20px;
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  padding:12px 18px;
+  border-radius:10px;
+  cursor:pointer;
 }
-
 </style>
 </head>
 
@@ -109,40 +81,34 @@ textarea{
 <div class="laudo">
 
   <div class="topo">
-    <div class="logo">Bits & Bytes Tecnology</div>
+    <div class="logo">Bits & Bytes</div>
     <div class="titulo">
       <h1>LAUDO TÉCNICO</h1>
-      <p>OS: <strong id="osid"></strong></p>
+      <p>OS: <span id="osid"></span></p>
       <p id="dataAtual"></p>
     </div>
   </div>
 
   <div class="bloco">
-    <h2>Dados do Cliente</h2>
-    <div class="info">
-      <strong>Cliente:</strong> <span id="cliente"></span><br>
-      <strong>CPF/CNPJ:</strong> <span id="cpfcnpj"></span><br>
-      <strong>Telefone:</strong> <span id="telefone"></span>
-    </div>
+    <h2>Cliente</h2>
+    <div class="info" id="cliente"></div>
   </div>
 
   <div class="bloco">
     <h2>Equipamento</h2>
     <div class="info">
-      <strong>Equipamento:</strong> <span id="equipamento"></span><br>
-      <strong>Status:</strong> <span id="status" class="status"></span>
+      <div id="equipamento"></div>
+      <div id="status" class="status"></div>
     </div>
   </div>
 
   <div class="bloco">
-    <h2>Problema Relatado</h2>
-    <div class="info">
-      <span id="problema"></span>
-    </div>
+    <h2>Problema</h2>
+    <div class="info" id="problema"></div>
   </div>
 
   <div class="bloco">
-    <h2>Diagnóstico Técnico</h2>
+    <h2>Diagnóstico</h2>
     <div class="info">
       <textarea id="diagnostico"></textarea>
     </div>
@@ -162,13 +128,7 @@ textarea{
     </div>
   </div>
 
-  <div class="footer">
-    <button onclick="window.print()">Baixar / Imprimir PDF</button>
-
-    <div class="linha">
-      Responsável Técnico
-    </div>
-  </div>
+  <button onclick="salvarLaudo()">Salvar</button>
 
 </div>
 
@@ -177,55 +137,42 @@ textarea{
 let ticketId = null;
 let timeout = null;
 
-/* ===================== CARREGAR ===================== */
+/* ===================== CARREGAR (CORRETO AGORA) ===================== */
 async function carregarLaudo(){
 
-  const params = new URLSearchParams(window.location.search);
-  ticketId = params.get("id");
+  ticketId = new URLSearchParams(window.location.search).get("id");
 
-  if(!ticketId){
-    alert("Laudo não encontrado");
-    return;
-  }
+  if(!ticketId) return;
 
-  const res = await fetch("/api/tickets", { credentials:"include" });
-  const tickets = await res.json();
+  const res = await fetch("/api/tickets/" + ticketId, {
+    credentials:"include"
+  });
 
-  const ticket = tickets.find(t => t._id === ticketId);
+  const t = await res.json();
 
-  if(!ticket){
-    alert("Chamado não encontrado");
-    return;
-  }
+  document.getElementById("osid").innerText = t._id;
 
-  document.getElementById("osid").innerText = ticket._id;
+  document.getElementById("cliente").innerText = t.cliente || "";
+  document.getElementById("equipamento").innerText = t.equipamento || "";
+  document.getElementById("status").innerText = (t.status || "").toUpperCase();
+  document.getElementById("problema").innerText = t.problema || "";
 
-  document.getElementById("cliente").innerText = ticket.cliente || "";
-  document.getElementById("cpfcnpj").innerText = ticket.cpfcnpj || "";
-  document.getElementById("telefone").innerText = ticket.telefone || "";
-  document.getElementById("equipamento").innerText = ticket.equipamento || "";
-
-  document.getElementById("status").innerText =
-    (ticket.status || "").toUpperCase();
-
-  document.getElementById("problema").innerText = ticket.problema || "";
-
-  document.getElementById("diagnostico").value = ticket.diagnostico || "";
-  document.getElementById("servico").value = ticket.servico || "";
-  document.getElementById("conclusao").value = ticket.conclusao || "";
+  document.getElementById("diagnostico").value = t.diagnostico || "";
+  document.getElementById("servico").value = t.servico || "";
+  document.getElementById("conclusao").value = t.conclusao || "";
 
   document.getElementById("dataAtual").innerText =
     new Date().toLocaleString("pt-BR");
 }
 
-/* ===================== SALVAR (CORRIGIDO FINAL) ===================== */
+/* ===================== SALVAR (ESTÁVEL) ===================== */
 function salvarLaudo(){
+
+  if(!ticketId) return;
 
   clearTimeout(timeout);
 
   timeout = setTimeout(async () => {
-
-    if(!ticketId) return;
 
     const payload = {
       diagnostico: document.getElementById("diagnostico").value || "",
@@ -234,13 +181,13 @@ function salvarLaudo(){
     };
 
     await fetch("/api/tickets/" + ticketId + "/laudo", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+      method:"PUT",
+      headers:{ "Content-Type":"application/json" },
+      credentials:"include",
       body: JSON.stringify(payload)
     });
 
-  }, 700);
+  }, 500);
 
 }
 

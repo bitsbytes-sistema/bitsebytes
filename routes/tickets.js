@@ -74,7 +74,25 @@ router.put("/:id", async (req, res) => {
 router.put("/:id/laudo", async (req, res) => {
   try {
 
-    const companyId = req.session.user.companyId;
+    const companyId = req.session?.user?.companyId;
+
+    if (!companyId) {
+      return res.status(401).json({
+        error: "Sessão inválida"
+      });
+    }
+
+    const update = {
+      ...(req.body.diagnostico !== undefined && {
+        diagnostico: req.body.diagnostico
+      }),
+      ...(req.body.servico !== undefined && {
+        servico: req.body.servico
+      }),
+      ...(req.body.conclusao !== undefined && {
+        conclusao: req.body.conclusao
+      })
+    };
 
     const ticket = await Ticket.findOneAndUpdate(
       {
@@ -82,14 +100,14 @@ router.put("/:id/laudo", async (req, res) => {
         companyId
       },
       {
-        $set: {
-          diagnostico: req.body.diagnostico || "",
-          servico: req.body.servico || "",
-          conclusao: req.body.conclusao || ""
-        }
+        $set: update
       },
       { new: true }
     );
+
+    if (!ticket) {
+      return res.status(404).json({ error: "Ticket não encontrado" });
+    }
 
     res.json(ticket);
 

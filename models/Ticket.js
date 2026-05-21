@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const ticketSchema = new mongoose.Schema({
 
+  /* ===================== */
+  /* DADOS DO CLIENTE */
+  /* ===================== */
+
   cliente: {
     type: String,
     required: true,
@@ -18,6 +22,10 @@ const ticketSchema = new mongoose.Schema({
     default: ""
   },
 
+  /* ===================== */
+  /* EQUIPAMENTO */
+  /* ===================== */
+
   equipamento: {
     type: String,
     default: ""
@@ -25,16 +33,17 @@ const ticketSchema = new mongoose.Schema({
 
   problema: {
     type: String,
-    required: true
+    required: true,
+    default: ""
   },
+
+  /* ===================== */
+  /* STATUS */
+  /* ===================== */
 
   status: {
     type: String,
-    enum: [
-      "aberto",
-      "andamento",
-      "finalizado"
-    ],
+    enum: ["aberto", "andamento", "finalizado"],
     default: "aberto"
   },
 
@@ -74,8 +83,9 @@ const ticketSchema = new mongoose.Schema({
 
 });
 
-module.exports =
-  mongoose.model(
-    "Ticket",
-    ticketSchema
-  );
+/* ===================== */
+/* ÍNDICE DE SEGURANÇA */
+/* ===================== */
+ticketSchema.index({ companyId: 1, _id: 1 });
+
+module.exports = mongoose.model("Ticket", ticketSchema);

@@ -125,6 +125,47 @@ button{
   background:#16a34a;
 }
 
+.form-box{
+  background:#1e293b;
+  padding:25px;
+  border-radius:14px;
+  margin-bottom:30px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.3);
+}
+
+.form-box h2{
+  margin-bottom:20px;
+}
+
+input,
+select{
+  width:100%;
+  padding:12px;
+  margin-bottom:15px;
+  border:none;
+  border-radius:10px;
+  background:#0f172a;
+  color:white;
+}
+
+.btnCriar{
+  background:#2563eb;
+  width:100%;
+  padding:14px;
+  font-size:15px;
+}
+
+.btnCriar:hover{
+  opacity:0.9;
+}
+
+.usuario{
+  background:#0f172a;
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
 </style>
 </head>
 
@@ -171,6 +212,57 @@ button{
 
   </div>
 
+  <!-- CRIAR EMPRESA -->
+
+  <div class="form-box">
+
+    <h2>
+      Criar Empresa + Usuário
+    </h2>
+
+    <input
+      type="text"
+      id="empresa"
+      placeholder="Nome da empresa"
+    >
+
+    <input
+      type="text"
+      id="username"
+      placeholder="Usuário"
+    >
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Senha"
+    >
+
+    <select id="plan">
+
+      <option value="free">
+        Free
+      </option>
+
+      <option value="basic">
+        Basic
+      </option>
+
+      <option value="pro">
+        Pro
+      </option>
+
+    </select>
+
+    <button
+      class="btnCriar"
+      onclick="criarEmpresa()"
+    >
+      Criar Empresa
+    </button>
+
+  </div>
+
   <h2 style="margin-bottom:20px;">
     Empresas
   </h2>
@@ -194,6 +286,20 @@ button{
     </tbody>
 
   </table>
+
+  <br><br>
+
+  <div class="form-box">
+
+    <h2>
+      Usuários do Sistema
+    </h2>
+
+    <div id="listaUsuarios">
+
+    </div>
+
+  </div>
 
 </div>
 
@@ -300,6 +406,8 @@ async function load(){
 
   });
 
+  carregarUsuarios();
+
 }
 
 async function alterarPlano(
@@ -331,6 +439,154 @@ async function alterarPlano(
   );
 
   load();
+
+}
+
+/* ===================== */
+/* CRIAR EMPRESA */
+/* ===================== */
+
+async function criarEmpresa(){
+
+  const name =
+    document
+    .getElementById("empresa")
+    .value
+    .trim();
+
+  const username =
+    document
+    .getElementById("username")
+    .value
+    .trim();
+
+  const password =
+    document
+    .getElementById("password")
+    .value
+    .trim();
+
+  const plan =
+    document
+    .getElementById("plan")
+    .value;
+
+  if(
+    !name ||
+    !username ||
+    !password
+  ){
+    alert(
+      "Preencha todos os campos"
+    );
+    return;
+  }
+
+  const res =
+    await fetch(
+      "/api/admin/create-company",
+      {
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+
+        credentials:"include",
+
+        body: JSON.stringify({
+
+          name,
+          username,
+          password,
+          plan
+
+        })
+
+      }
+    );
+
+  const data =
+    await res.json();
+
+  if(!res.ok){
+
+    alert(
+      data.error ||
+      "Erro ao criar"
+    );
+
+    return;
+
+  }
+
+  alert(
+    "Empresa criada com sucesso!"
+  );
+
+  document
+  .getElementById("empresa")
+  .value = "";
+
+  document
+  .getElementById("username")
+  .value = "";
+
+  document
+  .getElementById("password")
+  .value = "";
+
+  load();
+
+}
+
+/* ===================== */
+/* LISTAR USERS */
+/* ===================== */
+
+async function carregarUsuarios(){
+
+  const res =
+    await fetch(
+      "/api/admin/users",
+      {
+        credentials:"include"
+      }
+    );
+
+  const usuarios =
+    await res.json();
+
+  const div =
+    document.getElementById(
+      "listaUsuarios"
+    );
+
+  div.innerHTML = "";
+
+  usuarios.forEach(u => {
+
+    div.innerHTML += `
+
+    <div class="usuario">
+
+      👤 ${u.username}
+
+      <br>
+
+      🏢 ${u.companyName || "Sem empresa"}
+
+      <br>
+
+      🔐 ${u.role}
+
+    </div>
+
+    `;
+
+  });
 
 }
 

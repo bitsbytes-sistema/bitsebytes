@@ -342,6 +342,126 @@ app.get(
 );
 
 /* ===================== */
+/* CREATE COMPANY */
+/* ===================== */
+app.post(
+  "/api/admin/create-company",
+  auth,
+  masterOnly,
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      const {
+        name,
+        username,
+        password,
+        plan
+      } = req.body;
+
+      if(
+        !name ||
+        !username ||
+        !password
+      ){
+
+        return res.status(400)
+        .json({
+          error:
+            "Preencha todos os campos"
+        });
+
+      }
+
+      const existe =
+        await User.findOne({
+          username
+        });
+
+      if(existe){
+
+        return res.status(400)
+        .json({
+          error:
+            "Usuário já existe"
+        });
+
+      }
+
+      let ticketLimit = 10;
+      let userLimit = 1;
+
+      if(plan === "basic"){
+
+        ticketLimit = 30;
+        userLimit = 3;
+
+      }
+
+      if(plan === "pro"){
+
+        ticketLimit = -1;
+        userLimit = -1;
+
+      }
+
+      const company =
+        await Company.create({
+
+          name,
+
+          plan:
+            plan || "free",
+
+          ticketLimit,
+
+          userLimit,
+
+          active: true
+
+        });
+
+      const hash =
+        await bcrypt.hash(
+          password,
+          10
+        );
+
+      await User.create({
+
+        username,
+
+        password: hash,
+
+        role: "admin",
+
+        companyId:
+          company._id
+
+      });
+
+      res.json({
+        ok: true
+      });
+
+    } catch(err){
+
+      console.log(err);
+
+      res.status(500)
+      .json({
+        error: true
+      });
+
+    }
+
+  }
+);
+
+/* ===================== */
 /* ALTERAR PLANO */
 /* ===================== */
 app.put(
@@ -567,159 +687,6 @@ app.post(
 );
 
 /* ===================== */
-/* ABRIR CHAMADO SITE */
-/* ===================== */
-app.post(
-  "/abrir-chamado",
-  async (
-    req,
-    res
-  ) => {
-
-    try {
-
-      const company =
-        await Company.findOne();
-
-      const totalTickets =
-        await Ticket.countDocuments({
-
-          companyId:
-            company._id
-
-        });
-
-      if(
-        company.ticketLimit !== -1 &&
-        totalTickets >= company.ticketLimit
-      ){
-
-        return res.status(400)
-        .json({
-
-          error:
-            "Limite do plano atingido."
-
-        });
-
-      }
-
-      const ativos =
-        await Ticket.countDocuments({
-
-          cpfcnpj:
-            req.body.cpfcnpj,
-
-          status: {
-            $in: [
-              "aberto",
-              "andamento"
-            ]
-          }
-
-        });
-
-      if(ativos >= 3){
-
-        return res.status(400).json({
-
-          error:
-            "Você já possui 3 chamados em aberto."
-
-        });
-
-      }
-
-      const ticket =
-        await Ticket.create({
-
-          companyId:
-            company._id,
-
-          cliente:
-            req.body.cliente,
-
-          telefone:
-            req.body.telefone,
-
-          cpfcnpj:
-            req.body.cpfcnpj,
-
-          equipamento:
-            req.body.equipamento,
-
-          problema:
-            req.body.problema,
-
-          status:
-            "aberto"
-
-        });
-
-      const telefone =
-        String(
-          ticket.telefone || ""
-        )
-        .replace(/\D/g, "");
-
-      const dataAtual =
-        new Date()
-        .toLocaleString(
-          "pt-BR",
-          {
-            timeZone:
-              "America/Cuiaba"
-          }
-        );
-
-      const mensagem =
-`Bits & Bytes Assistência Técnica
-
-Status do seu atendimento:
-ABERTO
-
-Cliente:
-${ticket.cliente}
-
-CPF/CNPJ:
-${ticket.cpfcnpj}
-
-Equipamento:
-${ticket.equipamento}
-
-Problema informado:
-${ticket.problema}
-
-Atualizado em:
-${dataAtual}
-
-Seu chamado foi aberto com sucesso e aguarda análise técnica.`;
-
-      const whatsapp =
-`https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
-
-      res.json({
-
-        ok: true,
-        whatsapp
-
-      });
-
-    } catch(err){
-
-      console.log(err);
-
-      res.status(500)
-      .json({
-        error: true
-      });
-
-    }
-
-  }
-);
-
-/* ===================== */
 /* UPDATE STATUS */
 /* ===================== */
 app.put(
@@ -767,93 +734,8 @@ app.put(
 
       }
 
-      const telefone =
-        String(
-          ticket.telefone || ""
-        )
-        .replace(/\D/g, "");
-
-      const dataAtual =
-        new Date()
-        .toLocaleString(
-          "pt-BR",
-          {
-            timeZone:
-              "America/Cuiaba"
-          }
-        );
-
-      let mensagemFinal = "";
-
-      if(
-        ticket.status ===
-        "finalizado"
-      ){
-
-        mensagemFinal =
-`Seu equipamento já está pronto para retirada!
-
-Retire conosco ou entre em contato para mais informações.`;
-
-      }
-
-      else if(
-        ticket.status ===
-        "andamento"
-      ){
-
-        mensagemFinal =
-`Seu equipamento está em manutenção pela nossa equipe técnica.
-
-Em breve teremos novas atualizações.`;
-
-      }
-
-      else {
-
-        mensagemFinal =
-`Seu chamado foi aberto com sucesso e aguarda análise técnica.`;
-
-      }
-
-      const mensagem =
-`Bits & Bytes Assistência Técnica
-
-Status do seu atendimento:
-${String(ticket.status).toUpperCase()}
-
-Cliente:
-${ticket.cliente}
-
-CPF/CNPJ:
-${ticket.cpfcnpj || "Não informado"}
-
-Equipamento:
-${ticket.equipamento}
-
-Problema informado:
-${ticket.problema || "Não informado"}
-
-Atualizado em:
-${dataAtual}
-
-${mensagemFinal}`;
-
-      let whatsapp = null;
-
-      if(telefone){
-
-        whatsapp =
-`https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
-
-      }
-
       res.json({
-
-        ok: true,
-
-        whatsapp
-
+        ok: true
       });
 
     } catch(err){

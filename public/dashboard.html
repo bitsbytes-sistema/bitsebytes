@@ -55,14 +55,6 @@ button:hover{
   background:#3d9140;
 }
 
-.btn-laudo{
-  background:#2563eb;
-}
-
-.btn-laudo:hover{
-  background:#1d4ed8;
-}
-
 a{
   color:white;
   text-decoration:none;
@@ -98,34 +90,13 @@ a{
 
   <h3>Criar Chamado</h3>
 
-  <input
-    id="cpfcnpj"
-    placeholder="CPF/CNPJ"
-  >
+  <input id="cpfcnpj" placeholder="CPF/CNPJ">
+  <input id="cliente" placeholder="Cliente">
+  <input id="telefone" placeholder="Telefone">
+  <input id="equipamento" placeholder="Equipamento">
+  <input id="problema" placeholder="Problema">
 
-  <input
-    id="cliente"
-    placeholder="Cliente"
-  >
-
-  <input
-    id="telefone"
-    placeholder="Telefone"
-  >
-
-  <input
-    id="equipamento"
-    placeholder="Equipamento"
-  >
-
-  <input
-    id="problema"
-    placeholder="Problema"
-  >
-
-  <button onclick="criar()">
-    Criar
-  </button>
+  <button onclick="criar()">Criar</button>
 
   <h3>Chamados</h3>
 
@@ -135,19 +106,8 @@ a{
 
 <script>
 
-/* ===================== */
-/* DOM */
-/* ===================== */
-
-const stats =
-  document.getElementById("stats");
-
-const lista =
-  document.getElementById("lista");
-
-/* ===================== */
-/* VAR */
-/* ===================== */
+const stats = document.getElementById("stats");
+const lista = document.getElementById("lista");
 
 let chamados = [];
 
@@ -159,41 +119,24 @@ async function carregarEmpresa(){
 
   try {
 
-    const res =
-      await fetch(
-        "/me",
-        {
-          credentials: "include"
-        }
-      );
+    const res = await fetch("/me", {
+      credentials: "include"
+    });
 
     if(res.status === 401){
-
       window.location.href = "/";
-
       return;
     }
 
-    const data =
-      await res.json();
+    const data = await res.json();
 
     if(data.company){
-
-      document
-      .getElementById("plano")
-      .innerText =
-        "Plano: " +
-        (
-          data.company.plan ||
-          "Free"
-        );
-
+      document.getElementById("plano").innerText =
+        "Plano: " + (data.company.plan || "Free");
     }
 
   } catch(err){
-
     console.log(err);
-
   }
 
 }
@@ -206,23 +149,16 @@ async function load(){
 
   try {
 
-    const res =
-      await fetch(
-        "/api/tickets",
-        {
-          credentials: "include"
-        }
-      );
+    const res = await fetch("/api/tickets", {
+      credentials: "include"
+    });
 
     if(res.status === 401){
-
       window.location.href = "/";
-
       return;
     }
 
-    chamados =
-      await res.json();
+    chamados = await res.json();
 
     lista.innerHTML = "";
 
@@ -230,84 +166,48 @@ async function load(){
 
       const dataAbertura =
         c.createdAt
-        ? new Date(c.createdAt)
-          .toLocaleString(
-            "pt-BR",
-            {
-              timeZone:
-                "America/Cuiaba"
-            }
-          )
+        ? new Date(c.createdAt).toLocaleString("pt-BR", {
+            timeZone: "America/Cuiaba"
+          })
         : "Sem data";
 
       lista.innerHTML += `
+        <div class="card">
 
-      <div class="card">
+          <b>${c.cliente || ""}</b>
 
-        <b>${c.cliente || ""}</b>
+          <br><br>
 
-        <br><br>
+          📱 ${c.telefone || ""}
+          <br>
+          📄 ${c.cpfcnpj || ""}
+          <br>
+          💻 ${c.equipamento || ""}
+          <br>
+          🛠 ${c.problema || ""}
 
-        📱 ${c.telefone || ""}
+          <br><br>
 
-        <br>
+          📅 ${dataAbertura}
 
-        📄 ${c.cpfcnpj || ""}
+          <br><br>
 
-        <br>
+          📌 <b style="color:${
+            c.status === "aberto"
+              ? "red"
+              : c.status === "andamento"
+              ? "orange"
+              : "green"
+          }">
+            ${String(c.status).toUpperCase()}
+          </b>
 
-        💻 ${c.equipamento || ""}
+          <br><br>
 
-        <br>
+          <button onclick="status('${c._id}')">Status</button>
+          <button onclick="del('${c._id}')">Excluir</button>
 
-        🛠 ${c.problema || ""}
-
-        <br><br>
-
-        📅 ${dataAbertura}
-
-        <br><br>
-
-        📌
-        <b style="color:${
-          c.status === "aberto"
-          ? "red"
-          : c.status === "andamento"
-          ? "orange"
-          : "green"
-        }">
-
-          ${String(c.status).toUpperCase()}
-
-        </b>
-
-        <br><br>
-
-        <button onclick="status('${c._id}')">
-          Status
-        </button>
-
-        <button onclick="del('${c._id}')">
-          Excluir
-        </button>
-
-        ${
-          c.status === "finalizado"
-          ?
-          `
-            <button
-              class="btn-laudo"
-              onclick="gerarLaudo('${c._id}')"
-            >
-              Gerar Laudo
-            </button>
-          `
-          :
-          ""
-        }
-
-      </div>
-
+        </div>
       `;
 
     });
@@ -315,13 +215,8 @@ async function load(){
     loadStats();
 
   } catch(err){
-
     console.log(err);
-
-    alert(
-      "Erro ao carregar chamados"
-    );
-
+    alert("Erro ao carregar chamados");
   }
 
 }
@@ -332,29 +227,16 @@ async function load(){
 
 function loadStats(){
 
-  const aberto =
-    chamados.filter(
-      x => x.status === "aberto"
-    ).length;
-
-  const andamento =
-    chamados.filter(
-      x => x.status === "andamento"
-    ).length;
-
-  const finalizado =
-    chamados.filter(
-      x => x.status === "finalizado"
-    ).length;
+  const aberto = chamados.filter(x => x.status === "aberto").length;
+  const andamento = chamados.filter(x => x.status === "andamento").length;
+  const finalizado = chamados.filter(x => x.status === "finalizado").length;
 
   stats.innerHTML = `
-
     🔴 Abertos: ${aberto}
     |
     🟡 Andamento: ${andamento}
     |
     🟢 Finalizados: ${finalizado}
-
   `;
 
 }
@@ -365,72 +247,37 @@ function loadStats(){
 
 async function criar(){
 
-  const cliente =
-    document.getElementById("cliente").value.trim();
+  const cliente = document.getElementById("cliente").value.trim();
+  const telefone = document.getElementById("telefone").value.trim();
+  const cpfcnpj = document.getElementById("cpfcnpj").value.trim();
+  const equipamento = document.getElementById("equipamento").value.trim();
+  const problema = document.getElementById("problema").value.trim();
 
-  const telefone =
-    document.getElementById("telefone").value.trim();
-
-  const cpfcnpj =
-    document.getElementById("cpfcnpj").value.trim();
-
-  const equipamento =
-    document.getElementById("equipamento").value.trim();
-
-  const problema =
-    document.getElementById("problema").value.trim();
-
-  if(
-    !cliente ||
-    !telefone ||
-    !equipamento ||
-    !problema
-  ){
-    alert(
-      "Preencha todos os campos"
-    );
+  if(!cliente || !telefone || !equipamento || !problema){
+    alert("Preencha todos os campos");
     return;
   }
 
-  const res =
-    await fetch(
-      "/api/tickets",
-      {
+  const res = await fetch("/api/tickets", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      cliente,
+      telefone,
+      cpfcnpj,
+      equipamento,
+      problema
+    })
+  });
 
-        method: "POST",
-
-        headers:{
-          "Content-Type":
-            "application/json"
-        },
-
-        credentials: "include",
-
-        body: JSON.stringify({
-
-          cliente,
-          telefone,
-          cpfcnpj,
-          equipamento,
-          problema
-
-        })
-
-      }
-    );
-
-  const data =
-    await res.json();
+  const data = await res.json();
 
   if(!res.ok){
-
-    alert(
-      data.error ||
-      "Erro ao criar chamado"
-    );
-
+    alert(data.error || "Erro ao criar chamado");
     return;
-
   }
 
   document.getElementById("cliente").value = "";
@@ -449,61 +296,22 @@ async function criar(){
 
 async function status(id){
 
-  const t =
-    chamados.find(
-      x => x._id === id
-    );
-
+  const t = chamados.find(x => x._id === id);
   if(!t) return;
 
   let novo = "aberto";
 
-  if(t.status === "aberto"){
+  if(t.status === "aberto") novo = "andamento";
+  else if(t.status === "andamento") novo = "finalizado";
 
-    novo = "andamento";
-
-  }
-
-  else if(
-    t.status === "andamento"
-  ){
-
-    novo = "finalizado";
-
-  }
-
-  const res =
-    await fetch(
-      "/api/tickets/" + id,
-      {
-
-        method: "PUT",
-
-        headers:{
-          "Content-Type":
-            "application/json"
-        },
-
-        credentials: "include",
-
-        body: JSON.stringify({
-          status: novo
-        })
-
-      }
-    );
-
-  const data =
-    await res.json();
-
-  if(data.whatsapp){
-
-    window.open(
-      data.whatsapp,
-      "_blank"
-    );
-
-  }
+  await fetch("/api/tickets/" + id, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({ status: novo })
+  });
 
   load();
 
@@ -515,36 +323,14 @@ async function status(id){
 
 async function del(id){
 
-  if(
-    !confirm(
-      "Deseja excluir?"
-    )
-  ){
-    return;
-  }
+  if(!confirm("Deseja excluir?")) return;
 
-  await fetch(
-    "/api/tickets/" + id,
-    {
-      method: "DELETE",
-      credentials: "include"
-    }
-  );
+  await fetch("/api/tickets/" + id, {
+    method: "DELETE",
+    credentials: "include"
+  });
 
   load();
-
-}
-
-/* ===================== */
-/* LAUDO */
-/* ===================== */
-
-function gerarLaudo(id){
-
-  window.open(
-    "/laudo.html?id=" + id,
-    "_blank"
-  );
 
 }
 
@@ -554,12 +340,9 @@ function gerarLaudo(id){
 
 async function logout(){
 
-  await fetch(
-    "/logout",
-    {
-      credentials: "include"
-    }
-  );
+  await fetch("/logout", {
+    credentials: "include"
+  });
 
   window.location.href = "/";
 
@@ -570,7 +353,6 @@ async function logout(){
 /* ===================== */
 
 carregarEmpresa();
-
 load();
 
 </script>

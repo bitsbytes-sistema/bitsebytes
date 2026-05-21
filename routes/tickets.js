@@ -78,30 +78,30 @@ router.put("/:id", async (req, res) => {
 router.put("/:id/laudo", async (req, res) => {
   try {
 
-    console.log("BODY RECEBIDO:", req.body);
-
     const companyId = req.session.user.companyId;
 
-    const updateData = {};
+    const updateFields = {};
 
-    if (req.body.diagnostico !== undefined) {
-      updateData.diagnostico = req.body.diagnostico;
+    if (typeof req.body.diagnostico !== "undefined") {
+      updateFields.diagnostico = req.body.diagnostico;
     }
 
-    if (req.body.servico !== undefined) {
-      updateData.servico = req.body.servico;
+    if (typeof req.body.servico !== "undefined") {
+      updateFields.servico = req.body.servico;
     }
 
-    if (req.body.conclusao !== undefined) {
-      updateData.conclusao = req.body.conclusao;
+    if (typeof req.body.conclusao !== "undefined") {
+      updateFields.conclusao = req.body.conclusao;
     }
 
     const ticket = await Ticket.findOneAndUpdate(
       {
         _id: req.params.id,
-        companyId: companyId
+        companyId
       },
-      updateData,
+      {
+        $set: updateFields
+      },
       { new: true }
     );
 

@@ -73,35 +73,8 @@ router.put("/:id", async (req, res) => {
 /* ===================== SALVAR LAUDO (CORRIGIDO DEFINITIVO) ===================== */
 router.put("/:id/laudo", async (req, res) => {
   try {
+
     const companyId = req.session.user.companyId;
-
-    const updateFields = {};
-
-    // 🔥 REGRA: nunca sobrescrever com vazio
-
-    if (
-      req.body.diagnostico !== undefined &&
-      req.body.diagnostico !== null &&
-      req.body.diagnostico !== ""
-    ) {
-      updateFields.diagnostico = req.body.diagnostico;
-    }
-
-    if (
-      req.body.servico !== undefined &&
-      req.body.servico !== null &&
-      req.body.servico !== ""
-    ) {
-      updateFields.servico = req.body.servico;
-    }
-
-    if (
-      req.body.conclusao !== undefined &&
-      req.body.conclusao !== null &&
-      req.body.conclusao !== ""
-    ) {
-      updateFields.conclusao = req.body.conclusao;
-    }
 
     const ticket = await Ticket.findOneAndUpdate(
       {
@@ -109,7 +82,11 @@ router.put("/:id/laudo", async (req, res) => {
         companyId
       },
       {
-        $set: updateFields
+        $set: {
+          diagnostico: req.body.diagnostico || "",
+          servico: req.body.servico || "",
+          conclusao: req.body.conclusao || ""
+        }
       },
       { new: true }
     );

@@ -39,7 +39,7 @@ const ticketSchema = new mongoose.Schema({
   },
 
   /* ===================== */
-  /* NOVOS CAMPOS DO LAUDO */
+  /* LAUDO TÉCNICO */
   /* ===================== */
 
   diagnostico: {
@@ -51,6 +51,15 @@ const ticketSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+
+  conclusao: {
+    type: String,
+    default: ""
+  },
+
+  /* ===================== */
+  /* MULTIEMPRESA */
+  /* ===================== */
 
   companyId: {
     type: mongoose.Schema.Types.ObjectId,

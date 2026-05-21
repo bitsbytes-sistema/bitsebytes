@@ -38,6 +38,20 @@ const ticketSchema = new mongoose.Schema({
     default: "aberto"
   },
 
+  /* ===================== */
+  /* NOVOS CAMPOS DO LAUDO */
+  /* ===================== */
+
+  diagnostico: {
+    type: String,
+    default: ""
+  },
+
+  servico: {
+    type: String,
+    default: ""
+  },
+
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,

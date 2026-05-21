@@ -261,6 +261,12 @@ textarea{
 
 <script>
 
+let ticketId = null;
+
+/* ===================== */
+/* CARREGAR LAUDO */
+/* ===================== */
+
 async function carregarLaudo(){
 
   const params =
@@ -268,8 +274,10 @@ async function carregarLaudo(){
       window.location.search
     );
 
-  const id =
+  ticketId =
     params.get("id");
+
+  const id = ticketId;
 
   if(!id){
 
@@ -280,11 +288,12 @@ async function carregarLaudo(){
   }
 
   const res =
-    await fetch("/api/tickets",{
-
-      credentials:"include"
-
-    });
+    await fetch(
+      "/api/tickets",
+      {
+        credentials:"include"
+      }
+    );
 
   const tickets =
     await res.json();
@@ -328,12 +337,99 @@ async function carregarLaudo(){
   .innerText =
     ticket.problema || "";
 
+  document
+  .getElementById("diagnostico")
+  .value =
+    ticket.diagnostico || "";
+
+  document
+  .getElementById("servico")
+  .value =
+    ticket.servico || "";
+
   document.getElementById("dataAtual")
   .innerText =
     new Date()
     .toLocaleString("pt-BR");
 
 }
+
+/* ===================== */
+/* SALVAR LAUDO */
+/* ===================== */
+
+async function salvarLaudo(){
+
+  if(!ticketId){
+    return;
+  }
+
+  try {
+
+    await fetch(
+
+      "/api/tickets/" +
+      ticketId +
+      "/laudo",
+
+      {
+
+        method:"PUT",
+
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+
+        credentials:"include",
+
+        body: JSON.stringify({
+
+          diagnostico:
+            document
+            .getElementById("diagnostico")
+            .value,
+
+          servico:
+            document
+            .getElementById("servico")
+            .value
+
+        })
+
+      }
+
+    );
+
+  } catch(err){
+
+    console.log(err);
+
+  }
+
+}
+
+/* ===================== */
+/* AUTO SAVE */
+/* ===================== */
+
+document
+.getElementById("diagnostico")
+.addEventListener(
+  "input",
+  salvarLaudo
+);
+
+document
+.getElementById("servico")
+.addEventListener(
+  "input",
+  salvarLaudo
+);
+
+/* ===================== */
+/* INIT */
+/* ===================== */
 
 carregarLaudo();
 

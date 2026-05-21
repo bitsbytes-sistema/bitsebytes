@@ -871,6 +871,75 @@ ${mensagemFinal}`;
 );
 
 /* ===================== */
+/* SALVAR LAUDO */
+/* ===================== */
+app.put(
+  "/api/tickets/:id/laudo",
+  auth,
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      const ticket =
+        await Ticket.findOneAndUpdate(
+
+          {
+            _id:
+              req.params.id,
+
+            companyId:
+              req.session.user.companyId
+          },
+
+          {
+            diagnostico:
+              req.body.diagnostico || "",
+
+            servico:
+              req.body.servico || "",
+
+            updatedAt:
+              new Date()
+          },
+
+          {
+            new: true
+          }
+
+        );
+
+      if(!ticket){
+
+        return res
+        .status(404)
+        .json({
+          error: true
+        });
+
+      }
+
+      res.json({
+        ok: true
+      });
+
+    } catch(err){
+
+      console.log(err);
+
+      res.status(500)
+      .json({
+        error: true
+      });
+
+    }
+
+  }
+);
+
+/* ===================== */
 /* DELETE */
 /* ===================== */
 app.delete(

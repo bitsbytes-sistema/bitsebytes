@@ -203,7 +203,7 @@ async function load(){
 
   const res =
     await fetch(
-      "/api/admin/companies",
+      "/api/admin/stats",
       {
         credentials:"include"
       }
@@ -215,17 +215,17 @@ async function load(){
   document
   .getElementById("empresas")
   .innerText =
-    data.totalCompanies;
+    data.empresas || 0;
 
   document
   .getElementById("usuarios")
   .innerText =
-    data.totalUsers;
+    data.usuarios || 0;
 
   document
   .getElementById("tickets")
   .innerText =
-    data.totalTickets;
+    data.chamados || 0;
 
   const lista =
     document.getElementById(
@@ -234,14 +234,14 @@ async function load(){
 
   lista.innerHTML = "";
 
-  data.companies.forEach(c => {
+  (data.companies || []).forEach(c => {
 
     lista.innerHTML += `
 
     <tr>
 
       <td>
-        ${c.name}
+        ${c.name || "Sem nome"}
       </td>
 
       <td>
@@ -309,7 +309,7 @@ async function alterarPlano(
 
   await fetch(
 
-    "/api/admin/company/" + id,
+    "/api/admin/company/" + id + "/plan",
 
     {
 

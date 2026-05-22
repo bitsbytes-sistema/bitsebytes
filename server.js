@@ -1,993 +1,63 @@
-require("dotenv").config();
-
-const express = require("express");
-const mongoose = require("mongoose");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-const path = require("path");
-const bcrypt = require("bcrypt");
-
-const Company = require("./models/Company");
-const User = require("./models/User");
-const Ticket = require("./models/Ticket");
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-/* ===================== TRUST PROXY ===================== */
-app.set("trust proxy", 1);
-
-/* ===================== MIDDLEWARE ===================== */
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-/* ===================== SESSION ===================== */
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "segredo_forte",
-    resave: false,
-    saveUninitialized: false,
-
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URL
-    }),
-
-    cookie: {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24
-    }
-  })
-);
-
-/* ===================== STATIC ===================== */
-app.use(
-  express.static(
-    path.join(__dirname, "public")
-  )
-);
-
-/* ===================== MONGO ===================== */
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => {
-    console.log("Mongo conectado");
-  })
-  .catch(err => {
-    console.log("Erro Mongo:", err);
-  });
-
-/* ===================== AUTH ===================== */
-function auth(req, res, next){
-
-  if(!req.session.user){
-
-    return res.status(401).json({
-      error: "not_logged"
-    });
-
-  }
-
-  next();
-
-}
-
-/* ===================== MASTER ===================== */
-function masterOnly(req, res, next){
-
-  if(req.session.user.role !== "master"){
-
-    return res.status(403).json({
-      error: "not_master"
-    });
-
-  }
-
-  next();
-
-}
-
-/* ===================== LOGIN ===================== */
-app.post("/login", async (req, res) => {
-
-  try {
-
-    const user = await User.findOne({
-      username: req.body.username
-    });
-
-    if(!user){
-
-      return res.json({
-        success: false
-      });
-
-    }
-
-    const ok = await bcrypt.compare(
-      req.body.password,
-      user.password
-    );
-
-    if(!ok){
-
-      return res.json({
-        success: false
-      });
-
-    }
-
-    req.session.user = {
-
-      _id: String(user._id),
-
-      username: user.username,
-
-      role: user.role,
-
-      companyId: user.companyId
-
-    };
-
-    req.session.save(() => {
-
-      res.json({
-        success: true
-      });
-
-    });
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      success: false
-    });
-
-  }
-
-});
-
-/* ===================== ME ===================== */
-app.get("/me", auth, async (req, res) => {
-
-  try {
-
-    const company =
-      await Company.findById(
-        req.session.user.companyId
-      );
-
-    res.json({
-      user: req.session.user,
-      company
-    });
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: true
-    });
-
-  }
-
-});
-
-/* ===================== DASHBOARD ===================== */
-app.get("/dashboard", (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "dashboard.html"
-    )
-  );
-
-});
-
-/* ===================== ADMIN ===================== */
-app.get("/admin", auth, masterOnly, (req, res) => {
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "admin.html"
-    )
-  );
-
-});
-
-/* ===================== ADMIN STATS ===================== */
-app.get("/api/admin/stats", auth, masterOnly, async (req, res) => {
-
-  try {
-
-    const empresas =
-      await Company.countDocuments();
-
-    const usuarios =
-      await User.countDocuments();
-
-    const chamados =
-      await Ticket.countDocuments();
-
-    const companies =
-      await Company.find();
-
-    res.json({
-
-      empresas,
-      usuarios,
-      chamados,
-      companies
-
-    });
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: true
-    });
-
-  }
-
-});
-
-/* ===================== CREATE COMPANY ===================== */
-app.post("/api/admin/create-company", auth, masterOnly, async (req, res) => {
-
-  try {
-
-    const {
-      name,
-      username,
-      password,
-      plan
-    } = req.body;
-
-    if(
-      !name ||
-      !username ||
-      !password
-    ){
-
-      return res.status(400).json({
-        error: "Preencha todos os campos"
-      });
-
-    }
-
-    const existe =
-      await User.findOne({
-        username
-      });
-
-    if(existe){
-
-      return res.status(400).json({
-        error: "Usuário já existe"
-      });
-
-    }
-
-    let ticketLimit = 10;
-    let userLimit = 1;
-
-    if(plan === "basic"){
-
-      ticketLimit = 30;
-      userLimit = 3;
-
-    }
-
-    if(plan === "pro"){
-
-      ticketLimit = -1;
-      userLimit = -1;
-
-    }
-
-    const company =
-      await Company.create({
-
-        name,
-
-        plan: plan || "free",
-
-        ticketLimit,
-
-        userLimit,
-
-        active: true
-
-      });
-
-    const hash =
-      await bcrypt.hash(password, 10);
-
-    await User.create({
-
-      username,
-
-      password: hash,
-
-      role: "admin",
-
-      companyId: company._id
-
-    });
-
-    res.json({
-      ok: true
-    });
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: true
-    });
-
-  }
-
-});
-
-/* ===================== ALTERAR PLANO ===================== */
-app.put("/api/admin/company/:id/plan", auth, masterOnly, async (req, res) => {
-
-  try {
-
-    const planos = {
-
-      free: {
-        plan: "free",
-        ticketLimit: 10,
-        userLimit: 1
-      },
-
-      basic: {
-        plan: "basic",
-        ticketLimit: 30,
-        userLimit: 3
-      },
-
-      pro: {
-        plan: "pro",
-        ticketLimit: -1,
-        userLimit: -1
-      }
-
-    };
-
-    const plano =
-      planos[req.body.plan];
-
-    if(!plano){
-
-      return res.status(400).json({
-        error: "Plano inválido"
-      });
-
-    }
-
-    await Company.findByIdAndUpdate(
-      req.params.id,
-      plano
-    );
-
-    res.json({
-      ok: true
-    });
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: true
-    });
-
-  }
-
-});
-
-/* ===================== LISTAR TICKETS ===================== */
-app.get("/api/tickets", auth, async (req, res) => {
-
-  try {
-
-    const tickets =
-      await Ticket.find({
-
-        companyId:
-          req.session.user.companyId
-
-      }).sort({
-        createdAt: -1
-      });
-
-    res.json(tickets);
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: "erro_listar"
-    });
-
-  }
-
-});
-
-/* ===================== CRIAR TICKET ===================== */
-app.post("/api/tickets", auth, async (req, res) => {
-
-  try {
-
-    const company =
-      await Company.findById(
-        req.session.user.companyId
-      );
-
-    const totalTickets =
-      await Ticket.countDocuments({
-
-        companyId:
-          req.session.user.companyId
-
-      });
-
-    if(
-      company.ticketLimit !== -1 &&
-      totalTickets >= company.ticketLimit
-    ){
-
-      return res.status(400).json({
-        error: "Limite do plano atingido."
-      });
-
-    }
-
-    const ultimoOS =
-      await Ticket.findOne({
-        companyId:
-          req.session.user.companyId
-      }).sort({
-        numeroOS: -1
-      });
-
-    const numeroOS =
-      ultimoOS && ultimoOS.numeroOS
-        ? ultimoOS.numeroOS + 1
-        : 1;
-
-    const ticket =
-      await Ticket.create({
-
-        companyId:
-          req.session.user.companyId,
-
-        numeroOS,
-
-        cliente:
-          req.body.cliente,
-
-        telefone:
-          req.body.telefone,
-
-        cpfcnpj:
-          req.body.cpfcnpj,
-
-        equipamento:
-          req.body.equipamento,
-
-        problema:
-          req.body.problema,
-
-        diagnostico: "",
-
-        servico: "",
-
-        conclusao: "",
-
-        tecnico: "",
-
-        laudoGerado: false,
-
-        status: "aberto"
-
-      });
-
-    res.json(ticket);
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      ok: false
-    });
-
-  }
-
-});
-
-/* ===================== ABRIR CHAMADO PÚBLICO ===================== */
-app.post("/abrir-chamado", async (req, res) => {
-
-  try {
-
-    const company = await Company.findOne();
-
-    if(!company){
-
-      return res.status(404).json({
-        error: "Empresa não encontrada"
-      });
-
-    }
-
-    const ultimoOS =
-      await Ticket.findOne({
-        companyId: company._id
-      }).sort({
-        numeroOS: -1
-      });
-
-    const numeroOS =
-      ultimoOS && ultimoOS.numeroOS
-        ? ultimoOS.numeroOS + 1
-        : 1;
-
-    const ticket =
-      await Ticket.create({
-
-        companyId: company._id,
-
-        numeroOS,
-
-        cliente:
-          req.body.cliente,
-
-        telefone:
-          req.body.telefone,
-
-        cpfcnpj:
-          req.body.cpfcnpj,
-
-        equipamento:
-          req.body.equipamento,
-
-        problema:
-          req.body.problema,
-
-        diagnostico: "",
-
-        servico: "",
-
-        conclusao: "",
-
-        tecnico: "",
-
-        laudoGerado: false,
-
-        status: "aberto"
-
-      });
-
-    let numero =
-      String(ticket.telefone || "")
-      .replace(/\D/g, "");
-
-    if(numero.startsWith("55")){
-
-      numero =
-        numero.substring(2);
-
-    }
-
-    let whatsapp = null;
-
-    if(numero.length >= 10){
-
-      const dataFormatada =
-        new Date().toLocaleString(
-          "pt-BR",
-          {
-            timeZone:
-              "America/Cuiaba"
-          }
-        );
-
-      const msg =
-        encodeURIComponent(
-
-`Bits & Bytes Assistência Técnica
-
-ORDEM DE SERVIÇO:
-${ticket.numeroOS}
-
-Status do seu atendimento:
-ABERTO
-
-Cliente:
-${ticket.cliente}
-
-CPF/CNPJ:
-${ticket.cpfcnpj || "Não informado"}
-
-Equipamento:
-${ticket.equipamento}
-
-Problema informado:
-${ticket.problema}
-
-Atualizado em:
-${dataFormatada}
-
-Seu chamado foi aberto com sucesso e aguarda análise técnica.`
-
-        );
-
-      whatsapp =
-        `https://wa.me/55${numero}?text=${msg}`;
-
-    }
-
-    res.json({
-      ok: true,
-      whatsapp
-    });
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: true
-    });
-
-  }
-
-});
-
-/* ===================== UPDATE STATUS ===================== */
-app.put("/api/tickets/:id", auth, async (req, res) => {
-
-  try {
-
-    const ticket =
-      await Ticket.findOneAndUpdate(
-
-        {
-          _id: req.params.id,
-          companyId:
-            req.session.user.companyId
-        },
-
-        {
-          status: req.body.status,
-          updatedAt: new Date()
-        },
-
-        {
-          new: true
-        }
-
-      );
-
-    if(!ticket){
-
-      return res.status(404).json({
-        error: true
-      });
-
-    }
-
-    let whatsapp = null;
-
-    let numero =
-      String(ticket.telefone || "")
-      .replace(/\D/g, "");
-
-    if(numero.startsWith("55")){
-
-      numero =
-        numero.substring(2);
-
-    }
-
-    let textoStatus = "";
-
-    if(req.body.status === "aberto"){
-
-      textoStatus =
-        "Seu chamado foi aberto com sucesso e aguarda análise técnica.";
-
-    }
-
-    else if(req.body.status === "andamento"){
-
-      textoStatus =
-        "Seu equipamento está em análise técnica no laboratório.";
-
-    }
-
-    else if(req.body.status === "finalizado"){
-
-      textoStatus =
-        "Seu equipamento já está pronto para retirada!\n\nRetire conosco ou entre em contato para mais informações.";
-
-    }
-
-    if(numero.length >= 10){
-
-      const dataFormatada =
-        new Date().toLocaleString(
-          "pt-BR",
-          {
-            timeZone:
-              "America/Cuiaba"
-          }
-        );
-
-      const msg =
-        encodeURIComponent(
-
-`Bits & Bytes Assistência Técnica
-
-ORDEM DE SERVIÇO:
-${ticket.numeroOS || ""}
-
-Status do seu atendimento:
-${req.body.status.toUpperCase()}
-
-Cliente:
-${ticket.cliente}
-
-CPF/CNPJ:
-${ticket.cpfcnpj || "Não informado"}
-
-Equipamento:
-${ticket.equipamento}
-
-Problema informado:
-${ticket.problema}
-
-Atualizado em:
-${dataFormatada}
-
-${textoStatus}`
-
-        );
-
-      whatsapp =
-        `https://wa.me/55${numero}?text=${msg}`;
-
-    }
-
-    res.json({
-
-      ok: true,
-
-      whatsapp
-
-    });
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: true
-    });
-
-  }
-
-});
-
-/* ===================== SALVAR LAUDO ===================== */
-app.put("/api/tickets/:id/laudo", auth, async (req, res) => {
-
-  try {
-
-    const ticket =
-      await Ticket.findOneAndUpdate(
-
-        {
-          _id: req.params.id,
-          companyId:
-            req.session.user.companyId
-        },
-
-        {
-          diagnostico:
-            req.body.diagnostico || "",
-
-          servico:
-            req.body.servico || "",
-
-          conclusao:
-            req.body.conclusao || "",
-
-          tecnico:
-            req.body.tecnico || "",
-
-          laudoGerado: true,
-
-          updatedAt:
-            new Date()
-        },
-
-        {
-          new: true
-        }
-
-      );
-
-    if(!ticket){
-
-      return res.status(404).json({
-        error: true
-      });
-
-    }
-
-    res.json({
-      ok: true,
-      ticket
-    });
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: true
-    });
-
-  }
-
-});
-
-/* ===================== GERAR LAUDO ===================== */
-app.get("/api/tickets/:id/laudo", auth, async (req, res) => {
-
-  try {
-
-    const ticket =
-      await Ticket.findOne({
-
-        _id: req.params.id,
-
-        companyId:
-          req.session.user.companyId
-
-      });
-
-    if(!ticket){
-
-      return res.status(404).send("Laudo não encontrado");
-
-    }
-
-    const dataAtual =
-      new Date(ticket.updatedAt || ticket.createdAt)
-      .toLocaleString(
-        "pt-BR",
-        {
-          timeZone:
-            "America/Cuiaba"
-        }
-      );
-
-    res.send(`
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
 <meta charset="UTF-8">
-
-<title>
-Laudo Técnico OS ${ticket.numeroOS || ""}
-</title>
+<title>Dashboard</title>
 
 <style>
 
 body{
   font-family:Arial;
-  background:#f2f2f2;
   margin:0;
-  padding:20px;
+  background:#f2f2f2;
 }
 
-.laudo{
-  max-width:900px;
-  margin:auto;
-  background:white;
-  padding:40px;
-  border-radius:10px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.1);
-}
-
-.topo{
+.header{
+  background:#2c2c44;
+  color:white;
+  padding:15px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  border-bottom:3px solid #2c2c44;
-  padding-bottom:20px;
-  margin-bottom:30px;
 }
 
-.logo{
-  font-size:32px;
-  font-weight:bold;
-  color:#2c2c44;
+.container{
+  padding:20px;
 }
 
-.os{
-  text-align:right;
-}
-
-h2{
-  color:#2c2c44;
-  margin-top:30px;
-}
-
-.box{
-  border:1px solid #ccc;
-  border-radius:8px;
+.card{
+  background:white;
   padding:15px;
-  margin-top:10px;
-  background:#fafafa;
-  white-space:pre-wrap;
+  border-radius:8px;
+  margin-bottom:10px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-.footer{
-  margin-top:50px;
-  text-align:center;
-  color:#777;
-  font-size:14px;
-}
-
-.print{
-  margin-bottom:20px;
-  text-align:center;
+input{
+  padding:10px;
+  margin:5px;
+  border-radius:5px;
+  border:1px solid #ccc;
 }
 
 button{
-  padding:12px 20px;
-  background:#2c2c44;
+  padding:10px;
+  background:#4CAF50;
   color:white;
   border:none;
-  border-radius:6px;
+  border-radius:5px;
   cursor:pointer;
+  margin-right:5px;
+  margin-top:5px;
 }
 
-@media print{
+button:hover{
+  background:#3d9140;
+}
 
-  .print{
-    display:none;
-  }
-
-  body{
-    background:white;
-    padding:0;
-  }
-
-  .laudo{
-    box-shadow:none;
-  }
-
+a{
+  color:white;
+  text-decoration:none;
 }
 
 </style>
@@ -995,180 +65,425 @@ button{
 
 <body>
 
-<div class="print">
-  <button onclick="window.print()">
-    Imprimir / Salvar PDF
+<div class="header">
+
+  <div>
+    Bits & Bytes
+  </div>
+
+  <div>
+    <a href="/clientes.html">Clientes</a> |
+    <a href="#" onclick="logout()">Sair</a>
+  </div>
+
+</div>
+
+<div class="container">
+
+  <h3 id="plano">
+    Plano: Carregando...
+  </h3>
+
+  <h3>Resumo</h3>
+
+  <div id="stats"></div>
+
+  <h3>Criar Chamado</h3>
+
+  <input id="cpfcnpj" placeholder="CPF/CNPJ">
+
+  <input id="cliente" placeholder="Cliente">
+
+  <input id="telefone" placeholder="Telefone">
+
+  <input id="equipamento" placeholder="Equipamento">
+
+  <input id="problema" placeholder="Problema">
+
+  <button onclick="criar()">
+    Criar
   </button>
-</div>
 
-<div class="laudo">
+  <h3>Chamados</h3>
 
-  <div class="topo">
-
-    <div class="logo">
-      Bits & Bytes
-      <br>
-      <span style="font-size:16px;font-weight:normal;">
-        Assistência Técnica Especializada
-      </span>
-    </div>
-
-    <div class="os">
-
-      <b>ORDEM DE SERVIÇO</b>
-
-      <br><br>
-
-      Nº:
-      <b>${ticket.numeroOS || ""}</b>
-
-      <br>
-
-      Data:
-      ${dataAtual}
-
-    </div>
-
-  </div>
-
-  <h2>Dados do Cliente</h2>
-
-  <div class="box">
-
-    <b>Cliente:</b>
-    ${ticket.cliente || ""}
-
-    <br><br>
-
-    <b>Telefone:</b>
-    ${ticket.telefone || ""}
-
-    <br><br>
-
-    <b>CPF/CNPJ:</b>
-    ${ticket.cpfcnpj || ""}
-
-  </div>
-
-  <h2>Equipamento</h2>
-
-  <div class="box">
-
-    ${ticket.equipamento || ""}
-
-  </div>
-
-  <h2>Problema Relatado</h2>
-
-  <div class="box">
-
-    ${ticket.problema || ""}
-
-  </div>
-
-  <h2>Diagnóstico Técnico</h2>
-
-  <div class="box">
-
-    ${ticket.diagnostico || ""}
-
-  </div>
-
-  <h2>Serviço Executado</h2>
-
-  <div class="box">
-
-    ${ticket.servico || ""}
-
-  </div>
-
-  <h2>Conclusão Técnica</h2>
-
-  <div class="box">
-
-    ${ticket.conclusao || ""}
-
-  </div>
-
-  <h2>Técnico Responsável</h2>
-
-  <div class="box">
-
-    ${ticket.tecnico || ""}
-
-  </div>
-
-  <div class="footer">
-
-    Bits & Bytes Assistência Técnica
-    <br>
-    Documento gerado automaticamente pelo sistema
-
-  </div>
+  <div id="lista"></div>
 
 </div>
 
-</body>
-</html>
+<script>
 
-    `);
+const stats = document.getElementById("stats");
+const lista = document.getElementById("lista");
 
-  } catch(err){
+let chamados = [];
 
-    console.log(err);
+/* ===================== */
+/* EMPRESA */
+/* ===================== */
 
-    res.status(500).send("Erro ao gerar laudo");
-
-  }
-
-});
-
-/* ===================== DELETE ===================== */
-app.delete("/api/tickets/:id", auth, async (req, res) => {
+async function carregarEmpresa(){
 
   try {
 
-    await Ticket.findOneAndDelete({
-
-      _id: req.params.id,
-
-      companyId:
-        req.session.user.companyId
-
+    const res = await fetch("/me", {
+      credentials: "include"
     });
 
-    res.json({
-      ok: true
-    });
+    if(res.status === 401){
+      window.location.href = "/";
+      return;
+    }
+
+    const data = await res.json();
+
+    if(data.company){
+
+      document.getElementById("plano").innerText =
+        "Plano: " + (data.company.plan || "Free");
+
+    }
 
   } catch(err){
 
     console.log(err);
 
-    res.status(500).json({
-      ok: false
+  }
+
+}
+
+/* ===================== */
+/* LOAD */
+/* ===================== */
+
+async function load(){
+
+  try {
+
+    const res = await fetch("/api/tickets", {
+      credentials: "include"
     });
+
+    if(res.status === 401){
+
+      window.location.href = "/";
+      return;
+
+    }
+
+    chamados = await res.json();
+
+    lista.innerHTML = "";
+
+    chamados.forEach(c => {
+
+      const dataAbertura =
+        c.createdAt
+        ? new Date(c.createdAt).toLocaleString(
+            "pt-BR",
+            {
+              timeZone: "America/Cuiaba"
+            }
+          )
+        : "Sem data";
+
+      lista.innerHTML += `
+
+        <div class="card">
+
+          <b>${c.cliente || ""}</b>
+
+          <br><br>
+
+          📱 ${c.telefone || ""}
+
+          <br>
+
+          📄 ${c.cpfcnpj || ""}
+
+          <br>
+
+          💻 ${c.equipamento || ""}
+
+          <br>
+
+          🛠 ${c.problema || ""}
+
+          <br><br>
+
+          📅 ${dataAbertura}
+
+          <br><br>
+
+          📌
+          <b style="color:${
+            c.status === "aberto"
+            ? "red"
+            : c.status === "andamento"
+            ? "orange"
+            : "green"
+          }">
+
+            ${String(c.status).toUpperCase()}
+
+          </b>
+
+          <br><br>
+
+          <button onclick="status('${c._id}')">
+            Status
+          </button>
+
+          ${
+            c.status === "finalizado"
+            ? `
+              <button onclick="abrirLaudo('${c._id}')">
+                Laudo
+              </button>
+            `
+            : ""
+          }
+
+          <button onclick="del('${c._id}')">
+            Excluir
+          </button>
+
+        </div>
+
+      `;
+
+    });
+
+    loadStats();
+
+  } catch(err){
+
+    console.log(err);
+
+    alert("Erro ao carregar chamados");
 
   }
 
-});
+}
 
-/* ===================== LOGOUT ===================== */
-app.get("/logout", (req, res) => {
+/* ===================== */
+/* STATS */
+/* ===================== */
 
-  req.session.destroy(() => {
+function loadStats(){
 
-    res.redirect("/");
+  const aberto =
+    chamados.filter(
+      x => x.status === "aberto"
+    ).length;
+
+  const andamento =
+    chamados.filter(
+      x => x.status === "andamento"
+    ).length;
+
+  const finalizado =
+    chamados.filter(
+      x => x.status === "finalizado"
+    ).length;
+
+  stats.innerHTML = `
+
+    🔴 Abertos: ${aberto}
+    |
+    🟡 Andamento: ${andamento}
+    |
+    🟢 Finalizados: ${finalizado}
+
+  `;
+
+}
+
+/* ===================== */
+/* CRIAR */
+/* ===================== */
+
+async function criar(){
+
+  const cliente =
+    document.getElementById("cliente").value.trim();
+
+  const telefone =
+    document.getElementById("telefone").value.trim();
+
+  const cpfcnpj =
+    document.getElementById("cpfcnpj").value.trim();
+
+  const equipamento =
+    document.getElementById("equipamento").value.trim();
+
+  const problema =
+    document.getElementById("problema").value.trim();
+
+  if(
+    !cliente ||
+    !telefone ||
+    !equipamento ||
+    !problema
+  ){
+    alert("Preencha todos os campos");
+    return;
+  }
+
+  const res = await fetch("/api/tickets", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    credentials: "include",
+
+    body: JSON.stringify({
+
+      cliente,
+      telefone,
+      cpfcnpj,
+      equipamento,
+      problema
+
+    })
 
   });
 
-});
+  const data = await res.json();
 
-/* ===================== START ===================== */
-app.listen(PORT, "0.0.0.0", () => {
+  if(!res.ok){
 
-  console.log(
-    "Rodando na porta " + PORT
-  );
+    alert(data.error || "Erro ao criar chamado");
+    return;
 
-});
+  }
+
+  document.getElementById("cliente").value = "";
+  document.getElementById("telefone").value = "";
+  document.getElementById("cpfcnpj").value = "";
+  document.getElementById("equipamento").value = "";
+  document.getElementById("problema").value = "";
+
+  load();
+
+}
+
+/* ===================== */
+/* STATUS */
+/* ===================== */
+
+async function status(id){
+
+  const t =
+    chamados.find(
+      x => x._id === id
+    );
+
+  if(!t) return;
+
+  let novo = "aberto";
+
+  if(t.status === "aberto"){
+
+    novo = "andamento";
+
+  }
+
+  else if(t.status === "andamento"){
+
+    novo = "finalizado";
+
+  }
+
+  const res = await fetch("/api/tickets/" + id, {
+
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    credentials: "include",
+
+    body: JSON.stringify({
+      status: novo
+    })
+
+  });
+
+  const data = await res.json();
+
+  // ✅ ABRE WHATSAPP
+  if(data.whatsapp){
+
+    window.open(
+      data.whatsapp,
+      "_blank"
+    );
+
+  }
+
+  load();
+
+}
+
+/* ===================== */
+/* LAUDO */
+/* ===================== */
+
+function abrirLaudo(id){
+
+  window.location.href =
+    "/laudo.html?id=" + id;
+
+}
+
+/* ===================== */
+/* DELETE */
+/* ===================== */
+
+async function del(id){
+
+  if(
+    !confirm("Deseja excluir?")
+  ){
+    return;
+  }
+
+  await fetch("/api/tickets/" + id, {
+    method: "DELETE",
+    credentials: "include"
+  });
+
+  load();
+
+}
+
+/* ===================== */
+/* LOGOUT */
+/* ===================== */
+
+async function logout(){
+
+  await fetch("/logout", {
+    credentials: "include"
+  });
+
+  window.location.href = "/";
+
+}
+
+/* ===================== */
+/* INIT */
+/* ===================== */
+
+carregarEmpresa();
+
+load();
+
+</script>
+
+</body>
+</html>

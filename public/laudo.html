@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Laudo Técnico</title>
+
+<style>
+
+body{
+  font-family: Arial;
+  background:#f2f2f2;
+  margin:0;
+  padding:20px;
+}
+
+.laudo{
+  background:white;
+  max-width:900px;
+  margin:auto;
+  padding:40px;
+  border-radius:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:2px solid #ddd;
+  padding-bottom:20px;
+  margin-bottom:30px;
+}
+
+.logo{
+  font-size:28px;
+  font-weight:bold;
+  color:#2c2c44;
+}
+
+.os{
+  font-size:18px;
+  font-weight:bold;
+}
+
+h2{
+  color:#2c2c44;
+  margin-top:30px;
+}
+
+.linha{
+  margin-bottom:15px;
+}
+
+.label{
+  font-weight:bold;
+}
+
+textarea{
+  width:100%;
+  min-height:120px;
+  padding:10px;
+  border-radius:5px;
+  border:1px solid #ccc;
+  resize:vertical;
+  font-family:Arial;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  border-radius:5px;
+  border:1px solid #ccc;
+}
+
+button{
+  padding:12px 20px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  color:white;
+  margin-top:20px;
+  margin-right:10px;
+}
+
+.salvar{
+  background:#4CAF50;
+}
+
+.imprimir{
+  background:#2c2c44;
+}
+
+@media print{
+
+  body{
+    background:white;
+  }
+
+  button{
+    display:none;
+  }
+
+  .laudo{
+    box-shadow:none;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="laudo">
+
+  <div class="topo">
+
+    <div class="logo">
+      Bits & Bytes
+      <br>
+      <small style="font-size:14px;">
+        Assistência Técnica Especializada
+      </small>
+    </div>
+
+    <div class="os" id="numeroOS">
+      OS #
+    </div>
+
+  </div>
+
+  <h2>Dados do Cliente</h2>
+
+  <div class="linha">
+    <span class="label">Cliente:</span>
+    <div id="cliente"></div>
+  </div>
+
+  <div class="linha">
+    <span class="label">Telefone:</span>
+    <div id="telefone"></div>
+  </div>
+
+  <div class="linha">
+    <span class="label">CPF/CNPJ:</span>
+    <div id="cpfcnpj"></div>
+  </div>
+
+  <div class="linha">
+    <span class="label">Equipamento:</span>
+    <div id="equipamento"></div>
+  </div>
+
+  <div class="linha">
+    <span class="label">Problema Relatado:</span>
+    <div id="problema"></div>
+  </div>
+
+  <h2>Diagnóstico Técnico</h2>
+
+  <textarea id="diagnostico"></textarea>
+
+  <h2>Serviço Realizado</h2>
+
+  <textarea id="servico"></textarea>
+
+  <h2>Conclusão Técnica</h2>
+
+  <textarea id="conclusao"></textarea>
+
+  <h2>Técnico Responsável</h2>
+
+  <input id="tecnico">
+
+  <br>
+
+  <button class="salvar" onclick="salvar()">
+    Salvar Laudo
+  </button>
+
+  <button class="imprimir" onclick="window.print()">
+    Imprimir / PDF
+  </button>
+
+</div>
+
+<script>
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const id = params.get("id");
+
+let ticket = null;
+
+/* ===================== */
+/* LOAD */
+/* ===================== */
+
+async function carregar(){
+
+  const res = await fetch(
+    "/api/tickets/" + id,
+    {
+      credentials:"include"
+    }
+  );
+
+  ticket = await res.json();
+
+  document.getElementById("cliente").innerText =
+    ticket.cliente || "";
+
+  document.getElementById("telefone").innerText =
+    ticket.telefone || "";
+
+  document.getElementById("cpfcnpj").innerText =
+    ticket.cpfcnpj || "";
+
+  document.getElementById("equipamento").innerText =
+    ticket.equipamento || "";
+
+  document.getElementById("problema").innerText =
+    ticket.problema || "";
+
+  document.getElementById("diagnostico").value =
+    ticket.diagnostico || "";
+
+  document.getElementById("servico").value =
+    ticket.servico || "";
+
+  document.getElementById("conclusao").value =
+    ticket.conclusao || "";
+
+  document.getElementById("tecnico").value =
+    ticket.tecnico || "";
+
+  // número OS
+  const os =
+    String(ticket._id)
+    .slice(-6)
+    .toUpperCase();
+
+  document.getElementById("numeroOS").innerText =
+    "OS #" + os;
+
+}
+
+/* ===================== */
+/* SALVAR */
+/* ===================== */
+
+async function salvar(){
+
+  const body = {
+
+    numeroOS:
+      document.getElementById("numeroOS")
+      .innerText,
+
+    diagnostico:
+      document.getElementById("diagnostico")
+      .value,
+
+    servico:
+      document.getElementById("servico")
+      .value,
+
+    conclusao:
+      document.getElementById("conclusao")
+      .value,
+
+    tecnico:
+      document.getElementById("tecnico")
+      .value
+
+  };
+
+  const res = await fetch(
+    "/api/tickets/" + id + "/laudo",
+    {
+      method:"PUT",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      credentials:"include",
+
+      body: JSON.stringify(body)
+    }
+  );
+
+  const data = await res.json();
+
+  if(data.ok){
+
+    alert("Laudo salvo com sucesso!");
+
+  } else {
+
+    alert("Erro ao salvar");
+
+  }
+
+}
+
+carregar();
+
+</script>
+
+</body>
+</html>

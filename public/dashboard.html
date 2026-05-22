@@ -233,6 +233,10 @@ async function load(){
             Status
           </button>
 
+          <button onclick="abrirLaudo('${c._id}')">
+            Laudo
+          </button>
+
           <button onclick="del('${c._id}')">
             Excluir
           </button>
@@ -416,6 +420,17 @@ async function status(id){
   }
 
   load();
+
+}
+
+/* ===================== */
+/* LAUDO */
+/* ===================== */
+
+function abrirLaudo(id){
+
+  window.location.href =
+    "/laudo.html?id=" + id;
 
 }
 

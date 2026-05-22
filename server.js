@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const express = require("express");
@@ -72,15 +71,11 @@ app.post("/login", async (req, res) => {
       username: req.body.username
     });
 
-    if (!user) {
-      return res.json({ success: false });
-    }
+    if (!user) return res.json({ success: false });
 
     const ok = await bcrypt.compare(req.body.password, user.password);
 
-    if (!ok) {
-      return res.json({ success: false });
-    }
+    if (!ok) return res.json({ success: false });
 
     req.session.user = {
       _id: String(user._id),
@@ -133,6 +128,7 @@ app.get("/api/admin/stats", auth, masterOnly, async (req, res) => {
     chamados,
     companies
   });
+
 });
 
 /* ===================== CREATE COMPANY ===================== */
@@ -188,26 +184,7 @@ app.post("/api/admin/create-company", auth, masterOnly, async (req, res) => {
     console.log(err);
     res.status(500).json({ error: true });
   }
-});
 
-/* ===================== ALTERAR PLANO ===================== */
-app.put("/api/admin/company/:id/plan", auth, masterOnly, async (req, res) => {
-
-  const planos = {
-    free: { plan: "free", ticketLimit: 10, userLimit: 1 },
-    basic: { plan: "basic", ticketLimit: 30, userLimit: 3 },
-    pro: { plan: "pro", ticketLimit: -1, userLimit: -1 }
-  };
-
-  const plano = planos[req.body.plan];
-
-  if (!plano) {
-    return res.status(400).json({ error: "Plano inválido" });
-  }
-
-  await Company.findByIdAndUpdate(req.params.id, plano);
-
-  res.json({ ok: true });
 });
 
 /* ===================== LISTAR TICKETS ===================== */
@@ -262,37 +239,7 @@ app.post("/api/tickets", auth, async (req, res) => {
 
 });
 
-/* ===================== ABRIR CHAMADO PÚBLICO ===================== */
-app.post("/abrir-chamado", async (req, res) => {
-
-  try {
-
-    const company = await Company.findOne();
-
-    if (!company) {
-      return res.status(404).json({ error: "Empresa não encontrada" });
-    }
-
-    const ticket = await Ticket.create({
-      companyId: company._id,
-      cliente: req.body.cliente,
-      telefone: req.body.telefone,
-      cpfcnpj: req.body.cpfcnpj,
-      equipamento: req.body.equipamento,
-      problema: req.body.problema,
-      status: "aberto"
-    });
-
-    res.json({ ok: true });
-
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: true });
-  }
-
-});
-
-/* ===================== UPDATE STATUS ===================== */
+/* ===================== UPDATE STATUS + WHATSAPP FIX ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
 
   try {
@@ -313,7 +260,26 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
       return res.status(404).json({ error: true });
     }
 
-    res.json({ ok: true });
+    let whatsapp = null;
+
+    if (req.body.status === "andamento" || req.body.status === "finalizado") {
+
+      const numero = String(ticket.telefone || "").replace(/\D/g, "");
+
+      if (numero) {
+        const msg = encodeURIComponent(
+          `Olá ${ticket.cliente}, seu chamado foi atualizado para: ${req.body.status}`
+        );
+
+        whatsapp = `https://wa.me/55${numero}?text=${msg}`;
+      }
+
+    }
+
+    res.json({
+      ok: true,
+      whatsapp
+    });
 
   } catch (err) {
     console.log(err);

@@ -37,6 +37,45 @@ const ticketSchema = new mongoose.Schema({
     trim: true
   },
 
+  /* ===================== LAUDO ===================== */
+
+  diagnostico: {
+    type: String,
+    default: ""
+  },
+
+  servico: {
+    type: String,
+    default: ""
+  },
+
+  pecas: {
+    type: String,
+    default: ""
+  },
+
+  conclusao: {
+    type: String,
+    default: ""
+  },
+
+  garantia: {
+    type: String,
+    default: ""
+  },
+
+  observacoes: {
+    type: String,
+    default: ""
+  },
+
+  numeroOS: {
+    type: Number,
+    default: () => Date.now()
+  },
+
+  /* ===================== EMPRESA ===================== */
+
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -48,6 +87,9 @@ const ticketSchema = new mongoose.Schema({
   timestamps: true
 });
 
-ticketSchema.index({ companyId: 1, status: 1 });
+ticketSchema.index({
+  companyId: 1,
+  status: 1
+});
 
 module.exports = mongoose.model("Ticket", ticketSchema);

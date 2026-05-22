@@ -457,11 +457,26 @@ app.post("/api/tickets", auth, async (req, res) => {
 
     }
 
+    const ultimoOS =
+      await Ticket.findOne({
+        companyId:
+          req.session.user.companyId
+      }).sort({
+        numeroOS: -1
+      });
+
+    const numeroOS =
+      ultimoOS && ultimoOS.numeroOS
+        ? ultimoOS.numeroOS + 1
+        : 1;
+
     const ticket =
       await Ticket.create({
 
         companyId:
           req.session.user.companyId,
+
+        numeroOS,
 
         cliente:
           req.body.cliente,
@@ -477,6 +492,16 @@ app.post("/api/tickets", auth, async (req, res) => {
 
         problema:
           req.body.problema,
+
+        diagnostico: "",
+
+        servico: "",
+
+        conclusao: "",
+
+        tecnico: "",
+
+        laudoGerado: false,
 
         status: "aberto"
 
@@ -511,10 +536,24 @@ app.post("/abrir-chamado", async (req, res) => {
 
     }
 
+    const ultimoOS =
+      await Ticket.findOne({
+        companyId: company._id
+      }).sort({
+        numeroOS: -1
+      });
+
+    const numeroOS =
+      ultimoOS && ultimoOS.numeroOS
+        ? ultimoOS.numeroOS + 1
+        : 1;
+
     const ticket =
       await Ticket.create({
 
         companyId: company._id,
+
+        numeroOS,
 
         cliente:
           req.body.cliente,
@@ -531,6 +570,16 @@ app.post("/abrir-chamado", async (req, res) => {
         problema:
           req.body.problema,
 
+        diagnostico: "",
+
+        servico: "",
+
+        conclusao: "",
+
+        tecnico: "",
+
+        laudoGerado: false,
+
         status: "aberto"
 
       });
@@ -539,7 +588,6 @@ app.post("/abrir-chamado", async (req, res) => {
       String(ticket.telefone || "")
       .replace(/\D/g, "");
 
-    // remove 55 duplicado
     if(numero.startsWith("55")){
 
       numero =
@@ -564,6 +612,9 @@ app.post("/abrir-chamado", async (req, res) => {
         encodeURIComponent(
 
 `Bits & Bytes Assistência Técnica
+
+ORDEM DE SERVIÇO:
+${ticket.numeroOS}
 
 Status do seu atendimento:
 ABERTO
@@ -648,7 +699,6 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
       String(ticket.telefone || "")
       .replace(/\D/g, "");
 
-    // remove 55 duplicado
     if(numero.startsWith("55")){
 
       numero =
@@ -695,6 +745,9 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
 
 `Bits & Bytes Assistência Técnica
 
+ORDEM DE SERVIÇO:
+${ticket.numeroOS || ""}
+
 Status do seu atendimento:
 ${req.body.status.toUpperCase()}
 
@@ -737,6 +790,334 @@ ${textoStatus}`
     res.status(500).json({
       error: true
     });
+
+  }
+
+});
+
+/* ===================== SALVAR LAUDO ===================== */
+app.put("/api/tickets/:id/laudo", auth, async (req, res) => {
+
+  try {
+
+    const ticket =
+      await Ticket.findOneAndUpdate(
+
+        {
+          _id: req.params.id,
+          companyId:
+            req.session.user.companyId
+        },
+
+        {
+          diagnostico:
+            req.body.diagnostico || "",
+
+          servico:
+            req.body.servico || "",
+
+          conclusao:
+            req.body.conclusao || "",
+
+          tecnico:
+            req.body.tecnico || "",
+
+          laudoGerado: true,
+
+          updatedAt:
+            new Date()
+        },
+
+        {
+          new: true
+        }
+
+      );
+
+    if(!ticket){
+
+      return res.status(404).json({
+        error: true
+      });
+
+    }
+
+    res.json({
+      ok: true,
+      ticket
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
+/* ===================== GERAR LAUDO ===================== */
+app.get("/api/tickets/:id/laudo", auth, async (req, res) => {
+
+  try {
+
+    const ticket =
+      await Ticket.findOne({
+
+        _id: req.params.id,
+
+        companyId:
+          req.session.user.companyId
+
+      });
+
+    if(!ticket){
+
+      return res.status(404).send("Laudo não encontrado");
+
+    }
+
+    const dataAtual =
+      new Date(ticket.updatedAt || ticket.createdAt)
+      .toLocaleString(
+        "pt-BR",
+        {
+          timeZone:
+            "America/Cuiaba"
+        }
+      );
+
+    res.send(`
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+
+<title>
+Laudo Técnico OS ${ticket.numeroOS || ""}
+</title>
+
+<style>
+
+body{
+  font-family:Arial;
+  background:#f2f2f2;
+  margin:0;
+  padding:20px;
+}
+
+.laudo{
+  max-width:900px;
+  margin:auto;
+  background:white;
+  padding:40px;
+  border-radius:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:3px solid #2c2c44;
+  padding-bottom:20px;
+  margin-bottom:30px;
+}
+
+.logo{
+  font-size:32px;
+  font-weight:bold;
+  color:#2c2c44;
+}
+
+.os{
+  text-align:right;
+}
+
+h2{
+  color:#2c2c44;
+  margin-top:30px;
+}
+
+.box{
+  border:1px solid #ccc;
+  border-radius:8px;
+  padding:15px;
+  margin-top:10px;
+  background:#fafafa;
+  white-space:pre-wrap;
+}
+
+.footer{
+  margin-top:50px;
+  text-align:center;
+  color:#777;
+  font-size:14px;
+}
+
+.print{
+  margin-bottom:20px;
+  text-align:center;
+}
+
+button{
+  padding:12px 20px;
+  background:#2c2c44;
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+@media print{
+
+  .print{
+    display:none;
+  }
+
+  body{
+    background:white;
+    padding:0;
+  }
+
+  .laudo{
+    box-shadow:none;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="print">
+  <button onclick="window.print()">
+    Imprimir / Salvar PDF
+  </button>
+</div>
+
+<div class="laudo">
+
+  <div class="topo">
+
+    <div class="logo">
+      Bits & Bytes
+      <br>
+      <span style="font-size:16px;font-weight:normal;">
+        Assistência Técnica Especializada
+      </span>
+    </div>
+
+    <div class="os">
+
+      <b>ORDEM DE SERVIÇO</b>
+
+      <br><br>
+
+      Nº:
+      <b>${ticket.numeroOS || ""}</b>
+
+      <br>
+
+      Data:
+      ${dataAtual}
+
+    </div>
+
+  </div>
+
+  <h2>Dados do Cliente</h2>
+
+  <div class="box">
+
+    <b>Cliente:</b>
+    ${ticket.cliente || ""}
+
+    <br><br>
+
+    <b>Telefone:</b>
+    ${ticket.telefone || ""}
+
+    <br><br>
+
+    <b>CPF/CNPJ:</b>
+    ${ticket.cpfcnpj || ""}
+
+  </div>
+
+  <h2>Equipamento</h2>
+
+  <div class="box">
+
+    ${ticket.equipamento || ""}
+
+  </div>
+
+  <h2>Problema Relatado</h2>
+
+  <div class="box">
+
+    ${ticket.problema || ""}
+
+  </div>
+
+  <h2>Diagnóstico Técnico</h2>
+
+  <div class="box">
+
+    ${ticket.diagnostico || ""}
+
+  </div>
+
+  <h2>Serviço Executado</h2>
+
+  <div class="box">
+
+    ${ticket.servico || ""}
+
+  </div>
+
+  <h2>Conclusão Técnica</h2>
+
+  <div class="box">
+
+    ${ticket.conclusao || ""}
+
+  </div>
+
+  <h2>Técnico Responsável</h2>
+
+  <div class="box">
+
+    ${ticket.tecnico || ""}
+
+  </div>
+
+  <div class="footer">
+
+    Bits & Bytes Assistência Técnica
+    <br>
+    Documento gerado automaticamente pelo sistema
+
+  </div>
+
+</div>
+
+</body>
+</html>
+
+    `);
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).send("Erro ao gerar laudo");
 
   }
 

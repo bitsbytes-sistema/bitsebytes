@@ -152,15 +152,27 @@ app.post("/login", async (req, res) => {
 /* ===================== ME ===================== */
 app.get("/me", auth, async (req, res) => {
 
-  const company =
-    await Company.findById(
-      req.session.user.companyId
-    );
+  try {
 
-  res.json({
-    user: req.session.user,
-    company
-  });
+    const company =
+      await Company.findById(
+        req.session.user.companyId
+      );
+
+    res.json({
+      user: req.session.user,
+      company
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
 
 });
 
@@ -193,26 +205,38 @@ app.get("/admin", auth, masterOnly, (req, res) => {
 /* ===================== ADMIN STATS ===================== */
 app.get("/api/admin/stats", auth, masterOnly, async (req, res) => {
 
-  const empresas =
-    await Company.countDocuments();
+  try {
 
-  const usuarios =
-    await User.countDocuments();
+    const empresas =
+      await Company.countDocuments();
 
-  const chamados =
-    await Ticket.countDocuments();
+    const usuarios =
+      await User.countDocuments();
 
-  const companies =
-    await Company.find();
+    const chamados =
+      await Ticket.countDocuments();
 
-  res.json({
+    const companies =
+      await Company.find();
 
-    empresas,
-    usuarios,
-    chamados,
-    companies
+    res.json({
 
-  });
+      empresas,
+      usuarios,
+      chamados,
+      companies
+
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
 
 });
 
@@ -299,6 +323,65 @@ app.post("/api/admin/create-company", auth, masterOnly, async (req, res) => {
       companyId: company._id
 
     });
+
+    res.json({
+      ok: true
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
+/* ===================== ALTERAR PLANO ===================== */
+app.put("/api/admin/company/:id/plan", auth, masterOnly, async (req, res) => {
+
+  try {
+
+    const planos = {
+
+      free: {
+        plan: "free",
+        ticketLimit: 10,
+        userLimit: 1
+      },
+
+      basic: {
+        plan: "basic",
+        ticketLimit: 30,
+        userLimit: 3
+      },
+
+      pro: {
+        plan: "pro",
+        ticketLimit: -1,
+        userLimit: -1
+      }
+
+    };
+
+    const plano =
+      planos[req.body.plan];
+
+    if(!plano){
+
+      return res.status(400).json({
+        error: "Plano inválido"
+      });
+
+    }
+
+    await Company.findByIdAndUpdate(
+      req.params.id,
+      plano
+    );
 
     res.json({
       ok: true
@@ -407,6 +490,119 @@ app.post("/api/tickets", auth, async (req, res) => {
 
     res.status(500).json({
       ok: false
+    });
+
+  }
+
+});
+
+/* ===================== ABRIR CHAMADO PÚBLICO ===================== */
+app.post("/abrir-chamado", async (req, res) => {
+
+  try {
+
+    const company = await Company.findOne();
+
+    if(!company){
+
+      return res.status(404).json({
+        error: "Empresa não encontrada"
+      });
+
+    }
+
+    const ticket =
+      await Ticket.create({
+
+        companyId: company._id,
+
+        cliente:
+          req.body.cliente,
+
+        telefone:
+          req.body.telefone,
+
+        cpfcnpj:
+          req.body.cpfcnpj,
+
+        equipamento:
+          req.body.equipamento,
+
+        problema:
+          req.body.problema,
+
+        status: "aberto"
+
+      });
+
+    let numero =
+      String(ticket.telefone || "")
+      .replace(/\D/g, "");
+
+    // remove 55 duplicado
+    if(numero.startsWith("55")){
+
+      numero =
+        numero.substring(2);
+
+    }
+
+    let whatsapp = null;
+
+    if(numero.length >= 10){
+
+      const dataFormatada =
+        new Date().toLocaleString(
+          "pt-BR",
+          {
+            timeZone:
+              "America/Cuiaba"
+          }
+        );
+
+      const msg =
+        encodeURIComponent(
+
+`Bits & Bytes Assistência Técnica
+
+Status do seu atendimento:
+ABERTO
+
+Cliente:
+${ticket.cliente}
+
+CPF/CNPJ:
+${ticket.cpfcnpj || "Não informado"}
+
+Equipamento:
+${ticket.equipamento}
+
+Problema informado:
+${ticket.problema}
+
+Atualizado em:
+${dataFormatada}
+
+Seu chamado foi aberto com sucesso e aguarda análise técnica.`
+
+        );
+
+      whatsapp =
+        `https://wa.me/55${numero}?text=${msg}`;
+
+    }
+
+    res.json({
+      ok: true,
+      whatsapp
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
     });
 
   }

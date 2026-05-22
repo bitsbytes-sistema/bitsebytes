@@ -634,7 +634,7 @@ ${ticket.problema}
 Atualizado em:
 ${dataFormatada}
 
-Seu chamado foi aberto com sucesso e aguarda análise técnica.`
+Seu chamado foi aberto com sucesso e aguarda análise da nossa equipe técnica.`
 
         );
 
@@ -711,14 +711,21 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
     if(req.body.status === "aberto"){
 
       textoStatus =
-        "Seu chamado foi aberto com sucesso e aguarda análise técnica.";
+        "Seu chamado foi aberto com sucesso e aguarda análise da nossa equipe técnica.";
 
     }
 
     else if(req.body.status === "andamento"){
 
       textoStatus =
-        "Seu equipamento está em análise técnica no laboratório.";
+        "Seu equipamento está em análise pela nossa equipe.";
+
+    }
+
+     else if(req.body.status === "reparo"){
+
+      textoStatus =
+        "Seu equipamento está na bancada em manutenção.";
 
     }
 
@@ -866,29 +873,24 @@ app.get("/api/tickets/:id/laudo", auth, async (req, res) => {
 
     const ticket =
       await Ticket.findOne({
-
         _id: req.params.id,
-
         companyId:
           req.session.user.companyId
-
       });
 
     if(!ticket){
-
       return res.status(404).send("Laudo não encontrado");
-
     }
 
     const dataAtual =
       new Date(ticket.updatedAt || ticket.createdAt)
-      .toLocaleString(
-        "pt-BR",
-        {
-          timeZone:
-            "America/Cuiaba"
-        }
-      );
+      .toLocaleString("pt-BR", {
+        timeZone: "America/Cuiaba"
+      });
+
+    // 🔥 ADICIONADO (CORREÇÃO IMPORTANTE)
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 
     res.send(`
 
@@ -1036,66 +1038,54 @@ button{
   <div class="box">
 
     <b>Cliente:</b>
-    ${ticket.cliente || ""}
+    ${ticket.cliente || "Não informado"}
 
     <br><br>
 
     <b>Telefone:</b>
-    ${ticket.telefone || ""}
+    ${ticket.telefone || "Não informado"}
 
     <br><br>
 
     <b>CPF/CNPJ:</b>
-    ${ticket.cpfcnpj || ""}
+    ${ticket.cpfcnpj || "Não informado"}
 
   </div>
 
   <h2>Equipamento</h2>
 
   <div class="box">
-
-    ${ticket.equipamento || ""}
-
+    ${ticket.equipamento || "Não informado"}
   </div>
 
   <h2>Problema Relatado</h2>
 
   <div class="box">
-
-    ${ticket.problema || ""}
-
+    ${ticket.problema || "Não informado"}
   </div>
 
   <h2>Diagnóstico Técnico</h2>
 
   <div class="box">
-
-    ${ticket.diagnostico || ""}
-
+    ${ticket.diagnostico || "Não informado"}
   </div>
 
   <h2>Serviço Executado</h2>
 
   <div class="box">
-
-    ${ticket.servico || ""}
-
+    ${ticket.servico || "Não informado"}
   </div>
 
   <h2>Conclusão Técnica</h2>
 
   <div class="box">
-
-    ${ticket.conclusao || ""}
-
+    ${ticket.conclusao || "Não informado"}
   </div>
 
   <h2>Técnico Responsável</h2>
 
   <div class="box">
-
-    ${ticket.tecnico || ""}
-
+    ${ticket.tecnico || "Não informado"}
   </div>
 
   <div class="footer">
@@ -1114,11 +1104,8 @@ button{
     `);
 
   } catch(err){
-
     console.log(err);
-
     res.status(500).send("Erro ao gerar laudo");
-
   }
 
 });

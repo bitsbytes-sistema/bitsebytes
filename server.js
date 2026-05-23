@@ -27,11 +27,9 @@ app.use(
     secret: process.env.SESSION_SECRET || "segredo_forte",
     resave: false,
     saveUninitialized: false,
-
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URL
     }),
-
     cookie: {
       httpOnly: true,
       secure: true,
@@ -101,11 +99,7 @@ app.post("/login", async (req, res) => {
 app.get("/me", auth, async (req, res) => {
   try {
     const company = await Company.findById(req.session.user.companyId);
-
-    res.json({
-      user: req.session.user,
-      company
-    });
+    res.json({ user: req.session.user, company });
 
   } catch(err){
     console.log(err);
@@ -143,10 +137,6 @@ app.get("/api/admin/stats", auth, masterOnly, async (req, res) => {
 app.post("/api/admin/create-company", auth, masterOnly, async (req, res) => {
   try {
     const { name, username, password, plan } = req.body;
-
-    if(!name || !username || !password){
-      return res.status(400).json({ error: "Preencha todos os campos" });
-    }
 
     const existe = await User.findOne({ username });
 
@@ -192,149 +182,76 @@ app.post("/api/admin/create-company", auth, masterOnly, async (req, res) => {
   }
 });
 
-/* ===================== ALTERAR PLANO ===================== */
-app.put("/api/admin/company/:id/plan", auth, masterOnly, async (req, res) => {
-  try {
-    const planos = {
-      free: { plan: "free", ticketLimit: 10, userLimit: 1 },
-      basic: { plan: "basic", ticketLimit: 30, userLimit: 3 },
-      pro: { plan: "pro", ticketLimit: -1, userLimit: -1 }
-    };
-
-    const plano = planos[req.body.plan];
-
-    if(!plano){
-      return res.status(400).json({ error: "Plano inválido" });
-    }
-
-    await Company.findByIdAndUpdate(req.params.id, plano);
-
-    res.json({ ok: true });
-
-  } catch(err){
-    console.log(err);
-    res.status(500).json({ error: true });
-  }
-});
-
-/* ===================== LISTAR TICKETS ===================== */
+/* ===================== TICKETS ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
-  try {
-    const tickets = await Ticket.find({
-      companyId: req.session.user.companyId
-    }).sort({ createdAt: -1 });
+  const tickets = await Ticket.find({
+    companyId: req.session.user.companyId
+  }).sort({ createdAt: -1 });
 
-    res.json(tickets);
-
-  } catch(err){
-    console.log(err);
-    res.status(500).json({ error: "erro_listar" });
-  }
+  res.json(tickets);
 });
 
-/* ===================== CRIAR TICKET ===================== */
 app.post("/api/tickets", auth, async (req, res) => {
-  try {
-    const company = await Company.findById(req.session.user.companyId);
+  const ticket = await Ticket.create({
+    companyId: req.session.user.companyId,
+    ...req.body,
+    status: "aberto"
+  });
 
-    const totalTickets = await Ticket.countDocuments({
-      companyId: req.session.user.companyId
-    });
-
-    if(company.ticketLimit !== -1 && totalTickets >= company.ticketLimit){
-      return res.status(400).json({ error: "Limite do plano atingido." });
-    }
-
-    const ultimoOS = await Ticket.findOne({
-      companyId: req.session.user.companyId
-    }).sort({ numeroOS: -1 });
-
-    const numeroOS = ultimoOS && ultimoOS.numeroOS
-      ? ultimoOS.numeroOS + 1
-      : 1;
-
-    const ticket = await Ticket.create({
-      companyId: req.session.user.companyId,
-      numeroOS,
-      cliente: req.body.cliente,
-      telefone: req.body.telefone,
-      cpfcnpj: req.body.cpfcnpj,
-      equipamento: req.body.equipamento,
-      problema: req.body.problema,
-      diagnostico: "",
-      servico: "",
-      conclusao: "",
-      tecnico: "",
-      laudoGerado: false,
-      status: "aberto"
-    });
-
-    res.json(ticket);
-
-  } catch(err){
-    console.log(err);
-    res.status(500).json({ ok: false });
-  }
+  res.json(ticket);
 });
 
-/* ===================== UPDATE STATUS (CORRIGIDO) ===================== */
+/* ===================== STATUS UPDATE ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
 
-  try {
+  const statusValidos = ["aberto", "andamento", "reparo", "finalizado"];
 
-    const statusValidos = ["aberto", "andamento", "reparo", "finalizado"];
+  if(!statusValidos.includes(req.body.status)){
+    return res.status(400).json({ error: "status_invalido" });
+  }
 
-    if(!statusValidos.includes(req.body.status)){
-      return res.status(400).json({ error: "status_invalido" });
-    }
+  const ticket = await Ticket.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      companyId: req.session.user.companyId
+    },
+    {
+      status: req.body.status,
+      updatedAt: new Date()
+    },
+    { new: true }
+  );
 
-    const ticket = await Ticket.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        companyId: req.session.user.companyId
-      },
-      {
-        status: req.body.status,
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
+  if(!ticket){
+    return res.status(404).json({ error: true });
+  }
 
-    if(!ticket){
-      return res.status(404).json({ error: true });
-    }
+  const numero = String(ticket.telefone || "").replace(/\D/g, "");
 
-    let numero = String(ticket.telefone || "").replace(/\D/g, "");
+  let textoStatus = "";
 
-    if(numero.startsWith("55")){
-      numero = numero.substring(2);
-    }
+  if(req.body.status === "aberto"){
+    textoStatus = "Seu chamado foi aberto e aguarda análise.";
+  }
+  if(req.body.status === "andamento"){
+    textoStatus = "Seu equipamento está em análise.";
+  }
+  if(req.body.status === "reparo"){
+    textoStatus = "Seu equipamento está em manutenção na bancada.";
+  }
+  if(req.body.status === "finalizado"){
+    textoStatus = "Seu equipamento está pronto para retirada.";
+  }
 
-    let textoStatus = "";
+  let whatsapp = null;
 
-    if(req.body.status === "aberto"){
-      textoStatus = "Seu chamado foi aberto com sucesso e aguarda análise da nossa equipe técnica.";
-    }
-    else if(req.body.status === "andamento"){
-      textoStatus = "Seu equipamento está em análise pela nossa equipe.";
-    }
-    else if(req.body.status === "reparo"){
-      textoStatus = "Seu equipamento está na bancada em manutenção.";
-    }
-    else if(req.body.status === "finalizado"){
-      textoStatus = "Seu equipamento já está pronto para retirada, ou entre em contato para mais informações!";
-    }
+  if(numero.length >= 10){
 
-    let whatsapp = null;
+    const data = new Date().toLocaleString("pt-BR", {
+      timeZone: "America/Cuiaba"
+    });
 
-    if(numero.length >= 10){
-
-      const dataFormatada = new Date().toLocaleString("pt-BR", {
-        timeZone: "America/Cuiaba"
-      });
-
-      const msg = encodeURIComponent(
-
+    const msg = encodeURIComponent(
 `Bits & Bytes Assistência Técnica
 
 ORDEM DE SERVIÇO:
@@ -356,43 +273,93 @@ Problema informado:
 ${ticket.problema || "Não informado"}
 
 Atualizado em:
-${dataFormatada}
+${data}
 
 ${textoStatus}`
-      );
+    );
 
-      whatsapp = `https://wa.me/55${numero}?text=${msg}`;
-    }
-
-    res.json({ ok: true, whatsapp });
-
-  } catch(err){
-    console.log(err);
-    res.status(500).json({ error: true });
+    whatsapp = `https://wa.me/55${numero}?text=${msg}`;
   }
+
+  res.json({ ok: true, whatsapp });
 });
 
-/* ===================== DELETE ===================== */
-app.delete("/api/tickets/:id", auth, async (req, res) => {
+/* ===================== LAUDO (CORRIGIDO DE VERDADE) ===================== */
+app.get("/api/tickets/:id/laudo", auth, async (req, res) => {
+
   try {
-    await Ticket.findOneAndDelete({
+
+    const ticket = await Ticket.findOne({
       _id: req.params.id,
       companyId: req.session.user.companyId
     });
 
-    res.json({ ok: true });
+    if(!ticket){
+      return res.status(404).send("Laudo não encontrado");
+    }
+
+    const data = new Date(ticket.updatedAt || ticket.createdAt)
+      .toLocaleString("pt-BR", { timeZone: "America/Cuiaba" });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+
+    res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Laudo OS ${ticket.numeroOS}</title>
+</head>
+
+<body style="font-family:Arial;padding:20px;">
+
+<h2>Bits & Bytes Assistência Técnica</h2>
+
+<p><b>ORDEM DE SERVIÇO:</b> ${ticket.numeroOS}</p>
+
+<p><b>Status:</b> ${ticket.status.toUpperCase()}</p>
+
+<p><b>Cliente:</b> ${ticket.cliente}</p>
+<p><b>CPF/CNPJ:</b> ${ticket.cpfcnpj || "Não informado"}</p>
+
+<p><b>Equipamento:</b> ${ticket.equipamento || "Não informado"}</p>
+
+<p><b>Problema:</b> ${ticket.problema || "Não informado"}</p>
+
+<p><b>Diagnóstico:</b> ${ticket.diagnostico || ""}</p>
+
+<p><b>Serviço:</b> ${ticket.servico || ""}</p>
+
+<p><b>Conclusão:</b> ${ticket.conclusao || ""}</p>
+
+<p><b>Técnico:</b> ${ticket.tecnico || ""}</p>
+
+<p><b>Atualizado em:</b> ${data}</p>
+
+</body>
+</html>
+    `);
 
   } catch(err){
     console.log(err);
-    res.status(500).json({ ok: false });
+    res.status(500).send("Erro ao gerar laudo");
   }
+
+});
+
+/* ===================== DELETE ===================== */
+app.delete("/api/tickets/:id", auth, async (req, res) => {
+  await Ticket.findOneAndDelete({
+    _id: req.params.id,
+    companyId: req.session.user.companyId
+  });
+
+  res.json({ ok: true });
 });
 
 /* ===================== LOGOUT ===================== */
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/");
-  });
+  req.session.destroy(() => res.redirect("/"));
 });
 
 /* ===================== START ===================== */

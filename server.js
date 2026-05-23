@@ -277,12 +277,11 @@ app.post("/api/tickets", auth, async (req, res) => {
   }
 });
 
-/* ===================== UPDATE STATUS ===================== */
+/* ===================== UPDATE STATUS (CORRIGIDO) ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
 
   try {
 
-    // ✅ ADICIONADO (VALIDAÇÃO IMPORTANTE)
     const statusValidos = ["aberto", "andamento", "reparo", "finalizado"];
 
     if(!statusValidos.includes(req.body.status)){
@@ -305,8 +304,6 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
       return res.status(404).json({ error: true });
     }
 
-    let whatsapp = null;
-
     let numero = String(ticket.telefone || "").replace(/\D/g, "");
 
     if(numero.startsWith("55")){
@@ -328,6 +325,8 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
       textoStatus = "Seu equipamento já está pronto para retirada!";
     }
 
+    let whatsapp = null;
+
     if(numero.length >= 10){
 
       const dataFormatada = new Date().toLocaleString("pt-BR", {
@@ -335,6 +334,7 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
       });
 
       const msg = encodeURIComponent(
+
 `Bits & Bytes Assistência Técnica
 
 ORDEM DE SERVIÇO:
@@ -345,6 +345,15 @@ ${req.body.status.toUpperCase()}
 
 Cliente:
 ${ticket.cliente}
+
+CPF/CNPJ:
+${ticket.cpfcnpj || "Não informado"}
+
+Equipamento:
+${ticket.equipamento || "Não informado"}
+
+Problema informado:
+${ticket.problema || "Não informado"}
 
 Atualizado em:
 ${dataFormatada}
@@ -360,28 +369,6 @@ ${textoStatus}`
   } catch(err){
     console.log(err);
     res.status(500).json({ error: true });
-  }
-});
-
-/* ===================== LAUDO ===================== */
-app.get("/api/tickets/:id/laudo", auth, async (req, res) => {
-  try {
-
-    const ticket = await Ticket.findOne({
-      _id: req.params.id,
-      companyId: req.session.user.companyId
-    });
-
-    if(!ticket){
-      return res.status(404).send("Laudo não encontrado");
-    }
-
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send("OK (laudo mantido igual no seu código)");
-
-  } catch(err){
-    console.log(err);
-    res.status(500).send("Erro ao gerar laudo");
   }
 });
 

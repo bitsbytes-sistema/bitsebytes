@@ -322,7 +322,7 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
       textoStatus = "Seu equipamento está na bancada em manutenção.";
     }
     else if(req.body.status === "finalizado"){
-      textoStatus = "Seu equipamento já está pronto para retirada!";
+      textoStatus = "Seu equipamento já está pronto para retirada, ou entre em contato para mais informações!";
     }
 
     let whatsapp = null;

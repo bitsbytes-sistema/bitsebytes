@@ -366,6 +366,132 @@ app.put("/api/tickets/:id/laudo", auth, async (req, res) => {
 
 });
 
+/* ===================== ABRIR CHAMADO PÚBLICO ===================== */
+app.post("/abrir-chamado", async (req, res) => {
+
+  try {
+
+    const company = await Company.findOne();
+
+    if(!company){
+
+      return res.status(404).json({
+        error: "Empresa não encontrada"
+      });
+
+    }
+
+    const ultimoOS = await Ticket.findOne({
+      companyId: company._id
+    }).sort({
+      numeroOS: -1
+    });
+
+    const numeroOS =
+      ultimoOS && ultimoOS.numeroOS
+        ? ultimoOS.numeroOS + 1
+        : 1;
+
+    const ticket = await Ticket.create({
+
+      companyId: company._id,
+
+      numeroOS,
+
+      cliente: req.body.cliente,
+
+      telefone: req.body.telefone,
+
+      cpfcnpj: req.body.cpfcnpj,
+
+      equipamento: req.body.equipamento,
+
+      problema: req.body.problema,
+
+      diagnostico: "",
+
+      servico: "",
+
+      conclusao: "",
+
+      tecnico: "",
+
+      laudoGerado: false,
+
+      status: "aberto"
+
+    });
+
+    let numero =
+      String(ticket.telefone || "")
+      .replace(/\D/g, "");
+
+    if(numero.startsWith("55")){
+      numero = numero.substring(2);
+    }
+
+    let whatsapp = null;
+
+    if(numero.length >= 10){
+
+      const dataFormatada =
+        new Date().toLocaleString(
+          "pt-BR",
+          {
+            timeZone: "America/Cuiaba"
+          }
+        );
+
+      const msg = encodeURIComponent(
+
+`Bits & Bytes Assistência Técnica
+
+ORDEM DE SERVIÇO:
+${ticket.numeroOS}
+
+Status do seu atendimento:
+ABERTO
+
+Cliente:
+${ticket.cliente}
+
+CPF/CNPJ:
+${ticket.cpfcnpj || "Não informado"}
+
+Equipamento:
+${ticket.equipamento}
+
+Problema informado:
+${ticket.problema}
+
+Atualizado em:
+${dataFormatada}
+
+Seu chamado foi aberto com sucesso e aguarda análise da nossa equipe técnica.`
+
+      );
+
+      whatsapp =
+        `https://wa.me/55${numero}?text=${msg}`;
+
+    }
+
+    res.json({
+      ok: true,
+      whatsapp
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
 
 /* ===================== DELETE ===================== */
 app.delete("/api/tickets/:id", auth, async (req, res) => {

@@ -284,68 +284,6 @@ ${textoStatus}`
   res.json({ ok: true, whatsapp });
 });
 
-/* ===================== LAUDO (CORRIGIDO DE VERDADE) ===================== */
-app.get("/api/tickets/:id/laudo", auth, async (req, res) => {
-
-  try {
-
-    const ticket = await Ticket.findOne({
-      _id: req.params.id,
-      companyId: req.session.user.companyId
-    });
-
-    if(!ticket){
-      return res.status(404).send("Laudo não encontrado");
-    }
-
-    const data = new Date(ticket.updatedAt || ticket.createdAt)
-      .toLocaleString("pt-BR", { timeZone: "America/Cuiaba" });
-
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-
-    res.send(`
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Laudo OS ${ticket.numeroOS}</title>
-</head>
-
-<body style="font-family:Arial;padding:20px;">
-
-<h2>Bits & Bytes Assistência Técnica</h2>
-
-<p><b>ORDEM DE SERVIÇO:</b> ${ticket.numeroOS}</p>
-
-<p><b>Status:</b> ${ticket.status.toUpperCase()}</p>
-
-<p><b>Cliente:</b> ${ticket.cliente}</p>
-<p><b>CPF/CNPJ:</b> ${ticket.cpfcnpj || "Não informado"}</p>
-
-<p><b>Equipamento:</b> ${ticket.equipamento || "Não informado"}</p>
-
-<p><b>Problema:</b> ${ticket.problema || "Não informado"}</p>
-
-<p><b>Diagnóstico:</b> ${ticket.diagnostico || ""}</p>
-
-<p><b>Serviço:</b> ${ticket.servico || ""}</p>
-
-<p><b>Conclusão:</b> ${ticket.conclusao || ""}</p>
-
-<p><b>Técnico:</b> ${ticket.tecnico || ""}</p>
-
-<p><b>Atualizado em:</b> ${data}</p>
-
-</body>
-</html>
-    `);
-
-  } catch(err){
-    console.log(err);
-    res.status(500).send("Erro ao gerar laudo");
-  }
-
-});
 
 /* ===================== LAUDO ===================== */
 app.get("/api/tickets/:id/laudo", auth, async (req, res) => {

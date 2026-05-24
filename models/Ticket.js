@@ -81,9 +81,9 @@ const ticketSchema = new mongoose.Schema({
   },
 
   numeroOS: {
-    type: Number,
-    default: () => Date.now()
-  },
+  type: Number,
+  default: 1
+},
 
   /* ===================== EMPRESA ===================== */
 

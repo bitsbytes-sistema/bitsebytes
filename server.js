@@ -315,6 +315,57 @@ app.get("/api/tickets/:id/laudo", auth, async (req, res) => {
 
 });
 
+/* ===================== SALVAR LAUDO ===================== */
+app.put("/api/tickets/:id/laudo", auth, async (req, res) => {
+
+  try {
+
+    const ticket = await Ticket.findOneAndUpdate(
+
+      {
+        _id: req.params.id,
+        companyId: req.session.user.companyId
+      },
+
+      {
+        diagnostico: req.body.diagnostico || "",
+        servico: req.body.servico || "",
+        conclusao: req.body.conclusao || "",
+        tecnico: req.body.tecnico || "",
+        updatedAt: new Date()
+      },
+
+      {
+        new: true
+      }
+
+    );
+
+    if(!ticket){
+
+      return res.status(404).json({
+        error: "ticket_not_found"
+      });
+
+    }
+
+    res.json({
+      ok: true,
+      ticket
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
 
 /* ===================== DELETE ===================== */
 app.delete("/api/tickets/:id", auth, async (req, res) => {

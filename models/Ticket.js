@@ -31,7 +31,7 @@ const ticketSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["aberto", "andamento", "finalizado"],
+    enum: ["aberto", "andamento", "reparo", "finalizado"],
     default: "aberto",
     lowercase: true,
     trim: true
@@ -67,6 +67,17 @@ const ticketSchema = new mongoose.Schema({
   observacoes: {
     type: String,
     default: ""
+  },
+
+  tecnico: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  laudoGerado: {
+    type: Boolean,
+    default: false
   },
 
   numeroOS: {

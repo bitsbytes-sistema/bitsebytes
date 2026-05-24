@@ -204,7 +204,8 @@ async function carregar(){
 
   try{
 
-    const res = await fetch("/api/tickets/" + id, {
+    // ✅ CORRIGIDO
+    const res = await fetch("/api/tickets/" + id + "/laudo", {
       credentials: "include"
     });
 
@@ -221,23 +222,42 @@ async function carregar(){
       return;
     }
 
-    document.getElementById("cliente").innerText = ticket.cliente || "";
-    document.getElementById("telefone").innerText = ticket.telefone || "";
-    document.getElementById("cpfcnpj").innerText = ticket.cpfcnpj || "";
-    document.getElementById("equipamento").innerText = ticket.equipamento || "";
-    document.getElementById("problema").innerText = ticket.problema || "";
+    document.getElementById("cliente").innerText =
+      ticket.cliente || "";
 
-    document.getElementById("diagnostico").value = ticket.diagnostico || "";
-    document.getElementById("servico").value = ticket.servico || "";
-    document.getElementById("conclusao").value = ticket.conclusao || "";
-    document.getElementById("tecnico").value = ticket.tecnico || "";
+    document.getElementById("telefone").innerText =
+      ticket.telefone || "";
 
-    const os = String(ticket._id || "").slice(-6).toUpperCase();
-    document.getElementById("numeroOS").innerText = "OS #" + os;
+    document.getElementById("cpfcnpj").innerText =
+      ticket.cpfcnpj || "";
+
+    document.getElementById("equipamento").innerText =
+      ticket.equipamento || "";
+
+    document.getElementById("problema").innerText =
+      ticket.problema || "";
+
+    document.getElementById("diagnostico").value =
+      ticket.diagnostico || "";
+
+    document.getElementById("servico").value =
+      ticket.servico || "";
+
+    document.getElementById("conclusao").value =
+      ticket.conclusao || "";
+
+    document.getElementById("tecnico").value =
+      ticket.tecnico || "";
+
+    document.getElementById("numeroOS").innerText =
+      "OS #" + (ticket.numeroOS || "");
 
   } catch(err){
+
     console.error(err);
+
     alert("Erro de conexão ao carregar laudo");
+
   }
 
 }
@@ -250,36 +270,54 @@ async function salvar(){
 
   const body = {
 
-    numeroOS: document.getElementById("numeroOS").innerText,
-    diagnostico: document.getElementById("diagnostico").value,
-    servico: document.getElementById("servico").value,
-    conclusao: document.getElementById("conclusao").value,
-    tecnico: document.getElementById("tecnico").value
+    diagnostico:
+      document.getElementById("diagnostico").value,
+
+    servico:
+      document.getElementById("servico").value,
+
+    conclusao:
+      document.getElementById("conclusao").value,
+
+    tecnico:
+      document.getElementById("tecnico").value
 
   };
 
   try{
 
     const res = await fetch("/api/tickets/" + id + "/laudo", {
+
       method: "PUT",
+
       headers: {
         "Content-Type": "application/json"
       },
+
       credentials: "include",
+
       body: JSON.stringify(body)
+
     });
 
     const data = await res.json();
 
     if(data.ok){
+
       alert("Laudo salvo com sucesso!");
+
     } else {
+
       alert("Erro ao salvar laudo");
+
     }
 
   } catch(err){
+
     console.error(err);
+
     alert("Erro de conexão ao salvar");
+
   }
 
 }

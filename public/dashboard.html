@@ -104,7 +104,7 @@ button:hover{
 }
 
 a{
-  color:white;
+  color:black;
   text-decoration:none;
 }
 
@@ -135,9 +135,9 @@ a{
   <a href="#">⚙️ Configurações</a>
 
   <div class="usuario">
-    <b>Genilton</b><br>
-    <small>Administrador</small>
-  </div>
+  <b id="nomeUsuario">Carregando...</b><br>
+  <small id="cargoUsuario">Usuário</small>
+</div>
 
 </div>
 
@@ -200,10 +200,7 @@ async function carregarEmpresa(){
       credentials:"include"
     });
 
-    console.log("STATUS /me =", res.status);
-
     if(res.status === 401){
-      alert("Sessão perdida em /me");
       window.location.href="/";
       return;
     }
@@ -215,8 +212,20 @@ async function carregarEmpresa(){
         "Plano: " + (data.company.plan || "Free");
     }
 
+    if(data.user){
+
+      document.getElementById("nomeUsuario").innerText =
+        data.user.username || "Usuário";
+
+      document.getElementById("cargoUsuario").innerText =
+        data.user.role || "Usuário";
+
+    }
+
   } catch(err){
+
     console.log(err);
+
   }
 
 }

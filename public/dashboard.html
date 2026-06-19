@@ -72,23 +72,38 @@ body{
   padding:20px;
 }
 
-/* CARDS */
-.card{
-  background:white;
-  padding:15px;
-  border-radius:8px;
-  margin-bottom:10px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+/* STATS GRID */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:15px;
 }
 
-button{
-  padding:10px;
-  background:#4CAF50;
-  color:white;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
+/* CARDS */
+.stat-card{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  text-align:center;
+  font-weight:bold;
 }
+
+.stat-card h2{
+  margin:0;
+  font-size:28px;
+}
+
+.stat-card small{
+  display:block;
+  margin-top:5px;
+  color:#666;
+}
+
+.red{ border-left:5px solid red; }
+.yellow{ border-left:5px solid #facc15; }
+.orange{ border-left:5px solid orange; }
+.green{ border-left:5px solid #22c55e; }
 
 </style>
 </head>
@@ -136,9 +151,7 @@ button{
 
     <h3>Resumo Geral</h3>
 
-    <div class="card" id="stats">
-      Carregando estatísticas...
-    </div>
+    <div id="stats" class="stats-grid"></div>
 
   </div>
 
@@ -146,6 +159,7 @@ button{
 
 <script>
 
+/* ===================== USUÁRIO ===================== */
 async function carregarUsuario(){
 
   const res = await fetch("/me", {
@@ -168,7 +182,6 @@ async function carregarUsuario(){
 
 
 /* ===================== STATS ===================== */
-
 async function loadStats(){
 
   const res = await fetch("/api/tickets", {
@@ -183,16 +196,32 @@ async function loadStats(){
   const finalizado = chamados.filter(x => x.status === "finalizado").length;
 
   document.getElementById("stats").innerHTML = `
-    🔴 Abertos: ${aberto}<br>
-    🟡 Andamento: ${andamento}<br>
-    🟠 Reparo: ${reparo}<br>
-    🟢 Finalizados: ${finalizado}
+
+    <div class="stat-card red">
+      <h2>${aberto}</h2>
+      <small>Abertos</small>
+    </div>
+
+    <div class="stat-card yellow">
+      <h2>${andamento}</h2>
+      <small>Andamento</small>
+    </div>
+
+    <div class="stat-card orange">
+      <h2>${reparo}</h2>
+      <small>Reparo</small>
+    </div>
+
+    <div class="stat-card green">
+      <h2>${finalizado}</h2>
+      <small>Finalizados</small>
+    </div>
+
   `;
 }
 
 
 /* ===================== LOGOUT ===================== */
-
 async function logout(){
   await fetch("/logout", { credentials:"include" });
   window.location.href="/";
@@ -200,7 +229,6 @@ async function logout(){
 
 
 /* INIT */
-
 carregarUsuario();
 loadStats();
 

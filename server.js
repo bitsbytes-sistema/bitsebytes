@@ -31,11 +31,11 @@ app.use(
       mongoUrl: process.env.MONGO_URL
     }),
     cookie: {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24
-    }
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  maxAge: 1000 * 60 * 60 * 24
+}
   })
 );
 

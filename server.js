@@ -182,6 +182,51 @@ app.post("/api/admin/create-company", auth, masterOnly, async (req, res) => {
   }
 });
 
+/* ===================== CLIENTES ===================== */
+
+app.get("/api/clientes/list", auth, async (req, res) => {
+
+  try {
+
+    const tickets = await Ticket.find({
+      companyId: req.session.user.companyId
+    });
+
+    const clientesMap = {};
+
+    tickets.forEach(t => {
+
+      const chave =
+        String(t.cpfcnpj || "").trim() +
+        String(t.telefone || "").trim() +
+        String(t.cliente || "").trim();
+
+      if (!clientesMap[chave]) {
+
+        clientesMap[chave] = {
+          nome: String(t.cliente || "").trim(),
+          telefone: String(t.telefone || "").trim(),
+          cpfcnpj: String(t.cpfcnpj || "").trim()
+        };
+
+      }
+
+    });
+
+    res.json(Object.values(clientesMap));
+
+  } catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
 /* ===================== TICKETS ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
   const tickets = await Ticket.find({
@@ -240,7 +285,7 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
     textoStatus = "Seu equipamento está em manutenção na bancada.";
   }
   if(req.body.status === "finalizado"){
-    textoStatus = "Seu equipamento está pronto para retirada.";
+    textoStatus = "Seu equipamento está pronto para retirada ou entrega.";
   }
 
   let whatsapp = null;

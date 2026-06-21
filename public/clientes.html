@@ -42,6 +42,48 @@ a {
   margin-top:5px;
 }
 
+.modal {
+  display:none;
+  position:fixed;
+  z-index:999;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+}
+
+.modal-content {
+
+  background:white;
+  width:90%;
+  max-width:700px;
+  margin:50px auto;
+  padding:20px;
+  border-radius:10px;
+  max-height:80vh;
+  overflow:auto;
+
+}
+
+.close {
+
+  float:right;
+  font-size:25px;
+  cursor:pointer;
+
+}
+
+.chamado {
+
+  background:#f5f5f5;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border-left:5px solid #2c2c44;
+
+}
+
 </style>
 </head>
 
@@ -74,6 +116,31 @@ a {
 
 </div>
 
+
+<!-- MODAL HISTÓRICO -->
+
+<div id="modalHistorico" class="modal">
+
+  <div class="modal-content">
+
+    <span class="close" onclick="fecharModal()">
+      &times;
+    </span>
+
+    <h2 id="tituloHistorico"></h2>
+
+    <div id="dadosCliente"></div>
+
+    <hr>
+
+    <h3>Histórico de Chamados</h3>
+
+    <div id="conteudoHistorico"></div>
+
+  </div>
+
+</div>
+
 <script>
 
 /* ===================== LOGIN CHECK ===================== */
@@ -95,6 +162,7 @@ async function verificarLogin(){
 const lista = document.getElementById("lista");
 
 let clientes = [];
+let clienteSelecionado = null;
 
 /* ===================== LOAD ===================== */
 async function load(){
@@ -151,33 +219,37 @@ function render(listaClientes){
     return;
   }
 
-listaClientes.sort((a,b) =>
-  (a.nome || "").localeCompare(
-    (b.nome || ""),
-    "pt-BR",
-    { sensitivity: "base" }
-  )
-);
+  listaClientes.sort((a,b) =>
+    (a.nome || "").localeCompare(
+      (b.nome || ""),
+      "pt-BR",
+      { sensitivity:"base" }
+    )
+  );
 
   listaClientes.forEach(c => {
 
-    lista.innerHTML += `
-      <div class="card">
+  lista.innerHTML += `
+    <div
+      class="card"
+      onclick='historico(${JSON.stringify(c.nome || "")})'
+      style="cursor:pointer;"
+    >
 
-        <b>${c.nome || "Sem nome"}</b>
+      <b>${c.nome || "Sem nome"}</b>
 
-        <div class="info">
-          📱 ${c.telefone || "Não informado"}
-        </div>
-
-        <div class="info">
-          📄 ${c.cpfcnpj || "Não informado"}
-        </div>
-
+      <div class="info">
+        📱 ${c.telefone || "Não informado"}
       </div>
-    `;
 
-  });
+      <div class="info">
+        📄 ${c.cpfcnpj || "Não informado"}
+      </div>
+
+    </div>
+  `;
+
+});
 
 }
 
@@ -211,6 +283,228 @@ function filtrar(){
   });
 
   render(resultado);
+
+}
+
+async function historico(nome){
+
+  clienteSelecionado = clientes.find(
+    c => c.nome === nome
+  );
+
+  try {
+
+    const res = await fetch(
+      "/api/clientes/historico/" +
+      encodeURIComponent(nome),
+      {
+        credentials:"include"
+      }
+    );
+
+
+    const chamados = await res.json();
+
+
+    document.getElementById("tituloHistorico")
+  .innerHTML =
+  "Ficha do Cliente - " + nome;
+
+
+const dados =
+  document.getElementById("dadosCliente");
+
+
+dados.innerHTML = `
+
+  <div class="chamado">
+
+    <b>Cliente:</b>
+    ${clienteSelecionado?.nome || nome}
+
+    <br>
+
+    <b>Telefone:</b>
+    ${clienteSelecionado?.telefone || "-"}
+
+    <br>
+
+    <b>CPF/CNPJ:</b>
+    ${clienteSelecionado?.cpfcnpj || "-"}
+
+  </div>
+
+`;
+
+const resumo = chamados.reduce((acc, c)=>{
+
+  acc.total++;
+
+  if(c.status === "aberto"){
+    acc.abertos++;
+  }
+
+  if(c.status === "andamento"){
+    acc.andamento++;
+  }
+
+  if(c.status === "reparo"){
+    acc.reparo++;
+  }
+
+  if(c.status === "finalizado"){
+    acc.finalizados++;
+  }
+
+  return acc;
+
+},{
+  total:0,
+  abertos:0,
+  andamento:0,
+  reparo:0,
+  finalizados:0
+});
+
+
+dados.innerHTML += `
+
+<div class="chamado">
+
+<b>Resumo do Cliente</b>
+
+<br><br>
+
+📋 Total de chamados:
+${resumo.total}
+
+<br>
+
+🔴 Abertos:
+${resumo.abertos}
+
+<br>
+
+🟡 Em andamento:
+${resumo.andamento}
+
+<br>
+
+🔵 Em reparo:
+${resumo.reparo}
+
+<br>
+
+🟢 Finalizados:
+${resumo.finalizados}
+
+<br><br>
+
+<button onclick="novoChamado()">
+  ➕ Novo Chamado
+</button>
+
+</div>
+
+`;
+
+
+    const conteudo =
+      document.getElementById("conteudoHistorico");
+
+
+    conteudo.innerHTML = "";
+
+
+    if(!chamados.length){
+
+      conteudo.innerHTML = `
+        <div class="chamado">
+          Nenhum chamado encontrado.
+        </div>
+      `;
+
+    }
+
+
+    chamados.forEach(c=>{
+
+
+      conteudo.innerHTML += `
+
+        <div class="chamado">
+
+          <b>OS:</b>
+          ${c.numeroOS || "-"}
+
+          <br>
+
+          <b>Equipamento:</b>
+          ${c.equipamento || "-"}
+
+          <br>
+
+          <b>Problema:</b>
+          ${c.problema || "-"}
+
+          <br>
+
+          <b>Status:</b>
+          ${c.status || "-"}
+
+          <br>
+
+          <b>Data:</b>
+          ${
+            c.createdAt
+            ?
+            new Date(c.createdAt)
+            .toLocaleDateString("pt-BR")
+            :
+            "-"
+          }
+
+        </div>
+
+      `;
+
+
+    });
+
+
+    document.getElementById("modalHistorico")
+      .style.display="block";
+
+
+  } catch(err){
+
+    console.log(err);
+
+    alert(
+      "Erro ao carregar histórico"
+    );
+
+  }
+
+}
+
+
+function fecharModal(){
+
+  document.getElementById("modalHistorico")
+    .style.display="none";
+
+}
+
+function novoChamado(){
+
+  window.location.href =
+    "/chamados.html?cliente=" +
+    encodeURIComponent(clienteSelecionado.nome) +
+    "&telefone=" +
+    encodeURIComponent(clienteSelecionado.telefone || "") +
+    "&cpfcnpj=" +
+    encodeURIComponent(clienteSelecionado.cpfcnpj || "");
 
 }
 

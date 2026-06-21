@@ -227,6 +227,31 @@ app.get("/api/clientes/list", auth, async (req, res) => {
 
 });
 
+/* ===================== HISTÓRICO CLIENTE ===================== */
+
+app.get("/api/clientes/historico/:nome", auth, async (req, res) => {
+
+  try {
+
+    const chamados = await Ticket.find({
+      companyId: req.session.user.companyId,
+      cliente: req.params.nome
+    }).sort({ createdAt: -1 });
+
+    res.json(chamados);
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
 /* ===================== TICKETS ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
   const tickets = await Ticket.find({

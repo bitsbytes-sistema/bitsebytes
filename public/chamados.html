@@ -94,6 +94,42 @@ const lista = document.getElementById("lista");
 
 let chamados = [];
 
+// ===================== PREENCHER CLIENTE =====================
+
+function preencherCliente(){
+
+  const params = new URLSearchParams(
+    window.location.search
+  );
+
+
+  const cliente = params.get("cliente");
+  const telefone = params.get("telefone");
+  const cpfcnpj = params.get("cpfcnpj");
+
+
+  if(cliente){
+
+    document.getElementById("cliente").value = cliente;
+
+  }
+
+
+  if(telefone){
+
+    document.getElementById("telefone").value = telefone;
+
+  }
+
+
+  if(cpfcnpj){
+
+    document.getElementById("cpfcnpj").value = cpfcnpj;
+
+  }
+
+}
+
 
 /* ===================== LOAD ===================== */
 
@@ -441,6 +477,8 @@ async function logout(){
 
 
 /* ===================== INIT ===================== */
+
+preencherCliente();
 
 load();
 

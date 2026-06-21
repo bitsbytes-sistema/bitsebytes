@@ -105,6 +105,23 @@ body{
 .orange{ border-left:5px solid orange; }
 .green{ border-left:5px solid #22c55e; }
 
+.section-card{
+  background:white;
+  margin-top:20px;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.chamado-item{
+  padding:12px;
+  border-bottom:1px solid #eee;
+}
+
+.chamado-item:last-child{
+  border-bottom:none;
+}
+
 </style>
 </head>
 
@@ -153,9 +170,29 @@ body{
 
     <div id="stats" class="stats-grid"></div>
 
+<div class="section-card">
+
+  <h3>Últimos Chamados</h3>
+
+  <div id="ultimosChamados">
+    Carregando...
   </div>
 
 </div>
+
+<div class="section-card">
+
+  <h3>📈 Indicadores</h3>
+
+  <div id="indicadores">
+    Carregando...
+  </div>
+
+</div>
+
+</div> <!-- fecha container -->
+
+</div> <!-- fecha main -->
 
 <script>
 
@@ -220,6 +257,135 @@ async function loadStats(){
   `;
 }
 
+/* ===================== ÚLTIMOS CHAMADOS ===================== */
+
+async function loadUltimosChamados(){
+
+  const res = await fetch("/api/tickets", {
+    credentials:"include"
+  });
+
+  const chamados = await res.json();
+
+  chamados.sort((a,b)=>
+    new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  const ultimos = chamados.slice(0,5);
+
+  const div =
+    document.getElementById("ultimosChamados");
+
+  if(!ultimos.length){
+
+    div.innerHTML =
+      "Nenhum chamado encontrado.";
+
+    return;
+  }
+
+  div.innerHTML = "";
+
+  ultimos.forEach(c=>{
+
+    div.innerHTML += `
+
+      <div class="chamado-item">
+
+        <b>OS ${c.numeroOS || "-"}</b>
+
+        <br>
+
+        👤 ${c.cliente || "-"}
+
+        <br>
+
+        💻 ${c.equipamento || "-"}
+
+        <br>
+
+        📌 ${String(c.status || "-").toUpperCase()}
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+/* ===================== INDICADORES ===================== */
+
+async function loadIndicadores(){
+
+  const res = await fetch("/api/tickets", {
+    credentials:"include"
+  });
+
+  const chamados = await res.json();
+
+  const clientesUnicos =
+    [...new Set(
+      chamados.map(c => c.cliente)
+    )].length;
+
+  const totalChamados =
+    chamados.length;
+
+  const finalizados =
+    chamados.filter(
+      c => c.status === "finalizado"
+    ).length;
+
+  const taxaConclusao =
+    totalChamados > 0
+    ? Math.round(
+        (finalizados / totalChamados) * 100
+      )
+    : 0;
+
+  const hoje = new Date()
+    .toLocaleDateString("pt-BR");
+
+  const chamadosHoje =
+    chamados.filter(c => {
+
+      if(!c.createdAt) return false;
+
+      return (
+        new Date(c.createdAt)
+        .toLocaleDateString("pt-BR")
+        === hoje
+      );
+
+    }).length;
+
+  document.getElementById(
+    "indicadores"
+  ).innerHTML = `
+
+    👥 Clientes cadastrados:
+    <b>${clientesUnicos}</b>
+
+    <br><br>
+
+    📋 Total de chamados:
+    <b>${totalChamados}</b>
+
+    <br><br>
+
+    🟢 Taxa de conclusão:
+    <b>${taxaConclusao}%</b>
+
+    <br><br>
+
+    📅 Chamados hoje:
+    <b>${chamadosHoje}</b>
+
+  `;
+
+}
+
 
 /* ===================== LOGOUT ===================== */
 async function logout(){
@@ -231,6 +397,8 @@ async function logout(){
 /* INIT */
 carregarUsuario();
 loadStats();
+loadUltimosChamados();
+loadIndicadores();
 
 </script>
 

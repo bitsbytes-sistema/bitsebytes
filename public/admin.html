@@ -271,13 +271,14 @@ select{
 
     <thead>
 
-      <tr>
-        <th>Empresa</th>
-        <th>Plano</th>
-        <th>Chamados</th>
-        <th>Usuários</th>
-        <th>Ações</th>
-      </tr>
+    <tr>
+      <th>Empresa</th>
+      <th>Plano</th>
+      <th>Status</th>
+      <th>Limite Chamados</th>
+      <th>Limite Usuários</th>
+      <th>Ações</th>
+    </tr>
 
     </thead>
 
@@ -358,13 +359,23 @@ async function load(){
 
       </td>
 
-      <td>
-        ${c.ticketLimit}
-      </td>
+<td>
+  ${c.active
+    ? "🟢 Ativa"
+    : "🔴 Bloqueada"}
+</td>
 
       <td>
-        ${c.userLimit}
-      </td>
+  ${c.ticketLimit === -1
+      ? "Ilimitado"
+      : c.ticketLimit}
+</td>
+
+<td>
+  ${c.userLimit === -1
+      ? "Ilimitado"
+      : c.userLimit}
+</td>
 
       <td>
 

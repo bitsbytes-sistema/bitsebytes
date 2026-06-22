@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 
 const companySchema = new mongoose.Schema({
 
-  name: String,
+  name: {
+    type: String,
+    required: true
+  },
 
   plan: {
     type: String,
@@ -29,6 +32,82 @@ const companySchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true
+  },
+
+  /* ========================= */
+  /* PERSONALIZAÇÃO EMPRESA */
+  /* ========================= */
+
+  logo: {
+    type: String,
+    default: ""
+  },
+
+  backgroundImage: {
+    type: String,
+    default: ""
+  },
+
+  primaryColor: {
+    type: String,
+    default: "#2563eb"
+  },
+
+  secondaryColor: {
+    type: String,
+    default: "#1e293b"
+  },
+
+  /* ========================= */
+  /* DADOS DA EMPRESA */
+  /* ========================= */
+
+  phone: {
+    type: String,
+    default: ""
+  },
+
+  email: {
+    type: String,
+    default: ""
+  },
+
+  address: {
+    type: String,
+    default: ""
+  },
+
+  website: {
+    type: String,
+    default: ""
+  },
+
+  cnpj: {
+    type: String,
+    default: ""
+  },
+
+  /* ========================= */
+  /* RELATÓRIOS / LAUDOS */
+  /* ========================= */
+
+  reportFooter: {
+    type: String,
+    default: ""
+  },
+
+  technicianSignature: {
+    type: String,
+    default: ""
+  },
+
+  /* ========================= */
+  /* CONTROLE */
+  /* ========================= */
+
+  lastAccess: {
+    type: Date,
+    default: null
   },
 
   createdAt: {

@@ -182,6 +182,112 @@ app.post("/api/admin/create-company", auth, masterOnly, async (req, res) => {
   }
 });
 
+/* ===================== ADMIN USERS ===================== */
+app.get("/api/admin/users", auth, masterOnly, async (req, res) => {
+
+  try {
+
+    const users = await User.find().lean();
+
+    const companies = await Company.find().lean();
+
+    const companyMap = {};
+
+    companies.forEach(c => {
+      companyMap[String(c._id)] = c.name;
+    });
+
+    const resultado = users.map(u => ({
+      _id: u._id,
+      username: u.username,
+      role: u.role,
+      companyName:
+        companyMap[String(u.companyId)] ||
+        "Sem empresa"
+    }));
+
+    res.json(resultado);
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
+
+/* ===================== ALTERAR PLANO ===================== */
+app.put(
+  "/api/admin/company/:id/plan",
+  auth,
+  masterOnly,
+  async (req, res) => {
+
+    try {
+
+      const { plan } = req.body;
+
+      let ticketLimit = 10;
+      let userLimit = 1;
+
+      if(plan === "basic"){
+        ticketLimit = 30;
+        userLimit = 3;
+      }
+
+      if(plan === "pro"){
+        ticketLimit = -1;
+        userLimit = -1;
+      }
+
+      const company =
+        await Company.findByIdAndUpdate(
+
+          req.params.id,
+
+          {
+            plan,
+            ticketLimit,
+            userLimit
+          },
+
+          {
+            new: true
+          }
+
+        );
+
+      if(!company){
+
+        return res.status(404).json({
+          error: "Empresa não encontrada"
+        });
+
+      }
+
+      res.json({
+        ok: true,
+        company
+      });
+
+    } catch(err){
+
+      console.log(err);
+
+      res.status(500).json({
+        error: true
+      });
+
+    }
+
+  }
+);
+
 /* ===================== CLIENTES ===================== */
 
 app.get("/api/clientes/list", auth, async (req, res) => {

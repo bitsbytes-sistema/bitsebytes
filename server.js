@@ -78,6 +78,18 @@ app.post("/login", async (req, res) => {
       return res.json({ success: false });
     }
 
+// VERIFICA SE A EMPRESA ESTÁ ATIVA
+const company = await Company.findById(user.companyId);
+
+if(company && !company.active){
+
+  return res.json({
+    success:false,
+    error:"Empresa bloqueada. Entre em contato com o suporte."
+  });
+
+}
+
     req.session.user = {
       _id: String(user._id),
       username: user.username,
@@ -94,6 +106,7 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
 
 /* ===================== ME ===================== */
 app.get("/me", auth, async (req, res) => {
@@ -288,6 +301,56 @@ app.put(
   }
 );
 
+/* ===================== ALTERAR STATUS ===================== */
+app.put(
+  "/api/admin/company/:id/status",
+  auth,
+  masterOnly,
+  async (req, res) => {
+
+    try {
+
+      const company =
+        await Company.findByIdAndUpdate(
+
+          req.params.id,
+
+          {
+            active: req.body.active
+          },
+
+          {
+            new: true
+          }
+
+        );
+
+      if(!company){
+
+        return res.status(404).json({
+          error: "Empresa não encontrada"
+        });
+
+      }
+
+      res.json({
+        ok: true,
+        company
+      });
+
+    } catch(err){
+
+      console.log(err);
+
+      res.status(500).json({
+        error: true
+      });
+
+    }
+
+  }
+);
+
 /* ===================== CLIENTES ===================== */
 
 app.get("/api/clientes/list", auth, async (req, res) => {
@@ -416,7 +479,7 @@ app.put("/api/tickets/:id", auth, async (req, res) => {
     textoStatus = "Seu equipamento está em manutenção na bancada.";
   }
   if(req.body.status === "finalizado"){
-    textoStatus = "Seu equipamento está pronto para retirada ou entrega.";
+    textoStatus = "Seu equipamento está pronto, aguarde que em breve entraremos em contato.";
   }
 
   let whatsapp = null;

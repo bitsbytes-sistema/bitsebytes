@@ -409,6 +409,17 @@ async function load(){
           Pro
         </button>
 
+<button
+  onclick="alterarStatus(
+    '${c._id}',
+    ${!c.active}
+  )"
+>
+  ${c.active
+    ? "Bloquear"
+    : "Desbloquear"}
+</button>
+
       </td>
 
     </tr>
@@ -443,6 +454,38 @@ async function alterarPlano(
 
       body: JSON.stringify({
         plan
+      })
+
+    }
+
+  );
+
+  load();
+
+}
+
+async function alterarStatus(
+  id,
+  active
+){
+
+  await fetch(
+
+    "/api/admin/company/" + id + "/status",
+
+    {
+
+      method:"PUT",
+
+      headers:{
+        "Content-Type":
+          "application/json"
+      },
+
+      credentials:"include",
+
+      body: JSON.stringify({
+        active
       })
 
     }

@@ -71,7 +71,9 @@ button:hover{
 /* ERRO */
 .error{
   color:#f87171;
-  margin-top:10px;
+  margin-top:15px;
+  font-size:14px;
+  line-height:1.4;
 }
 </style>
 </head>
@@ -85,6 +87,7 @@ button:hover{
   <h2>Bits & Bytes Assistência Técnica</h2>
 
   <!-- FORM -->
+<!-- TESTE -->
   <form id="loginForm">
     <input type="text" id="username" placeholder="Usuário" required>
     <input type="password" id="password" placeholder="Senha" required>
@@ -110,12 +113,32 @@ document.getElementById("loginForm").addEventListener("submit", async (e)=>{
 
   const data = await res.json();
 
+alert(JSON.stringify(data));
+
+  console.log("RESPOSTA DO SERVIDOR:", data);
+
   if(data.success){
-    window.location.href = "/dashboard.html";
+
+  window.location.href = "/dashboard.html";
+
+}else{
+
+  if(data.error){
+
+    document.getElementById("erro").innerText = data.error;
+
   }else{
+
     document.getElementById("erro").innerText = "Login inválido";
+
   }
+
+}
+
 });
+
+alert("ESTOU NO LOGIN CERTO");
+
 </script>
 
 </body>

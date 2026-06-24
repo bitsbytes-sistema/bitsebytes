@@ -153,12 +153,16 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
     if (data.success) {
 
-      // 🔥 IMPORTANTE: força reload limpo de sessão
-      window.location.href = "/dashboard";
+  window.location.href = "/dashboard";
 
-    } else {
-      erro.innerText = data.message || "Usuário ou senha inválidos";
-    }
+} else {
+
+  erro.innerText =
+    data.error ||
+    data.message ||
+    "Usuário ou senha inválidos";
+
+}
 
   } catch (err) {
     console.error(err);

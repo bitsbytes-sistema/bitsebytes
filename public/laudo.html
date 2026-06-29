@@ -13,6 +13,70 @@ body{
   padding:20px;
 }
 
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f2f2f2;
+}
+
+.sidebar{
+  width:250px;
+  background:#0f172a;
+  min-height:100vh;
+  color:white;
+  position:fixed;
+  left:0;
+  top:0;
+}
+
+.logo{
+  padding:20px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.sidebar a{
+  display:block;
+  color:white;
+  text-decoration:none;
+  padding:14px 20px;
+}
+
+.sidebar a:hover{
+  background:#1e293b;
+}
+
+.usuario{
+  position:absolute;
+  bottom:20px;
+  left:20px;
+}
+
+.main{
+  margin-left:250px;
+  min-height:100vh;
+}
+
+.topbar{
+  height:70px;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 30px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.container{
+  padding:25px;
+}
+
 .laudo{
   background:white;
   max-width:900px;
@@ -92,16 +156,34 @@ button{
 
 @media print{
 
+  .sidebar,
+  .topbar{
+    display:none !important;
+  }
+
+  .main{
+    margin:0 !important;
+    width:100% !important;
+  }
+
+  .container{
+    padding:0 !important;
+  }
+
   body{
     background:white;
   }
 
-  button{
-    display:none;
+  .laudo{
+    max-width:100%;
+    margin:0;
+    box-shadow:none;
+    border-radius:0;
+    padding:20px;
   }
 
-  .laudo{
-    box-shadow:none;
+  button{
+    display:none;
   }
 
 }
@@ -110,6 +192,65 @@ button{
 </head>
 
 <body>
+
+<div class="sidebar">
+
+<div class="logo">
+
+<img src="/logo.png" width="45">
+
+<div>
+
+<b>Bits & Bytes</b><br>
+
+<small>Tecnology</small>
+
+</div>
+
+</div>
+
+<a href="/dashboard.html">🏠 Dashboard</a>
+<a href="/clientes.html">👥 Clientes</a>
+<a href="/chamados.html">📋 Chamados</a>
+<a href="#">💰 Orçamentos</a>
+<a href="/services.html">🛠 Serviços</a>
+<a href="/laudos.html">📄 Laudos Técnicos</a>
+<a href="#">📦 Estoque</a>
+<a href="#">💵 Financeiro</a>
+<a href="#">📊 Relatórios</a>
+<a href="#">⚙️ Configurações</a>
+
+<div class="usuario">
+
+<b id="nomeUsuario">
+Carregando...
+</b>
+
+<br>
+
+<small id="cargoUsuario">
+Usuário
+</small>
+
+</div>
+
+</div>
+
+<div class="main">
+
+<div class="topbar">
+
+<div>
+📄 Laudo Técnico
+</div>
+
+<a href="javascript:void(0)" onclick="logout()">
+Sair
+</a>
+
+</div>
+
+<div class="container">
 
 <div class="laudo">
 
@@ -184,6 +325,12 @@ button{
 
 </div>
 
+</div>
+
+</div>
+
+</div>
+
 <script>
 
 const params = new URLSearchParams(window.location.search);
@@ -194,6 +341,37 @@ let ticket = null;
 /* ===================== */
 /* LOAD */
 /* ===================== */
+
+async function carregarUsuario(){
+
+  const res = await fetch("/me",{
+    credentials:"include"
+  });
+
+  if(res.status===401){
+    location.href="/";
+    return;
+  }
+
+  const data = await res.json();
+
+  document.getElementById("nomeUsuario").innerText =
+    data.user?.username || "Usuário";
+
+  document.getElementById("cargoUsuario").innerText =
+    data.user?.role || "Usuário";
+
+}
+
+async function logout(){
+
+  await fetch("/logout",{
+    credentials:"include"
+  });
+
+  location.href="/";
+
+}
 
 async function carregar(){
 
@@ -322,6 +500,7 @@ async function salvar(){
 
 }
 
+carregarUsuario();
 carregar();
 
 </script>

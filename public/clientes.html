@@ -307,51 +307,41 @@ border-left:5px solid #0f172a;
 🏠 Dashboard
 </a>
 
-
 <a href="/clientes.html">
 👥 Clientes
 </a>
-
 
 <a href="/chamados.html">
 📋 Chamados
 </a>
 
-
 <a href="#">
 💰 Orçamentos
 </a>
-
 
 <a href="/services.html">
 🛠 Serviços
 </a>
 
-
-<a href="#">
+<a href="/laudos.html">
 📄 Laudos Técnicos
 </a>
-
 
 <a href="#">
 📦 Estoque
 </a>
 
-
 <a href="#">
 💵 Financeiro
 </a>
-
 
 <a href="#">
 📊 Relatórios
 </a>
 
-
 <a href="#">
 ⚙️ Configurações
 </a>
-
 
 
 
@@ -864,6 +854,18 @@ function novoChamado(){
     encodeURIComponent(clienteSelecionado.telefone || "") +
     "&cpfcnpj=" +
     encodeURIComponent(clienteSelecionado.cpfcnpj || "");
+
+}
+
+/* ===================== LOGOUT ===================== */
+
+async function logout(){
+
+  await fetch("/logout",{
+    credentials:"include"
+  });
+
+  window.location.href="/";
 
 }
 

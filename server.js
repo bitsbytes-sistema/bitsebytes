@@ -434,13 +434,32 @@ app.get("/api/tickets", auth, async (req, res) => {
 });
 
 app.post("/api/tickets", auth, async (req, res) => {
+
+  const ultimoTicket = await Ticket.findOne({
+    companyId: req.session.user.companyId
+  }).sort({
+    numeroOS: -1
+  });
+
+  const numeroOS =
+    ultimoTicket && ultimoTicket.numeroOS
+      ? ultimoTicket.numeroOS + 1
+      : 1;
+
   const ticket = await Ticket.create({
+
     companyId: req.session.user.companyId,
+
+    numeroOS,
+
     ...req.body,
+
     status: "aberto"
+
   });
 
   res.json(ticket);
+
 });
 
 /* ===================== STATUS UPDATE ===================== */

@@ -461,6 +461,24 @@ Sair
 Criar Chamado
 </button>
 
+<input
+  id="busca"
+  placeholder="🔍 Buscar cliente, telefone, equipamento ou OS..."
+  onkeyup="filtrarChamados()"
+  style="width:320px;padding:10px;margin:10px 5px 10px 0;border:1px solid #cbd5e1;border-radius:6px;"
+>
+
+<select
+  id="filtroStatus"
+  onchange="filtrarChamados()"
+  style="padding:10px;border:1px solid #cbd5e1;border-radius:6px;"
+>
+  <option value="">Todos</option>
+  <option value="aberto">🔴 Abertos</option>
+  <option value="andamento">🟡 Em andamento</option>
+  <option value="reparo">🟠 Em reparo</option>
+  <option value="finalizado">🟢 Finalizados</option>
+</select>
 
 </div>
 
@@ -555,40 +573,20 @@ function preencherCliente(){
 
 }
 
-
-/* ===================== LOAD ===================== */
-
-async function load(){
-
-  try {
-
-    const res = await fetch("/api/tickets", {
-      credentials:"include"
-    });
-
-    console.log("STATUS /api/tickets =", res.status);
-
-    if(res.status === 401){
-      alert("Sessão perdida");
-      window.location.href="/";
-      return;
-    }
-
-    chamados = await res.json();
+function renderChamados(listaChamados){
 
     lista.innerHTML = "";
 
-    chamados.forEach(c => {
+    listaChamados.forEach(c => {
 
-      const dataAbertura =
-        c.createdAt
-        ? new Date(c.createdAt).toLocaleString("pt-BR", {
-            timeZone: "America/Cuiaba"
-          })
-        : "Sem data";
+        const dataAbertura =
+            c.createdAt
+            ? new Date(c.createdAt).toLocaleString("pt-BR", {
+                timeZone: "America/Cuiaba"
+            })
+            : "Sem data";
 
-
-      lista.innerHTML += `
+        lista.innerHTML += `
 
         <div class="card">
 
@@ -623,11 +621,9 @@ async function load(){
 
           <br><br>
 
-
           <button onclick="status('${c._id}')">
             Status
           </button>
-
 
           ${
             c.status === "finalizado"
@@ -637,17 +633,88 @@ async function load(){
             : ""
           }
 
-
           <button onclick="del('${c._id}')">
             Excluir
           </button>
 
-
         </div>
 
-      `;
+        `;
 
     });
+
+}
+
+// ===================== FILTRO =====================
+
+function filtrarChamados(){
+
+  const texto =
+    document.getElementById("busca")
+    .value
+    .toLowerCase();
+
+
+  const status =
+    document.getElementById("filtroStatus")
+    .value;
+
+
+  const filtrados =
+    chamados.filter(c => {
+
+
+      const procura =
+        (
+          (c.cliente || "") +
+          (c.telefone || "") +
+          (c.equipamento || "") +
+          (c.cpfcnpj || "") +
+          (c._id || "")
+        )
+        .toLowerCase();
+
+
+      const encontrouTexto =
+        procura.includes(texto);
+
+
+      const encontrouStatus =
+        !status ||
+        c.status === status;
+
+
+      return encontrouTexto && encontrouStatus;
+
+
+    });
+
+
+  renderChamados(filtrados);
+
+}
+
+/* ===================== LOAD ===================== */
+
+async function load(){
+
+  try {
+
+    const res = await fetch("/api/tickets", {
+      credentials:"include"
+    });
+
+    console.log("STATUS /api/tickets =", res.status);
+
+    if(res.status === 401){
+      alert("Sessão perdida");
+      window.location.href="/";
+      return;
+    }
+
+    chamados = await res.json();
+
+    renderChamados(chamados);
 
 
     loadStats();

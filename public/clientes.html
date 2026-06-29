@@ -1,143 +1,472 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <meta charset="UTF-8">
-<title>Clientes</title>
+
+<title>Bits & Bytes - Clientes</title>
+
 
 <style>
 
-body {
-  font-family: Arial;
-  background:#f2f2f2;
-  margin:0;
+*{
+box-sizing:border-box;
 }
 
-.header {
-  background:#2c2c44;
-  color:white;
-  padding:15px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
 
-.container {
-  padding:20px;
-}
+body{
 
-.card {
-  background:white;
-  padding:15px;
-  margin-bottom:10px;
-  border-radius:8px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);
-}
+margin:0;
 
-a {
-  color:white;
-  text-decoration:none;
-}
+font-family:Arial;
 
-.info {
-  margin-top:5px;
-}
-
-.modal {
-  display:none;
-  position:fixed;
-  z-index:999;
-  left:0;
-  top:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.5);
-}
-
-.modal-content {
-
-  background:white;
-  width:90%;
-  max-width:700px;
-  margin:50px auto;
-  padding:20px;
-  border-radius:10px;
-  max-height:80vh;
-  overflow:auto;
+background:#f2f2f2;
 
 }
 
-.close {
 
-  float:right;
-  font-size:25px;
-  cursor:pointer;
+/* SIDEBAR */
+
+.sidebar{
+
+width:250px;
+
+background:#0f172a;
+
+min-height:100vh;
+
+color:white;
+
+position:fixed;
+
+left:0;
+
+top:0;
 
 }
 
-.chamado {
 
-  background:#f5f5f5;
-  padding:12px;
-  margin-bottom:10px;
-  border-radius:8px;
-  border-left:5px solid #2c2c44;
+.logo{
+
+padding:20px;
+
+display:flex;
+
+gap:10px;
+
+align-items:center;
+
+border-bottom:1px solid rgba(255,255,255,.1);
 
 }
+
+
+.sidebar a{
+
+display:block;
+
+color:white;
+
+text-decoration:none;
+
+padding:14px 20px;
+
+}
+
+
+.sidebar a:hover{
+
+background:#1e293b;
+
+}
+
+
+
+.usuario{
+
+position:absolute;
+
+bottom:20px;
+
+left:20px;
+
+}
+
+
+
+
+/* MAIN */
+
+.main{
+
+margin-left:250px;
+
+width:calc(100% - 250px);
+
+min-height:100vh;
+
+}
+
+
+
+
+/* TOPBAR */
+
+.topbar{
+
+height:70px;
+
+background:white;
+
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+padding:0 30px;
+
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+}
+
+
+
+.topbar a{
+
+color:#dc2626;
+
+text-decoration:none;
+
+font-weight:bold;
+
+}
+
+
+
+
+/* CONTAINER */
+
+.container{
+
+padding:20px;
+
+}
+
+
+
+
+/* CARD */
+
+.card{
+
+background:white;
+
+padding:20px;
+
+border-radius:10px;
+
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+margin-bottom:15px;
+
+}
+
+
+
+
+/* BUSCA */
+
+input{
+
+width:100%;
+
+padding:10px;
+
+border:1px solid #ccc;
+
+border-radius:6px;
+
+margin-bottom:15px;
+
+}
+
+
+
+
+/* MODAL */
+
+.modal{
+
+display:none;
+
+position:fixed;
+
+z-index:999;
+
+left:0;
+
+top:0;
+
+width:100%;
+
+height:100%;
+
+background:rgba(0,0,0,.5);
+
+}
+
+
+
+.modal-content{
+
+background:white;
+
+width:90%;
+
+max-width:700px;
+
+margin:50px auto;
+
+padding:20px;
+
+border-radius:10px;
+
+max-height:80vh;
+
+overflow:auto;
+
+}
+
+
+
+.close{
+
+float:right;
+
+font-size:25px;
+
+cursor:pointer;
+
+}
+
+
+
+.chamado{
+
+background:#f5f5f5;
+
+padding:12px;
+
+margin-bottom:10px;
+
+border-radius:8px;
+
+border-left:5px solid #0f172a;
+
+}
+
 
 </style>
+
 </head>
+
 
 <body>
 
-<div class="header">
 
-  <div>
-    Clientes
-  </div>
 
-  <div>
-    <a href="/dashboard.html">Voltar</a>
-  </div>
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+
+<div class="logo">
+
+
+<img src="/logo.png" width="45">
+
+
+<div>
+
+<b>Bits & Bytes</b>
+
+<br>
+
+<small>Tecnology</small>
 
 </div>
+
+
+</div>
+
+
+
+<a href="/dashboard.html">
+🏠 Dashboard
+</a>
+
+
+<a href="/clientes.html">
+👥 Clientes
+</a>
+
+
+<a href="/chamados.html">
+📋 Chamados
+</a>
+
+
+<a href="#">
+💰 Orçamentos
+</a>
+
+
+<a href="/services.html">
+🛠 Serviços
+</a>
+
+
+<a href="#">
+📄 Laudos Técnicos
+</a>
+
+
+<a href="#">
+📦 Estoque
+</a>
+
+
+<a href="#">
+💵 Financeiro
+</a>
+
+
+<a href="#">
+📊 Relatórios
+</a>
+
+
+<a href="#">
+⚙️ Configurações
+</a>
+
+
+
+
+<div class="usuario">
+
+<b id="nomeUsuario">
+Carregando...
+</b>
+
+<br>
+
+<small id="cargoUsuario">
+Usuário
+</small>
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- MAIN -->
+
+<div class="main">
+
+
+<div class="topbar">
+
+
+<div>
+👥 Clientes
+</div>
+
+
+<a href="javascript:void(0)" onclick="logout()">
+Sair
+</a>
+
+
+</div>
+
+
+
 
 <div class="container">
 
-  <h2>Lista de Clientes</h2>
 
-  <input
-    id="busca"
-    placeholder="Buscar por nome, telefone ou CPF"
-    onkeyup="filtrar()"
-    style="width:100%;padding:10px;margin-bottom:15px;border:1px solid #ccc;border-radius:6px;"
-  >
+<div class="card">
 
-  <div id="lista"></div>
+
+<h2>
+👥 Lista de Clientes
+</h2>
+
+
+
+<input
+id="busca"
+placeholder="Buscar por nome, telefone ou CPF"
+onkeyup="filtrar()"
+>
+
+
+
+<div id="lista"></div>
+
+
 
 </div>
+
+
+</div>
+
+
+</div>
+
+
+
 
 
 <!-- MODAL HISTÓRICO -->
 
 <div id="modalHistorico" class="modal">
 
-  <div class="modal-content">
 
-    <span class="close" onclick="fecharModal()">
-      &times;
-    </span>
+<div class="modal-content">
 
-    <h2 id="tituloHistorico"></h2>
 
-    <div id="dadosCliente"></div>
+<span class="close" onclick="fecharModal()">
+&times;
+</span>
 
-    <hr>
 
-    <h3>Histórico de Chamados</h3>
+<h2 id="tituloHistorico"></h2>
 
-    <div id="conteudoHistorico"></div>
 
-  </div>
+<div id="dadosCliente"></div>
+
+
+<hr>
+
+
+<h3>
+Histórico de Chamados
+</h3>
+
+
+<div id="conteudoHistorico"></div>
+
+
+</div>
+
 
 </div>
 
@@ -163,6 +492,36 @@ const lista = document.getElementById("lista");
 
 let clientes = [];
 let clienteSelecionado = null;
+
+// ===================== USUÁRIO =====================
+
+async function carregarUsuario(){
+
+  const res = await fetch("/me", {
+    credentials:"include"
+  });
+
+
+  if(res.status === 401){
+
+    window.location.href="/";
+
+    return;
+
+  }
+
+
+  const data = await res.json();
+
+
+  document.getElementById("nomeUsuario").innerText =
+    data.user?.username || "Usuário";
+
+
+  document.getElementById("cargoUsuario").innerText =
+    data.user?.role || "Usuário";
+
+}
 
 /* ===================== LOAD ===================== */
 async function load(){
@@ -514,7 +873,11 @@ function novoChamado(){
   const ok = await verificarLogin();
 
   if(ok){
+
+    carregarUsuario();
+
     load();
+
   }
 
 })();

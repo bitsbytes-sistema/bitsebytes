@@ -10,6 +10,9 @@ const bcrypt = require("bcrypt");
 const Company = require("./models/Company");
 const User = require("./models/User");
 const Ticket = require("./models/Ticket");
+const Service = require("./models/Service");
+
+const serviceRoutes = require("./routes/services");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -567,12 +570,13 @@ app.put("/api/tickets/:id/laudo", auth, async (req, res) => {
       },
 
       {
-        diagnostico: req.body.diagnostico || "",
-        servico: req.body.servico || "",
-        conclusao: req.body.conclusao || "",
-        tecnico: req.body.tecnico || "",
-        updatedAt: new Date()
-      },
+  diagnostico: req.body.diagnostico || "",
+  servico: req.body.servico || "",
+  conclusao: req.body.conclusao || "",
+  tecnico: req.body.tecnico || "",
+  laudoGerado: true,
+  updatedAt: new Date()
+},
 
       {
         new: true
@@ -599,6 +603,64 @@ app.put("/api/tickets/:id/laudo", auth, async (req, res) => {
 
     res.status(500).json({
       error: true
+    });
+
+  }
+
+});
+
+/* ===================== LISTAR LAUDOS ===================== */
+app.get("/api/laudos", auth, async (req, res) => {
+
+  try {
+
+    const laudos = await Ticket.find({
+
+      companyId: req.session.user.companyId,
+      status: "finalizado",
+      laudoGerado: true
+
+    }).sort({
+      updatedAt: -1
+    });
+
+
+    res.json(laudos);
+
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
+/* ===================== SERVIÇOS ===================== */
+
+/* LISTAR */
+app.get("/api/services", auth, async (req, res) => {
+
+  try {
+
+    const services = await Service.find({
+      companyId: req.session.user.companyId
+    }).sort({
+      codigo: 1
+    });
+
+    res.json(services);
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error:true
     });
 
   }
@@ -746,6 +808,9 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
 app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/"));
 });
+
+/* ===================== SERVICES ===================== */
+app.use("/api/services", serviceRoutes);
 
 /* ===================== START ===================== */
 app.listen(PORT, "0.0.0.0", () => {

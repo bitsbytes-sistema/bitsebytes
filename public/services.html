@@ -14,9 +14,7 @@ body{
   background:#f2f2f2;
 }
 
-
 /* SIDEBAR */
-
 .sidebar{
   width:250px;
   background:#0f172a;
@@ -27,7 +25,6 @@ body{
   top:0;
 }
 
-
 .logo{
   padding:20px;
   display:flex;
@@ -36,7 +33,6 @@ body{
   border-bottom:1px solid rgba(255,255,255,.1);
 }
 
-
 .sidebar a{
   display:block;
   color:white;
@@ -44,11 +40,9 @@ body{
   padding:14px 20px;
 }
 
-
 .sidebar a:hover{
   background:#1e293b;
 }
-
 
 .usuario{
   position:absolute;
@@ -56,285 +50,152 @@ body{
   left:20px;
 }
 
-
 /* MAIN */
-
 .main{
   margin-left:250px;
   width:100%;
 }
 
-
 .topbar{
-
   height:70px;
   background:white;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
-
   padding:0 30px;
-
   box-shadow:0 2px 10px rgba(0,0,0,.08);
-
 }
-
-
-/* CONTAINER */
 
 .container{
-
   padding:20px;
-
 }
-
-
-/* CARD */
 
 .card{
-
   background:white;
-
   padding:20px;
-
   border-radius:10px;
-
   box-shadow:0 2px 8px rgba(0,0,0,.08);
-
 }
-
-
-/* BOTAO */
 
 button{
-
   border:0;
-
   padding:10px 15px;
-
   border-radius:6px;
-
   cursor:pointer;
-
 }
-
 
 .btn{
-
   background:#2563eb;
-
   color:white;
-
 }
-
 
 /* TABELA */
-
 table{
-
  width:100%;
-
  border-collapse:collapse;
-
  margin-top:20px;
-
 }
-
 
 th{
-
  background:#0f172a;
-
  color:white;
-
  padding:12px;
-
 }
-
 
 td{
-
  padding:12px;
-
  border-bottom:1px solid #eee;
-
 }
-
 
 .ativo{
-
  color:green;
-
  font-weight:bold;
-
 }
-
 
 .inativo{
-
  color:red;
-
  font-weight:bold;
-
 }
-
 
 /* MODAL */
-
 .modal{
-
  display:none;
-
  position:fixed;
-
  top:0;
  left:0;
-
  width:100%;
  height:100%;
-
  background:rgba(0,0,0,.5);
-
  justify-content:center;
  align-items:center;
-
 }
-
 
 .modal-box{
-
  background:white;
-
  width:500px;
-
  padding:20px;
-
  border-radius:10px;
-
 }
-
 
 input,textarea{
-
  width:100%;
-
  padding:10px;
-
  margin-bottom:10px;
-
  box-sizing:border-box;
-
 }
-
-
 
 </style>
 
 </head>
 
-
 <body>
 
-
-<!-- MENU -->
-
+<!-- SIDEBAR -->
 <div class="sidebar">
 
-
 <div class="logo">
-
 <img src="/logo.png" width="45">
-
 <div>
-
 <b>Bits & Bytes</b><br>
-
 <small>Tecnology</small>
-
 </div>
-
 </div>
-
 
 <a href="/dashboard.html">🏠 Dashboard</a>
-
 <a href="/clientes.html">👥 Clientes</a>
-
 <a href="/chamados.html">📋 Chamados</a>
-
 <a href="#">💰 Orçamentos</a>
-
 <a href="/services.html">🛠 Serviços</a>
-
 <a href="/laudos.html">📄 Laudos Técnicos</a>
-
 <a href="#">📦 Estoque</a>
-
 <a href="#">💵 Financeiro</a>
-
 <a href="#">📊 Relatórios</a>
-
 <a href="#">⚙️ Configurações</a>
 
-
 <div class="usuario">
-
-<b id="nomeUsuario">
-Carregando...
-</b>
-
-<br>
-
-<small id="cargoUsuario">
-Usuário
-</small>
-
+<b id="nomeUsuario">Carregando...</b><br>
+<small id="cargoUsuario">Usuário</small>
+</div>
 
 </div>
 
-
-</div>
-
-
-
-<!-- PRINCIPAL -->
-
-
+<!-- MAIN -->
 <div class="main">
 
-
 <div class="topbar">
-
-<div>
-🛠 Serviços
+<div>🛠 Serviços</div>
+<a href="javascript:void(0)" onclick="logout()">Sair</a>
 </div>
-
-
-<a href="javascript:void(0)" onclick="logout()">
-Sair
-</a>
-
-
-</div>
-
-
 
 <div class="container">
 
-
 <div class="card">
 
+<h3>🛠 Serviços cadastrados</h3>
 
-<h3>
-🛠 Serviços cadastrados
-</h3>
-
-
-<button class="btn" onclick="abrirModal()">
+<button class="btn" onclick="abrirModal(); limparCampos(); editandoId=null;">
 ➕ Novo Serviço
 </button>
-
 
 <input 
 id="busca"
@@ -342,394 +203,260 @@ placeholder="Buscar serviço..."
 onkeyup="filtrar()"
 >
 
-
-
 <table>
 
-
 <thead>
-
 <tr>
-
 <th>Código</th>
-
 <th>Nome</th>
-
 <th>Categoria</th>
-
 <th>Valor</th>
-
 <th>Tempo</th>
-
+<th>Garantia</th>
 <th>Status</th>
-
 <th>Ações</th>
-
 </tr>
-
 </thead>
 
-
-<tbody id="lista">
-
-</tbody>
-
+<tbody id="lista"></tbody>
 
 </table>
 
-
 </div>
 
-
 </div>
-
-
 </div>
-
-
-
 
 <!-- MODAL -->
-
-
 <div class="modal" id="modal">
-
 
 <div class="modal-box">
 
-
-<h2>
-Novo Serviço
-</h2>
-
+<h2>Serviço</h2>
 
 <input id="nome" placeholder="Nome">
-
 <input id="categoria" placeholder="Categoria">
-
-
-<textarea id="descricao" placeholder="Descrição"></textarea>
-
-
 <input id="valor" placeholder="Valor">
-
-
 <input id="tempo" placeholder="Tempo">
-
-
 <input id="garantia" placeholder="Garantia">
 
-
-
-<button class="btn" onclick="salvar()">
-
+<button class="btn" id="btnSalvar" onclick="salvarServico()">
 Salvar
-
 </button>
-
 
 <button onclick="fecharModal()">
-
 Cancelar
-
 </button>
 
-
 </div>
 
 </div>
-
-
-
-
 
 <script>
 
+let servicos = [];
+let editandoId = null;
 
-let servicos=[];
-
-
-
+/* ===================== CARREGAR ===================== */
 async function carregar(){
 
-
 const res = await fetch("/api/services",{
-
 credentials:"include"
-
 });
-
 
 servicos = await res.json();
 
-
 mostrar(servicos);
 
-
 }
 
-
-
+/* ===================== MOSTRAR ===================== */
 function mostrar(lista){
 
+const tabela = document.getElementById("lista");
 
-const tabela =
-document.getElementById("lista");
+tabela.innerHTML = "";
 
-
-tabela.innerHTML="";
-
-
-lista.forEach(s=>{
-
+lista.forEach(s => {
 
 tabela.innerHTML += `
-
-
 <tr>
-
-
+<td>${s.codigo || "-"}</td>
+<td>${s.nome}</td>
+<td>${s.categoria}</td>
+<td>R$ ${Number(s.valor).toFixed(2)}</td>
+<td>${s.tempo || "-"}</td>
+<td>${s.garantia || "-"}</td>
 <td>
-${s.codigo}
-</td>
-
-
-<td>
-${s.nome}
-</td>
-
-
-<td>
-${s.categoria}
-</td>
-
-
-<td>
-R$ ${Number(s.valor).toFixed(2)}
-</td>
-
-
-<td>
-${s.tempo}
-</td>
-
-
-<td>
-
 ${s.ativo
-
-?
-'<span class="ativo">Ativo</span>'
-
-:
-'<span class="inativo">Inativo</span>'
-
-}
-
+? '<span class="ativo">Ativo</span>'
+: '<span class="inativo">Inativo</span>'}
 </td>
-
 
 <td>
-
-<button onclick="editar('${s._id}')">
-✏️
-</button>
-
-
-<button onclick="excluir('${s._id}')">
-🗑️
-</button>
-
-
+<button onclick="editarServico('${s._id}')">✏️</button>
+<button onclick="excluir('${s._id}')">🗑️</button>
 </td>
-
-
 </tr>
-
-
 `;
-
 
 });
 
+}
+
+/* ===================== EDITAR ===================== */
+function editarServico(id){
+
+const servico = servicos.find(s => s._id === id);
+
+if(!servico) return;
+
+abrirModal();
+
+document.getElementById("nome").value = servico.nome;
+document.getElementById("categoria").value = servico.categoria;
+document.getElementById("valor").value = servico.valor;
+document.getElementById("tempo").value = servico.tempo || "";
+document.getElementById("garantia").value = servico.garantia || "";
+
+editandoId = id;
+
+document.getElementById("btnSalvar").innerText = "💾 Salvar Alteração";
 
 }
 
+/* ===================== SALVAR ===================== */
+async function salvarServico(){
 
+const nome = document.getElementById("nome").value;
+const categoria = document.getElementById("categoria").value;
+const valor = document.getElementById("valor").value;
+const tempo = document.getElementById("tempo").value;
+const garantia = document.getElementById("garantia").value;
 
-
-function abrirModal(){
-
-document.getElementById("modal").style.display="flex";
-
+if(!nome || !categoria || !valor){
+alert("Preencha os campos obrigatórios");
+return;
 }
 
+/* EDITAR */
+if(editandoId){
 
-function fecharModal(){
-
-document.getElementById("modal").style.display="none";
-
-}
-
-
-
-async function salvar(){
-
-
-const dados={
-
-
-nome:document.getElementById("nome").value,
-
-categoria:document.getElementById("categoria").value,
-
-descricao:document.getElementById("descricao").value,
-
-valor:Number(document.getElementById("valor").value),
-
-tempo:document.getElementById("tempo").value,
-
-garantia:document.getElementById("garantia").value
-
-
-};
-
-
-
-await fetch("/api/services",{
-
-
-method:"POST",
-
+await fetch("/api/services/" + editandoId,{
+method:"PUT",
 headers:{
 "Content-Type":"application/json"
 },
-
 credentials:"include",
-
-body:JSON.stringify(dados)
-
-
+body:JSON.stringify({
+nome,
+categoria,
+valor,
+tempo,
+garantia
+})
 });
 
+editandoId = null;
+document.getElementById("btnSalvar").innerText = "Salvar";
+
+}
+
+/* CRIAR */
+else{
+
+await fetch("/api/services",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+credentials:"include",
+body:JSON.stringify({
+nome,
+categoria,
+valor,
+tempo,
+garantia
+})
+});
+
+}
 
 fecharModal();
-
-
+limparCampos();
 carregar();
-
 
 }
 
+/* ===================== MODAL ===================== */
+function abrirModal(){
+document.getElementById("modal").style.display="flex";
+}
 
+function fecharModal(){
+document.getElementById("modal").style.display="none";
+}
 
+/* ===================== LIMPAR ===================== */
+function limparCampos(){
 
+document.getElementById("nome").value="";
+document.getElementById("categoria").value="";
+document.getElementById("valor").value="";
+document.getElementById("tempo").value="";
+document.getElementById("garantia").value="";
+
+}
+
+/* ===================== EXCLUIR ===================== */
 async function excluir(id){
 
-
-if(!confirm("Excluir serviço?"))
-return;
-
+if(!confirm("Excluir serviço?")) return;
 
 await fetch("/api/services/"+id,{
-
 method:"DELETE",
-
 credentials:"include"
-
 });
-
 
 carregar();
 
-
 }
 
-
-
-function editar(id){
-
-alert("Editar será ativado na próxima etapa");
-
-}
-
-
-
-
+/* ===================== FILTRO ===================== */
 function filtrar(){
 
+const termo = document.getElementById("busca").value.toLowerCase();
 
-const termo =
-document.getElementById("busca").value.toLowerCase();
-
-
-
-mostrar(
-
-servicos.filter(s=>
-
+mostrar(servicos.filter(s =>
 s.nome.toLowerCase().includes(termo)
-
-)
-
-);
-
+));
 
 }
 
-
-
+/* ===================== USUÁRIO ===================== */
 async function carregarUsuario(){
 
+const res = await fetch("/me",{credentials:"include"});
+const data = await res.json();
 
-const res =
-await fetch("/me",{
-
-credentials:"include"
-
-});
-
-
-const data =
-await res.json();
-
-
-
-nomeUsuario.innerText =
-data.user.username;
-
-
-cargoUsuario.innerText =
-data.user.role;
-
-
+document.getElementById("nomeUsuario").innerText = data.user.username;
+document.getElementById("cargoUsuario").innerText = data.user.role;
 
 }
 
-
-
+/* ===================== LOGOUT ===================== */
 async function logout(){
 
-await fetch("/logout",{
-
-credentials:"include"
-
-});
-
-
+await fetch("/logout",{credentials:"include"});
 location.href="/";
 
 }
 
-
-
+/* INIT */
 carregarUsuario();
-
 carregar();
 
-
 </script>
-
 
 </body>
 </html>

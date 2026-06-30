@@ -250,6 +250,42 @@ body{
 
 }
 
+/* BARRA DE FILTROS */
+
+.filtros{
+
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin:20px 0;
+  flex-wrap:wrap;
+
+}
+
+.filtros input{
+
+  flex:1;
+  min-width:280px;
+
+  padding:10px;
+
+  border:1px solid #cbd5e1;
+
+  border-radius:6px;
+
+}
+
+.filtros select{
+
+  padding:10px;
+
+  border:1px solid #cbd5e1;
+
+  border-radius:6px;
+
+  min-width:180px;
+
+}
 
 /* ================= INPUT ================= */
 
@@ -461,28 +497,37 @@ Sair
 Criar Chamado
 </button>
 
-<input
-  id="busca"
-  placeholder="🔍 Buscar cliente, telefone, equipamento ou OS..."
-  onkeyup="filtrarChamados()"
-  style="width:320px;padding:10px;margin:10px 5px 10px 0;border:1px solid #cbd5e1;border-radius:6px;"
->
+<div class="filtros">
 
-<select
-  id="filtroStatus"
-  onchange="filtrarChamados()"
-  style="padding:10px;border:1px solid #cbd5e1;border-radius:6px;"
->
-  <option value="">Todos</option>
-  <option value="aberto">🔴 Abertos</option>
-  <option value="andamento">🟡 Em andamento</option>
-  <option value="reparo">🟠 Em reparo</option>
-  <option value="finalizado">🟢 Finalizados</option>
-</select>
+  <input
+    id="busca"
+    placeholder="🔍 Buscar cliente, telefone, equipamento ou OS..."
+    onkeyup="filtrarChamados()"
+  >
+
+  <select
+    id="filtroStatus"
+    onchange="filtrarChamados()"
+  >
+    <option value="">📋 Todos</option>
+    <option value="aberto">🔴 Abertos</option>
+    <option value="andamento">🟡 Em andamento</option>
+    <option value="reparo">🟠 Em reparo</option>
+    <option value="finalizado">🟢 Finalizados</option>
+  </select>
+
+  <select
+    id="ordenacao"
+    onchange="filtrarChamados()"
+  >
+    <option value="novo">🆕 Mais recentes</option>
+    <option value="antigo">📅 Mais antigos</option>
+    <option value="os">🔢 Número da OS</option>
+    <option value="cliente">👤 Cliente (A-Z)</option>
+    <option value="status">📌 Status</option>
+  </select>
 
 </div>
-
-
 
 <h3>
 Resumo
@@ -692,9 +737,53 @@ function filtrarChamados(){
 
   });
 
+const ordenacao =
+  document.getElementById("ordenacao").value;
+
+switch(ordenacao){
+
+  case "novo":
+    filtrados.sort((a,b)=>
+      new Date(b.createdAt) - new Date(a.createdAt)
+    );
+    break;
+
+  case "antigo":
+    filtrados.sort((a,b)=>
+      new Date(a.createdAt) - new Date(b.createdAt)
+    );
+    break;
+
+  case "os":
+    filtrados.sort((a,b)=>
+      (a.numeroOS || 0) - (b.numeroOS || 0)
+    );
+    break;
+
+  case "cliente":
+    filtrados.sort((a,b)=>
+      (a.cliente || "").localeCompare(
+        b.cliente || "",
+        "pt-BR"
+      )
+    );
+    break;
+
+  case "status":
+    filtrados.sort((a,b)=>
+      (a.status || "").localeCompare(
+        b.status || "",
+        "pt-BR"
+      )
+    );
+    break;
+
+}
+
   renderChamados(filtrados);
 
 }
+
 /* ===================== LOAD ===================== */
 
 async function load(){

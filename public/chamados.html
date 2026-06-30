@@ -649,51 +649,52 @@ function renderChamados(listaChamados){
 
 function filtrarChamados(){
 
-  const texto =
-    document.getElementById("busca")
+  const texto = document
+    .getElementById("busca")
     .value
+    .trim()
     .toLowerCase();
 
-
-  const status =
-    document.getElementById("filtroStatus")
+  const status = document
+    .getElementById("filtroStatus")
     .value;
 
+  const somenteNumero = /^\d+$/.test(texto);
 
-  const filtrados =
-    chamados.filter(c => {
+  const filtrados = chamados.filter(c => {
 
+    let encontrouTexto = false;
 
-      const procura =
-        (
-          (c.cliente || "") +
-          (c.telefone || "") +
-          (c.equipamento || "") +
-          (c.cpfcnpj || "") +
-          (c._id || "")
-        )
-        .toLowerCase();
+    // Se digitou apenas números, procura primeiro pela OS
+    if(somenteNumero){
 
+      encontrouTexto =
+        String(c.numeroOS || "") === texto;
 
-      const encontrouTexto =
-        procura.includes(texto);
+    }else{
 
+      const procura = (
+        (c.cliente || "") + " " +
+        (c.telefone || "") + " " +
+        (c.equipamento || "") + " " +
+        (c.cpfcnpj || "") + " " +
+        (c.problema || "")
+      ).toLowerCase();
 
-      const encontrouStatus =
-        !status ||
-        c.status === status;
+      encontrouTexto = procura.includes(texto);
 
+    }
 
-      return encontrouTexto && encontrouStatus;
+    const encontrouStatus =
+      !status || c.status === status;
 
+    return encontrouTexto && encontrouStatus;
 
-    });
-
+  });
 
   renderChamados(filtrados);
 
 }
-
 /* ===================== LOAD ===================== */
 
 async function load(){

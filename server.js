@@ -378,7 +378,12 @@ app.get("/api/clientes/list", auth, async (req, res) => {
         clientesMap[chave] = {
           nome: String(t.cliente || "").trim(),
           telefone: String(t.telefone || "").trim(),
-          cpfcnpj: String(t.cpfcnpj || "").trim()
+          cpfcnpj: String(t.cpfcnpj || "").trim(),
+          endereco: String(t.endereco || "").trim(),
+          bairro: String(t.bairro || "").trim(),
+          cidade: String(t.cidade || "").trim(),
+          estado: String(t.estado || "").trim(),
+          cep: String(t.cep || "").trim()
         };
 
       }
@@ -418,6 +423,62 @@ app.get("/api/clientes/historico/:nome", auth, async (req, res) => {
 
     res.status(500).json({
       error: true
+    });
+
+  }
+
+});
+
+/* ===================== EDITAR CLIENTE ===================== */
+
+app.put("/api/clientes/editar", auth, async (req, res) => {
+
+  try {
+
+    const {
+      nomeAntigo,
+      nome,
+      telefone,
+      cpfcnpj,
+      endereco,
+      bairro,
+      cidade,
+      estado,
+      cep
+    } = req.body;
+
+    await Ticket.updateMany(
+
+      {
+        companyId: req.session.user.companyId,
+        cliente: nomeAntigo
+      },
+
+      {
+        $set: {
+          cliente: nome,
+          telefone,
+          cpfcnpj,
+          endereco,
+          bairro,
+          cidade,
+          estado,
+          cep
+        }
+      }
+
+    );
+
+    res.json({
+      ok: true
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      ok: false
     });
 
   }

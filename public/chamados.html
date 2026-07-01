@@ -171,6 +171,126 @@ body{
 
 }
 
+/* ================= TABELA CHAMADOS ================= */
+
+#tabelaChamados{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:15px;
+
+background:white;
+
+}
+
+#tabelaChamados th{
+
+background:#0f172a;
+
+color:white;
+
+padding:12px;
+
+text-align:left;
+
+}
+
+#tabelaChamados td{
+
+padding:12px;
+
+border-bottom:1px solid #eee;
+
+vertical-align:middle;
+
+}
+
+#tabelaChamados tr:hover{
+
+background:#f8fafc;
+
+}
+
+.status-aberto{
+
+color:red;
+
+font-weight:bold;
+
+}
+
+.status-andamento{
+
+color:#ca8a04;
+
+font-weight:bold;
+
+}
+
+.status-reparo{
+
+color:#ea580c;
+
+font-weight:bold;
+
+}
+
+.status-finalizado{
+
+color:green;
+
+font-weight:bold;
+
+}
+
+/* BADGES */
+
+.badge{
+
+display:inline-block;
+
+padding:6px 12px;
+
+border-radius:20px;
+
+font-size:12px;
+
+font-weight:bold;
+
+color:white;
+
+text-transform:uppercase;
+
+}
+
+.badge.status-aberto{
+
+background:#dc2626;
+
+}
+
+.badge.status-andamento{
+
+background:#eab308;
+
+color:#111827;
+
+}
+
+.badge.status-reparo{
+
+background:#f97316;
+
+}
+
+.badge.status-finalizado{
+
+background:#16a34a;
+
+}
+
 /* ================= STATS CHAMADOS ================= */
 
 .stats-grid{
@@ -539,11 +659,31 @@ Resumo
 
 
 <h3>
-Chamados
+📋 Chamados
 </h3>
 
+<table id="tabelaChamados">
 
-<div id="lista"></div>
+<thead>
+
+<tr>
+
+<th>OS</th>
+<th>Cliente</th>
+<th>Equipamento</th>
+<th>Status</th>
+<th>Data</th>
+<th>Ações</th>
+
+</tr>
+
+</thead>
+
+<tbody id="lista">
+
+</tbody>
+
+</table>
 
 <script>
 
@@ -629,62 +769,94 @@ function renderChamados(listaChamados){
             ? new Date(c.createdAt).toLocaleString("pt-BR", {
                 timeZone: "America/Cuiaba"
             })
-            : "Sem data";
+            : "-";
+
+        let classeStatus = "";
+
+        switch(c.status){
+
+            case "aberto":
+                classeStatus = "status-aberto";
+                break;
+
+            case "andamento":
+                classeStatus = "status-andamento";
+                break;
+
+            case "reparo":
+                classeStatus = "status-reparo";
+                break;
+
+            case "finalizado":
+                classeStatus = "status-finalizado";
+                break;
+
+        }
+
 
         lista.innerHTML += `
 
-        <div class="card">
+<tr>
 
-          <b>${c.cliente || ""}</b>
+<td>
+<b>OS ${c.numeroOS || "-"}</b>
+</td>
 
-          <br><br>
+<td>
+  <a href="javascript:void(0)"
+     onclick="abrirCliente('${c.cpfcnpj}')"
+     style="
+       color:#2563eb;
+       text-decoration:none;
+       font-weight:bold;
+     ">
+    ${c.cliente}
+  </a>
+</td>
 
-          📱 ${c.telefone || ""}<br>
-          📄 ${c.cpfcnpj || ""}<br>
-          💻 ${c.equipamento || ""}<br>
-          🛠 ${c.problema || ""}
+<td>
+${c.equipamento || ""}
+</td>
 
-          <br><br>
+<td>
 
-          📅 ${dataAbertura}
+<span class="badge ${classeStatus}">
+${String(c.status || "").toUpperCase()}
+</span>
 
-          <br><br>
+</td>
 
-          📌 <b style="
-            color:${
-              c.status === "aberto"
-              ? "red"
-              : c.status === "andamento"
-              ? "orange"
-              : c.status === "reparo"
-              ? "#d97706"
-              : "green"
-            }
-          ">
-            ${String(c.status).toUpperCase()}
-          </b>
+<td>
+${dataAbertura}
+</td>
 
-          <br><br>
+<td>
 
-          <button onclick="status('${c._id}')">
-            Status
-          </button>
+<button onclick="status('${c._id}')">
+Status
+</button>
 
-          ${
-            c.status === "finalizado"
-            ? `<button onclick="abrirLaudo('${c._id}')">
-                Laudo
-              </button>`
-            : ""
-          }
+${
+c.status === "finalizado"
+?
+`
+<button onclick="abrirLaudo('${c._id}')">
+Laudo
+</button>
+`
+:
+""
+}
 
-          <button onclick="del('${c._id}')">
-            Excluir
-          </button>
+<button onclick="del('${c._id}')">
+Excluir
+</button>
 
-        </div>
+</td>
 
-        `;
+</tr>
+
+`;
 
     });
 
@@ -1068,6 +1240,13 @@ async function del(id){
 
 }
 
+function abrirCliente(cpfcnpj){
+
+    window.location.href =
+        "/clientes.html?buscar=" +
+        encodeURIComponent(cpfcnpj);
+
+}
 
 
 /* ===================== LOGOUT ===================== */

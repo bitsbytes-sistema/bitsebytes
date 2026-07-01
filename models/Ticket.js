@@ -18,6 +18,31 @@ const ticketSchema = new mongoose.Schema({
     default: ""
   },
 
+  endereco: {
+    type: String,
+    default: ""
+  },
+
+bairro: {
+  type: String,
+  default: ""
+},
+
+  cidade: {
+    type: String,
+    default: ""
+  },
+
+  estado: {
+    type: String,
+    default: ""
+  },
+
+  cep: {
+    type: String,
+    default: ""
+  },
+
   equipamento: {
     type: String,
     default: ""

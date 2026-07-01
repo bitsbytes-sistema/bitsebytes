@@ -203,17 +203,17 @@ display:none;
 
 position:fixed;
 
-z-index:999;
+top:0;
 
 left:0;
-
-top:0;
 
 width:100%;
 
 height:100%;
 
-background:rgba(0,0,0,.5);
+background:rgba(0,0,0,.35);
+
+z-index:999;
 
 }
 
@@ -221,21 +221,27 @@ background:rgba(0,0,0,.5);
 
 .modal-content{
 
+position:absolute;
+
+right:0;
+
+top:0;
+
+width:500px;
+
+max-width:100%;
+
+height:100%;
+
 background:white;
 
-width:90%;
-
-max-width:700px;
-
-margin:50px auto;
-
-padding:20px;
-
-border-radius:10px;
-
-max-height:80vh;
+padding:25px;
 
 overflow:auto;
+
+box-shadow:-5px 0 20px rgba(0,0,0,.15);
+
+animation:abrirPainel .25s ease;
 
 }
 
@@ -267,6 +273,21 @@ border-left:5px solid #0f172a;
 
 }
 
+@keyframes abrirPainel{
+
+from{
+
+transform:translateX(100%);
+
+}
+
+to{
+
+transform:translateX(0);
+
+}
+
+}
 
 </style>
 
@@ -543,6 +564,31 @@ async function load(){
 
     render(clientes);
 
+// Se veio da tela de chamados
+const params = new URLSearchParams(window.location.search);
+
+const buscar = params.get("buscar");
+
+if(buscar){
+
+  document.getElementById("busca").value = buscar;
+
+  filtrar();
+
+  // abre automaticamente a ficha do cliente encontrado
+  const cliente = clientes.find(c =>
+    String(c.cpfcnpj || "") === buscar
+  );
+
+  if(cliente){
+
+    historico(cliente.nome);
+
+  }
+
+}
+
+
   } catch (err) {
 
     console.error(err);
@@ -666,22 +712,63 @@ const dados =
 
 dados.innerHTML = `
 
-  <div class="chamado">
+<div class="card">
 
-    <b>Cliente:</b>
-    ${clienteSelecionado?.nome || nome}
+<h3 style="margin-top:0;color:#0f172a;">
+👤 Dados do Cliente
+</h3>
 
-    <br>
+<table style="width:100%;border-collapse:collapse;">
 
-    <b>Telefone:</b>
-    ${clienteSelecionado?.telefone || "-"}
+<tr>
+<td style="padding:8px;"><b>👤 Nome</b></td>
+<td>${clienteSelecionado?.nome || nome}</td>
+</tr>
 
-    <br>
+<tr>
+<td style="padding:8px;"><b>📱 Telefone</b></td>
+<td>${clienteSelecionado?.telefone || "-"}</td>
+</tr>
 
-    <b>CPF/CNPJ:</b>
-    ${clienteSelecionado?.cpfcnpj || "-"}
+<tr>
+<td style="padding:8px;"><b>📄 CPF/CNPJ</b></td>
+<td>${clienteSelecionado?.cpfcnpj || "-"}</td>
+</tr>
 
-  </div>
+<tr>
+<td style="padding:8px;"><b>🏠 Endereço</b></td>
+<td>${clienteSelecionado?.endereco || "-"}</td>
+</tr>
+
+<tr>
+<td style="padding:8px;"><b>🏘️ Bairro</b></td>
+<td>${clienteSelecionado?.bairro || "-"}</td>
+</tr>
+
+<tr>
+<td style="padding:8px;"><b>🏙️ Cidade</b></td>
+<td>${clienteSelecionado?.cidade || "-"}</td>
+</tr>
+
+<tr>
+<td style="padding:8px;"><b>📍 Estado</b></td>
+<td>${clienteSelecionado?.estado || "-"}</td>
+</tr>
+
+<tr>
+<td style="padding:8px;"><b>📮 CEP</b></td>
+<td>${clienteSelecionado?.cep || "-"}</td>
+</tr>
+
+</table>
+
+<br>
+
+<button onclick="editarCliente()">
+✏️ Editar Cliente
+</button>
+
+</div>
 
 `;
 
@@ -718,39 +805,30 @@ const resumo = chamados.reduce((acc, c)=>{
 
 dados.innerHTML += `
 
-<div class="chamado">
+<div class="card">
 
-<b>Resumo do Cliente</b>
+<h3 style="margin-top:0;color:#0f172a;">
+📊 Resumo
+</h3>
 
-<br><br>
+<div style="line-height:30px;">
 
-📋 Total de chamados:
-${resumo.total}
+📋 <b>Total de OS:</b> ${resumo.total}<br>
 
-<br>
+🔴 <b>Abertos:</b> ${resumo.abertos}<br>
 
-🔴 Abertos:
-${resumo.abertos}
+🟡 <b>Em andamento:</b> ${resumo.andamento}<br>
 
-<br>
+🟠 <b>Em reparo:</b> ${resumo.reparo}<br>
 
-🟡 Em andamento:
-${resumo.andamento}
+🟢 <b>Finalizados:</b> ${resumo.finalizados}
 
-<br>
-
-🔵 Em reparo:
-${resumo.reparo}
+</div>
 
 <br>
-
-🟢 Finalizados:
-${resumo.finalizados}
-
-<br><br>
 
 <button onclick="novoChamado()">
-  ➕ Novo Chamado
+➕ Novo Chamado
 </button>
 
 </div>
@@ -857,6 +935,77 @@ function novoChamado(){
 
 }
 
+async function editarCliente(){
+
+  const nome = prompt("Nome:", clienteSelecionado.nome || "");
+  if(nome === null) return;
+
+  const telefone = prompt("Telefone:", clienteSelecionado.telefone || "");
+  if(telefone === null) return;
+
+  const cpfcnpj = prompt("CPF/CNPJ:", clienteSelecionado.cpfcnpj || "");
+  if(cpfcnpj === null) return;
+
+  const endereco = prompt("Endereço:", clienteSelecionado.endereco || "");
+  if(endereco === null) return;
+
+  const bairro = prompt("Bairro:", clienteSelecionado.bairro || "");
+  if(bairro === null) return;
+
+  const cidade = prompt("Cidade:", clienteSelecionado.cidade || "");
+  if(cidade === null) return;
+
+  const estado = prompt("Estado:", clienteSelecionado.estado || "");
+  if(estado === null) return;
+
+  const cep = prompt("CEP:", clienteSelecionado.cep || "");
+  if(cep === null) return;
+
+  const res = await fetch("/api/clientes/editar",{
+
+    method:"PUT",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    credentials:"include",
+
+    body:JSON.stringify({
+
+      nomeAntigo: clienteSelecionado.nome,
+
+      nome,
+      telefone,
+      cpfcnpj,
+      endereco,
+      bairro,
+      cidade,
+      estado,
+      cep
+
+    })
+
+  });
+
+  const data = await res.json();
+
+  if(data.ok){
+
+    alert("Cliente atualizado com sucesso!");
+
+    fecharModal();
+
+    load();
+
+  }else{
+
+    alert("Erro ao atualizar.");
+
+  }
+
+}
+
 /* ===================== LOGOUT ===================== */
 
 async function logout(){
@@ -883,6 +1032,16 @@ async function logout(){
   }
 
 })();
+
+document.getElementById("modalHistorico").onclick = function(e){
+
+  if(e.target === this){
+
+    fecharModal();
+
+  }
+
+};
 
 </script>
 

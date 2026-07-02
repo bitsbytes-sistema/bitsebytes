@@ -10,6 +10,7 @@ const bcrypt = require("bcrypt");
 const Company = require("./models/Company");
 const User = require("./models/User");
 const Ticket = require("./models/Ticket");
+const Cliente = require("./models/Cliente");
 const Service = require("./models/Service");
 
 const serviceRoutes = require("./routes/services");
@@ -47,8 +48,149 @@ app.use(express.static(path.join(__dirname, "public")));
 
 /* ===================== MONGO ===================== */
 mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log("Mongo conectado"))
+  .then(async () => {
+
+    console.log("Mongo conectado");
+
+    await migrarClientes();
+
+    await vincularClienteNosChamados();
+
+  })
   .catch(err => console.log("Erro Mongo:", err));
+
+/* ===================== MIGRAR CLIENTES ===================== */
+
+async function migrarClientes(){
+
+  try{
+
+    const tickets = await Ticket.find();
+
+    for (const t of tickets) {
+
+  if (!t.companyId) {
+    console.log("Ticket ignorado (sem companyId):", t.cliente);
+    continue;
+  }
+
+      const existe = await Cliente.findOne({
+
+        companyId: t.companyId,
+
+        cpfcnpj: t.cpfcnpj || "",
+
+        telefone: t.telefone || ""
+
+      });
+
+      if(existe){
+        continue;
+      }
+
+      const ultimo = await Cliente.findOne({
+
+        companyId: t.companyId
+
+      }).sort({
+
+        codigo: -1
+
+      });
+
+      const codigo = ultimo ? ultimo.codigo + 1 : 1;
+
+      await Cliente.create({
+
+        companyId: t.companyId,
+
+        codigo,
+
+        nome: t.cliente || "",
+
+        telefone: t.telefone || "",
+
+        cpfcnpj: t.cpfcnpj || "",
+
+        endereco: t.endereco || "",
+
+        bairro: t.bairro || "",
+
+        cidade: t.cidade || "",
+
+        estado: t.estado || "",
+
+        cep: t.cep || ""
+
+      });
+
+    }
+
+    console.log("Migração de clientes concluída.");
+
+  }catch(err){
+
+    console.log("Erro na migração:", err);
+
+  }
+
+}
+
+/* ===================== VINCULAR NOVOS CLIENTES ===================== */
+
+async function vincularClienteNosChamados(){
+
+  try{
+
+    const chamados = await Ticket.find();
+
+    let total = 0;
+
+    for(const chamado of chamados){
+
+      if(chamado.clienteId){
+        continue;
+      }
+
+      const cliente = await Cliente.findOne({
+
+        companyId: chamado.companyId,
+
+        $or: [
+
+          {
+            cpfcnpj: chamado.cpfcnpj
+          },
+
+          {
+            nome: chamado.cliente
+          }
+
+        ]
+
+      });
+
+      if(cliente){
+
+        chamado.clienteId = cliente._id;
+
+        await chamado.save();
+
+        total++;
+
+      }
+
+    }
+
+    console.log(`Chamados vinculados: ${total}`);
+
+  }catch(err){
+
+    console.log("Erro ao vincular clientes:", err);
+
+  }
+
+}
 
 /* ===================== AUTH ===================== */
 function auth(req, res, next){
@@ -353,6 +495,83 @@ app.put(
 
   }
 );
+/* ===================== CLIENTES (NOVA COLEÇÃO) ===================== */
+
+app.get("/api/clientes", auth, async (req, res) => {
+
+  try {
+
+    const clientes = await Cliente.find({
+      companyId: req.session.user.companyId
+    }).sort({
+      nome: 1
+    });
+
+    res.json(clientes);
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
+/* ===================== NOVO CLIENTE ===================== */
+
+app.post("/api/clientes", auth, async (req, res) => {
+
+  try {
+
+    const ultimo = await Cliente.findOne({
+      companyId: req.session.user.companyId
+    }).sort({
+      codigo: -1
+    });
+
+    const codigo = ultimo ? ultimo.codigo + 1 : 1;
+
+    const cliente = await Cliente.create({
+
+      companyId: req.session.user.companyId,
+
+      codigo,
+
+      nome: req.body.nome || "",
+
+      telefone: req.body.telefone || "",
+
+      cpfcnpj: req.body.cpfcnpj || "",
+
+      endereco: req.body.endereco || "",
+
+      bairro: req.body.bairro || "",
+
+      cidade: req.body.cidade || "",
+
+      estado: req.body.estado || "",
+
+      cep: req.body.cep || ""
+
+    });
+
+    res.json(cliente);
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
 
 /* ===================== CLIENTES ===================== */
 
@@ -406,23 +625,50 @@ app.get("/api/clientes/list", auth, async (req, res) => {
 
 /* ===================== HISTÓRICO CLIENTE ===================== */
 
-app.get("/api/clientes/historico/:nome", auth, async (req, res) => {
+app.get("/api/clientes/historico/:id", auth, async (req, res) => {
 
   try {
 
+    const cliente = await Cliente.findById(req.params.id);
+
+    if(!cliente){
+
+      return res.status(404).json({
+        error:"Cliente não encontrado"
+      });
+
+    }
+
+
     const chamados = await Ticket.find({
+
       companyId: req.session.user.companyId,
-      cliente: req.params.nome
-    }).sort({ createdAt: -1 });
+
+      $or:[
+        {
+          clienteId: cliente._id
+        },
+        {
+          cliente: cliente.nome
+        }
+      ]
+
+    }).sort({
+
+      createdAt:-1
+
+    });
+
 
     res.json(chamados);
+
 
   } catch(err){
 
     console.log(err);
 
     res.status(500).json({
-      error: true
+      error:true
     });
 
   }
@@ -447,6 +693,30 @@ app.put("/api/clientes/editar", auth, async (req, res) => {
       cep
     } = req.body;
 
+    // Atualiza o cadastro do cliente
+    await Cliente.updateOne(
+
+      {
+        companyId: req.session.user.companyId,
+        nome: nomeAntigo
+      },
+
+      {
+        $set: {
+          nome,
+          telefone,
+          cpfcnpj,
+          endereco,
+          bairro,
+          cidade,
+          estado,
+          cep
+        }
+      }
+
+    );
+
+    // Atualiza também todos os chamados antigos
     await Ticket.updateMany(
 
       {
@@ -487,11 +757,22 @@ app.put("/api/clientes/editar", auth, async (req, res) => {
 
 /* ===================== TICKETS ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
-  const tickets = await Ticket.find({
-    companyId: req.session.user.companyId
-  }).sort({ createdAt: -1 });
 
-  res.json(tickets);
+console.log("EMPRESA LOGIN:");
+console.log(req.session.user.companyId);
+
+
+const tickets = await Ticket.find({
+  companyId: req.session.user.companyId
+}).sort({ createdAt: -1 });
+
+
+console.log("TOTAL CHAMADOS:");
+console.log(tickets.length);
+
+
+res.json(tickets);
+
 });
 
 app.post("/api/tickets", auth, async (req, res) => {
@@ -513,7 +794,17 @@ app.post("/api/tickets", auth, async (req, res) => {
 
     numeroOS,
 
-    ...req.body,
+    clienteId: req.body.clienteId,
+
+    cliente: req.body.cliente,
+
+    telefone: req.body.telefone,
+
+    cpfcnpj: req.body.cpfcnpj,
+
+    equipamento: req.body.equipamento,
+
+    problema: req.body.problema,
 
     status: "aberto"
 
@@ -893,6 +1184,29 @@ app.get("/logout", (req, res) => {
 app.use("/api/services", serviceRoutes);
 
 /* ===================== START ===================== */
+
+async function listarClientes(){
+
+  const clientes = await Cliente.find();
+
+  console.log("\n===== CLIENTES CADASTRADOS =====");
+
+  clientes.forEach(c=>{
+
+    console.log(
+      c.nome,
+      "|",
+      c.cpfcnpj,
+      "|",
+      c.telefone
+    );
+
+  });
+
+}
+
+listarClientes();
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Rodando na porta " + PORT);
 });

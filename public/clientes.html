@@ -415,20 +415,28 @@ Sair
 
 <div class="card">
 
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:15px;
+">
 
-<h2>
+<h2 style="margin:0;">
 👥 Lista de Clientes
 </h2>
 
+<button onclick="abrirNovoCliente()">
+➕ Novo Cliente
+</button>
 
+</div>
 
 <input
 id="busca"
 placeholder="Buscar por nome, telefone ou CPF"
 onkeyup="filtrar()"
 >
-
-
 
 <div id="lista"></div>
 
@@ -478,6 +486,40 @@ Histórico de Chamados
 
 </div>
 
+
+</div>
+
+<div id="modalCliente" class="modal">
+
+<div class="modal-content">
+
+<span class="close" onclick="fecharNovoCliente()">
+&times;
+</span>
+
+<h2>👤 Novo Cliente</h2>
+
+<input id="novoNome" placeholder="Nome">
+
+<input id="novoTelefone" placeholder="Telefone">
+
+<input id="novoCpf" placeholder="CPF/CNPJ">
+
+<input id="novoEndereco" placeholder="Endereço">
+
+<input id="novoBairro" placeholder="Bairro">
+
+<input id="novoCidade" placeholder="Cidade">
+
+<input id="novoEstado" placeholder="Estado">
+
+<input id="novoCep" placeholder="CEP">
+
+<button onclick="salvarNovoCliente()">
+Salvar Cliente
+</button>
+
+</div>
 
 </div>
 
@@ -534,13 +576,83 @@ async function carregarUsuario(){
 
 }
 
+async function salvarNovoCliente(){
+
+  const cliente = {
+
+    nome: document.getElementById("novoNome").value.trim(),
+
+    telefone: document.getElementById("novoTelefone").value.trim(),
+
+    cpfcnpj: document.getElementById("novoCpf").value.trim(),
+
+    endereco: document.getElementById("novoEndereco").value.trim(),
+
+    bairro: document.getElementById("novoBairro").value.trim(),
+
+    cidade: document.getElementById("novoCidade").value.trim(),
+
+    estado: document.getElementById("novoEstado").value.trim(),
+
+    cep: document.getElementById("novoCep").value.trim()
+
+  };
+
+  if(!cliente.nome){
+
+    alert("Informe o nome do cliente.");
+
+    return;
+
+  }
+
+  try{
+
+    const res = await fetch("/api/clientes",{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      credentials:"include",
+
+      body: JSON.stringify(cliente)
+
+    });
+
+    if(!res.ok){
+
+      alert("Erro ao cadastrar cliente.");
+
+      return;
+
+    }
+
+    fecharNovoCliente();
+
+    await load();
+
+    alert("Cliente cadastrado com sucesso!");
+
+  }catch(err){
+
+    console.log(err);
+
+    alert("Erro ao cadastrar cliente.");
+
+  }
+
+}
+
 /* ===================== LOAD ===================== */
 async function load(){
 
   try {
 
     const res = await fetch(
-      "/api/clientes/list",
+      "/api/clientes",
       {
         credentials: "include"
       }
@@ -577,8 +689,8 @@ if(buscar){
 
   // abre automaticamente a ficha do cliente encontrado
   const cliente = clientes.find(c =>
-    String(c.cpfcnpj || "") === buscar
-  );
+    String(c._id) === buscar
+);
 
   if(cliente){
 
@@ -627,7 +739,7 @@ function render(listaClientes){
   lista.innerHTML += `
     <div
       class="card"
-      onclick='historico(${JSON.stringify(c.nome || "")})'
+      onclick='historico("${c._id}")'
       style="cursor:pointer;"
     >
 
@@ -681,17 +793,17 @@ function filtrar(){
 
 }
 
-async function historico(nome){
+async function historico(clienteId){
 
   clienteSelecionado = clientes.find(
-    c => c.nome === nome
-  );
+  c => c._id === clienteId
+);
 
   try {
 
     const res = await fetch(
       "/api/clientes/historico/" +
-      encodeURIComponent(nome),
+encodeURIComponent(clienteId),
       {
         credentials:"include"
       }
@@ -703,7 +815,7 @@ async function historico(nome){
 
     document.getElementById("tituloHistorico")
   .innerHTML =
-  "Ficha do Cliente - " + nome;
+  "Ficha do Cliente - " + (clienteSelecionado?.nome || "");
 
 
 const dados =
@@ -722,7 +834,7 @@ dados.innerHTML = `
 
 <tr>
 <td style="padding:8px;"><b>👤 Nome</b></td>
-<td>${clienteSelecionado?.nome || nome}</td>
+<td>${clienteSelecionado?.nome || "-"}</td>
 </tr>
 
 <tr>
@@ -926,8 +1038,10 @@ function fecharModal(){
 function novoChamado(){
 
   window.location.href =
-    "/chamados.html?cliente=" +
-    encodeURIComponent(clienteSelecionado.nome) +
+    "/chamados.html?clienteId=" +
+    encodeURIComponent(clienteSelecionado._id) +
+    "&cliente=" +
+    encodeURIComponent(clienteSelecionado.nome || "") +
     "&telefone=" +
     encodeURIComponent(clienteSelecionado.telefone || "") +
     "&cpfcnpj=" +
@@ -1006,6 +1120,18 @@ async function editarCliente(){
 
 }
 
+function abrirNovoCliente(){
+
+  document.getElementById("modalCliente").style.display = "block";
+
+}
+
+function fecharNovoCliente(){
+
+  document.getElementById("modalCliente").style.display = "none";
+
+}
+
 /* ===================== LOGOUT ===================== */
 
 async function logout(){
@@ -1017,6 +1143,8 @@ async function logout(){
   window.location.href="/";
 
 }
+
+
 
 /* ===================== INIT ===================== */
 (async()=>{
@@ -1042,6 +1170,17 @@ document.getElementById("modalHistorico").onclick = function(e){
   }
 
 };
+
+document.getElementById("modalCliente").onclick = function(e){
+
+  if(e.target === this){
+
+    fecharNovoCliente();
+
+  }
+
+};
+
 
 </script>
 

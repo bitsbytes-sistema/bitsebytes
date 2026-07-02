@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const ticketSchema = new mongoose.Schema({
 
+clienteId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Cliente",
+  default: null
+},
+
   cliente: {
     type: String,
     required: true,

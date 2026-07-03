@@ -10,8 +10,10 @@ const BudgetSchema = new mongoose.Schema({
 
   numero: Number,
 
-  clienteId: String,
-  cliente: String,
+clienteId: String,
+cliente: String,
+telefone: String,
+observacoes: String,
 
   itens: [
     {

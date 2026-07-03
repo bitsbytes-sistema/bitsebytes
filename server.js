@@ -799,16 +799,23 @@ app.post("/api/budgets", auth, async (req, res) => {
         ? ultimo.numero + 1
         : 1;
 
-    const budget = await Budget.create({
+   const cliente = await Cliente.findById(req.body.clienteId);
+
+const budget = await Budget.create({
 
   companyId: req.session.user.companyId,
 
   numero,
 
   clienteId: req.body.clienteId || null,
+
   cliente: req.body.cliente || "",
 
-  itens: req.body.itens || [],   // 👈 AQUI
+  telefone: cliente?.telefone || "",
+
+  observacoes: req.body.observacoes || "",
+
+  itens: req.body.itens || [],
 
   total: req.body.total || 0,
 

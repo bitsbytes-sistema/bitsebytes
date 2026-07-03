@@ -414,16 +414,22 @@ async function salvarOrcamento(){
         return;
     }
 
-    let total=0;
-    itens.forEach(i=>total+=i.total);
+    const cliente = clientes.find(c => c._id === clienteId);
+
+    let total = 0;
+    itens.forEach(i => total += i.total);
 
     const res = await fetch("/api/budgets",{
         method:"POST",
-        headers:{"Content-Type":"application/json"},
+        headers:{
+            "Content-Type":"application/json"
+        },
         credentials:"include",
-        body:JSON.stringify({
+        body: JSON.stringify({
             clienteId,
-            cliente:clientes.find(c=>c._id===clienteId)?.nome||"",
+            cliente: cliente?.nome || "",
+            telefone: cliente?.telefone || "",
+            observacoes: document.getElementById("observacoes").value,
             itens,
             total
         })

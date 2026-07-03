@@ -92,8 +92,7 @@ button{
             <img src="/logo.png" width="90">
             <div>
                 <h3>Bits & Bytes Técnology®</h3>
-            <h6>Sistemas e Assistencia Técnica</h6>               
-                  
+                <h6>Sistemas e Assistencia Técnica</h6>
             </div>
         </div>
 
@@ -102,9 +101,23 @@ button{
         </div>
 
     </div>
-	<h1>Orçamento</h1>
+
+    <h1>Orçamento</h1>
+
     <p><b>Cliente:</b> <span id="cliente"></span></p>
     <p><b>Status:</b> <span id="status"></span></p>
+
+    <p><b>Observações:</b></p>
+
+    <div id="observacoes"
+        style="
+        padding:12px;
+        background:#f8f8f8;
+        border:1px solid #ddd;
+        border-radius:6px;
+        margin-bottom:20px;
+        white-space:pre-wrap;">
+    </div>
 
     <table>
         <thead>
@@ -126,12 +139,54 @@ button{
     <div class="botoes">
 
         <button class="back" onclick="history.back()">Voltar</button>
+
         <button class="print" onclick="window.print()">Imprimir</button>
-        <button class="whats" onclick="enviarWhats()">WhatsApp</button>
+
+        <button onclick="gerarPDF()">📄 PDF</button>
+
+        <button onclick="gerarImagem()">🖼 Imagem</button>
+
+        <div style="position:relative;display:inline-block;">
+
+            <button class="whats" onclick="toggleMenu()">
+                💬 WhatsApp ▼
+            </button>
+
+            <div id="menuWhats"
+                style="
+                    display:none;
+                    position:absolute;
+                    right:0;
+                    margin-top:5px;
+                    background:white;
+                    border:1px solid #ddd;
+                    border-radius:8px;
+                    box-shadow:0 3px 10px rgba(0,0,0,.2);
+                    overflow:hidden;
+                    z-index:999;
+                    min-width:180px;
+                ">
+
+                <button style="width:100%;background:white;color:#333;text-align:left;padding:12px;border:none;"
+                    onclick="enviarWhatsPDF()">
+                    📄 Enviar PDF
+                </button>
+
+                <button style="width:100%;background:white;color:#333;text-align:left;padding:12px;border:none;"
+                    onclick="enviarWhatsImagem()">
+                    🖼 Enviar Imagem
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 
@@ -139,6 +194,7 @@ const id = new URLSearchParams(window.location.search).get("id");
 
 let budget = null;
 
+/* ================= CARREGAR ================= */
 async function carregar(){
 
     const res = await fetch("/api/budgets/" + id, {
@@ -157,6 +213,7 @@ async function carregar(){
     document.getElementById("numero").innerText = budget.numero;
     document.getElementById("cliente").innerText = budget.cliente;
     document.getElementById("status").innerText = budget.status;
+    document.getElementById("observacoes").innerText = budget.observacoes || "-";
 
     document.getElementById("total").innerText =
         Number(budget.total || 0).toLocaleString("pt-BR", {
@@ -177,24 +234,83 @@ async function carregar(){
                 <td>${Number(i.total || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
             </tr>
         `;
-
     });
-
 }
 
-function enviarWhats(){
+/* ================= IMAGEM ================= */
+async function gerarImagem(){
 
-    if(!budget){
-        alert("Carregando orçamento...");
-        return;
-    }
+    const botoes = document.querySelector(".botoes");
+    botoes.style.display="none";
+
+    const canvas = await html2canvas(document.querySelector(".container"),{
+        scale:2,
+        useCORS:true
+    });
+
+    botoes.style.display="flex";
+
+    const link = document.createElement("a");
+    link.download = `Orcamento-${budget.numero}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+}
+
+/* ================= PDF ================= */
+async function gerarPDF(){
+
+    const botoes = document.querySelector(".botoes");
+    botoes.style.display="none";
+
+    const canvas = await html2canvas(document.querySelector(".container"),{
+        scale:2,
+        useCORS:true
+    });
+
+    botoes.style.display="flex";
+
+    const img = canvas.toDataURL("image/png");
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf = new jsPDF({
+        orientation:"portrait",
+        unit:"mm",
+        format:"a4"
+    });
+
+    const largura = 190;
+    const altura = canvas.height * largura / canvas.width;
+
+    pdf.addImage(img,"PNG",10,10,largura,altura);
+
+    pdf.save(`Orcamento-${budget.numero}.pdf`);
+}
+
+/* ================= MENU ================= */
+function toggleMenu(){
+
+    const menu = document.getElementById("menuWhats");
+
+    if(!menu) return;
+
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+}
+
+/* ================= WHATS ================= */
+function mensagemWhats(){
+
+    let msg = `Olá ${budget.cliente}!\n\n`;
+    msg += `Segue o orçamento Nº ${budget.numero} da Bits & Bytes Técnology.\n\n`;
+    msg += `Qualquer dúvida estamos à disposição.\n\n`;
+    msg += `Obrigado pela preferência.`;
+
+    return encodeURIComponent(msg);
+}
+
+function numeroCliente(){
 
     let numero = budget.telefone || "";
-
-    if(!numero){
-        alert("Cliente sem telefone");
-        return;
-    }
 
     numero = numero.replace(/\D/g,"");
 
@@ -202,21 +318,58 @@ function enviarWhats(){
         numero = numero.substring(2);
     }
 
-    let msg = `Orçamento Nº ${budget.numero}\n\n`;
-    msg += `Cliente: ${budget.cliente}\n`;
-    msg += `Status: ${budget.status}\n\n`;
+    if(numero.length < 10){
+        alert("Cliente sem telefone.");
+        return null;
+    }
 
-    (budget.itens || []).forEach(i => {
-        msg += `- ${i.descricao} | Qtd ${i.quantidade} | R$ ${i.total}\n`;
-    });
-
-    msg += `\nTotal: R$ ${budget.total}`;
-
-    const url = `https://wa.me/55${numero}?text=${encodeURIComponent(msg)}`;
-
-    window.open(url,"_blank");
+    return numero;
 }
 
+async function enviarWhatsPDF(){
+
+    document.getElementById("menuWhats").style.display="none";
+
+    await gerarPDF();
+
+    const numero = numeroCliente();
+    if(!numero) return;
+
+    window.open(
+        `https://wa.me/55${numero}?text=${mensagemWhats()}`,
+        "_blank"
+    );
+}
+
+async function enviarWhatsImagem(){
+
+    document.getElementById("menuWhats").style.display="none";
+
+    await gerarImagem();
+
+    const numero = numeroCliente();
+    if(!numero) return;
+
+    window.open(
+        `https://wa.me/55${numero}?text=${mensagemWhats()}`,
+        "_blank"
+    );
+}
+
+/* ================= FECHAR MENU FORA ================= */
+window.onclick = function(e){
+
+    const menu = document.getElementById("menuWhats");
+    const btn = document.querySelector(".whats");
+
+    if(!menu || !btn) return;
+
+    if(!menu.contains(e.target) && !btn.contains(e.target)){
+        menu.style.display = "none";
+    }
+}
+
+/* ================= START ================= */
 carregar();
 
 </script>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Bits & Bytes - Novo Orçamento</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f2f2f2;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+
+width:250px;
+
+background:#0f172a;
+
+min-height:100vh;
+
+color:white;
+
+position:fixed;
+
+left:0;
+
+top:0;
+
+}
+
+
+.logo{
+
+padding:20px;
+
+display:flex;
+
+gap:10px;
+
+align-items:center;
+
+border-bottom:1px solid rgba(255,255,255,.1);
+
+}
+
+
+.sidebar a{
+
+display:block;
+
+color:white;
+
+text-decoration:none;
+
+padding:14px 20px;
+
+}
+
+
+.sidebar a:hover{
+
+background:#1e293b;
+
+}
+
+
+
+.usuario{
+
+position:absolute;
+
+bottom:20px;
+
+left:20px;
+
+}
+
+/* ================= MAIN ================= */
+.main{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    min-height:100vh;
+}
+
+/* ================= TOPBAR ================= */
+.topbar{
+    background:white;
+    height:70px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 30px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+/* ================= CONTAINER ================= */
+.container{
+    padding:20px;
+}
+
+/* ================= CARD ================= */
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+/* ================= FORM ================= */
+input,
+select,
+textarea{
+    width:100%;
+    padding:10px;
+    margin-top:6px;
+    margin-bottom:15px;
+    border:1px solid #cbd5e1;
+    border-radius:6px;
+}
+
+button{
+    padding:10px 18px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- SIDEBAR COMPLETA -->
+<div class="sidebar">
+
+<div class="logo">
+
+<img src="/logo.png" width="45">
+
+<div>
+<b>Bits & Bytes</b><br>
+<small>Tecnology</small>
+
+</div>
+
+</div>
+
+<a href="/dashboard.html">🏠 Dashboard</a>
+<a href="/clientes.html">👥 Clientes</a>
+<a href="/chamados.html">📋 Chamados</a>
+<a href="/orcamentos.html">💰 Orçamentos</a>
+<a href="/services.html">🛠 Serviços</a>
+<a href="/laudos.html">📄 Laudos Técnicos</a>
+<a href="/estoque.html">📦 Estoque</a>
+<a href="/financeiro.html">💵 Financeiro</a>
+<a href="/relatorios.html">📊 Relatórios</a>
+<a href="/configuracoes.html">⚙️ Configurações</a>
+
+<div class="usuario">
+
+<b id="nomeUsuario">Carregando...</b>
+<br>
+<small id="cargoUsuario"></small>
+
+</div>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- TOPBAR -->
+<div class="topbar">
+
+<div>💰 Novo Orçamento</div>
+
+<button onclick="location.href='/orcamentos.html'">
+Voltar
+</button>
+
+</div>
+
+<!-- CONTAINER -->
+<div class="container">
+
+<div class="card">
+
+<h3>Dados do Cliente</h3>
+
+<label>Cliente</label>
+<select id="cliente"></select>
+
+<label>Observações</label>
+<textarea id="observacoes" rows="5"></textarea>
+
+</div>
+
+<div class="card">
+
+<h3>Itens do Orçamento</h3>
+
+<label>Serviço</label>
+<select id="servico"></select>
+
+<label>Quantidade</label>
+<input type="number" id="quantidade" value="1" min="1">
+
+<button onclick="adicionarItem()" style="margin-bottom:15px;">
+➕ Adicionar Item
+</button>
+
+<table width="100%" style="margin-top:10px;">
+<thead>
+<tr>
+<th>Descrição</th>
+<th>Qtd</th>
+<th>Valor</th>
+<th>Total</th>
+<th>Ação</th>
+</tr>
+</thead>
+
+<tbody id="listaItens">
+<tr>
+<td colspan="5" style="text-align:center;color:#777;">
+Nenhum item adicionado
+</td>
+</tr>
+</tbody>
+
+</table>
+
+</div>
+
+<div class="card">
+
+<div class="grid">
+
+<div>
+<h3>Total</h3>
+<h2 id="total">R$ 0,00</h2>
+</div>
+
+<div style="display:flex;align-items:end;justify-content:end;">
+<button onclick="salvarOrcamento()">
+Salvar Orçamento
+</button>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* ===== DADOS ===== */
+let clientes = [];
+let servicos = [];
+let itens = [];
+
+const clienteSelect = document.getElementById("cliente");
+const servicoSelect = document.getElementById("servico");
+const listaItens = document.getElementById("listaItens");
+const totalEl = document.getElementById("total");
+
+/* ===== USUÁRIO ===== */
+async function carregarUsuario(){
+
+    const res = await fetch("/me",{credentials:"include"});
+
+    if(res.status==401){
+        location.href="/";
+        return;
+    }
+
+    const data=await res.json();
+
+    document.getElementById("nomeUsuario").innerText = data.user.username;
+    document.getElementById("cargoUsuario").innerText = data.user.role;
+}
+
+/* ===== CLIENTES ===== */
+async function loadClientes(){
+
+    const res = await fetch("/api/clientes",{credentials:"include"});
+    clientes = await res.json();
+
+    clienteSelect.innerHTML = `<option value="">Selecione um cliente</option>`;
+
+    clientes.forEach(c=>{
+        clienteSelect.innerHTML += `
+            <option value="${c._id}">
+                ${c.nome}
+            </option>
+        `;
+    });
+
+}
+
+/* ===== SERVIÇOS ===== */
+async function loadServicos(){
+
+    const res = await fetch("/api/services",{credentials:"include"});
+    servicos = await res.json();
+
+    servicoSelect.innerHTML = `<option value="">Selecione um serviço</option>`;
+
+    servicos.forEach(s=>{
+        servicoSelect.innerHTML += `
+            <option value="${s._id}">
+                ${s.nome || s.descricao}
+            </option>
+        `;
+    });
+
+}
+
+/* ===== ITENS ===== */
+function adicionarItem(){
+
+    const id = servicoSelect.value;
+    const qtd = parseInt(document.getElementById("quantidade").value);
+
+    const servico = servicos.find(s=>s._id===id);
+    if(!servico || !qtd) return;
+
+    itens.push({
+        id:servico._id,
+        descricao:servico.nome || servico.descricao,
+        quantidade:qtd,
+        valor:servico.valor||0,
+        total:(servico.valor||0)*qtd
+    });
+
+    renderItens();
+}
+
+function renderItens(){
+
+    listaItens.innerHTML="";
+
+    if(itens.length===0){
+        listaItens.innerHTML=`
+        <tr>
+        <td colspan="5" style="text-align:center;color:#777;">
+        Nenhum item adicionado
+        </td>
+        </tr>`;
+        atualizarTotal();
+        return;
+    }
+
+    itens.forEach((i,index)=>{
+        listaItens.innerHTML += `
+        <tr>
+        <td>${i.descricao}</td>
+        <td>${i.quantidade}</td>
+        <td>R$ ${i.valor.toFixed(2)}</td>
+        <td>R$ ${i.total.toFixed(2)}</td>
+        <td><button onclick="removerItem(${index})">❌</button></td>
+        </tr>`;
+    });
+
+    atualizarTotal();
+}
+
+function atualizarTotal(){
+    let total=0;
+    itens.forEach(i=>total+=i.total);
+    totalEl.innerText=`R$ ${total.toFixed(2)}`;
+}
+
+function removerItem(index){
+    itens.splice(index,1);
+    renderItens();
+}
+
+/* ===== SALVAR ===== */
+async function salvarOrcamento(){
+
+    const clienteId = clienteSelect.value;
+
+    if(!clienteId || itens.length===0){
+        alert("Preencha tudo");
+        return;
+    }
+
+    let total=0;
+    itens.forEach(i=>total+=i.total);
+
+    const res = await fetch("/api/budgets",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        credentials:"include",
+        body:JSON.stringify({
+            clienteId,
+            cliente:clientes.find(c=>c._id===clienteId)?.nome||"",
+            itens,
+            total
+        })
+    });
+
+    if(res.ok){
+        alert("Salvo!");
+        location.href="/orcamentos.html";
+    }else{
+        alert("Erro");
+    }
+}
+
+/* ===== INIT ===== */
+window.onload=()=>{
+    carregarUsuario();
+    loadClientes();
+    loadServicos();
+};
+
+</script>
+
+</body>
+</html>

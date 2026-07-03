@@ -51,13 +51,13 @@ const serviceSchema = new mongoose.Schema({
     index: true
   }
 
-},{
-  timestamps:true
+}, {
+  timestamps: true
 });
 
 serviceSchema.index({
-  companyId:1,
-  nome:1
+  companyId: 1,
+  nome: 1
 });
 
 module.exports = mongoose.model("Service", serviceSchema);

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Orçamento</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f2f2f2;
+}
+
+.container{
+    max-width:900px;
+    margin:20px auto;
+    background:white;
+    padding:30px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #ddd;
+    padding-bottom:20px;
+}
+
+.logo{
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th, td{
+    border:1px solid #ddd;
+    padding:10px;
+}
+
+th{
+    background:#f3f3f3;
+}
+
+.total{
+    text-align:right;
+    font-size:20px;
+    margin-top:20px;
+    font-weight:bold;
+}
+
+.botoes{
+    margin-top:30px;
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+}
+
+button{
+    padding:10px 15px;
+    border:none;
+    cursor:pointer;
+    border-radius:6px;
+}
+
+.print{ background:#2563eb; color:white; }
+.back{ background:#ccc; }
+.whats{ background:#25D366; color:white; }
+
+@media print {
+    .botoes{ display:none; }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <div class="logo">
+            <img src="/logo.png" width="90">
+            <div>
+                <h3>Bits & Bytes Técnology®</h3>
+            <h6>Sistemas e Assistencia Técnica</h6>               
+                  
+            </div>
+        </div>
+
+        <div>
+            <b>Nº:</b> <span id="numero"></span>
+        </div>
+
+    </div>
+	<h1>Orçamento</h1>
+    <p><b>Cliente:</b> <span id="cliente"></span></p>
+    <p><b>Status:</b> <span id="status"></span></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th>Qtd</th>
+                <th>Valor</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+
+        <tbody id="itens"></tbody>
+    </table>
+
+    <div class="total">
+        Total: <span id="total"></span>
+    </div>
+
+    <div class="botoes">
+
+        <button class="back" onclick="history.back()">Voltar</button>
+        <button class="print" onclick="window.print()">Imprimir</button>
+        <button class="whats" onclick="enviarWhats()">WhatsApp</button>
+
+    </div>
+
+</div>
+
+<script>
+
+const id = new URLSearchParams(window.location.search).get("id");
+
+let budget = null;
+
+async function carregar(){
+
+    const res = await fetch("/api/budgets/" + id, {
+        credentials:"include"
+    });
+
+    const data = await res.json();
+
+    budget = data;
+
+    if(!budget){
+        alert("Orçamento não encontrado");
+        return;
+    }
+
+    document.getElementById("numero").innerText = budget.numero;
+    document.getElementById("cliente").innerText = budget.cliente;
+    document.getElementById("status").innerText = budget.status;
+
+    document.getElementById("total").innerText =
+        Number(budget.total || 0).toLocaleString("pt-BR", {
+            style:"currency",
+            currency:"BRL"
+        });
+
+    const tbody = document.getElementById("itens");
+    tbody.innerHTML = "";
+
+    (budget.itens || []).forEach(i => {
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${i.descricao}</td>
+                <td>${i.quantidade}</td>
+                <td>${Number(i.valor || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
+                <td>${Number(i.total || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
+            </tr>
+        `;
+
+    });
+
+}
+
+function enviarWhats(){
+
+    if(!budget){
+        alert("Carregando orçamento...");
+        return;
+    }
+
+    let numero = budget.telefone || "";
+
+    if(!numero){
+        alert("Cliente sem telefone");
+        return;
+    }
+
+    numero = numero.replace(/\D/g,"");
+
+    if(numero.startsWith("55")){
+        numero = numero.substring(2);
+    }
+
+    let msg = `Orçamento Nº ${budget.numero}\n\n`;
+    msg += `Cliente: ${budget.cliente}\n`;
+    msg += `Status: ${budget.status}\n\n`;
+
+    (budget.itens || []).forEach(i => {
+        msg += `- ${i.descricao} | Qtd ${i.quantidade} | R$ ${i.total}\n`;
+    });
+
+    msg += `\nTotal: R$ ${budget.total}`;
+
+    const url = `https://wa.me/55${numero}?text=${encodeURIComponent(msg)}`;
+
+    window.open(url,"_blank");
+}
+
+carregar();
+
+</script>
+
+</body>
+</html>

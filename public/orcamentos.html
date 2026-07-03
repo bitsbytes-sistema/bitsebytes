@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+<title>Bits & Bytes - Orçamentos</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f2f2f2;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+
+width:250px;
+
+background:#0f172a;
+
+min-height:100vh;
+
+color:white;
+
+position:fixed;
+
+left:0;
+
+top:0;
+
+}
+
+
+.logo{
+
+padding:20px;
+
+display:flex;
+
+gap:10px;
+
+align-items:center;
+
+border-bottom:1px solid rgba(255,255,255,.1);
+
+}
+
+
+.sidebar a{
+
+display:block;
+
+color:white;
+
+text-decoration:none;
+
+padding:14px 20px;
+
+}
+
+
+.sidebar a:hover{
+
+background:#1e293b;
+
+}
+
+
+
+.usuario{
+
+position:absolute;
+
+bottom:20px;
+
+left:20px;
+
+}
+/* ================= MAIN ================= */
+.main{
+
+  margin-left:250px;
+  width:calc(100% - 250px);
+  min-height:100vh;
+
+}
+
+/* ================= TOPBAR ================= */
+.topbar{
+
+  height:70px;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 30px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+}
+
+.topbar a{
+
+  color:#dc2626;
+  text-decoration:none;
+  font-weight:bold;
+
+}
+
+/* ================= CONTAINER ================= */
+.container{
+  padding:20px;
+}
+
+/* ================= CARD ================= */
+.card{
+
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+}
+
+/* ================= TABLE ================= */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+}
+
+th{
+  background:#0f172a;
+  color:white;
+  padding:10px;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #eee;
+}
+
+/* ================= BUTTON ================= */
+button{
+  padding:8px 12px;
+  border:none;
+  border-radius:6px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+}
+
+button:hover{
+  opacity:.9;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- SIDEBAR COMPLETA -->
+<div class="sidebar">
+
+<div class="logo">
+
+<img src="/logo.png" width="45">
+
+<div>
+<b>Bits & Bytes</b><br>
+<small>Tecnology</small>
+
+</div>
+
+</div>
+
+<a href="/dashboard.html">🏠 Dashboard</a>
+<a href="/clientes.html">👥 Clientes</a>
+<a href="/chamados.html">📋 Chamados</a>
+<a href="/orcamentos.html">💰 Orçamentos</a>
+<a href="/services.html">🛠 Serviços</a>
+<a href="/laudos.html">📄 Laudos Técnicos</a>
+<a href="#">📦 Estoque</a>
+<a href="#">💵 Financeiro</a>
+<a href="#">📊 Relatórios</a>
+<a href="#">⚙️ Configurações</a>
+
+<div class="usuario">
+
+<b id="nomeUsuario">Carregando...</b>
+
+<br>
+
+<small id="cargoUsuario">Usuário</small>
+
+</div>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+
+    <div>💰 Orçamentos</div>
+
+    <a href="javascript:void(0)" onclick="logout()">Sair</a>
+
+  </div>
+
+  <!-- CONTAINER -->
+  <div class="container">
+
+    <h2>📋 Orçamentos</h2>
+
+    <button onclick="novoOrcamento()">➕ Novo Orçamento</button>
+
+    <br><br>
+
+    <div class="card">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Nº</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody id="lista"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+let orcamentos = [];
+
+async function carregarUsuario(){
+
+    const res = await fetch("/me", {
+        credentials: "include"
+    });
+
+    if(res.status === 401){
+        window.location.href = "/";
+        return;
+    }
+
+    const data = await res.json();
+
+    document.getElementById("nomeUsuario").innerText =
+        data.user.username;
+
+    document.getElementById("cargoUsuario").innerText =
+        data.user.role;
+}
+
+async function load(){
+
+  const res = await fetch("/api/budgets", {
+    credentials:"include"
+  });
+
+  orcamentos = await res.json();
+
+  render();
+
+}
+
+function render(){
+
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  if(!orcamentos.length){
+
+    lista.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center;">
+          Nenhum orçamento encontrado
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+  orcamentos.forEach(o => {
+
+    lista.innerHTML += `
+      <tr>
+        <td>${o.numero}</td>
+        <td>${o.cliente}</td>
+        <td>R$ ${(o.total || 0).toFixed(2)}</td>
+        <td>${o.status}</td>
+        <td>
+          <button onclick="abrir('${o._id}')">Abrir</button>
+        </td>
+      </tr>
+    `;
+
+  });
+
+}
+
+function abrir(id){
+  window.location.href = "/orcamento.html?id=" + id;
+}
+
+function novoOrcamento(){
+  window.location.href = "/novo-orcamento.html";
+}
+
+async function logout(){
+  await fetch("/logout",{credentials:"include"});
+  window.location.href="/";
+}
+
+window.onload = () => {
+    carregarUsuario();
+    load();
+};
+
+</script>
+
+</body>
+</html>

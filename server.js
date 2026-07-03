@@ -12,6 +12,7 @@ const User = require("./models/User");
 const Ticket = require("./models/Ticket");
 const Cliente = require("./models/Cliente");
 const Service = require("./models/Service");
+const Budget = require("./models/Budget");
 
 const serviceRoutes = require("./routes/services");
 
@@ -751,6 +752,102 @@ app.put("/api/clientes/editar", auth, async (req, res) => {
       ok: false
     });
 
+  }
+
+});
+
+/* ===================== ORÇAMENTOS ===================== */
+
+/* LISTAR */
+app.get("/api/budgets", auth, async (req, res) => {
+
+  try {
+
+    const budgets = await Budget.find({
+      companyId: req.session.user.companyId
+    }).sort({
+      createdAt: -1
+    });
+
+    res.json(budgets);
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
+/* CRIAR */
+app.post("/api/budgets", auth, async (req, res) => {
+
+  try {
+
+    const ultimo = await Budget.findOne({
+      companyId: req.session.user.companyId
+    }).sort({
+      numero: -1
+    });
+
+    const numero =
+      ultimo && ultimo.numero
+        ? ultimo.numero + 1
+        : 1;
+
+    const budget = await Budget.create({
+
+  companyId: req.session.user.companyId,
+
+  numero,
+
+  clienteId: req.body.clienteId || null,
+  cliente: req.body.cliente || "",
+
+  itens: req.body.itens || [],   // 👈 AQUI
+
+  total: req.body.total || 0,
+
+  status: req.body.status || "pendente"
+
+});
+
+    res.json(budget);
+
+  } catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
+app.get("/api/budgets/:id", auth, async (req, res) => {
+
+  try {
+
+    const budget = await Budget.findOne({
+      _id: req.params.id,
+      companyId: req.session.user.companyId
+    });
+
+    if(!budget){
+      return res.status(404).json({ error: true });
+    }
+
+    res.json(budget);
+
+  } catch(err){
+    console.log(err);
+    res.status(500).json({ error: true });
   }
 
 });

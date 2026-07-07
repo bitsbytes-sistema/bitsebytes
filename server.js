@@ -49,13 +49,9 @@ app.use(express.static(path.join(__dirname, "public")));
 
 /* ===================== MONGO ===================== */
 mongoose.connect(process.env.MONGO_URL)
-  .then(async () => {
+  .then(() => {
 
     console.log("Mongo conectado");
-
-    await migrarClientes();
-
-    await vincularClienteNosChamados();
 
   })
   .catch(err => console.log("Erro Mongo:", err));
@@ -71,7 +67,6 @@ async function migrarClientes(){
     for (const t of tickets) {
 
   if (!t.companyId) {
-    console.log("Ticket ignorado (sem companyId):", t.cliente);
     continue;
   }
 
@@ -127,8 +122,6 @@ async function migrarClientes(){
 
     }
 
-    console.log("Migração de clientes concluída.");
-
   }catch(err){
 
     console.log("Erro na migração:", err);
@@ -182,8 +175,6 @@ async function vincularClienteNosChamados(){
       }
 
     }
-
-    console.log(`Chamados vinculados: ${total}`);
 
   }catch(err){
 
@@ -859,21 +850,74 @@ app.get("/api/budgets/:id", auth, async (req, res) => {
 
 });
 
+/* ===================== EDITAR ORÇAMENTO ===================== */
+app.put("/api/budgets/:id", auth, async (req, res) => {
+
+  try {
+
+    const budget = await Budget.findOne({
+      _id: req.params.id,
+      companyId: req.session.user.companyId
+    });
+
+    if (!budget) {
+      return res.status(404).json({ error: "Orçamento não encontrado" });
+    }
+
+    if (req.body.clienteId !== undefined) budget.clienteId = req.body.clienteId;
+if (req.body.cliente !== undefined) budget.cliente = req.body.cliente;
+if (req.body.telefone !== undefined) budget.telefone = req.body.telefone;
+if (req.body.observacoes !== undefined) budget.observacoes = req.body.observacoes;
+if (req.body.itens !== undefined) budget.itens = req.body.itens;
+if (req.body.total !== undefined) budget.total = req.body.total;
+if (req.body.status !== undefined) budget.status = req.body.status;
+
+    await budget.save();
+
+    res.json({
+      ok: true,
+      budget
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: true });
+  }
+
+});
+
+/* ===================== SERVIÇOS PARA ORÇAMENTO ===================== */
+app.get("/api/services", auth, async (req, res) => {
+
+  try {
+
+    const services = await Service.find({
+      companyId: req.session.user.companyId,
+      ativo: true
+    }).sort({
+      nome: 1
+    });
+
+    res.json(services);
+
+  } catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+      error: true
+    });
+
+  }
+
+});
+
 /* ===================== TICKETS ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
-
-console.log("EMPRESA LOGIN:");
-console.log(req.session.user.companyId);
-
 
 const tickets = await Ticket.find({
   companyId: req.session.user.companyId
 }).sort({ createdAt: -1 });
-
-
-console.log("TOTAL CHAMADOS:");
-console.log(tickets.length);
-
 
 res.json(tickets);
 
@@ -1288,28 +1332,6 @@ app.get("/logout", (req, res) => {
 app.use("/api/services", serviceRoutes);
 
 /* ===================== START ===================== */
-
-async function listarClientes(){
-
-  const clientes = await Cliente.find();
-
-  console.log("\n===== CLIENTES CADASTRADOS =====");
-
-  clientes.forEach(c=>{
-
-    console.log(
-      c.nome,
-      "|",
-      c.cpfcnpj,
-      "|",
-      c.telefone
-    );
-
-  });
-
-}
-
-listarClientes();
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Rodando na porta " + PORT);

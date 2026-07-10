@@ -1,7 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const puppeteer = require("puppeteer");
+const chromium = require("@sparticuz/chromium");
+
+const puppeteer =
+    process.env.RENDER
+        ? require("puppeteer-core")
+        : require("puppeteer");
 
 const mongoose = require("mongoose");
 
@@ -428,17 +433,19 @@ if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 
 
 
-const browser = await puppeteer.launch({
+const browser = await puppeteer.launch(
 
-    headless:true,
+    process.env.RENDER
+        ? {
+            executablePath: await chromium.executablePath(),
+            args: chromium.args,
+            headless: true
+        }
+        : {
+            headless: true
+        }
 
-    args:[
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage"
-    ]
-
-});
+);
                
 
         const page =

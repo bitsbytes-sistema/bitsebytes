@@ -10,7 +10,8 @@ const Ticket = require("../models/Ticket");
 
 const path = require("path");
 const fs = require("fs");
-const puppeteer = require("puppeteer");
+
+let puppeteer;
 
 
 
@@ -278,7 +279,10 @@ router.get("/:id/pdf", auth, async (req,res)=>{
 
     try{
 
-
+if(!puppeteer){
+    puppeteer = await import("puppeteer");
+    puppeteer = puppeteer.default;
+}
 
 if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 

@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+const puppeteer = require("puppeteer");
+
 const mongoose = require("mongoose");
 
 const Budget = require("../models/Budget");
@@ -10,8 +12,6 @@ const Ticket = require("../models/Ticket");
 
 const path = require("path");
 const fs = require("fs");
-
-let puppeteer;
 
 
 
@@ -279,10 +279,6 @@ router.get("/:id/pdf", auth, async (req,res)=>{
 
     try{
 
-if(!puppeteer){
-    puppeteer = await import("puppeteer");
-    puppeteer = puppeteer.default;
-}
 
 if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 
@@ -432,20 +428,18 @@ if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 
 
 
-        const browser =
-            await puppeteer.launch({
+const browser = await puppeteer.launch({
 
-                headless:true,
+    headless:true,
 
-args:[
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-dev-shm-usage"
-]
+    args:[
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage"
+    ]
 
-            });
-
-
+});
+               
 
         const page =
             await browser.newPage();

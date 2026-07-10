@@ -312,9 +312,17 @@ function render(){
         <td>${o.cliente}</td>
         <td>R$ ${(o.total || 0).toFixed(2)}</td>
         <td>${o.status}</td>
-        <td>
-          <button onclick="abrir('${o._id}')">Abrir</button>
-        </td>
+<td>
+
+  <button onclick="abrir('${o._id}')">
+    Abrir
+  </button>
+
+  <button onclick="pdf('${o._id}')">
+    📄 PDF
+  </button>
+
+</td>
       </tr>
     `;
 
@@ -324,6 +332,15 @@ function render(){
 
 function abrir(id){
   window.location.href = "/orcamento.html?id=" + id;
+}
+
+function pdf(id){
+
+  window.open(
+    "/api/budgets/" + id + "/pdf",
+    "_blank"
+  );
+
 }
 
 function novoOrcamento(){

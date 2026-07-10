@@ -116,6 +116,18 @@ bairro: {
   default: 1
 },
 
+origem: {
+  type: String,
+  enum: ["direto", "orcamento"],
+  default: "direto"
+},
+
+budgetId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Budget",
+  default: null
+},
+
   /* ===================== EMPRESA ===================== */
 
   companyId: {

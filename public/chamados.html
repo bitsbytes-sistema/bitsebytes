@@ -667,7 +667,7 @@ Resumo
 
 <tr>
 
-<th>OS</th>
+<th>OS / Origem</th>
 <th>Cliente</th>
 <th>Equipamento</th>
 <th>Status</th>
@@ -798,7 +798,43 @@ function renderChamados(listaChamados){
 <tr>
 
 <td>
+
 <b>OS ${c.numeroOS || "-"}</b>
+
+${
+    c.origem === "orcamento"
+    ? `
+        <br>
+        <span style="
+            display:inline-block;
+            margin-top:5px;
+            background:#fef3c7;
+            color:#92400e;
+            padding:3px 8px;
+            border-radius:20px;
+            font-size:11px;
+            font-weight:bold;
+        ">
+            💰 GERADO POR ORÇAMENTO
+        </span>
+    `
+    : `
+        <br>
+        <span style="
+            display:inline-block;
+            margin-top:5px;
+            background:#dbeafe;
+            color:#1d4ed8;
+            padding:3px 8px;
+            border-radius:20px;
+            font-size:11px;
+            font-weight:bold;
+        ">
+            🛠 CHAMADO DIRETO
+        </span>
+    `
+}
+
 </td>
 
 <td>

@@ -25,12 +25,29 @@ observacoes: String,
     }
   ],
 
-  total: Number,
+total: Number,
 
-  status: {
-    type: String,
-    default: "pendente"
-  }
+status:{
+    type:String,
+    enum:[
+        "pendente",
+        "aprovado",
+        "reprovado",
+        "convertido"
+    ],
+    default:"pendente"
+},
+
+ticketId:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"Ticket",
+    default:null
+},
+
+numeroOS:{
+    type:Number,
+    default:null
+}
 
 }, {
   timestamps: true

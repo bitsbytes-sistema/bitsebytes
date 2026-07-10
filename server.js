@@ -15,6 +15,7 @@ const Service = require("./models/Service");
 const Budget = require("./models/Budget");
 
 const serviceRoutes = require("./routes/services");
+const budgetRoutes = require("./routes/budgets");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -747,145 +748,6 @@ app.put("/api/clientes/editar", auth, async (req, res) => {
 
 });
 
-/* ===================== ORÇAMENTOS ===================== */
-
-/* LISTAR */
-app.get("/api/budgets", auth, async (req, res) => {
-
-  try {
-
-    const budgets = await Budget.find({
-      companyId: req.session.user.companyId
-    }).sort({
-      createdAt: -1
-    });
-
-    res.json(budgets);
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: true
-    });
-
-  }
-
-});
-
-/* CRIAR */
-app.post("/api/budgets", auth, async (req, res) => {
-
-  try {
-
-    const ultimo = await Budget.findOne({
-      companyId: req.session.user.companyId
-    }).sort({
-      numero: -1
-    });
-
-    const numero =
-      ultimo && ultimo.numero
-        ? ultimo.numero + 1
-        : 1;
-
-   const cliente = await Cliente.findById(req.body.clienteId);
-
-const budget = await Budget.create({
-
-  companyId: req.session.user.companyId,
-
-  numero,
-
-  clienteId: req.body.clienteId || null,
-
-  cliente: req.body.cliente || "",
-
-  telefone: cliente?.telefone || "",
-
-  observacoes: req.body.observacoes || "",
-
-  itens: req.body.itens || [],
-
-  total: req.body.total || 0,
-
-  status: req.body.status || "pendente"
-
-});
-
-    res.json(budget);
-
-  } catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      error: true
-    });
-
-  }
-
-});
-
-app.get("/api/budgets/:id", auth, async (req, res) => {
-
-  try {
-
-    const budget = await Budget.findOne({
-      _id: req.params.id,
-      companyId: req.session.user.companyId
-    });
-
-    if(!budget){
-      return res.status(404).json({ error: true });
-    }
-
-    res.json(budget);
-
-  } catch(err){
-    console.log(err);
-    res.status(500).json({ error: true });
-  }
-
-});
-
-/* ===================== EDITAR ORÇAMENTO ===================== */
-app.put("/api/budgets/:id", auth, async (req, res) => {
-
-  try {
-
-    const budget = await Budget.findOne({
-      _id: req.params.id,
-      companyId: req.session.user.companyId
-    });
-
-    if (!budget) {
-      return res.status(404).json({ error: "Orçamento não encontrado" });
-    }
-
-    if (req.body.clienteId !== undefined) budget.clienteId = req.body.clienteId;
-if (req.body.cliente !== undefined) budget.cliente = req.body.cliente;
-if (req.body.telefone !== undefined) budget.telefone = req.body.telefone;
-if (req.body.observacoes !== undefined) budget.observacoes = req.body.observacoes;
-if (req.body.itens !== undefined) budget.itens = req.body.itens;
-if (req.body.total !== undefined) budget.total = req.body.total;
-if (req.body.status !== undefined) budget.status = req.body.status;
-
-    await budget.save();
-
-    res.json({
-      ok: true,
-      budget
-    });
-
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: true });
-  }
-
-});
-
 /* ===================== SERVIÇOS PARA ORÇAMENTO ===================== */
 app.get("/api/services", auth, async (req, res) => {
 
@@ -1323,13 +1185,19 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
   res.json({ ok: true });
 });
 
+/* ===================== ROTAS ===================== */
+
+app.use("/api/services", serviceRoutes);
+
+app.use("/api/budgets", budgetRoutes);
+
+
 /* ===================== LOGOUT ===================== */
+
 app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/"));
 });
 
-/* ===================== SERVICES ===================== */
-app.use("/api/services", serviceRoutes);
 
 /* ===================== START ===================== */
 

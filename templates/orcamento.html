@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Orçamento</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+
+    margin:0;
+    padding:40px;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#ffffff;
+    color:#222;
+
+}
+
+.container{
+
+    width:100%;
+
+}
+
+.header{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:3px solid #0f172a;
+    padding-bottom:20px;
+    margin-bottom:25px;
+
+}
+
+.logo-area{
+
+    display:flex;
+    align-items:center;
+    gap:20px;
+
+}
+
+.logo{
+
+    width:110px;
+    height:110px;
+    object-fit:contain;
+
+}
+
+.company h1{
+
+    margin:0;
+    color:#0f172a;
+    font-size:30px;
+
+}
+
+.company p{
+
+    margin:4px 0;
+    color:#666;
+    font-size:14px;
+
+}
+
+.info{
+
+    text-align:right;
+
+}
+
+.info h2{
+
+    margin:0;
+    color:#2563eb;
+    font-size:26px;
+
+}
+
+.info p{
+
+    margin:6px 0;
+    font-size:14px;
+
+}
+
+.cliente{
+
+    margin-top:20px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:18px;
+    background:#fafafa;
+
+}
+
+.cliente h3{
+
+    margin-top:0;
+    color:#0f172a;
+
+}
+
+table{
+
+    width:100%;
+    border-collapse:collapse;
+    margin-top:25px;
+
+}
+
+thead{
+
+    background:#0f172a;
+    color:#fff;
+
+}
+
+th{
+
+    padding:12px;
+    font-size:14px;
+    text-align:left;
+
+}
+
+td{
+
+    padding:12px;
+    border-bottom:1px solid #ddd;
+
+}
+
+tbody tr:nth-child(even){
+
+    background:#f8f8f8;
+
+}
+
+.total{
+
+    margin-top:25px;
+    text-align:right;
+
+}
+
+.total-box{
+
+    display:inline-block;
+    background:#0f172a;
+    color:#fff;
+    padding:15px 30px;
+    border-radius:8px;
+    font-size:24px;
+    font-weight:bold;
+
+}
+
+.obs{
+
+    margin-top:35px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:20px;
+
+}
+
+.obs h3{
+
+    margin-top:0;
+    color:#0f172a;
+
+}
+
+.info-extra{
+
+    margin-top:35px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+
+}
+
+.card{
+
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:18px;
+
+}
+
+.card h3{
+
+    margin-top:0;
+    color:#0f172a;
+
+}
+
+.card ul{
+
+    margin:10px 0 0;
+    padding-left:18px;
+
+}
+
+.card li{
+
+    margin-bottom:8px;
+
+}
+
+.assinaturas{
+
+    margin-top:80px;
+    display:flex;
+    justify-content:space-between;
+
+}
+
+.ass{
+
+    width:260px;
+    text-align:center;
+
+}
+
+.linha{
+
+    border-top:1px solid #333;
+    margin-bottom:8px;
+
+}
+
+.footer{
+
+    margin-top:60px;
+    text-align:center;
+    color:#777;
+    font-size:12px;
+    border-top:1px solid #ddd;
+    padding-top:15px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+
+<div class="logo-area">
+
+<div>
+
+{{LOGO}}
+
+</div>
+
+<div class="company">
+
+<h1>{{EMPRESA}}</h1>
+
+<p>{{TELEFONE}}</p>
+
+<p>{{EMAIL}}</p>
+
+</div>
+
+</div>
+
+<div class="info">
+
+<h2>ORÇAMENTO</h2>
+
+<p><b>Nº:</b> {{NUMERO}}</p>
+
+<p><b>Data:</b> {{DATA}}</p>
+
+</div>
+
+</div>
+
+<div class="cliente">
+
+<h3>DADOS DO CLIENTE</h3>
+
+<p><b>Cliente:</b> {{CLIENTE}}</p>
+
+<p><b>Telefone:</b> {{TELEFONE_CLIENTE}}</p>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Descrição</th>
+
+<th width="70">Qtd</th>
+
+<th width="120">Valor</th>
+
+<th width="130">Total</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{{ITENS}}
+
+</tbody>
+
+</table>
+
+<div class="total">
+
+<div class="total-box">
+
+TOTAL: R$ {{TOTAL}}
+
+</div>
+
+</div>
+
+<div class="obs">
+
+    <h3>Observações</h3>
+
+    <p style="white-space:pre-wrap;">
+        {{OBSERVACOES}}
+    </p>
+
+</div>
+
+<div class="info-extra">
+
+    <div class="card">
+
+        <h3>Validade do Orçamento</h3>
+
+        <ul>
+
+            <li>Este orçamento é válido por <b>10 dias</b> a partir da data de emissão.</li>
+
+            <li>Após esse período os valores poderão sofrer alterações.</li>
+
+        </ul>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Formas de Pagamento</h3>
+
+        <ul>
+
+            <li>Dinheiro</li>
+
+            <li>PIX</li>
+
+            <li>Cartão de Débito</li>
+
+            <li>Cartão de Crédito</li>
+
+            <li>Parcelamento conforme negociação.</li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+<div class="info-extra">
+
+    <div class="card">
+
+        <h3>Garantia</h3>
+
+        <ul>
+
+            <li>A garantia cobre apenas os serviços executados.</li>
+
+            <li>Peças possuem garantia conforme o fabricante.</li>
+
+            <li>Não cobre danos causados por mau uso, líquidos ou quedas.</li>
+
+        </ul>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Informações</h3>
+
+        <ul>
+
+            <li>Após aprovação iniciaremos o serviço.</li>
+
+            <li>Equipamentos não retirados poderão estar sujeitos às regras da empresa.</li>
+
+            <li>Obrigado pela preferência.</li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+<div class="assinaturas">
+
+    <div class="ass">
+
+        <div class="linha"></div>
+
+        Cliente
+
+    </div>
+
+    <div class="ass">
+
+        <div class="linha"></div>
+
+        Responsável Técnico
+
+    </div>
+
+</div>
+
+<div class="footer">
+
+    <b>{{EMPRESA}}</b><br>
+
+    {{TELEFONE}}<br>
+
+    {{EMAIL}}<br><br>
+
+    Documento gerado automaticamente pelo sistema
+    <b>Bits & Bytes Tecnology</b>.
+
+</div>
+
+</div>
+
+</body>
+
+</html>

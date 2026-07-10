@@ -161,6 +161,19 @@ button{
 
         <button class="edit" onclick="abrirModal()">Editar</button>
 
+        <button id="btnAprovar"
+           style="background:#16a34a;color:white;"
+           onclick="aprovarOrcamento()">
+           ✅ Aprovar
+        </button>
+
+        <button
+    id="btnConverter"
+    onclick="converterOS()"
+    style="display:none;background:#16a34a;color:white;">
+    🛠 Gerar Ordem de Serviço
+        </button>
+
         <button class="print" onclick="window.print()">Imprimir</button>
 
         <button onclick="gerarPDF()">📄 PDF</button>
@@ -227,6 +240,8 @@ button{
 
 const id = new URLSearchParams(window.location.search).get("id");
 
+console.log("ID recebido:", id);
+
 let budget = null;
 let servicos = [];
 
@@ -257,11 +272,32 @@ async function carregar(){
     document.getElementById("status").innerText = budget.status;
     document.getElementById("observacoes").innerText = budget.observacoes || "-";
 
+    const btn = document.getElementById("btnAprovar");
+
+    if(budget.status === "aprovado"){
+        btn.style.display = "none";
+    }else{
+        btn.style.display = "inline-block";
+    }
+
     document.getElementById("total").innerText =
         Number(budget.total || 0).toLocaleString("pt-BR", {
             style:"currency",
             currency:"BRL"
         });
+
+	const btnConverter =
+    document.getElementById("btnConverter");
+
+if(budget.status === "aprovado"){
+
+    btnConverter.style.display = "inline-block";
+
+}else{
+
+    btnConverter.style.display = "none";
+
+}
 
     const tbody = document.getElementById("itens");
     tbody.innerHTML = "";
@@ -276,6 +312,7 @@ async function carregar(){
             </tr>
         `;
     });
+
 }
 
 /* EDITAR */
@@ -557,20 +594,13 @@ async function gerarImagem(){
     link.click();
 }
 
-async function gerarPDF(){
-    const botoes = document.querySelector(".botoes");
-    botoes.style.display="none";
+function gerarPDF(){
 
-    const canvas = await html2canvas(document.querySelector(".container"),{scale:2});
-    botoes.style.display="flex";
+    window.open(
+        "/api/budgets/" + id + "/pdf",
+        "_blank"
+    );
 
-    const img = canvas.toDataURL("image/png");
-
-    const { jsPDF } = window.jspdf;
-
-    const pdf = new jsPDF();
-    pdf.addImage(img,"PNG",10,10,190,0);
-    pdf.save(`Orcamento-${budget.numero}.pdf`);
 }
 
 async function enviarWhatsPDF(){
@@ -590,6 +620,68 @@ async function enviarWhatsImagem(){
     await carregar();
 
 })();
+
+async function aprovarOrcamento(){
+
+    if(!confirm("Deseja aprovar este orçamento?")){
+        return;
+    }
+
+    const res = await fetch("/api/budgets/" + id + "/aprovar",{
+        method:"PUT",
+        credentials:"include"
+    });
+
+    console.log("Status HTTP:", res.status);
+
+    const data = await res.json();
+
+    console.log(data);
+
+    if(data.ok){
+
+        alert("Orçamento aprovado!");
+
+        await carregar();
+
+    }else{
+
+        alert(JSON.stringify(data));
+
+    }
+
+}
+
+async function converterOS(){
+
+    if(!confirm("Gerar uma Ordem de Serviço deste orçamento?")){
+        return;
+    }
+
+    const res = await fetch(
+        "/api/budgets/" + id + "/converter",
+        {
+            method:"POST",
+            credentials:"include"
+        }
+    );
+
+    const data = await res.json();
+
+    if(data.ok){
+
+        alert("Chamado criado com sucesso!");
+
+        window.location.href =
+            "/chamados.html";
+
+    }else{
+
+        alert(data.error || "Erro ao converter.");
+
+    }
+
+}
 
 </script>
 

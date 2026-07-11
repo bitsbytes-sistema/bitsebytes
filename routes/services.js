@@ -3,6 +3,25 @@ const Service = require("../models/Service");
 
 const router = express.Router();
 
+function converterValor(valor) {
+
+  if (valor === undefined || valor === null || valor === "") {
+    return 0;
+  }
+
+  if (typeof valor === "number") {
+    return valor;
+  }
+
+  return Number(
+    String(valor)
+      .trim()
+      .replace(/\./g, "")
+      .replace(",", ".")
+  );
+
+}
+
 /* ===================== LISTAR ===================== */
 router.get("/", async (req, res) => {
 
@@ -99,7 +118,7 @@ router.post("/", async (req, res) => {
 
       descricao: req.body.descricao,
 
-      valor: req.body.valor,
+      valor: converterValor(req.body.valor),
 
       tempo: req.body.tempo,
 
@@ -143,7 +162,7 @@ router.put("/:id", async (req, res) => {
         nome: req.body.nome,
         categoria: req.body.categoria,
         descricao: req.body.descricao,
-        valor: req.body.valor,
+        valor: converterValor(req.body.valor),
         tempo: req.body.tempo,
         garantia: req.body.garantia,
         ativo: req.body.ativo

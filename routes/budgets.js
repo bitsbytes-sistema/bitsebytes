@@ -333,7 +333,6 @@ if(!mongoose.Types.ObjectId.isValid(req.params.id)){
         );
 
 
-
         let itensHTML = "";
 
 
@@ -372,61 +371,96 @@ if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 
         template = template
 
-        .replace(
-            "{{EMPRESA}}",
-            company?.name || "Bits & Bytes Tecnology"
-        )
+	.replaceAll(
+    	    "{{PRIMARY_COLOR}}",
+    		company?.primaryColor || "#2563eb"
+	)
 
-        .replace(
+	.replaceAll(
+    	    "{{SECONDARY_COLOR}}",
+   		 company?.secondaryColor || "#0f172a"
+	)
+
+	.replaceAll(
+    	    "{{CNPJ}}",
+   		 company?.cnpj || "-"
+	)
+
+	.replaceAll(
+    	    "{{ENDERECO}}",
+    		company?.address || "-"
+	)
+
+	.replaceAll(
+    	    "{{SITE}}",
+    		company?.website || "-"
+	)
+
+	.replaceAll(
+   	    "{{STATUS}}",
+    		budget.status || "Pendente"
+	)
+
+	.replaceAll(
+   	    "{{VALIDADE}}",
+   		 "10 dias"
+	)
+
+        .replaceAll(
+    	     "{{EMPRESA}}",
+    	   company?.name || "Bits & Bytes Tecnology"
+	)
+
+        .replaceAll(
             "{{TELEFONE}}",
             company?.phone || ""
         )
 
-        .replace(
+        .replaceAll(
             "{{EMAIL}}",
             company?.email || ""
         )
 
-        .replace(
+        .replaceAll(
             "{{NUMERO}}",
             budget.numero
         )
 
-        .replace(
+        .replaceAll(
             "{{DATA}}",
             new Date(
                 budget.createdAt
             ).toLocaleDateString("pt-BR")
         )
 
-        .replace(
+        .replaceAll(
             "{{CLIENTE}}",
             budget.cliente || ""
         )
 
-        .replace(
+        .replaceAll(
             "{{TELEFONE_CLIENTE}}",
             budget.telefone || ""
         )
 
-        .replace(
+        .replaceAll(
             "{{ITENS}}",
             itensHTML
         )
 
-        .replace(
+        .replaceAll(
             "{{TOTAL}}",
             Number(budget.total || 0)
             .toFixed(2)
             .replace(".",",")
         )
 
-        .replace(
+        .replaceAll(
             "{{OBSERVACOES}}",
             budget.observacoes || ""
         )
 
-        .replace(
+        .replaceAll(
             "{{LOGO}}",
             ""
         );

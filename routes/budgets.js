@@ -89,6 +89,9 @@ router.post("/", auth, async(req,res)=>{
             ? ultimo.numero + 1
             : 1;
 
+const ano = new Date().getFullYear();
+
+const codigo = `ORC-${ano}-${String(numero).padStart(6, "0")}`;
 
 
         const cliente =
@@ -96,46 +99,55 @@ router.post("/", auth, async(req,res)=>{
 
 
 
-        const budget = await Budget.create({
+const budget = await Budget.create({
 
-            companyId:req.session.user.companyId,
+    companyId:req.session.user.companyId,
 
-            numero,
+    numero,
 
-            clienteId:req.body.clienteId || null,
+    codigo,
 
-            cliente:req.body.cliente || "",
+    validade:req.body.validade || 10,
 
-            telefone:cliente?.telefone || "",
+    historico:[
+        {
+            acao:"Orçamento criado",
+            usuario:req.session.user.username,
+            data:new Date()
+        }
+    ],
 
-            observacoes:req.body.observacoes || "",
+    clienteId:req.body.clienteId || null,
 
-            itens:req.body.itens || [],
+    cliente:req.body.cliente || "",
 
-            total:req.body.total || 0,
+    telefone:cliente?.telefone || "",
 
-            status:req.body.status || "pendente"
+    observacoes:req.body.observacoes || "",
 
-        });
+    itens:req.body.itens || [],
 
+    total:req.body.total || 0,
 
-
-        res.json(budget);
-
-
-
-    }catch(err){
-
-        console.log(err);
-
-        res.status(500).json({
-            error:true
-        });
-
-    }
+    status:req.body.status || "pendente"
 
 });
 
+console.log(budget);
+
+res.json(budget);
+
+} catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+        error: true
+    });
+
+}
+
+});
 
 
 /* ===================== BUSCAR ===================== */
@@ -367,7 +379,17 @@ if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 
         });
 
+const logoPath = path.join(process.cwd(), "public", "logo.png");
 
+let logoHTML = "";
+
+if (fs.existsSync(logoPath)) {
+
+    const logoBase64 = fs.readFileSync(logoPath, "base64");
+
+    logoHTML = `<img src="data:image/png;base64,${logoBase64}" alt="Logo">`;
+
+}
 
         template = template
 
@@ -383,17 +405,17 @@ if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 
 	.replaceAll(
     	    "{{CNPJ}}",
-   		 company?.cnpj || "-"
+   		 company?.cnpj || "39.706.762.0001-43"
 	)
 
 	.replaceAll(
     	    "{{ENDERECO}}",
-    		company?.address || "-"
+    		company?.address || "R. Durval Bartolomeu T. Mendes"
 	)
 
 	.replaceAll(
     	    "{{SITE}}",
-    		company?.website || "-"
+    		company?.website || "@bitsebytestecnology"
 	)
 
 	.replaceAll(
@@ -413,18 +435,18 @@ if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 
         .replaceAll(
             "{{TELEFONE}}",
-            company?.phone || ""
+            company?.phone || "69981442610"
         )
 
         .replaceAll(
             "{{EMAIL}}",
-            company?.email || ""
+            company?.email || "bitsebytestecnology@gmail.com"
         )
 
         .replaceAll(
-            "{{NUMERO}}",
-            budget.numero
-        )
+    "{{NUMERO}}",
+    budget.codigo || String(budget.numero).padStart(6, "0")
+)
 
         .replaceAll(
             "{{DATA}}",
@@ -460,10 +482,10 @@ if(!mongoose.Types.ObjectId.isValid(req.params.id)){
             budget.observacoes || ""
         )
 
-        .replaceAll(
-            "{{LOGO}}",
-            ""
-        );
+.replaceAll(
+    "{{LOGO}}",
+    logoHTML
+)
 
 
 

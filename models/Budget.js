@@ -8,7 +8,27 @@ const BudgetSchema = new mongoose.Schema({
     index: true
   },
 
-  numero: Number,
+numero: Number,
+
+codigo: {
+    type: String,
+    unique: true,
+    sparse: true
+},
+
+validade: {
+    type: Number,
+    default: 10
+},
+
+historico: [{
+    acao: String,
+    usuario: String,
+    data: {
+        type: Date,
+        default: Date.now
+    }
+}],
 
 clienteId: String,
 cliente: String,

@@ -49,15 +49,16 @@ body{
 
 .logo-box{
 
-    width:120px;
-    height:120px;
+    width:150px;
+    min-width:150px;
+
+    height:150px;
 
     display:flex;
-    justify-content:center;
-    align-items:center;
 
-    border:1px solid #ddd;
-    border-radius:12px;
+    justify-content:center;
+
+    align-items:flex-start;
 
     background:#fff;
 
@@ -65,8 +66,11 @@ body{
 
 .logo-box img{
 
-    max-width:100px;
-    max-height:100px;
+    width:150px;
+
+    height:150px;
+
+    object-fit:contain;
 
 }
 
@@ -76,19 +80,53 @@ body{
 
     flex-direction:column;
 
-    gap:5px;
+    gap:2px;
 
-    margin-top:8px;
+    margin-top:5px;
 
-    font-size:13px;
-
-    color:#555;
+    font-size:12px;
 
 }
 
 .dados-empresa span{
 
-    line-height:1.3;
+    line-height:1.1;
+
+}
+
+.info-item{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+.info-item .icone{
+
+    width:26px;
+
+    text-align:center;
+
+    color:var(--secondary);
+
+    font-size:20px;
+
+    font-weight:bold;
+
+}
+
+.subtitle{
+
+    margin-top:5px;
+
+    color:#555;
+
+    font-size:18px;
+
+    font-weight:500;
 
 }
 
@@ -134,11 +172,27 @@ body{
 
     justify-content:space-between;
 
-    padding:10px 15px;
+    align-items:center;
+
+    gap:12px;
+
+    padding:12px 15px;
 
     border-bottom:1px solid #e5e5e5;
 
     font-size:14px;
+
+}
+
+.numero-orcamento{
+
+    font-weight:bold;
+
+    color:var(--secondary);
+
+    font-size:15px;
+
+    white-space:nowrap;
 
 }
 
@@ -150,13 +204,43 @@ body{
 
 .company h1{
 
-    margin:0 0 8px 0;
-
-    color:var(--secondary);
+    margin:0;
 
     font-size:30px;
 
     font-weight:700;
+
+    color:#111;
+
+    line-height:1.1;
+
+}
+
+.company h1 .azul{
+
+    color:#1d4ed8;
+
+}
+
+.company .subtitle{
+
+    margin-top:10px;
+
+    margin-bottom:41px;
+
+    color:#555;
+
+    font-size:25px;
+
+    font-weight:500;
+
+}
+
+.company{
+
+    flex:1;
+
+    min-width:250px;
 
 }
 
@@ -175,8 +259,10 @@ body{
 .logo-area{
 
     display:flex;
-    align-items:center;
-    gap:20px;
+
+    align-items:flex-start;
+
+    gap:24px;
 
 }
 
@@ -309,7 +395,7 @@ tbody td:nth-child(4){
 
 .total-box{
 
-    width:320px;
+    width:190px;
 
     background:linear-gradient(
         135deg,
@@ -343,7 +429,7 @@ tbody td:nth-child(4){
 
 .total-valor{
 
-    font-size:34px;
+    font-size:30px;
 
     font-weight:bold;
 
@@ -472,25 +558,46 @@ tbody td:nth-child(4){
 
         <div class="company">
 
-            <h1>{{EMPRESA}}</h1>
+            <h1>
 
-	    <p class="slogan">
-   		Sistemas e Assistência Técnica Especializada
-	    </p>
+    Bits <span class="azul">&amp;</span> Bytes Tecnology®
+
+</h1>
+
+<div class="subtitle">
+
+    Sistemas e Assistência Técnica
+
+</div>
 
 	    <div class="dados-empresa">
 
-                <span><strong>CNPJ:</strong> {{CNPJ}}</span>
+    <div class="info-item">
+        <span class="icone">🏛</span>
+        <span><strong>CNPJ:</strong> {{CNPJ}}</span>
+    </div>
 
-                <span><strong>Telefone:</strong> {{TELEFONE}}</span>
+    <div class="info-item">
+        <span class="icone">📞</span>
+        <span><strong>Telefone:</strong> {{TELEFONE}}</span>
+    </div>
 
-                <span><strong>E-mail:</strong> {{EMAIL}}</span>
+    <div class="info-item">
+        <span class="icone">✉</span>
+        <span><strong>E-mail:</strong> {{EMAIL}}</span>
+    </div>
 
-                <span><strong>Endereço:</strong> {{ENDERECO}}</span>
+    <div class="info-item">
+        <span class="icone">📍</span>
+        <span><strong>Endereço:</strong> {{ENDERECO}}</span>
+    </div>
 
-                <span><strong>Site:</strong> {{SITE}}</span>
+    <div class="info-item">
+        <span class="icone">🌐</span>
+        <span><strong>Site:</strong> {{SITE}}</span>
+    </div>
 
-            </div>
+</div>
 
         </div>
 
@@ -500,43 +607,43 @@ tbody td:nth-child(4){
 
         <div class="titulo">
 
-            ORÇAMENTO
+    ORÇAMENTO
 
-        </div>
+</div>
 
-	<div class="linha-info">
+<div class="linha-info">
 
-	    <strong>ORÇAMENTO</strong>
+    <strong>Nº</strong>
 
-    	    <span class="numero-orcamento">
-    		{{NUMERO}}
-	    </span>
+    <span class="numero-orcamento">
+        {{NUMERO}}
+    </span>
 
-	</div>
+</div>
 
-        <div class="linha-info">
+<div class="linha-info">
 
-            <strong>Data</strong>
+    <strong>Data</strong>
 
-            <span>{{DATA}}</span>
+    <span>{{DATA}}</span>
 
-        </div>
+</div>
 
-        <div class="linha-info">
+<div class="linha-info">
 
-            <strong>Status</strong>
+    <strong>Status</strong>
 
-            <span>{{STATUS}}</span>
+    <span>{{STATUS}}</span>
 
-        </div>
+</div>
 
-        <div class="linha-info">
+<div class="linha-info">
 
-            <strong>Validade</strong>
+    <strong>Validade</strong>
 
-            <span>{{VALIDADE}}</span>
+    <span>{{VALIDADE}}</span>
 
-        </div>
+</div>
 
     </div>
 
@@ -716,11 +823,6 @@ tbody td:nth-child(4){
 
 <div class="footer">
 
-    <b>{{EMPRESA}}</b><br>
-
-    {{TELEFONE}}<br>
-
-    {{EMAIL}}<br><br>
 
     Documento emitido pelo sistema
      <b>Bits & Bytes Tecnology</b><br>

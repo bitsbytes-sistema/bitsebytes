@@ -104,18 +104,23 @@ body{
 
 }
 
-.info-item .icone{
+.icone{
+    width:18px;
+    height:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-right:8px;
+}
 
-    width:26px;
-
-    text-align:center;
-
-    color:var(--secondary);
-
-    font-size:20px;
-
-    font-weight:bold;
-
+.icone svg{
+    width:16px;
+    height:16px;
+    fill:none;
+    stroke:#2563eb;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
 }
 
 .subtitle{
@@ -573,27 +578,54 @@ tbody td:nth-child(4){
 	    <div class="dados-empresa">
 
     <div class="info-item">
-        <span class="icone">🏛</span>
+        <span class="icone">
+            <svg viewBox="0 0 24 24">
+                <path d="M3 10h18M5 10V21h14V10M7 10V6h10v4M9 21v-6h6v6"/>
+            </svg>
+        </span>
         <span><strong>CNPJ:</strong> {{CNPJ}}</span>
     </div>
 
+
     <div class="info-item">
-        <span class="icone">📞</span>
+        <span class="icone">
+            <svg viewBox="0 0 24 24">
+                <path d="M6.6 10.8c1.8 3.5 2.9 4.6 6.4 6.4l2.1-2.1c.3-.3.7-.4 1.1-.3l3.1 1.1c.5.2.8.7.8 1.2V20c0 .6-.4 1-1 1C10.3 21 3 13.7 3 5c0-.6.4-1 1-1h3c.5 0 1 .3 1.2.8l1.1 3.1c.1.4 0 .8-.3 1.1l-2.4 1.8z"/>
+            </svg>
+        </span>
         <span><strong>Telefone:</strong> {{TELEFONE}}</span>
     </div>
 
+
     <div class="info-item">
-        <span class="icone">✉</span>
+        <span class="icone">
+            <svg viewBox="0 0 24 24">
+                <path d="M4 4h16v16H4z"/>
+                <path d="M4 5l8 7 8-7"/>
+            </svg>
+        </span>
         <span><strong>E-mail:</strong> {{EMAIL}}</span>
     </div>
 
+
     <div class="info-item">
-        <span class="icone">📍</span>
+        <span class="icone">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/>
+                <circle cx="12" cy="9" r="2"/>
+            </svg>
+        </span>
         <span><strong>Endereço:</strong> {{ENDERECO}}</span>
     </div>
 
+
     <div class="info-item">
-        <span class="icone">🌐</span>
+        <span class="icone">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M3 12h18M12 3c3 4 3 14 0 18M12 3c-3 4-3 14 0 18"/>
+            </svg>
+        </span>
         <span><strong>Site:</strong> {{SITE}}</span>
     </div>
 

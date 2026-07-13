@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const QRCode = require("qrcode");
 
 const chromium = require("@sparticuz/chromium");
 
@@ -18,7 +19,192 @@ const Ticket = require("../models/Ticket");
 const path = require("path");
 const fs = require("fs");
 
+/* ===================== CONSULTA PÚBLICA ===================== */
 
+router.get("/consulta/:id", async (req, res) => {
+
+    try {
+
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(404).send("Orçamento não encontrado.");
+        }
+
+        const budget = await Budget.findById(req.params.id)
+.populate("clienteId");
+
+        if (!budget) {
+            return res.status(404).send("Orçamento não encontrado.");
+        }
+
+        const company = await Company.findById(budget.companyId);
+
+        res.send(`
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+<meta charset="UTF-8">
+
+<title>${budget.codigo}</title>
+
+<style>
+
+body{
+
+    margin:40px;
+
+    font-family:Arial,Helvetica,sans-serif;
+
+    background:#f4f6f9;
+
+}
+
+.container{
+
+    max-width:900px;
+
+    margin:auto;
+
+    background:#fff;
+
+    padding:40px;
+
+    border-radius:12px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+
+}
+
+h1{
+
+    color:#0f172a;
+
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    margin-top:20px;
+
+}
+
+th,td{
+
+    border:1px solid #ddd;
+
+    padding:10px;
+
+}
+
+th{
+
+    background:#0f172a;
+
+    color:white;
+
+}
+
+.status{
+
+    display:inline-block;
+
+    padding:6px 14px;
+
+    border-radius:30px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-weight:bold;
+
+}
+
+.total{
+
+    margin-top:20px;
+
+    text-align:right;
+
+    font-size:26px;
+
+    font-weight:bold;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>${company?.name || "Empresa"}</h1>
+
+<h2>Orçamento ${budget.codigo}</h2>
+
+<p><strong>Cliente:</strong> ${budget.cliente}</p>
+
+<p><strong>Status:</strong> <span class="status">${budget.status}</span></p>
+
+<table>
+
+<tr>
+
+<th>Descrição</th>
+
+<th>Qtd</th>
+
+<th>Valor</th>
+
+<th>Total</th>
+
+</tr>
+
+${budget.itens.map(item=>`
+
+<tr>
+
+<td>${item.descricao}</td>
+
+<td>${item.quantidade}</td>
+
+<td>R$ ${Number(item.valor).toFixed(2).replace(".",",")}</td>
+
+<td>R$ ${Number(item.total).toFixed(2).replace(".",",")}</td>
+
+</tr>
+
+`).join("")}
+
+</table>
+
+<div class="total">
+
+R$ ${Number(budget.total).toFixed(2).replace(".",",")}
+
+</div>
+
+</div>
+
+</body>
+
+</html>
+        `);
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.status(500).send("Erro interno.");
+
+    }
+
+});
 
 function auth(req,res,next){
 
@@ -391,6 +577,33 @@ if (fs.existsSync(logoPath)) {
 
 }
 
+// ================= QR CODE =================
+
+const urlConsulta =
+`${process.env.APP_URL}/api/budgets/consulta/${budget._id}`;
+
+const qrCodeBase64 = await QRCode.toDataURL(urlConsulta, {
+    width: 180,
+    margin: 1
+});
+
+const qrCodeHTML = `
+<div class="qr-box">
+
+    <img src="${qrCodeBase64}" alt="QR Code">
+
+    <div class="qr-text">
+
+        <strong>${budget.codigo}</strong><br>
+
+        Escaneie para consultar
+        este orçamento.
+
+    </div>
+
+</div>
+`;
+
         template = template
 
 	.replaceAll(
@@ -487,6 +700,10 @@ if (fs.existsSync(logoPath)) {
     logoHTML
 )
 
+.replaceAll(
+    "{{QRCODE}}",
+    qrCodeHTML
+)
 
 
 const browser = await puppeteer.launch(

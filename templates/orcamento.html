@@ -527,6 +527,78 @@ tbody td:nth-child(4){
 
 }
 
+.qr-footer{
+
+    margin-top:45px;
+
+    border-top:1px solid #ddd;
+
+    padding-top:20px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:30px;
+
+}
+
+.qr-info{
+
+    flex:1;
+
+}
+
+.qr-info h3{
+
+    margin:0 0 10px;
+
+    color:var(--secondary);
+
+}
+
+.qr-info p{
+
+    margin:4px 0;
+
+    color:#666;
+
+    font-size:13px;
+
+    line-height:1.6;
+
+}
+
+.qr-box{
+
+    width:180px;
+
+    text-align:center;
+
+}
+
+.qr-box img{
+
+    width:140px;
+
+    height:140px;
+
+}
+
+.qr-text{
+
+    margin-top:10px;
+
+    font-size:11px;
+
+    color:#555;
+
+    line-height:1.4;
+
+}
+
 .footer{
 
     margin-top:60px;
@@ -839,28 +911,37 @@ tbody td:nth-child(4){
 
     </div>
 
-</div>
+</div><div class="qr-footer">
 
-<div class="validacao">
+    <div class="qr-info">
 
-    <div>
+        <h3>Documento autenticado</h3>
 
-        Documento válido através do sistema
+        <p>
 
-        <b>Bits & Bytes Tecnology</b>
+            Este orçamento foi emitido eletronicamente
+            pelo sistema <b>Bits &amp; Bytes Tecnology</b>.
+
+        </p>
+
+        <p>
+
+            Escaneie o QR Code para consultar
+            este orçamento.
+
+        </p>
 
     </div>
+
+    {{QRCODE}}
 
 </div>
 
 <div class="footer">
 
+    Bits &amp; Bytes Técnology®<br>
 
-    Documento emitido pelo sistema
-     <b>Bits & Bytes Tecnology</b><br>
-    Sistemas e Assistencia Técnica Especializada
-
-</div>
+    Sistemas e Assistência Técnica Especializada
 
 </div>
 

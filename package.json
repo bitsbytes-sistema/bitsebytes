@@ -17,6 +17,7 @@
     "jspdf": "^4.2.1",
     "mongoose": "^7.8.9",
     "puppeteer": "^22.15.0",
-    "puppeteer-core": "^22.15.0"
+    "puppeteer-core": "^22.15.0",
+    "qrcode": "^1.5.4"
   }
 }

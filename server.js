@@ -1244,7 +1244,7 @@ if(fs.existsSync(logoPath)){
   <img 
   src="data:image/png;base64,${logoBase64}"
   style="
-  width:120px;
+  width:80px;
   height:auto;
   "
   />
@@ -1273,45 +1273,71 @@ body{
 
 font-family:Arial, Helvetica, sans-serif;
 
-padding:30px;
+padding:15px;
 
 color:#333;
+
+font-size:12px;
+
+}
+
+h3{
+
+margin:0 0 5px 0;
+font-size:14px;
 
 }
 
 
 .header{
 
-text-align:center;
+display:flex;
 
-border-bottom:4px solid ${company.primaryColor};
+align-items:center;
 
-padding-bottom:15px;
+gap:15px;
+
+border-bottom:2px solid ${company.primaryColor};
+
+padding-bottom:10px;
 
 }
 
 
-.logo{
+.logo img{
 
-text-align:center;
+width:80px;
 
-margin-bottom:10px;
+height:auto;
 
 }
 
 
 .company{
 
-text-align:center;
+display:flex;
+
+flex-direction:column;
 
 }
 
 
 .company h1{
 
+margin:0;
+
+font-size:18px;
+
 color:${company.secondaryColor};
 
-margin:0;
+}
+
+
+.company p{
+
+margin:2px 0;
+
+font-size:11px;
 
 }
 
@@ -1337,11 +1363,11 @@ border-radius:8px;
 
 border:1px solid #ddd;
 
-padding:15px;
+padding:8px;
 
-margin-top:15px;
+margin-top:8px;
 
-border-radius:8px;
+border-radius:5px;
 
 }
 
@@ -1406,18 +1432,15 @@ CNPJ: ${company.cnpj || ""}
 </p>
 
 <p>
-Telefone: ${company.phone || ""}
+${company.phone || ""} | ${company.email || ""}
 </p>
 
 <p>
-Email: ${company.email || ""}
-</p>
-
-<p>
-Endereço: ${company.address || ""}
+${company.address || ""}
 </p>
 
 </div>
+
 
 </div>
 
@@ -1600,34 +1623,19 @@ ${ticket.observacoes || "Nenhuma observação"}
 
 <tr>
 
-
-<td align="center">
-
-_____________________________
-
-<br>
-
-Cliente
-
-
+<td>
+<b>OS:</b> ${ticket.numeroOS}
 </td>
 
-
-<td align="center">
-
-
-_____________________________
-
-<br>
-
-${company.technicianSignature || ticket.tecnico || "Técnico"}
-
-
+<td>
+<b>Data:</b> ${new Date(ticket.createdAt).toLocaleDateString("pt-BR")}
 </td>
 
+<td>
+<b>Status:</b> ${ticket.status.toUpperCase()}
+</td>
 
 </tr>
-
 
 </table>
 

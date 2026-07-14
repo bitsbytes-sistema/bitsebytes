@@ -871,6 +871,12 @@ ${dataAbertura}
 Status
 </button>
 
+
+<button onclick="imprimirOS('${c._id}')">
+🖨 OS
+</button>
+
+
 ${
 c.status === "finalizado"
 ?
@@ -880,8 +886,9 @@ Laudo
 </button>
 `
 :
-""
+"" 
 }
+
 
 <button onclick="del('${c._id}')">
 Excluir
@@ -896,6 +903,7 @@ Excluir
     });
 
 }
+
 
 // ===================== FILTRO =====================
 
@@ -1284,7 +1292,16 @@ async function logout(){
 
 }
 
+/* ===================== IMPRIMIR OS ===================== */
 
+function imprimirOS(id){
+
+    window.open(
+        "/api/tickets/" + id + "/pdf",
+        "_blank"
+    );
+
+}
 
 /* ===================== INIT ===================== */
 

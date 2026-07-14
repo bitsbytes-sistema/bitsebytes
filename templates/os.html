@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<style>
+
+*{
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    margin:30px;
+    color:#222;
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:3px solid {{PRIMARY_COLOR}};
+    padding-bottom:15px;
+    margin-bottom:20px;
+}
+
+.logo img{
+    width:90px;
+}
+
+.empresa{
+    text-align:right;
+}
+
+.empresa h1{
+    margin:0;
+    color:{{SECONDARY_COLOR}};
+    font-size:28px;
+}
+
+.empresa p{
+    margin:3px 0;
+    font-size:13px;
+}
+
+.titulo{
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    margin:25px 0;
+    color:{{SECONDARY_COLOR}};
+}
+
+.info{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:25px;
+}
+
+.info td{
+    padding:8px;
+    border:1px solid #ddd;
+}
+
+.info strong{
+    color:#111827;
+}
+
+.box{
+
+    border:1px solid #ddd;
+
+    padding:15px;
+
+    min-height:100px;
+
+    border-radius:6px;
+
+    margin-top:10px;
+
+}
+
+.status{
+
+    display:inline-block;
+
+    background:{{PRIMARY_COLOR}};
+
+    color:white;
+
+    padding:6px 16px;
+
+    border-radius:20px;
+
+    font-weight:bold;
+
+}
+
+.assinaturas{
+
+    margin-top:80px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+}
+
+.ass{
+
+    width:40%;
+
+    text-align:center;
+
+}
+
+.linha{
+
+    border-top:1px solid #000;
+
+    margin-bottom:8px;
+
+}
+
+.footer{
+
+    margin-top:40px;
+
+    text-align:center;
+
+    font-size:12px;
+
+    color:#666;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+<div class="logo">
+
+{{LOGO}}
+
+</div>
+
+<div class="empresa">
+
+<h1>{{EMPRESA}}</h1>
+
+<p>{{ENDERECO}}</p>
+
+<p>{{TELEFONE}}</p>
+
+<p>{{EMAIL}}</p>
+
+</div>
+
+</div>
+
+<div class="titulo">
+
+ORDEM DE SERVIÇO
+
+</div>
+
+<table class="info">
+
+<tr>
+
+<td><strong>OS Nº</strong></td>
+
+<td>{{NUMERO_OS}}</td>
+
+<td><strong>Data</strong></td>
+
+<td>{{DATA}}</td>
+
+</tr>
+
+<tr>
+
+<td><strong>Cliente</strong></td>
+
+<td>{{CLIENTE}}</td>
+
+<td><strong>Telefone</strong></td>
+
+<td>{{TELEFONE_CLIENTE}}</td>
+
+</tr>
+
+<tr>
+
+<td><strong>CPF/CNPJ</strong></td>
+
+<td>{{CPF}}</td>
+
+<td><strong>Status</strong></td>
+
+<td>
+
+<span class="status">
+
+{{STATUS}}
+
+</span>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td><strong>Equipamento</strong></td>
+
+<td colspan="3">
+
+{{EQUIPAMENTO}}
+
+</td>
+
+</tr>
+
+</table>
+
+<h3>Defeito Informado</h3>
+
+<div class="box">
+
+{{PROBLEMA}}
+
+</div>
+
+<h3>Observações</h3>
+
+<div class="box">
+
+{{OBSERVACOES}}
+
+</div>
+
+<div class="assinaturas">
+
+<div class="ass">
+
+<div class="linha"></div>
+
+Cliente
+
+</div>
+
+<div class="ass">
+
+<div class="linha"></div>
+
+Responsável Técnico
+
+</div>
+
+</div>
+
+<div class="footer">
+
+Documento gerado automaticamente por {{EMPRESA}}
+
+</div>
+
+</body>
+
+</html>

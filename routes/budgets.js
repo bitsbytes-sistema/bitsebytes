@@ -38,120 +38,291 @@ router.get("/consulta/:id", async (req, res) => {
 
         const company = await Company.findById(budget.companyId);
 
-        res.send(`
+const logoHTML = company?.logo
+    ? `<img src="${company.logo}" class="logo">`
+    : "";
+
+const corPrimaria = company?.primaryColor || "#2563eb";
+const corSecundaria = company?.secondaryColor || "#0f172a";
+
+
+res.send(`
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 
 <meta charset="UTF-8">
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>${budget.codigo}</title>
+
 
 <style>
 
+*{
+box-sizing:border-box;
+}
+
+
 body{
 
-    margin:40px;
+margin:0;
 
-    font-family:Arial,Helvetica,sans-serif;
+padding:20px;
 
-    background:#f4f6f9;
+font-family:Arial,Helvetica,sans-serif;
+
+background:#f1f5f9;
 
 }
+
 
 .container{
 
-    max-width:900px;
+max-width:850px;
 
-    margin:auto;
+margin:auto;
 
-    background:#fff;
+background:white;
 
-    padding:40px;
+padding:30px;
 
-    border-radius:12px;
+border-radius:15px;
 
-    box-shadow:0 10px 30px rgba(0,0,0,.1);
+box-shadow:0 10px 30px rgba(0,0,0,.12);
 
 }
 
-h1{
 
-    color:#0f172a;
+.header{
+
+display:flex;
+
+align-items:center;
+
+gap:20px;
+
+border-bottom:3px solid ${corPrimaria};
+
+padding-bottom:20px;
+
+}
+
+
+.logo{
+
+max-width:90px;
+
+max-height:90px;
+
+object-fit:contain;
+
+}
+
+
+.empresa{
+
+font-size:26px;
+
+font-weight:bold;
+
+color:${corSecundaria};
+
+}
+
+
+.titulo{
+
+margin-top:25px;
+
+font-size:22px;
+
+color:${corSecundaria};
+
+}
+
+
+.info{
+
+background:#f8fafc;
+
+padding:15px;
+
+border-radius:10px;
+
+margin-top:20px;
+
+}
+
+
+.status{
+
+display:inline-block;
+
+padding:7px 18px;
+
+border-radius:20px;
+
+background:${corPrimaria};
+
+color:white;
+
+font-weight:bold;
+
+}
+
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:25px;
+
+}
+
+
+th{
+
+background:${corSecundaria};
+
+color:white;
+
+padding:12px;
+
+text-align:left;
+
+}
+
+
+td{
+
+padding:12px;
+
+border-bottom:1px solid #ddd;
+
+}
+
+
+.total{
+
+margin-top:25px;
+
+text-align:right;
+
+font-size:28px;
+
+font-weight:bold;
+
+color:${corSecundaria};
+
+}
+
+
+.footer{
+
+margin-top:30px;
+
+text-align:center;
+
+font-size:13px;
+
+color:#64748b;
+
+}
+
+
+@media(max-width:600px){
+
+.container{
+
+padding:20px;
+
+}
+
+
+.header{
+
+flex-direction:column;
+
+text-align:center;
 
 }
 
 table{
 
-    width:100%;
-
-    border-collapse:collapse;
-
-    margin-top:20px;
+font-size:13px;
 
 }
 
-th,td{
-
-    border:1px solid #ddd;
-
-    padding:10px;
-
 }
 
-th{
-
-    background:#0f172a;
-
-    color:white;
-
-}
-
-.status{
-
-    display:inline-block;
-
-    padding:6px 14px;
-
-    border-radius:30px;
-
-    background:#2563eb;
-
-    color:white;
-
-    font-weight:bold;
-
-}
-
-.total{
-
-    margin-top:20px;
-
-    text-align:right;
-
-    font-size:26px;
-
-    font-weight:bold;
-
-}
 
 </style>
 
+
 </head>
+
 
 <body>
 
+
 <div class="container">
 
-<h1>${company?.name || "Empresa"}</h1>
 
-<h2>Orçamento ${budget.codigo}</h2>
+<div class="header">
 
-<p><strong>Cliente:</strong> ${budget.cliente}</p>
+${logoHTML}
 
-<p><strong>Status:</strong> <span class="status">${budget.status}</span></p>
+<div class="empresa">
+
+${company?.name || "Bits & Bytes Tecnology"}
+
+</div>
+
+</div>
+
+
+
+<div class="titulo">
+
+ORÇAMENTO ${budget.codigo}
+
+</div>
+
+
+
+<div class="info">
+
+
+<p>
+<strong>Cliente:</strong>
+${budget.cliente || budget.clienteId?.nome || ""}
+</p>
+
+
+<p>
+
+<strong>Status:</strong>
+
+<span class="status">
+
+${budget.status || "pendente"}
+
+</span>
+
+</p>
+
+
+</div>
+
+
 
 <table>
+
 
 <tr>
 
@@ -165,36 +336,67 @@ th{
 
 </tr>
 
+
+
 ${budget.itens.map(item=>`
 
 <tr>
 
 <td>${item.descricao}</td>
 
-<td>${item.quantidade}</td>
+<td>${item.quantidade || 1}</td>
 
-<td>R$ ${Number(item.valor).toFixed(2).replace(".",",")}</td>
+<td>
+R$ ${Number(item.valor || 0)
+.toFixed(2)
+.replace(".",",")}
+</td>
 
-<td>R$ ${Number(item.total).toFixed(2).replace(".",",")}</td>
+<td>
+R$ ${Number(item.total || 0)
+.toFixed(2)
+.replace(".",",")}
+</td>
+
 
 </tr>
 
 `).join("")}
 
+
+
 </table>
+
+
 
 <div class="total">
 
-R$ ${Number(budget.total).toFixed(2).replace(".",",")}
+TOTAL:
+
+R$ ${Number(budget.total || 0)
+.toFixed(2)
+.replace(".",",")}
+
 
 </div>
 
+
+
+<div class="footer">
+
+Orçamento gerado digitalmente por ${company?.name || "Bits & Bytes Tecnology"}
+
 </div>
+
+
+
+</div>
+
 
 </body>
 
 </html>
-        `);
+`);
 
     } catch (err) {
 

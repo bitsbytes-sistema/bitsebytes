@@ -4,8 +4,17 @@ const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const path = require("path");
 const bcrypt = require("bcrypt");
+
+const fs = require("fs");
+const path = require("path");
+
+const puppeteer =
+    process.env.RENDER
+        ? require("puppeteer-core")
+        : require("puppeteer");
+
+const chromium = require("@sparticuz/chromium");
 
 const Company = require("./models/Company");
 const User = require("./models/User");
@@ -1184,6 +1193,560 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
 
   res.json({ ok: true });
 });
+
+/* ===================== GERAR OS PDF PROFISSIONAL ===================== */
+
+app.get("/api/tickets/:id/pdf", auth, async (req,res)=>{
+
+try{
+
+
+const ticket = await Ticket.findOne({
+
+_id:req.params.id,
+
+companyId:req.session.user.companyId
+
+});
+
+
+if(!ticket){
+
+return res.status(404).send(
+"Chamado não encontrado"
+);
+
+}
+
+
+const company = await Company.findById(
+req.session.user.companyId
+);
+
+const logoPath = path.join(
+  __dirname,
+  "public",
+  "logo.png"
+);
+
+
+let logoHTML = "";
+
+if(fs.existsSync(logoPath)){
+
+  const logoBase64 = fs.readFileSync(
+    logoPath,
+    "base64"
+  );
+
+  logoHTML = `
+
+  <img 
+  src="data:image/png;base64,${logoBase64}"
+  style="
+  width:120px;
+  height:auto;
+  "
+  />
+
+  `;
+
+}
+
+
+
+const html = `
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+
+<style>
+
+
+body{
+
+font-family:Arial, Helvetica, sans-serif;
+
+padding:30px;
+
+color:#333;
+
+}
+
+
+.header{
+
+text-align:center;
+
+border-bottom:4px solid ${company.primaryColor};
+
+padding-bottom:15px;
+
+}
+
+
+.logo{
+
+text-align:center;
+
+margin-bottom:10px;
+
+}
+
+
+.company{
+
+text-align:center;
+
+}
+
+
+.company h1{
+
+color:${company.secondaryColor};
+
+margin:0;
+
+}
+
+
+.title{
+
+text-align:center;
+
+margin-top:25px;
+
+background:${company.primaryColor};
+
+color:white;
+
+padding:10px;
+
+border-radius:8px;
+
+}
+
+
+.box{
+
+border:1px solid #ddd;
+
+padding:15px;
+
+margin-top:15px;
+
+border-radius:8px;
+
+}
+
+
+.label{
+
+font-weight:bold;
+
+color:${company.secondaryColor};
+
+}
+
+
+.grid{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:10px;
+
+}
+
+
+.footer{
+
+margin-top:40px;
+
+font-size:12px;
+
+text-align:center;
+
+}
+
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+<div class="header">
+
+<div class="logo">
+
+${logoHTML}
+
+</div>
+
+
+<div class="company">
+
+<h1>
+${company.name}
+</h1>
+
+<p>
+CNPJ: ${company.cnpj || ""}
+</p>
+
+<p>
+Telefone: ${company.phone || ""}
+</p>
+
+<p>
+Email: ${company.email || ""}
+</p>
+
+<p>
+Endereço: ${company.address || ""}
+</p>
+
+</div>
+
+</div>
+
+
+<div class="title">
+
+ORDEM DE SERVIÇO - ENTRADA
+
+</div>
+
+
+
+<div class="box">
+
+<div class="grid">
+
+
+<p>
+<span class="label">
+Número OS:
+</span>
+
+${ticket.numeroOS}
+
+</p>
+
+
+<p>
+
+<span class="label">
+Data:
+</span>
+
+${new Date(ticket.createdAt)
+.toLocaleDateString("pt-BR")}
+
+</p>
+
+
+<p>
+
+<span class="label">
+Status:
+</span>
+
+${ticket.status.toUpperCase()}
+
+</p>
+
+
+</div>
+
+</div>
+
+
+
+
+<div class="box">
+
+<h3>
+Dados do Cliente
+</h3>
+
+
+<p>
+
+<span class="label">
+Nome:
+</span>
+
+${ticket.cliente}
+
+</p>
+
+
+<p>
+
+<span class="label">
+Telefone:
+</span>
+
+${ticket.telefone}
+
+</p>
+
+
+<p>
+
+<span class="label">
+CPF/CNPJ:
+</span>
+
+${ticket.cpfcnpj || ""}
+
+</p>
+
+
+<p>
+
+<span class="label">
+Endereço:
+</span>
+
+${ticket.endereco || ""}
+
+</p>
+
+
+<p>
+
+<span class="label">
+Cidade:
+</span>
+
+${ticket.cidade || ""}
+
+-
+
+${ticket.estado || ""}
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="box">
+
+<h3>
+Equipamento
+</h3>
+
+
+<p>
+
+<span class="label">
+Equipamento recebido:
+</span>
+
+${ticket.equipamento}
+
+</p>
+
+
+<p>
+
+<span class="label">
+Problema informado:
+</span>
+
+</p>
+
+
+<p>
+${ticket.problema}
+</p>
+
+
+</div>
+
+<div class="box">
+
+<h3>
+Observações da Entrada
+</h3>
+
+<p>
+${ticket.observacoes || "Nenhuma observação"}
+</p>
+
+</div>
+
+<br><br>
+
+
+<table width="100%">
+
+<tr>
+
+
+<td align="center">
+
+_____________________________
+
+<br>
+
+Cliente
+
+
+</td>
+
+
+<td align="center">
+
+
+_____________________________
+
+<br>
+
+${company.technicianSignature || ticket.tecnico || "Técnico"}
+
+
+</td>
+
+
+</tr>
+
+
+</table>
+
+
+<div class="footer">
+
+
+${company.reportFooter || ""}
+
+
+</div>
+
+
+
+</body>
+
+</html>
+
+
+`;
+
+const browser = await puppeteer.launch(
+
+process.env.RENDER
+
+? {
+
+executablePath:
+await chromium.executablePath(),
+
+args: chromium.args,
+
+headless:true
+
+}
+
+: {
+
+headless:true
+
+}
+
+);
+
+const page = await browser.newPage();
+
+
+await page.setContent(html, {
+
+waitUntil:"networkidle0"
+
+});
+
+const pdf = await page.pdf({
+
+format:"A4",
+
+printBackground:true,
+
+margin:{
+
+top:"10mm",
+right:"10mm",
+bottom:"10mm",
+left:"10mm"
+
+}
+
+});
+
+
+
+await browser.close();
+
+
+
+res.setHeader(
+"Content-Type",
+"application/pdf"
+);
+
+
+
+res.setHeader(
+"Content-Disposition",
+`inline; filename="OS-${ticket.numeroOS}.pdf"`
+);
+
+
+
+res.setHeader(
+"Content-Length",
+pdf.length
+);
+
+
+
+res.end(pdf);
+
+
+
+}catch(err){
+
+
+console.log("ERRO PDF:", err);
+
+
+res.status(500).json({
+
+erro: err.message
+
+});
+
+
+}
+
+
+});
+
 
 /* ===================== ROTAS ===================== */
 

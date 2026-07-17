@@ -414,7 +414,7 @@ input{
 
   padding:10px;
 
-  margin:5px;
+  margin:3px;
 
   border-radius:6px;
 
@@ -422,7 +422,15 @@ input{
 
 }
 
+#observacoes{
 
+  display:block;
+
+  margin-left:5px;
+
+  width:calc(100% - 10px) !important;
+
+}
 
 /* ================= BUTTON ================= */
 
@@ -462,6 +470,39 @@ h3{
 
 }
 
+/* ================= AUTOCOMPLETE CLIENTE ================= */
+
+.autocomplete-box{
+
+  position:absolute;
+  width:250px;
+  max-height:200px;
+  overflow-y:auto;
+  z-index:999;
+
+  background:white;
+
+  border:none;
+  box-shadow:none;
+
+  border-radius:6px;
+
+}
+
+.autocomplete-item{
+
+  padding:10px;
+  cursor:pointer;
+  border-bottom:1px solid #eee;
+
+}
+
+
+.autocomplete-item:hover{
+
+  background:#f1f5f9;
+
+}
 
 </style>
 
@@ -598,15 +639,56 @@ Sair
 </h3>
 
 
-<input id="cpfcnpj" placeholder="CPF/CNPJ">
+<div style="position:relative;display:inline-block">
 
-<input id="cliente" placeholder="Cliente">
+<input id="cpfcnpj" 
+placeholder="CPF/CNPJ"
+oninput="buscarCliente('cpfcnpj')">
 
-<input id="telefone" placeholder="Telefone">
+<div id="listaCpfcnpj" class="autocomplete-box"></div>
+
+</div>
+
+
+<div style="position:relative;display:inline-block">
+
+<input id="cliente" 
+placeholder="Cliente"
+oninput="buscarCliente('cliente')">
+
+<div id="listaCliente" class="autocomplete-box"></div>
+
+</div>
+
+
+<div style="position:relative;display:inline-block">
+
+<input id="telefone" 
+placeholder="Telefone"
+oninput="buscarCliente('telefone')">
+
+<div id="listaTelefone" class="autocomplete-box"></div>
+
+</div>
 
 <input id="equipamento" placeholder="Equipamento">
 
 <input id="problema" placeholder="Problema">
+
+<textarea 
+id="observacoes"
+placeholder="Observações da Entrada"
+style="
+width:100%;
+height:80px;
+padding:20px;
+margin-top:20px;
+border-radius:0px;
+border:1px solid #cbd5e1;
+resize:vertical;
+font-family:Arial;
+">
+</textarea>
 
 
 <br><br>
@@ -615,6 +697,8 @@ Sair
 <button onclick="criar()">
 Criar Chamado
 </button>
+
+</div>
 
 <div class="filtros">
 
@@ -684,7 +768,29 @@ Resumo
 
 </table>
 
+</div>
+
 <script>
+
+let clienteSelecionado = null;
+let clientes = [];
+
+// ===================== CARREGAR CLIENTES =====================
+
+async function carregarClientes(){
+
+  const res = await fetch("/api/clientes", {
+    credentials:"include"
+  });
+
+
+  if(res.ok){
+
+    clientes = await res.json();
+
+  }
+
+}
 
 const stats = document.getElementById("stats");
 const lista = document.getElementById("lista");
@@ -1104,6 +1210,138 @@ function loadStats(){
 
 }
 
+// ===================== AUTOCOMPLETE =====================
+
+
+function buscarCliente(campo){
+
+  const valor =
+    document.getElementById(campo).value
+    .toLowerCase()
+    .trim();
+
+
+  const lista =
+    document.getElementById(
+      "lista" + campo.charAt(0).toUpperCase() + campo.slice(1)
+    );
+
+
+  lista.innerHTML="";
+
+
+  if(valor.length < 2){
+
+    return;
+
+  }
+
+
+  const encontrados = clientes.filter(c=>{
+
+
+    if(campo==="cliente"){
+
+      return (c.nome || c.cliente || "")
+      .toLowerCase()
+      .includes(valor);
+
+    }
+
+
+    if(campo==="cpfcnpj"){
+
+      return (c.cpfcnpj || "")
+      .toLowerCase()
+      .includes(valor);
+
+    }
+
+
+    if(campo==="telefone"){
+
+      return (c.telefone || "")
+      .toLowerCase()
+      .includes(valor);
+
+    }
+
+
+  }).slice(0,10);
+
+
+
+  encontrados.forEach(c=>{
+
+
+    const nome =
+      c.nome || c.cliente;
+
+
+    lista.innerHTML += `
+
+    <div class="autocomplete-item"
+    onclick='selecionarCliente(${JSON.stringify(c)})'>
+
+    <b>${nome}</b>
+    <br>
+
+    <small>
+    ${c.cpfcnpj || ""}
+    ${c.telefone || ""}
+    </small>
+
+    </div>
+
+    `;
+
+
+  });
+
+if (lista.innerHTML.trim() !== "") {
+
+    lista.style.border = "1px solid #cbd5e1";
+    lista.style.boxShadow = "0 4px 10px rgba(0,0,0,.15)";
+
+} else {
+
+    lista.style.border = "none";
+    lista.style.boxShadow = "none";
+
+}
+
+}
+
+function selecionarCliente(c){
+
+
+  clienteSelecionado = c._id;
+
+
+  document.getElementById("cliente").value =
+    c.nome || c.cliente || "";
+
+
+  document.getElementById("cpfcnpj").value =
+    c.cpfcnpj || "";
+
+
+  document.getElementById("telefone").value =
+    c.telefone || "";
+
+
+  document.getElementById("listaCliente").innerHTML="";
+  document.getElementById("listaCpfcnpj").innerHTML="";
+  document.getElementById("listaTelefone").innerHTML="";
+
+["listaCliente","listaCpfcnpj","listaTelefone"].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.border = "none";
+    el.style.boxShadow = "none";
+});
+
+
+}
 
 
 /* ===================== CRIAR ===================== */
@@ -1125,6 +1363,9 @@ async function criar(){
   const problema =
     document.getElementById("problema").value.trim();
 
+const observacoes =
+  document.getElementById("observacoes").value.trim();
+
   if(!cliente || !telefone || !equipamento || !problema){
 
     alert("Preencha todos os campos");
@@ -1142,15 +1383,18 @@ async function criar(){
 
     credentials:"include",
 
-    body:JSON.stringify({
+body:JSON.stringify({
 
-      cliente,
-      telefone,
-      cpfcnpj,
-      equipamento,
-      problema
+  clienteId: clienteSelecionado,
 
-    })
+  cliente,
+  telefone,
+  cpfcnpj,
+  equipamento,
+  problema,
+  observacoes
+
+})
 
   });
 
@@ -1159,6 +1403,7 @@ async function criar(){
   document.getElementById("cpfcnpj").value="";
   document.getElementById("equipamento").value="";
   document.getElementById("problema").value="";
+  document.getElementById("observacoes").value="";
 
   load();
 
@@ -1308,6 +1553,8 @@ function imprimirOS(id){
 carregarUsuario();
 
 preencherCliente();
+
+carregarClientes();
 
 load();
 

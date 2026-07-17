@@ -802,10 +802,48 @@ app.post("/api/tickets", auth, async (req, res) => {
     numeroOS: -1
   });
 
+
   const numeroOS =
     ultimoTicket && ultimoTicket.numeroOS
       ? ultimoTicket.numeroOS + 1
       : 1;
+
+
+  let dadosCliente = {};
+
+
+  if(req.body.clienteId){
+
+    const cliente = await Cliente.findOne({
+
+      _id:req.body.clienteId,
+
+      companyId:req.session.user.companyId
+
+    });
+
+
+    if(cliente){
+
+      dadosCliente = {
+
+        endereco: cliente.endereco || "",
+
+        bairro: cliente.bairro || "",
+
+        cidade: cliente.cidade || "",
+
+        estado: cliente.estado || "",
+
+        cep: cliente.cep || ""
+
+      };
+
+    }
+
+  }
+
+
 
   const ticket = await Ticket.create({
 
@@ -813,7 +851,9 @@ app.post("/api/tickets", auth, async (req, res) => {
 
     numeroOS,
 
-    clienteId: req.body.clienteId,
+
+    clienteId: req.body.clienteId || null,
+
 
     cliente: req.body.cliente,
 
@@ -821,18 +861,26 @@ app.post("/api/tickets", auth, async (req, res) => {
 
     cpfcnpj: req.body.cpfcnpj,
 
+
+    ...dadosCliente,
+
+
     equipamento: req.body.equipamento,
 
     problema: req.body.problema,
 
-    status: "aberto"
+    observacoes: req.body.observacoes || "",
+
+    status:"aberto"
 
   });
+
 
   res.json(ticket);
 
 });
 
+  
 /* ===================== STATUS UPDATE ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
 
@@ -1474,8 +1522,9 @@ ${ticket.numeroOS}
 Data:
 </span>
 
-${new Date(ticket.createdAt)
-.toLocaleDateString("pt-BR")}
+${new Date(ticket.createdAt).toLocaleDateString("pt-BR", {
+  timeZone: "America/Cuiaba"
+})}
 
 </p>
 
@@ -1628,7 +1677,9 @@ ${ticket.observacoes || "Nenhuma observação"}
 </td>
 
 <td>
-<b>Data:</b> ${new Date(ticket.createdAt).toLocaleDateString("pt-BR")}
+<b>Data:</b> ${new Date(ticket.createdAt).toLocaleDateString("pt-BR", {
+  timeZone: "America/Cuiaba"
+})}
 </td>
 
 <td>

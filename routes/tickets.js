@@ -38,21 +38,36 @@ router.get("/", async (req, res) => {
 /* ===================== CRIAR ===================== */
 router.post("/", async (req, res) => {
   try {
+
+console.log("BODY RECEBIDO:", req.body);
+
     const companyId = req.session?.user?.companyId;
 
     if (!companyId) {
       return res.status(401).json({ error: "Sessão inválida" });
     }
 
-    const ticket = await Ticket.create({
-      cliente: req.body.cliente,
-      equipamento: req.body.equipamento,
-      cpfcnpj: req.body.cpfcnpj,
-      telefone: req.body.telefone,
-      problema: req.body.problema,
-      status: req.body.status || "aberto",
-      companyId
-    });
+const ticket = await Ticket.create({
+
+  clienteId: req.body.clienteId || null,
+
+  cliente: req.body.cliente,
+
+  equipamento: req.body.equipamento,
+
+  cpfcnpj: req.body.cpfcnpj,
+
+  telefone: req.body.telefone,
+
+  problema: req.body.problema,
+
+  observacoes: req.body.observacoes || "",
+
+  status: req.body.status || "aberto",
+
+  companyId
+
+});
 
     res.json(ticket);
 

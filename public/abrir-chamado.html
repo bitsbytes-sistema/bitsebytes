@@ -369,21 +369,52 @@ form.addEventListener(
 
 <script>
 
-window.OneSignalDeferred =
-  window.OneSignalDeferred || [];
+<script>
 
-OneSignalDeferred.push(
-  async function(OneSignal){
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+
+OneSignalDeferred.push(async function(OneSignal){
+
+    console.log("OneSignal iniciando...");
 
     await OneSignal.init({
 
-      appId:
-        "6711c89e-0dc5-48c3-b31a-b70f6c64902d"
+        appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d",
+
+        notifyButton: {
+            enable: true
+        }
 
     });
 
-  }
-);
+
+    console.log("OneSignal inicializado");
+
+
+    const permission = OneSignal.Notifications.permission;
+
+
+    console.log(
+        "Permissão atual:",
+        permission
+    );
+
+
+    if(!permission){
+
+        console.log(
+            "Solicitando permissão..."
+        );
+
+
+        await OneSignal.Notifications.requestPermission();
+
+    }
+
+
+});
+
+</script>
 
 </script>
 

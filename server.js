@@ -1134,7 +1134,14 @@ const chamadosAbertos = await Ticket.countDocuments({
 
   companyId: company._id,
 
-  cpfcnpj: req.body.cpfcnpj,
+  $or:[
+    {
+      cpfcnpj: req.body.cpfcnpj
+    },
+    {
+      telefone: req.body.telefone
+    }
+  ],
 
   status:{
     $in:[
@@ -1145,7 +1152,6 @@ const chamadosAbertos = await Ticket.countDocuments({
   }
 
 });
-
 
 if(chamadosAbertos >= 3){
 

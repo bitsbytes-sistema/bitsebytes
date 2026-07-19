@@ -662,13 +662,19 @@ async function lerNotificacao(id){
 
 }
 
+/* Atualiza dashboard e notificações a cada 10 segundos */
 
-/* Atualiza a cada 10 segundos */
+setInterval(()=>{
 
-setInterval(
-  carregarNotificacoes,
-  10000
-);
+  carregarNotificacoes();
+
+  loadStats();
+
+  loadUltimosChamados();
+
+  loadIndicadores();
+
+},10000);
 
 /* ===================== LOGOUT ===================== */
 async function logout(){

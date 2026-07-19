@@ -1128,6 +1128,36 @@ app.post("/abrir-chamado", async (req, res) => {
 
     }
 
+// ===================== LIMITE DE CHAMADOS POR CLIENTE =====================
+
+const chamadosAbertos = await Ticket.countDocuments({
+
+  companyId: company._id,
+
+  cpfcnpj: req.body.cpfcnpj,
+
+  status:{
+    $in:[
+      "aberto",
+      "andamento",
+      "reparo"
+    ]
+  }
+
+});
+
+
+if(chamadosAbertos >= 3){
+
+  return res.status(400).json({
+
+    error:
+    "Você já possui 3 chamados em andamento. Aguarde a finalização de um chamado antes de abrir outro."
+
+  });
+
+}
+
     const ultimoOS = await Ticket.findOne({
       companyId: company._id
     }).sort({

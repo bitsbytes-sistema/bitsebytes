@@ -2,7 +2,7 @@
   "name": "Bits & Bytes",
   "short_name": "Bits & Bytes",
   "description": "Sistema de Assistência Técnica Bits & Bytes",
-  "start_url": "/",
+  "start_url": "/abrir-chamado.html",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0f172a",

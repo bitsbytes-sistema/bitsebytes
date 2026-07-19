@@ -373,42 +373,37 @@ window.OneSignalDeferred = window.OneSignalDeferred || [];
 
 OneSignalDeferred.push(async function(OneSignal){
 
-    console.log("OneSignal iniciando...");
-
     await OneSignal.init({
 
-        appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d",
-
-        notifyButton:{
-            enable:true
-        }
+        appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d"
 
     });
 
 
-    console.log("OneSignal inicializado");
+    const btn = document.createElement("button");
+
+    btn.innerText = "Ativar notificações";
+
+    btn.style.position = "fixed";
+    btn.style.bottom = "20px";
+    btn.style.left = "20px";
+    btn.style.right = "20px";
+    btn.style.zIndex = "9999";
 
 
-    const permission =
-        OneSignal.Notifications.permission;
-
-
-    console.log(
-        "Permissão atual:",
-        permission
-    );
-
-
-    if(!permission){
-
-        console.log(
-            "Solicitando permissão..."
-        );
-
+    btn.onclick = async function(){
 
         await OneSignal.Notifications.requestPermission();
 
-    }
+        alert(
+          "Permissão: " +
+          OneSignal.Notifications.permission
+        );
+
+    };
+
+
+    document.body.appendChild(btn);
 
 
 });

@@ -369,8 +369,6 @@ form.addEventListener(
 
 <script>
 
-<script>
-
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 
 OneSignalDeferred.push(async function(OneSignal){
@@ -381,8 +379,8 @@ OneSignalDeferred.push(async function(OneSignal){
 
         appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d",
 
-        notifyButton: {
-            enable: true
+        notifyButton:{
+            enable:true
         }
 
     });
@@ -391,7 +389,8 @@ OneSignalDeferred.push(async function(OneSignal){
     console.log("OneSignal inicializado");
 
 
-    const permission = OneSignal.Notifications.permission;
+    const permission =
+        OneSignal.Notifications.permission;
 
 
     console.log(
@@ -413,8 +412,6 @@ OneSignalDeferred.push(async function(OneSignal){
 
 
 });
-
-</script>
 
 </script>
 

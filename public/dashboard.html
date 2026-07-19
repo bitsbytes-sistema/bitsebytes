@@ -67,6 +67,90 @@ body{
   box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
+/* NOTIFICAÇÕES */
+
+.notificacao{
+  position:relative;
+  cursor:pointer;
+  font-size:22px;
+}
+
+.badge-notificacao{
+
+  position:absolute;
+  top:-8px;
+  right:-10px;
+
+  background:red;
+  color:white;
+
+  font-size:15px;
+  font-weight:bold;
+
+  width:18px;
+  height:18px;
+
+  border-radius:80%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  line-height:2,2;
+
+}
+
+.dropdown-notificacoes{
+
+  position:absolute;
+  right:30px;
+  top:60px;
+
+  width:320px;
+
+  background:white;
+
+  color:#111;
+
+  border-radius:10px;
+
+  box-shadow:
+  0 5px 20px rgba(0,0,0,.2);
+
+  display:none;
+
+  z-index:999;
+
+}
+
+.dropdown-notificacoes h4{
+
+  margin:0;
+  padding:15px;
+  border-bottom:1px solid #eee;
+
+}
+
+
+.item-notificacao{
+
+  padding:12px;
+
+  border-bottom:1px solid #eee;
+
+  cursor:pointer;
+
+  font-size:14px;
+
+}
+
+
+.item-notificacao:hover{
+
+  background:#f1f5f9;
+
+}
+
 /* CONTAINER */
 .container{
   padding:20px;
@@ -159,10 +243,59 @@ body{
 <!-- MAIN -->
 <div class="main">
 
-  <div class="topbar">
-    <div>📊 Dashboard</div>
-    <a href="javascript:void(0)" onclick="logout()">Sair</a>
+<div class="topbar">
+
+  <div>
+    📊 Dashboard
   </div>
+
+
+  <div style="display:flex;align-items:center;gap:25px;position:relative;">
+
+
+    <div 
+      class="notificacao"
+      onclick="abrirNotificacoes()"
+    >
+
+      🔔
+
+      <span 
+        id="contadorNotificacao"
+        class="badge-notificacao"
+      >
+        0
+      </span>
+
+    </div>
+
+
+    <a href="javascript:void(0)" onclick="logout()">
+      Sair
+    </a>
+
+
+    <div 
+      id="listaNotificacoes"
+      class="dropdown-notificacoes"
+    >
+
+      <h4>
+        Notificações
+      </h4>
+
+      <div id="notificacoes">
+        Carregando...
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+</div>
 
   <div class="container">
 
@@ -386,6 +519,156 @@ async function loadIndicadores(){
 
 }
 
+/* ===================== NOTIFICAÇÕES ===================== */
+
+
+async function carregarNotificacoes(){
+
+  const res = await fetch(
+    "/api/notifications",
+    {
+      credentials:"include"
+    }
+  );
+
+
+  const lista =
+    await res.json();
+
+
+  const naoLidas =
+    lista.filter(
+      n => !n.lida
+    ).length;
+
+
+const contador =
+  document.getElementById(
+    "contadorNotificacao"
+  );
+
+
+if(naoLidas > 0){
+
+  contador.innerText = naoLidas;
+  contador.style.display = "inline-block";
+
+}else{
+
+  contador.style.display = "none";
+
+}
+
+
+  const div =
+    document.getElementById(
+      "notificacoes"
+    );
+
+
+  if(!lista.length){
+
+    div.innerHTML =
+      `
+      <div class="item-notificacao">
+        Nenhuma notificação
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  div.innerHTML = "";
+
+
+  lista.forEach(n=>{
+
+
+div.innerHTML +=
+
+`
+
+<div 
+  class="item-notificacao ${n.lida ? "" : "nova"}"
+  onclick="lerNotificacao('${n._id}')"
+>
+
+  <b>
+    ${n.titulo}
+  </b>
+
+  <br>
+
+  ${n.mensagem}
+
+  <br>
+
+  <small>
+    ${new Date(n.createdAt).toLocaleString("pt-BR")}
+  </small>
+
+</div>
+
+`;
+
+  });
+
+
+}
+
+
+
+function abrirNotificacoes(){
+
+  const div =
+    document.getElementById(
+      "listaNotificacoes"
+    );
+
+
+  if(div.style.display==="block"){
+
+    div.style.display="none";
+
+  }else{
+
+    div.style.display="block";
+
+  }
+
+}
+
+
+
+async function lerNotificacao(id){
+
+
+ await fetch(
+   `/api/notifications/${id}/read`,
+   {
+
+    method:"PUT",
+
+    credentials:"include"
+
+   }
+ );
+
+
+ carregarNotificacoes();
+
+
+}
+
+
+/* Atualiza a cada 10 segundos */
+
+setInterval(
+  carregarNotificacoes,
+  10000
+);
 
 /* ===================== LOGOUT ===================== */
 async function logout(){
@@ -399,6 +682,7 @@ carregarUsuario();
 loadStats();
 loadUltimosChamados();
 loadIndicadores();
+carregarNotificacoes();
 
 </script>
 

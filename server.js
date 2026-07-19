@@ -22,9 +22,17 @@ const Ticket = require("./models/Ticket");
 const Cliente = require("./models/Cliente");
 const Service = require("./models/Service");
 const Budget = require("./models/Budget");
+const Notification = require("./models/Notification");
 
 const serviceRoutes = require("./routes/services");
 const budgetRoutes = require("./routes/budgets");
+const notificationRoutes = require("./routes/notifications");
+const OneSignal = require("onesignal-node");
+
+const oneSignalClient = new OneSignal.Client(
+  process.env.ONESIGNAL_APP_ID,
+  process.env.ONESIGNAL_API_KEY
+);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -1161,6 +1169,57 @@ app.post("/abrir-chamado", async (req, res) => {
 
     });
 
+
+// ===================== NOTIFICAÇÃO SISTEMA =====================
+
+const novaNotificacao = await Notification.create({
+
+  companyId: company._id,
+
+  tipo: "novo_chamado",
+
+  titulo: "Novo chamado",
+
+  mensagem:
+    `${ticket.cliente} abriu um novo chamado para ${ticket.equipamento}.`,
+
+  ticketId: ticket._id,
+
+  lida: false
+
+});
+
+
+console.log(
+  "NOTIFICAÇÃO CRIADA:",
+  novaNotificacao._id
+);
+
+// Envia Push para o celular
+try{
+
+  await oneSignalClient.createNotification({
+
+    app_id: process.env.ONESIGNAL_APP_ID,
+
+    included_segments: ["Subscribed Users"],
+
+    headings:{
+      en:"Novo chamado"
+    },
+
+    contents:{
+      en:`${ticket.cliente} abriu um chamado para ${ticket.equipamento}.`
+    }
+
+  });
+
+}catch(err){
+
+  console.log("Erro OneSignal:", err.body || err);
+
+}
+
     let numero =
       String(ticket.telefone || "")
       .replace(/\D/g, "");
@@ -1813,6 +1872,7 @@ app.use("/api/services", serviceRoutes);
 
 app.use("/api/budgets", budgetRoutes);
 
+app.use("/api/notifications", notificationRoutes);
 
 /* ===================== LOGOUT ===================== */
 

@@ -1248,7 +1248,7 @@ const response = await oneSignalClient.createNotification({
       en:`${ticket.cliente} abriu um chamado para ${ticket.equipamento}.`
     },
 
-    url: `${process.env.APP_URL}/chamado.html?id=${ticket._id}`
+    url: `${process.env.APP_URL}/chamados.html?id=${ticket._id}`
 
 });
 

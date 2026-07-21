@@ -1238,7 +1238,7 @@ const response = await oneSignalClient.createNotification({
 
     app_id: process.env.ONESIGNAL_APP_ID,
 
-    included_segments: ["Subscribed Users"],
+    included_segments: ["All"],
 
     headings:{
       en:"🔧 Novo chamado recebido"

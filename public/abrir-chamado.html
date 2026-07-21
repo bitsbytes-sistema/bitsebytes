@@ -346,6 +346,16 @@ form.addEventListener(
 
       form.reset();
 
+// Solicita permissão para notificações somente após abrir o chamado
+if (
+    oneSignalInstance &&
+    !oneSignalInstance.Notifications.permission
+) {
+
+    await oneSignalInstance.Notifications.requestPermission();
+
+}
+
     }catch(err){
 
       alerta.className =
@@ -369,42 +379,19 @@ form.addEventListener(
 
 <script>
 
+let oneSignalInstance = null;
+
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 
 OneSignalDeferred.push(async function(OneSignal){
+
+    oneSignalInstance = OneSignal;
 
     await OneSignal.init({
 
         appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d"
 
     });
-
-
-    const btn = document.createElement("button");
-
-    btn.innerText = "Ativar notificações";
-
-    btn.style.position = "fixed";
-    btn.style.bottom = "20px";
-    btn.style.left = "20px";
-    btn.style.right = "20px";
-    btn.style.zIndex = "9999";
-
-
-    btn.onclick = async function(){
-
-        await OneSignal.Notifications.requestPermission();
-
-        alert(
-          "Permissão: " +
-          OneSignal.Notifications.permission
-        );
-
-    };
-
-
-    document.body.appendChild(btn);
-
 
 });
 

@@ -1234,7 +1234,7 @@ console.log(
 // Envia Push para o celular
 try {
 
-await oneSignalClient.createNotification({
+const response = await oneSignalClient.createNotification({
 
     app_id: process.env.ONESIGNAL_APP_ID,
 
@@ -1248,14 +1248,21 @@ await oneSignalClient.createNotification({
       en:`${ticket.cliente} abriu um chamado para ${ticket.equipamento}.`
     },
 
-    url:
-      `${process.env.APP_URL}/chamado.html?id=${ticket._id}`
+    url: `${process.env.APP_URL}/chamado.html?id=${ticket._id}`
 
 });
 
-} catch (err) {
+console.log("ONESIGNAL RESPONSE:", response);
 
-  console.log("Erro OneSignal:", err.body || err);
+} 
+
+catch (err) {
+
+    console.error("ERRO ONESIGNAL:");
+
+    console.error(err);
+
+    console.error(err.body);
 
 }
 

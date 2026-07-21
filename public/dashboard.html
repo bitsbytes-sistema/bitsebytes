@@ -698,11 +698,17 @@ window.OneSignalDeferred = window.OneSignalDeferred || [];
 
 OneSignalDeferred.push(async function(OneSignal){
 
-    await OneSignal.init({
+await OneSignal.init({
 
-        appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d"
+    appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d",
 
-    });
+    persistNotification: false,
+
+    notificationClickHandlerMatch: "origin",
+
+    notificationClickHandlerAction: "focus"
+
+});
 
 
     console.log("OneSignal Dashboard iniciado");

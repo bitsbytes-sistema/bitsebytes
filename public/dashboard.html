@@ -327,6 +327,8 @@ body{
 
 </div> <!-- fecha main -->
 
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
 <script>
 
 /* ===================== USUÁRIO ===================== */
@@ -689,6 +691,24 @@ loadStats();
 loadUltimosChamados();
 loadIndicadores();
 carregarNotificacoes();
+
+/* ===================== ONESIGNAL ===================== */
+
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+
+OneSignalDeferred.push(async function(OneSignal){
+
+    await OneSignal.init({
+
+        appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d"
+
+    });
+
+
+    console.log("OneSignal Dashboard iniciado");
+
+
+});
 
 </script>
 

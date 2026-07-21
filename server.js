@@ -1234,21 +1234,24 @@ console.log(
 // Envia Push para o celular
 try {
 
-  await oneSignalClient.createNotification({
+await oneSignalClient.createNotification({
 
     app_id: process.env.ONESIGNAL_APP_ID,
 
-    included_segments: ["Active Subscriptions"],
+    included_segments: ["Subscribed Users"],
 
-    headings: {
-      en: "Novo chamado"
+    headings:{
+      en:"🔧 Novo chamado recebido"
     },
 
-    contents: {
-      en: `${ticket.cliente} abriu um chamado para ${ticket.equipamento}.`
-    }
+    contents:{
+      en:`${ticket.cliente} abriu um chamado para ${ticket.equipamento}.`
+    },
 
-  });
+    url:
+      `${process.env.APP_URL}/chamado.html?id=${ticket._id}`
+
+});
 
 } catch (err) {
 
@@ -1908,7 +1911,7 @@ app.use("/api/services", serviceRoutes);
 
 app.use("/api/budgets", budgetRoutes);
 
-app.use("/api/notifications", notificationRoutes);
+app.use("/api/notifications", auth, notificationRoutes);
 
 /* ===================== LOGOUT ===================== */
 

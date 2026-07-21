@@ -346,16 +346,6 @@ form.addEventListener(
 
       form.reset();
 
-// Solicita permissão para notificações somente após abrir o chamado
-if (
-    oneSignalInstance &&
-    !oneSignalInstance.Notifications.permission
-) {
-
-    await oneSignalInstance.Notifications.requestPermission();
-
-}
-
     }catch(err){
 
       alerta.className =
@@ -371,29 +361,6 @@ if (
 
   }
 );
-
-</script>
-
-<!-- ONESIGNAL -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-
-<script>
-
-let oneSignalInstance = null;
-
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-
-OneSignalDeferred.push(async function(OneSignal){
-
-    oneSignalInstance = OneSignal;
-
-    await OneSignal.init({
-
-        appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d"
-
-    });
-
-});
 
 </script>
 

@@ -1347,6 +1347,42 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
   res.json({ ok: true });
 });
 
+/* ===================== BUSCAR CHAMADO ===================== */
+
+app.get("/api/tickets/:id", auth, async (req, res) => {
+
+  try {
+
+    const ticket = await Ticket.findOne({
+
+      _id: req.params.id,
+
+      companyId: req.session.user.companyId
+
+    });
+
+    if (!ticket) {
+
+      return res.status(404).json({
+        error: "Chamado não encontrado"
+      });
+
+    }
+
+    res.json(ticket);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: "Erro ao buscar chamado"
+    });
+
+  }
+
+});
+
 /* ===================== GERAR OS PDF PROFISSIONAL ===================== */
 
 app.get("/api/tickets/:id/pdf", auth, async (req,res)=>{

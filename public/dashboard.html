@@ -716,6 +716,33 @@ OneSignalDeferred.push(async function(OneSignal){
 
     console.log("OneSignal Dashboard iniciado");
 
+    try{
+
+        const permissao =
+            await OneSignal.Notifications.permission;
+
+        const inscrito =
+            await OneSignal.User.PushSubscription.optedIn;
+
+        console.log("Permissão:", permissao);
+        console.log("Inscrito:", inscrito);
+
+        if(permissao && !inscrito){
+
+            console.log("Reativando inscrição...");
+
+            await OneSignal.User.PushSubscription.optIn();
+
+            console.log("Inscrição reativada!");
+
+        }
+
+    }catch(e){
+
+        console.error("Erro ao verificar inscrição:", e);
+
+    }
+
 });
 
 </script>

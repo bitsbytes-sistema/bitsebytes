@@ -70,6 +70,10 @@ if (user) {
 
     console.log("USUÁRIO RECEBIDO /me:", user);
 
+    await OneSignal.login(String(user._id));
+
+    console.log("External ID enviado:", user._id);
+
     await OneSignal.User.addTags({
 
         companyId: String(user.companyId),

@@ -72,22 +72,18 @@ if (user) {
 
     await OneSignal.login(String(user._id));
 
-    console.log("External ID enviado:", user._id);
+    console.log("✅ Login OneSignal realizado");
+
+    console.log("External ID atual:", OneSignal.User.externalId);
 
     await OneSignal.User.addTags({
-
         companyId: String(user.companyId),
-
         userId: String(user._id),
-
         role: String(user.role),
-
         username: String(user.username)
-
     });
 
     console.log("✅ TAGS ENVIADAS AO ONESIGNAL");
-
 }
 
 

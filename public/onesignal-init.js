@@ -72,9 +72,11 @@ if (user) {
 
     await OneSignal.login(String(user._id));
 
-    console.log("✅ Login OneSignal realizado");
+console.log("✅ Login OneSignal realizado");
 
-    console.log("External ID atual:", OneSignal.User.externalId);
+await new Promise(resolve => setTimeout(resolve, 3000));
+
+console.log("External ID:", await OneSignal.User.externalId);
 
     await OneSignal.User.addTags({
         companyId: String(user.companyId),

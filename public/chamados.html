@@ -1109,6 +1109,9 @@ switch(ordenacao){
 
 async function load(){
 
+	 console.log("🔄 LOAD EXECUTADO", new Date().toLocaleTimeString());
+
+
   try {
 
     const res = await fetch("/api/tickets", {
@@ -1125,10 +1128,9 @@ async function load(){
 
     chamados = await res.json();
 
-    renderChamados(chamados);
+loadStats();
 
-
-    loadStats();
+filtrarChamados();
 
 
   } catch(err){

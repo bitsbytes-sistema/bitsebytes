@@ -72,27 +72,36 @@ if (user) {
 
     await OneSignal.login(String(user._id));
 
-console.log("✅ Login OneSignal realizado");
-
-setTimeout(async () => {
-
-    console.log("External ID:", await OneSignal.User.externalId);
-
-    await OneSignal.User.addTags({
-
-        companyId: String(user.companyId),
-        userId: String(user._id),
-        role: String(user.role),
-        username: String(user.username)
-
-    });
-
-    console.log("✅ TAGS ENVIADAS");
-
-}, 5000);
+    console.log("✅ Login OneSignal realizado");
 
 
-}catch(err){
+    setTimeout(async () => {
+
+        console.log(
+            "External ID:",
+            await OneSignal.User.externalId
+        );
+
+
+        await OneSignal.User.addTags({
+
+            companyId: String(user.companyId),
+            userId: String(user._id),
+            role: String(user.role),
+            username: String(user.username)
+
+        });
+
+
+        console.log("✅ TAGS ENVIADAS");
+
+
+    }, 5000);
+
+
+}
+
+} catch(err){
 
     console.error(
         "Erro ao registrar Tags OneSignal:",

@@ -74,19 +74,22 @@ if (user) {
 
 console.log("✅ Login OneSignal realizado");
 
-await new Promise(resolve => setTimeout(resolve, 3000));
+setTimeout(async () => {
 
-console.log("External ID:", await OneSignal.User.externalId);
+    console.log("External ID:", await OneSignal.User.externalId);
 
     await OneSignal.User.addTags({
+
         companyId: String(user.companyId),
         userId: String(user._id),
         role: String(user.role),
         username: String(user.username)
+
     });
 
-    console.log("✅ TAGS ENVIADAS AO ONESIGNAL");
-}
+    console.log("✅ TAGS ENVIADAS");
+
+}, 5000);
 
 
 }catch(err){

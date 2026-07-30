@@ -75,47 +75,29 @@ if (user) {
     console.log("✅ Login OneSignal realizado");
 
 
-    setTimeout(async () => {
-
-    try {
-
-        console.log(
-            "External ID:",
-            await OneSignal.User.externalId
-        );
+    console.log(
+        "External ID:",
+        await OneSignal.User.externalId
+    );
 
 
-        const tags = {
+    const tags = {
 
-            companyId: String(user.companyId),
-            userId: String(user._id),
-            role: String(user.role),
-            username: String(user.username)
+        companyId: String(user.companyId),
+        userId: String(user._id),
+        role: String(user.role),
+        username: String(user.username)
 
-        };
-
-
-        await OneSignal.User.addTags(tags);
+    };
 
 
-        console.log(
-            "✅ TAGS ENVIADAS:",
-            tags
-        );
+    await OneSignal.User.addTags(tags);
 
 
-    } catch(error){
-
-        console.error(
-            "Erro ao enviar tags:",
-            error
-        );
-
-    }
-
-
-}, 10000);
-
+    console.log(
+        "✅ TAGS ENVIADAS:",
+        tags
+    );
 
 }
 

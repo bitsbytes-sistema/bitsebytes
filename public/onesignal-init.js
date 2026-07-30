@@ -77,26 +77,44 @@ if (user) {
 
     setTimeout(async () => {
 
+    try {
+
         console.log(
             "External ID:",
             await OneSignal.User.externalId
         );
 
 
-        await OneSignal.User.addTags({
+        const tags = {
 
             companyId: String(user.companyId),
             userId: String(user._id),
             role: String(user.role),
             username: String(user.username)
 
-        });
+        };
 
 
-        console.log("✅ TAGS ENVIADAS");
+        await OneSignal.User.addTags(tags);
 
 
-    }, 5000);
+        console.log(
+            "✅ TAGS ENVIADAS:",
+            tags
+        );
+
+
+    } catch(error){
+
+        console.error(
+            "Erro ao enviar tags:",
+            error
+        );
+
+    }
+
+
+}, 10000);
 
 
 }

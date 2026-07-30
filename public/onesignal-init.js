@@ -81,12 +81,6 @@ if (user) {
     );
 
 
-
-    console.log(
-        "✅ TAGS ENVIADAS:",
-        tags
-    );
-
 }
 
 } catch(err){

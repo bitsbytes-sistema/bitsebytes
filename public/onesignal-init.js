@@ -6,19 +6,17 @@ OneSignalDeferred.push(async function (OneSignal) {
 
     try {
 
-        await OneSignal.init({
+await OneSignal.init({
 
-            appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d",
+    appId: "6711c89e-0dc5-48c3-b31a-b70f6c64902d",
 
-            persistNotification: false,
+    persistNotification: false,
 
-            notificationClickHandlerMatch: "origin",
+    notificationClickHandlerMatch: "origin",
 
-            notificationClickHandlerAction: "focus"
+    notificationClickHandlerAction: "focus"
 
-	    allowLocalhostAsSecureOrigin: true,
-
-        });
+});
 
         console.log("✅ OneSignal iniciado");
 

@@ -37,6 +37,60 @@ const oneSignalClient = new OneSignal.Client(
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ===================== ONE SIGNAL TAGS =====================
+
+async function atualizarTagsOneSignal(user){
+
+  try {
+
+    await fetch(
+      `https://api.onesignal.com/apps/${process.env.ONESIGNAL_APP_ID}/users/by/external_id/${user._id}`,
+      {
+        method:"PATCH",
+
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":
+          `Key ${process.env.ONESIGNAL_API_KEY}`
+        },
+
+        body:JSON.stringify({
+
+          properties:{
+
+            tags:{
+
+              companyId:String(user.companyId),
+              userId:String(user._id),
+              role:String(user.role),
+              username:String(user.username)
+
+            }
+
+          }
+
+        })
+
+      }
+    );
+
+
+    console.log(
+      "✅ Tags OneSignal atualizadas"
+    );
+
+
+  } catch(err){
+
+    console.log(
+      "Erro OneSignal:",
+      err
+    );
+
+  }
+
+}
+
 /* ===================== TRUST PROXY ===================== */
 app.set("trust proxy", 1);
 
@@ -220,46 +274,86 @@ function masterOnly(req, res, next){
 
 /* ===================== LOGIN ===================== */
 app.post("/login", async (req, res) => {
+
   try {
-    const user = await User.findOne({ username: req.body.username });
 
-    if(!user){
-      return res.json({ success: false });
-    }
-
-    const ok = await bcrypt.compare(req.body.password, user.password);
-
-    if(!ok){
-      return res.json({ success: false });
-    }
-
-// VERIFICA SE A EMPRESA ESTÁ ATIVA
-const company = await Company.findById(user.companyId);
-
-if(company && !company.active){
-
-  return res.json({
-    success:false,
-    error:"Empresa bloqueada. Entre em contato com o suporte."
-  });
-
-}
-
-    req.session.user = {
-      _id: String(user._id),
-      username: user.username,
-      role: user.role,
-      companyId: user.companyId
-    };
-
-    req.session.save(() => {
-      res.json({ success: true });
+    const user = await User.findOne({
+      username:req.body.username
     });
 
+
+    if(!user){
+      return res.json({
+        success:false
+      });
+    }
+
+
+    const ok = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
+
+
+    if(!ok){
+      return res.json({
+        success:false
+      });
+    }
+
+
+
+    const company = await Company.findById(
+      user.companyId
+    );
+
+
+    if(company && !company.active){
+
+      return res.json({
+        success:false,
+        error:
+        "Empresa bloqueada. Entre em contato com o suporte."
+      });
+
+    }
+
+
+
+    req.session.user = {
+
+      _id:String(user._id),
+      username:user.username,
+      role:user.role,
+      companyId:user.companyId
+
+    };
+
+
+    // ATUALIZA TAGS ONE SIGNAL
+    await atualizarTagsOneSignal(user);
+
+
+
+    req.session.save(() => {
+
+      res.json({
+        success:true
+      });
+
+    });
+
+
   } catch(err){
+
     console.log(err);
-    res.status(500).json({ success: false });
+
+    res.status(500).json({
+      success:false
+    });
+
   }
+
 });
 
 

@@ -16,6 +16,8 @@ OneSignalDeferred.push(async function (OneSignal) {
 
             notificationClickHandlerAction: "focus"
 
+	    allowLocalhostAsSecureOrigin: true,
+
         });
 
         console.log("✅ OneSignal iniciado");
@@ -80,18 +82,6 @@ if (user) {
         await OneSignal.User.externalId
     );
 
-
-    const tags = {
-
-        companyId: String(user.companyId),
-        userId: String(user._id),
-        role: String(user.role),
-        username: String(user.username)
-
-    };
-
-
-    await OneSignal.User.addTags(tags);
 
 
     console.log(

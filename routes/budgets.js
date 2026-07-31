@@ -1019,6 +1019,158 @@ router.put("/:id/aprovar", auth, async (req, res) => {
 
 });
 
+/* ===================== MARCAR COMO PAGO ===================== */
+
+router.put("/:id/pagar", auth, async (req, res) => {
+
+    try {
+
+        const budget = await Budget.findOne({
+            _id: req.params.id,
+            companyId: req.session.user.companyId
+        });
+
+        if (!budget) {
+            return res.status(404).json({
+                error: "Orçamento não encontrado"
+            });
+        }
+
+        if (budget.pagamento === "pago") {
+            return res.json({
+                ok: false,
+                error: "Este orçamento já está pago."
+            });
+        }
+
+        budget.pagamento = "pago";
+        budget.dataPagamento = new Date();
+        budget.usuarioPagamento = req.session.user.username;
+
+        budget.historico.push({
+            acao: "Pagamento recebido",
+            usuario: req.session.user.username,
+            data: new Date()
+        });
+
+        await budget.save();
+
+        res.json({
+            ok: true,
+            budget
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+            error: true
+        });
+
+    }
+
+});
+
+/* ===================== MARCAR COMO CORTESIA ===================== */
+
+router.put("/:id/cortesia", auth, async (req, res) => {
+
+    try {
+
+        const budget = await Budget.findOne({
+            _id: req.params.id,
+            companyId: req.session.user.companyId
+        });
+
+        if (!budget) {
+            return res.status(404).json({
+                error: "Orçamento não encontrado"
+            });
+        }
+
+        if (budget.pagamento === "cortesia") {
+            return res.json({
+                ok: false,
+                error: "Este orçamento já está marcado como cortesia."
+            });
+        }
+
+        budget.pagamento = "cortesia";
+        budget.dataPagamento = new Date();
+        budget.usuarioPagamento = req.session.user.username;
+
+        budget.historico.push({
+            acao: "Orçamento marcado como cortesia",
+            usuario: req.session.user.username,
+            data: new Date()
+        });
+
+        await budget.save();
+
+        res.json({
+            ok: true,
+            budget
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+            error: true
+        });
+
+    }
+
+});
+
+/* ===================== CANCELAR PAGAMENTO ===================== */
+
+router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
+
+    try {
+
+        const budget = await Budget.findOne({
+            _id: req.params.id,
+            companyId: req.session.user.companyId
+        });
+
+        if (!budget) {
+            return res.status(404).json({
+                error: "Orçamento não encontrado"
+            });
+        }
+
+        budget.pagamento = "pendente";
+        budget.dataPagamento = null;
+        budget.usuarioPagamento = null;
+
+        budget.historico.push({
+            acao: "Pagamento cancelado",
+            usuario: req.session.user.username,
+            data: new Date()
+        });
+
+        await budget.save();
+
+        res.json({
+            ok: true,
+            budget
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+            error: true
+        });
+
+    }
+
+});
+
 /* ===================== CONVERTER ORÇAMENTO EM CHAMADO ===================== */
 
 router.post("/:id/converter", auth, async(req,res)=>{

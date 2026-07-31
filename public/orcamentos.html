@@ -235,7 +235,8 @@ button:hover{
             <th>Cliente</th>
             <th>Total</th>
             <th>Status</th>
-            <th>Ações</th>
+	    <th>Pagamento</th>
+	    <th>Ações</th>
           </tr>
         </thead>
 
@@ -294,7 +295,7 @@ function render(){
 
     lista.innerHTML = `
       <tr>
-        <td colspan="5" style="text-align:center;">
+        <td colspan="6" style="text-align:center;">
           Nenhum orçamento encontrado
         </td>
       </tr>
@@ -306,27 +307,94 @@ function render(){
 
   orcamentos.forEach(o => {
 
+    const pago = o.pagamento === "pago";
+    const cortesia = o.pagamento === "cortesia";
+
+
     lista.innerHTML += `
-      <tr>
-        <td>${o.numero}</td>
-        <td>${o.cliente}</td>
-        <td>R$ ${(o.total || 0).toFixed(2)}</td>
-        <td>${o.status}</td>
-<td>
+        <tr>
 
-  <button onclick="abrir('${o._id}')">
-    Abrir
-  </button>
+            <td>${o.numero}</td>
 
-  <button onclick="pdf('${o._id}')">
-    📄 PDF
-  </button>
+            <td>${o.cliente}</td>
 
-</td>
-      </tr>
+            <td>
+                R$ ${(o.total || 0).toFixed(2)}
+            </td>
+
+            <td>${o.status}</td>
+
+            <td>
+
+                ${
+    pago
+    ? `<span style="
+        background:#16a34a;
+        color:white;
+        padding:5px 10px;
+        border-radius:20px;
+        font-size:12px;
+    ">✅ Pago</span>`
+    : cortesia
+    ? `<span style="
+        background:#7c3aed;
+        color:white;
+        padding:5px 10px;
+        border-radius:20px;
+        font-size:12px;
+    ">🎁 Cortesia</span>`
+    : `<span style="
+        background:#dc2626;
+        color:white;
+        padding:5px 10px;
+        border-radius:20px;
+        font-size:12px;
+    ">❌ Pendente</span>`
+}
+
+            </td>
+
+            <td>
+
+                <button onclick="abrir('${o._id}')">
+                    Abrir
+                </button>
+
+                <button onclick="pdf('${o._id}')">
+                    📄 PDF
+                </button>
+
+                ${
+    (!pago && !cortesia)
+    ? `
+        <button
+            style="background:#16a34a"
+            onclick="receber('${o._id}')">
+            💰 Receber
+        </button>
+
+        <button
+            style="background:#7c3aed"
+            onclick="cortesia('${o._id}')">
+            🎁 Cortesia
+        </button>
+    `
+    : `
+        <button
+            style="background:#f59e0b"
+            onclick="cancelarPagamento('${o._id}')">
+            ↩ Cancelar
+        </button>
+    `
+}
+
+            </td>
+
+        </tr>
     `;
 
-  });
+});
+
 
 }
 
@@ -340,6 +408,87 @@ function pdf(id){
     "/api/budgets/" + id + "/pdf",
     "_blank"
   );
+
+}
+
+async function receber(id){
+
+    if(!confirm("Confirmar recebimento deste orçamento?"))
+        return;
+
+    const res = await fetch(
+        "/api/budgets/" + id + "/pagar",
+        {
+            method:"PUT",
+            credentials:"include"
+        }
+    );
+
+    const json = await res.json();
+
+    if(json.ok){
+
+        load();
+
+    }else{
+
+        alert(json.error || "Erro.");
+
+    }
+
+}
+
+async function cortesia(id){
+
+    if(!confirm("Marcar este orçamento como cortesia?"))
+        return;
+
+    const res = await fetch(
+        "/api/budgets/" + id + "/cortesia",
+        {
+            method: "PUT",
+            credentials: "include"
+        }
+    );
+
+    const json = await res.json();
+
+    if(json.ok){
+
+        load();
+
+    }else{
+
+        alert(json.error || "Erro ao marcar como cortesia.");
+
+    }
+
+}
+
+async function cancelarPagamento(id){
+
+    if(!confirm("Cancelar pagamento deste orçamento?"))
+        return;
+
+    const res = await fetch(
+        "/api/budgets/" + id + "/cancelar-pagamento",
+        {
+            method:"PUT",
+            credentials:"include"
+        }
+    );
+
+    const json = await res.json();
+
+    if(json.ok){
+
+        load();
+
+    }else{
+
+        alert(json.error || "Erro.");
+
+    }
 
 }
 

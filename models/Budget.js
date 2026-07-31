@@ -8,32 +8,32 @@ const BudgetSchema = new mongoose.Schema({
     index: true
   },
 
-numero: Number,
+  numero: Number,
 
-codigo: {
+  codigo: {
     type: String,
     unique: true,
     sparse: true
-},
+  },
 
-validade: {
+  validade: {
     type: Number,
     default: 10
-},
+  },
 
-historico: [{
+  historico: [{
     acao: String,
     usuario: String,
     data: {
-        type: Date,
-        default: Date.now
+      type: Date,
+      default: Date.now
     }
-}],
+  }],
 
-clienteId: String,
-cliente: String,
-telefone: String,
-observacoes: String,
+  clienteId: String,
+  cliente: String,
+  telefone: String,
+  observacoes: String,
 
   itens: [
     {
@@ -45,29 +45,53 @@ observacoes: String,
     }
   ],
 
-total: Number,
+  total: Number,
 
-status:{
-    type:String,
-    enum:[
-        "pendente",
-        "aprovado",
-        "reprovado",
-        "convertido"
+  status: {
+    type: String,
+    enum: [
+      "pendente",
+      "aprovado",
+      "reprovado",
+      "convertido"
     ],
-    default:"pendente"
-},
+    default: "pendente"
+  },
 
-ticketId:{
+  /* ===================== PAGAMENTO ===================== */
+
+  pagamento: {
+    type: String,
+    enum: [
+      "pendente",
+      "pago",
+      "cortesia"
+    ],
+    default: "pendente"
+  },
+
+  dataPagamento: {
+    type: Date,
+    default: null
+  },
+
+  usuarioPagamento: {
+    type: String,
+    default: null
+  },
+
+  /* ================================================ */
+
+  ticketId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:"Ticket",
-    default:null
-},
+    ref: "Ticket",
+    default: null
+  },
 
-numeroOS:{
-    type:Number,
-    default:null
-}
+  numeroOS: {
+    type: Number,
+    default: null
+  }
 
 }, {
   timestamps: true

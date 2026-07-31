@@ -129,10 +129,16 @@ button{
 
     <h1>Orçamento</h1>
 
-    <p><b>Cliente:</b> <span id="cliente"></span></p>
-    <p><b>Status:</b> <span id="status"></span></p>
+   <p><b>Cliente:</b> <span id="cliente"></span></p>
 
-    <p><b>Observações:</b></p>
+<p><b>Status:</b> <span id="status"></span></p>
+
+<p>
+<b>📅 Agendamento:</b>
+<span id="agendamento"></span>
+</p>
+
+<p><b>Observações:</b></p>
 
     <div id="observacoes"
         style="padding:12px;background:#f8f8f8;border:1px solid #ddd;border-radius:6px;margin-bottom:20px;white-space:pre-wrap;">
@@ -270,7 +276,24 @@ async function carregar(){
     document.getElementById("numero").innerText = budget.numero;
     document.getElementById("cliente").innerText = budget.cliente;
     document.getElementById("status").innerText = budget.status;
-    document.getElementById("observacoes").innerText = budget.observacoes || "-";
+
+if(budget.dataAgendamento && budget.horaAgendamento){
+
+    const data = new Date(budget.dataAgendamento)
+        .toLocaleDateString("pt-BR");
+
+    document.getElementById("agendamento").innerText =
+        `${data} às ${budget.horaAgendamento}`;
+
+}else{
+
+    document.getElementById("agendamento").innerText =
+        "Não definido";
+
+}
+
+document.getElementById("observacoes").innerText =
+    budget.observacoes || "-";
 
     const btn = document.getElementById("btnAprovar");
 

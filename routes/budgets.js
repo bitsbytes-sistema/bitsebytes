@@ -509,9 +509,13 @@ const budget = await Budget.create({
 
     cliente:req.body.cliente || "",
 
-    telefone:cliente?.telefone || "",
+        telefone:cliente?.telefone || "",
 
     observacoes:req.body.observacoes || "",
+
+    dataAgendamento:req.body.dataAgendamento || null,
+
+    horaAgendamento:req.body.horaAgendamento || null,
 
     itens:req.body.itens || [],
 

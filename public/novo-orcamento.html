@@ -215,6 +215,20 @@ Voltar
 <label>Cliente</label>
 <select id="cliente"></select>
 
+<div class="grid">
+
+<div>
+<label>📅 Data do Atendimento</label>
+<input type="date" id="dataAgendamento">
+</div>
+
+<div>
+<label>⏰ Horário</label>
+<input type="time" id="horaAgendamento">
+</div>
+
+</div>
+
 <label>Observações</label>
 <textarea id="observacoes" rows="5"></textarea>
 
@@ -425,14 +439,18 @@ async function salvarOrcamento(){
             "Content-Type":"application/json"
         },
         credentials:"include",
-        body: JSON.stringify({
-            clienteId,
-            cliente: cliente?.nome || "",
-            telefone: cliente?.telefone || "",
-            observacoes: document.getElementById("observacoes").value,
-            itens,
-            total
-        })
+body: JSON.stringify({
+    clienteId,
+    cliente: cliente?.nome || "",
+    telefone: cliente?.telefone || "",
+    observacoes: document.getElementById("observacoes").value,
+
+    dataAgendamento: document.getElementById("dataAgendamento").value || null,
+    horaAgendamento: document.getElementById("horaAgendamento").value || null,
+
+    itens,
+    total
+})
     });
 
     if(res.ok){

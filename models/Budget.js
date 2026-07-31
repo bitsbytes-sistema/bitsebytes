@@ -35,6 +35,20 @@ const BudgetSchema = new mongoose.Schema({
   telefone: String,
   observacoes: String,
 
+  /* ===================== AGENDAMENTO ===================== */
+
+  dataAgendamento: {
+    type: Date,
+    default: null
+  },
+
+  horaAgendamento: {
+    type: String,
+    default: null
+  },
+
+  /* ======================================================= */
+
   itens: [
     {
       descricao: String,

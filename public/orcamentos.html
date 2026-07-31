@@ -129,21 +129,66 @@ left:20px;
 }
 
 /* ================= TABLE ================= */
+
 table{
   width:100%;
   border-collapse:collapse;
   background:white;
+  table-layout:fixed;
 }
 
 th{
   background:#0f172a;
   color:white;
   padding:10px;
+  text-align:center;
 }
 
 td{
   padding:10px;
   border-bottom:1px solid #eee;
+  text-align:center;
+  vertical-align:middle;
+}
+
+/* LARGURA DAS COLUNAS */
+
+th:nth-child(1),
+td:nth-child(1){
+    width:70px;
+}
+
+th:nth-child(2),
+td:nth-child(2){
+    width:220px;
+}
+
+th:nth-child(3),
+td:nth-child(3){
+    width:130px;
+}
+
+th:nth-child(4),
+td:nth-child(4){
+    width:120px;
+}
+
+th:nth-child(5),
+td:nth-child(5){
+    width:150px;
+}
+
+th:nth-child(6),
+td:nth-child(6){
+    width:260px;
+}
+
+
+/* ORGANIZA OS BOTÕES */
+
+td button{
+    margin:4px;
+    min-width:60px;
 }
 
 /* ================= BUTTON ================= */
@@ -318,9 +363,12 @@ function render(){
 
             <td>${o.cliente}</td>
 
-            <td>
-                R$ ${(o.total || 0).toFixed(2)}
-            </td>
+<td>
+    ${(o.total || 0).toLocaleString("pt-BR", {
+        style:"currency",
+        currency:"BRL"
+    })}
+</td>
 
             <td>${o.status}</td>
 

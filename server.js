@@ -25,6 +25,7 @@ const Budget = require("./models/Budget");
 const Notification = require("./models/Notification");
 
 const serviceRoutes = require("./routes/services");
+const productRoutes = require("./routes/products");
 const budgetRoutes = require("./routes/budgets");
 const notificationRoutes = require("./routes/notifications");
 const OneSignal = require("onesignal-node");
@@ -2047,6 +2048,8 @@ erro: err.message
 app.use("/api/services", serviceRoutes);
 
 app.use("/api/budgets", budgetRoutes);
+
+app.use("/api/products", productRoutes);
 
 app.use("/api/notifications", auth, notificationRoutes);
 

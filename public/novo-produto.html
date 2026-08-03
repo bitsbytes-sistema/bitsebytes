@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Bits & Bytes - Novo Produto</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f2f2f2;
+}
+
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+
+    width:250px;
+    background:#0f172a;
+    min-height:100vh;
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+
+}
+
+
+.logo{
+
+    padding:20px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.1);
+
+}
+
+
+.sidebar a{
+
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:14px 20px;
+
+}
+
+
+.sidebar a:hover{
+
+    background:#1e293b;
+
+}
+
+
+.usuario{
+
+    position:absolute;
+    bottom:20px;
+    left:20px;
+
+}
+
+
+
+/* ================= MAIN ================= */
+
+.main{
+
+    margin-left:250px;
+    width:calc(100% - 250px);
+    min-height:100vh;
+
+}
+
+
+
+/* ================= TOPBAR ================= */
+
+.topbar{
+
+    height:70px;
+    background:white;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:0 30px;
+
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+}
+
+
+
+/* ================= CONTAINER ================= */
+
+.container{
+
+    padding:20px;
+
+}
+
+
+
+/* ================= CARD ================= */
+
+.card{
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:10px;
+
+    box-shadow:
+    0 2px 8px rgba(0,0,0,.08);
+
+    margin-bottom:20px;
+
+}
+
+
+
+/* ================= FORM ================= */
+
+label{
+
+    font-weight:bold;
+
+}
+
+
+input,
+select,
+textarea{
+
+    width:100%;
+
+    padding:10px;
+
+    margin-top:6px;
+
+    margin-bottom:15px;
+
+    border:1px solid #cbd5e1;
+
+    border-radius:6px;
+
+}
+
+
+
+/* GRID */
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:20px;
+
+}
+
+
+
+/* BOTÕES */
+
+button{
+
+    padding:10px 18px;
+
+    border:none;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    background:#2563eb;
+
+    color:white;
+
+}
+
+
+button:hover{
+
+    opacity:.9;
+
+}
+
+
+.salvar{
+
+    background:#16a34a;
+
+}
+
+
+.voltar{
+
+    background:#64748b;
+
+}
+
+
+</style>
+
+</head>
+
+<body>
+
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+
+<div class="logo">
+
+<img src="/logo.png" width="45">
+
+<div>
+
+<b>Bits & Bytes</b><br>
+
+<small>Tecnology</small>
+
+</div>
+
+</div>
+
+
+<a href="/dashboard.html">🏠 Dashboard</a>
+<a href="/clientes.html">👥 Clientes</a>
+<a href="/chamados.html">📋 Chamados</a>
+<a href="/orcamentos.html">💰 Orçamentos</a>
+<a href="/services.html">🛠 Serviços</a>
+<a href="/laudos.html">📄 Laudos Técnicos</a>
+<a href="/estoque.html">📦 Estoque</a>
+<a href="#">💵 Financeiro</a>
+<a href="#">📊 Relatórios</a>
+<a href="#">⚙️ Configurações</a>
+
+
+<div class="usuario">
+
+<b id="nomeUsuario">
+Carregando...
+</b>
+
+<br>
+
+<small id="cargoUsuario"></small>
+
+</div>
+
+
+</div>
+
+
+
+<!-- MAIN -->
+
+<div class="main">
+
+
+<div class="topbar">
+
+<div>
+📦 Novo Produto
+</div>
+
+
+<button 
+class="voltar"
+onclick="location.href='/estoque.html'">
+
+Voltar
+
+</button>
+
+
+</div>
+
+
+<div class="container">
+
+
+<div class="card">
+
+
+<h2>
+📦 Cadastro de Produto
+</h2>
+
+
+<div class="grid">
+
+<div>
+
+<label>
+Código
+</label>
+
+<input 
+id="codigo"
+placeholder="Ex: SSD001">
+
+
+</div>
+
+
+<div>
+
+<label>
+Nome do Produto
+</label>
+
+<input 
+id="nome"
+placeholder="Nome do produto">
+
+
+</div>
+
+
+</div>
+
+<div class="grid">
+
+
+<div>
+
+<label>
+Categoria
+</label>
+
+<select id="categoria">
+
+<option value="">
+Selecione
+</option>
+
+<option>
+Computador
+</option>
+
+<option>
+Notebook
+</option>
+
+<option>
+SSD
+</option>
+
+<option>
+HD
+</option>
+
+<option>
+Memória RAM
+</option>
+
+<option>
+Processador
+</option>
+
+<option>
+Fonte
+</option>
+
+<option>
+Placa-mãe
+</option>
+
+<option>
+Monitor
+</option>
+
+<option>
+Periférico
+</option>
+
+<option>
+Rede
+</option>
+
+<option>
+Impressora
+</option>
+
+<option>
+Cabos
+</option>
+
+<option>
+Adaptadores
+</option>
+
+<option>
+Outros
+</option>
+
+</select>
+
+
+</div>
+
+
+
+<div>
+
+<label>
+Marca
+</label>
+
+<input 
+id="marca"
+placeholder="Marca do produto">
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="grid">
+
+
+<div>
+
+<label>
+Fornecedor
+</label>
+
+<input 
+id="fornecedor"
+placeholder="Fornecedor">
+
+
+</div>
+
+
+
+<div>
+
+<label>
+Quantidade
+</label>
+
+<input
+id="quantidade"
+type="number"
+value="0"
+min="0">
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="grid">
+
+
+<div>
+
+<label>
+Preço de Custo
+</label>
+
+<input
+id="custo"
+type="number"
+step="0.01"
+placeholder="0,00">
+
+
+</div>
+
+
+
+<div>
+
+<label>
+Preço de Venda
+</label>
+
+<input
+id="venda"
+type="number"
+step="0.01"
+placeholder="0,00">
+
+
+</div>
+
+
+</div>
+
+
+
+<div>
+
+<label>
+Estoque Mínimo
+</label>
+
+<input
+id="estoqueMinimo"
+type="number"
+value="1"
+min="0">
+
+
+</div>
+
+
+
+<label>
+Observações
+</label>
+
+
+<textarea
+id="observacoes"
+rows="5"
+placeholder="Informações adicionais do produto">
+</textarea>
+
+
+
+<div style="
+display:flex;
+justify-content:flex-end;
+gap:10px;
+">
+
+
+<button
+class="voltar"
+onclick="location.href='/estoque.html'">
+
+Cancelar
+
+</button>
+
+
+
+<button
+class="salvar"
+onclick="salvarProduto()">
+
+💾 Salvar Produto
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<script>
+
+
+/* ================= USUÁRIO ================= */
+
+
+async function carregarUsuario(){
+
+    const res = await fetch("/me",{
+        credentials:"include"
+    });
+
+
+    if(res.status === 401){
+
+        location.href="/";
+
+        return;
+
+    }
+
+
+    const data = await res.json();
+
+
+    document.getElementById("nomeUsuario").innerText =
+        data.user.username;
+
+
+    document.getElementById("cargoUsuario").innerText =
+        data.user.role;
+
+
+}
+
+
+
+/* ================= SALVAR ================= */
+
+
+async function salvarProduto(){
+
+
+    const produto = {
+
+
+        codigo:
+        document.getElementById("codigo").value,
+
+
+        nome:
+        document.getElementById("nome").value,
+
+
+        categoria:
+        document.getElementById("categoria").value,
+
+
+        marca:
+        document.getElementById("marca").value,
+
+
+        fornecedor:
+        document.getElementById("fornecedor").value,
+
+
+        quantidade:
+        Number(
+        document.getElementById("quantidade").value
+        ),
+
+
+        custo:
+        Number(
+        document.getElementById("custo").value
+        ),
+
+
+        venda:
+        Number(
+        document.getElementById("venda").value
+        ),
+
+
+        estoqueMinimo:
+        Number(
+        document.getElementById("estoqueMinimo").value
+        ),
+
+
+        observacoes:
+        document.getElementById("observacoes").value
+
+
+    };
+
+
+
+    if(!produto.nome){
+
+        alert("Informe o nome do produto.");
+
+        return;
+
+    }
+
+
+
+    const res = await fetch(
+        "/api/products",
+        {
+
+            method:"POST",
+
+            headers:{
+
+                "Content-Type":"application/json"
+
+            },
+
+            credentials:"include",
+
+            body:JSON.stringify(produto)
+
+        }
+    );
+
+
+
+    const data = await res.json();
+
+
+
+    if(data.ok || data._id){
+
+
+        alert("Produto cadastrado com sucesso!");
+
+
+        location.href="/estoque.html";
+
+
+    }else{
+
+
+        alert(
+            data.error ||
+            "Erro ao cadastrar produto."
+        );
+
+
+    }
+
+
+}
+
+
+
+/* ================= INIT ================= */
+
+
+window.onload=()=>{
+
+    carregarUsuario();
+
+};
+
+
+</script>
+
+
+</body>
+
+</html>

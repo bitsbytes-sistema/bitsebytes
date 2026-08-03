@@ -11,10 +11,10 @@ router.get("/", auth, async (req, res) => {
     try {
 
         const produtos = await Product.find({
-            companyId: req.session.user.companyId
-        }).sort({
-            nome: 1
-        });
+    companyId: req.session.user.companyId
+}).sort({
+    codigo: 1
+});
 
         res.json(produtos);
 
@@ -83,7 +83,11 @@ router.post("/", auth, async (req, res) => {
 
             fornecedor: req.body.fornecedor || "",
 
-            quantidade: Number(req.body.quantidade || 0),
+	    marca: req.body.marca || "",
+
+	    observacoes: req.body.observacoes || "",
+
+	    quantidade: Number(req.body.quantidade || 0),
 
             estoqueMinimo: Number(req.body.estoqueMinimo || 0),
 

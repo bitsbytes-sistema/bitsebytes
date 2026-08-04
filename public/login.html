@@ -128,10 +128,6 @@ alert("SUBMIT INTERCEPTADO");
 
   const data = await res.json();
 
-alert(JSON.stringify(data));
-
-  console.log("RESPOSTA DO SERVIDOR:", data);
-
   if(data.success){
 
   window.location.href = "/dashboard.html";
@@ -151,8 +147,6 @@ alert(JSON.stringify(data));
 }
 
 });
-
-alert("ESTOU NO LOGIN CERTO");
 
 </script>
 

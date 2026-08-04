@@ -112,6 +112,9 @@ button:hover{
 
 <script>
 document.getElementById("loginForm").addEventListener("submit", async (e)=>{
+console.log("SUBMIT INTERCEPTADO");
+alert("SUBMIT INTERCEPTADO");
+
   e.preventDefault();
 
   const username = document.getElementById("username").value;

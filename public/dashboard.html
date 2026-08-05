@@ -903,23 +903,21 @@ async function carregarAlertasSistema(){
     alertasSistema = await res.json();
 
 
-    // remove alertas que já foram vistos hoje
-    alertasSistema = alertasSistema.filter(alerta => {
-
-      const chave =
-        "alerta_" + alerta.tipo + "_" + new Date().toLocaleDateString("pt-BR");
+    console.log("Alertas carregados:", alertasSistema);
 
 
-      return !localStorage.getItem(chave);
-
-    });
+    alertaAtual = 0;
 
 
-    if(alertasSistema.length){
-
-      alertaAtual = 0;
+    if(alertasSistema.length > 0){
 
       mostrarAlerta();
+
+    }else{
+
+      document.getElementById(
+        "modalAlertas"
+      ).style.display="none";
 
     }
 
@@ -1006,24 +1004,40 @@ document.getElementById(
 
 
 
-function proximoAlerta(){
+async function proximoAlerta(){
+
+  const checkbox =
+    document.getElementById(
+      "naoMostrarAlerta"
+    );
+
 
   const alerta =
     alertasSistema[alertaAtual];
 
 
-  if(alerta){
+  // Se marcou a caixa, salva no banco
+  if(checkbox.checked){
 
-    const chave =
-      "alerta_" +
-      alerta.tipo +
-      "_" +
-      new Date().toLocaleDateString("pt-BR");
+    await fetch(
+      "/api/alertas/ignorar",
+      {
 
+        method:"POST",
 
-    localStorage.setItem(
-      chave,
-      "true"
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        credentials:"include",
+
+        body:JSON.stringify({
+
+          tipo: alerta.tipo
+
+        })
+
+      }
     );
 
   }

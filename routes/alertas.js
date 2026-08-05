@@ -1,64 +1,239 @@
 const express = require("express");
 const router = express.Router();
 
-const alertasService = require("../services/alertasService");
+const User = require("../models/User");
 
-function auth(req, res, next){
 
-    if(!req.session.user){
-        return res.status(401).json({
-            error:"not_logged"
-        });
-    }
+/* ===================== IGNORAR ALERTA HOJE ===================== */
 
-    next();
+router.post("/ignorar", async (req,res)=>{
 
-}
+  try{
 
-router.get("/", auth, async (req,res)=>{
+    const {
+      tipo
+    } = req.body;
 
-    try{
 
-        const companyId =
-            req.session.user.companyId;
+    const usuario = await User.findById(
+      req.session.user._id
+    );
 
-        const alertas = [];
 
-        alertas.push(
-            await alertasService.aniversariantes(companyId)
-        );
+    if(!usuario){
 
-        alertas.push(
-            await alertasService.contasReceber(companyId)
-        );
-
-        alertas.push(
-            await alertasService.contasPagar(companyId)
-        );
-
-        alertas.push(
-            await alertasService.chamados(companyId)
-        );
-
-        alertas.push(
-            await alertasService.orcamentos(companyId)
-        );
-
-        alertas.push(
-            await alertasService.estoque(companyId)
-        );
-
-        res.json(alertas);
-
-    }catch(err){
-
-        console.log(err);
-
-        res.status(500).json({
-            error:true
-        });
+      return res.status(404).json({
+        erro:"Usuário não encontrado"
+      });
 
     }
+
+
+    const hoje = new Date();
+
+    hoje.setHours(0,0,0,0);
+
+
+    // evita duplicar
+    const jaExiste =
+      usuario.alertasIgnorados.some(a =>
+
+        a.tipo === tipo &&
+        new Date(a.data).setHours(0,0,0,0)
+        === hoje.getTime()
+
+      );
+
+
+    if(!jaExiste){
+
+      usuario.alertasIgnorados.push({
+
+        tipo,
+
+        data:hoje
+
+      });
+
+    }
+
+
+    await usuario.save();
+
+
+    res.json({
+      ok:true
+    });
+
+
+  }catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      erro:true
+    });
+
+  }
+
+});
+
+/* ===================== LISTAR ALERTAS ===================== */
+
+router.get("/", async (req,res)=>{
+
+  try{
+
+    const usuario = await User.findById(
+      req.session.user._id
+    );
+
+
+    const hoje = new Date();
+
+    hoje.setHours(0,0,0,0);
+
+
+    const ignoradosHoje =
+      usuario.alertasIgnorados
+      ?.filter(a=>{
+
+        const data = new Date(a.data);
+
+        data.setHours(0,0,0,0);
+
+        return data.getTime() === hoje.getTime();
+
+      })
+      .map(a=>a.tipo) || [];
+
+
+    let alertas = [
+
+      {
+        tipo:"aniversariantes",
+        titulo:"🎂 Alerta de Aniversariantes",
+        cor:"blue",
+        quantidade:0,
+        mensagem:"Hoje não existem aniversariantes.",
+        dados:[]
+      },
+
+
+      {
+        tipo:"receber",
+        titulo:"🟢 Contas a Receber",
+        cor:"green",
+        quantidade:0,
+        mensagem:"Ainda não implementado.",
+        dados:[]
+      },
+
+
+      {
+        tipo:"pagar",
+        titulo:"🔴 Contas a Pagar",
+        cor:"red",
+        quantidade:0,
+        mensagem:"Ainda não implementado.",
+        dados:[]
+      },
+
+
+      {
+        tipo:"chamados",
+        titulo:"📋 Chamados",
+        cor:"orange",
+        quantidade:0,
+        mensagem:"Ainda não implementado.",
+        dados:[]
+      },
+
+
+      {
+        tipo:"orcamentos",
+        titulo:"💰 Orçamentos",
+        cor:"yellow",
+        quantidade:0,
+        mensagem:"Ainda não implementado.",
+        dados:[]
+      },
+
+
+      {
+        tipo:"estoque",
+        titulo:"📦 Estoque",
+        cor:"purple",
+        quantidade:0,
+        mensagem:"Ainda não implementado.",
+        dados:[]
+      }
+
+    ];
+
+
+    alertas =
+      alertas.filter(a =>
+        !ignoradosHoje.includes(a.tipo)
+      );
+
+
+    res.json(alertas);
+
+
+  }catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      erro:true
+    });
+
+  }
+
+});
+
+/* ===================== RESETAR ALERTAS (TESTE) ===================== */
+
+router.post("/resetar", async (req,res)=>{
+
+  try{
+
+    const usuario = await User.findById(
+      req.session.user._id
+    );
+
+
+    if(!usuario){
+
+      return res.status(404).json({
+        erro:"Usuário não encontrado"
+      });
+
+    }
+
+
+    usuario.alertasIgnorados = [];
+
+
+    await usuario.save();
+
+
+    res.json({
+      ok:true,
+      mensagem:"Alertas resetados"
+    });
+
+
+  }catch(err){
+
+    console.log(err);
+
+    res.status(500).json({
+      erro:true
+    });
+
+  }
 
 });
 

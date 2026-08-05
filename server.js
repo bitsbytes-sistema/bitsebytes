@@ -2066,10 +2066,7 @@ app.use("/api/notifications", auth, notificationRoutes);
 
 app.use("/api/lembretes", lembreteRoutes);
 
-app.use(
-    "/api/alertas",
-    alertasRoutes
-);
+app.use("/api/alertas", require("./routes/alertas"));
 
 /* ===================== LOGOUT ===================== */
 

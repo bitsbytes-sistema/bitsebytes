@@ -500,6 +500,12 @@ Histórico de Chamados
 
 <input id="novoTelefone" placeholder="Telefone">
 
+<label>🎂 Data de Nascimento</label>
+
+<input
+type="date"
+id="novoAniversario">
+
 <input id="novoCpf" placeholder="CPF/CNPJ">
 
 <input id="novoEndereco" placeholder="Endereço">
@@ -580,6 +586,8 @@ async function salvarNovoCliente(){
     nome: document.getElementById("novoNome").value.trim(),
 
     telefone: document.getElementById("novoTelefone").value.trim(),
+
+    aniversario: document.getElementById("novoAniversario").value,
 
     cpfcnpj: document.getElementById("novoCpf").value.trim(),
 
@@ -839,6 +847,31 @@ dados.innerHTML = `
 <td>${clienteSelecionado?.telefone || "-"}</td>
 </tr>
 
+<<tr>
+<td style="padding:8px;"><b>🎂 Nascimento</b></td>
+
+<td>${
+clienteSelecionado?.aniversario
+?
+(() => {
+
+  const d = new Date(clienteSelecionado.aniversario);
+
+  return (
+    String(d.getUTCDate()).padStart(2,"0")
+    + "/" +
+    String(d.getUTCMonth() + 1).padStart(2,"0")
+    + "/" +
+    d.getUTCFullYear()
+  );
+
+})()
+:
+"-"
+}</td>
+
+</tr>
+
 <tr>
 <td style="padding:8px;"><b>📄 CPF/CNPJ</b></td>
 <td>${clienteSelecionado?.cpfcnpj || "-"}</td>
@@ -1054,6 +1087,17 @@ async function editarCliente(){
   const telefone = prompt("Telefone:", clienteSelecionado.telefone || "");
   if(telefone === null) return;
 
+const aniversario = prompt(
+"Data de nascimento (AAAA-MM-DD):",
+clienteSelecionado.aniversario
+?
+clienteSelecionado.aniversario.substring(0,10)
+:
+""
+);
+
+if(aniversario === null) return;
+
   const cpfcnpj = prompt("CPF/CNPJ:", clienteSelecionado.cpfcnpj || "");
   if(cpfcnpj === null) return;
 
@@ -1088,6 +1132,7 @@ async function editarCliente(){
 
       nome,
       telefone,
+      aniversario,
       cpfcnpj,
       endereco,
       bairro,

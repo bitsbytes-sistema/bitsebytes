@@ -32,6 +32,9 @@ const notificationRoutes = require("./routes/notifications");
 const lembreteRoutes = require("./routes/lembretes");
 const OneSignal = require("onesignal-node");
 
+const alertasRoutes =
+require("./routes/alertas");
+
 const oneSignalClient = new OneSignal.Client(
   process.env.ONESIGNAL_APP_ID,
   process.env.ONESIGNAL_API_KEY
@@ -652,6 +655,8 @@ app.post("/api/clientes", auth, async (req, res) => {
 
       telefone: req.body.telefone || "",
 
+      aniversario: req.body.aniversario || null,
+
       cpfcnpj: req.body.cpfcnpj || "",
 
       endereco: req.body.endereco || "",
@@ -789,16 +794,19 @@ app.put("/api/clientes/editar", auth, async (req, res) => {
   try {
 
     const {
-      nomeAntigo,
-      nome,
-      telefone,
-      cpfcnpj,
-      endereco,
-      bairro,
-      cidade,
-      estado,
-      cep
-    } = req.body;
+
+  nomeAntigo,
+  nome,
+  telefone,
+  aniversario,
+  cpfcnpj,
+  endereco,
+  bairro,
+  cidade,
+  estado,
+  cep
+
+} = req.body;
 
     // Atualiza o cadastro do cliente
     await Cliente.updateOne(
@@ -812,6 +820,7 @@ app.put("/api/clientes/editar", auth, async (req, res) => {
         $set: {
           nome,
           telefone,
+	  aniversario,
           cpfcnpj,
           endereco,
           bairro,
@@ -2056,6 +2065,11 @@ app.use("/api/products", productRoutes);
 app.use("/api/notifications", auth, notificationRoutes);
 
 app.use("/api/lembretes", lembreteRoutes);
+
+app.use(
+    "/api/alertas",
+    alertasRoutes
+);
 
 /* ===================== LOGOUT ===================== */
 

@@ -25,6 +25,11 @@ const clienteSchema = new mongoose.Schema({
     default: ""
   },
 
+aniversario: {
+  type: Date,
+  default: null
+},
+
   cpfcnpj: {
     type: String,
     default: ""

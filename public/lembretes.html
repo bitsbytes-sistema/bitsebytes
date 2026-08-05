@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Central de Lembretes - Bits & Bytes</title>
+
+<link rel="manifest" href="/manifest.json">
+
+<meta name="theme-color" content="#0f172a">
+
+<style>
+
+*{
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+
+    margin:0;
+    background:#f1f5f9;
+    color:#111827;
+
+}
+
+
+.container{
+
+    max-width:900px;
+    margin:30px auto;
+    padding:20px;
+
+}
+
+
+h1{
+
+    color:#0f172a;
+
+}
+
+
+.card{
+
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+}
+
+
+input, textarea, select{
+
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:1px solid #ddd;
+    border-radius:8px;
+
+}
+
+
+button{
+
+    padding:12px 18px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+
+}
+
+
+button:hover{
+
+    background:#1d4ed8;
+
+}
+
+
+.item{
+
+    border-left:5px solid #2563eb;
+    padding:15px;
+    margin-bottom:12px;
+    background:#f8fafc;
+    border-radius:8px;
+
+}
+
+
+.status{
+
+    font-weight:bold;
+
+}
+
+
+.pendente{
+
+    color:#ca8a04;
+
+}
+
+
+.concluido{
+
+    color:#16a34a;
+
+}
+
+
+.cancelado{
+
+    color:#dc2626;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>🔔 Central de Lembretes</h1>
+
+
+<div class="card">
+
+
+<h3>Novo Lembrete</h3>
+
+
+<input id="titulo" placeholder="Título">
+
+
+<textarea id="descricao" placeholder="Descrição"></textarea>
+
+
+<input id="cliente" placeholder="Cliente">
+
+
+<input id="telefone" placeholder="Telefone">
+
+
+<label>Data</label>
+
+<input type="date" id="data">
+
+
+<label>Hora</label>
+
+<input type="time" id="hora">
+
+
+<select id="tipo">
+
+<option value="retorno">Retorno</option>
+
+<option value="cobranca">Cobrança</option>
+
+<option value="entrega">Entrega</option>
+
+<option value="garantia">Garantia</option>
+
+<option value="revisao">Revisão</option>
+
+<option value="outros">Outros</option>
+
+</select>
+
+
+<button onclick="salvar()">
+
+Salvar Lembrete
+
+</button>
+
+
+</div>
+
+
+
+<div class="card">
+
+
+<h3>Meus Lembretes</h3>
+
+
+<div id="lista"></div>
+
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+
+async function carregar(){
+
+
+const res = await fetch("/api/lembretes");
+
+const dados = await res.json();
+
+
+const lista = document.getElementById("lista");
+
+
+lista.innerHTML="";
+
+
+if(dados.length===0){
+
+lista.innerHTML="<p>Nenhum lembrete cadastrado.</p>";
+
+return;
+
+}
+
+
+dados.forEach(l=>{
+
+
+lista.innerHTML += `
+
+<div class="item">
+
+<h3>${l.titulo}</h3>
+
+<p>${l.descricao || ""}</p>
+
+<p>
+👤 ${l.cliente || "Sem cliente"}
+</p>
+
+<p>
+📅 ${new Date(l.data).toLocaleDateString("pt-BR")}
+${l.hora || ""}
+</p>
+
+
+<p class="status ${l.status}">
+Status: ${l.status}
+</p>
+
+
+</div>
+
+`;
+
+
+});
+
+
+}
+
+
+
+async function salvar(){
+
+
+const dados={
+
+titulo:
+document.getElementById("titulo").value,
+
+descricao:
+document.getElementById("descricao").value,
+
+cliente:
+document.getElementById("cliente").value,
+
+telefone:
+document.getElementById("telefone").value,
+
+data:
+document.getElementById("data").value,
+
+hora:
+document.getElementById("hora").value,
+
+tipo:
+document.getElementById("tipo").value
+
+};
+
+
+
+const res = await fetch("/api/lembretes",{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify(dados)
+
+});
+
+
+if(res.ok){
+
+
+alert("Lembrete criado!");
+
+
+document.querySelectorAll("input, textarea").forEach(e=>e.value="");
+
+
+carregar();
+
+
+}else{
+
+alert("Erro ao criar lembrete");
+
+}
+
+
+}
+
+
+
+carregar();
+
+
+</script>
+
+
+</body>
+
+</html>

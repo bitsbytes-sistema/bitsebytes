@@ -23,11 +23,13 @@ const Cliente = require("./models/Cliente");
 const Service = require("./models/Service");
 const Budget = require("./models/Budget");
 const Notification = require("./models/Notification");
+const Lembrete = require("./models/Lembrete");
 
 const serviceRoutes = require("./routes/services");
 const productRoutes = require("./routes/products");
 const budgetRoutes = require("./routes/budgets");
 const notificationRoutes = require("./routes/notifications");
+const lembreteRoutes = require("./routes/lembretes");
 const OneSignal = require("onesignal-node");
 
 const oneSignalClient = new OneSignal.Client(
@@ -2052,6 +2054,8 @@ app.use("/api/budgets", budgetRoutes);
 app.use("/api/products", productRoutes);
 
 app.use("/api/notifications", auth, notificationRoutes);
+
+app.use("/api/lembretes", lembreteRoutes);
 
 /* ===================== LOGOUT ===================== */
 

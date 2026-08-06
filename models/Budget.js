@@ -38,9 +38,9 @@ const BudgetSchema = new mongoose.Schema({
   /* ===================== AGENDAMENTO ===================== */
 
   dataAgendamento: {
-    type: Date,
+    type: String,
     default: null
-  },
+},
 
   horaAgendamento: {
     type: String,

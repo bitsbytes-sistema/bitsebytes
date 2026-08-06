@@ -300,15 +300,14 @@ if (budget.createdAt) {
 
 }
 
-if(budget.dataAgendamento && budget.horaAgendamento){
+if (budget.dataAgendamento && budget.horaAgendamento) {
 
-    const data = new Date(budget.dataAgendamento)
-        .toLocaleDateString("pt-BR");
+    const [ano, mes, dia] = budget.dataAgendamento.split("-");
 
     document.getElementById("agendamento").innerText =
-        `${data} às ${budget.horaAgendamento}`;
+        `${dia}/${mes}/${ano} às ${budget.horaAgendamento}`;
 
-}else{
+} else {
 
     document.getElementById("agendamento").innerText =
         "Não definido";

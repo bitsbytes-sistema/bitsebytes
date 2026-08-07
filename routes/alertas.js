@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+const Cliente = require("../models/Cliente");
 const User = require("../models/User");
 
 
@@ -94,6 +95,25 @@ router.get("/", async (req,res)=>{
     hoje.setHours(0,0,0,0);
 
 
+// ===================== ANIVERSARIANTES =====================
+
+const clientes = await Cliente.find({
+    companyId: req.session.user.companyId
+});
+
+const aniversariantes = clientes.filter(c => {
+
+    if (!c.aniversario) return false;
+
+    const data = new Date(c.aniversario);
+  
+return (
+    data.getUTCDate() === hoje.getUTCDate() &&
+    data.getUTCMonth() === hoje.getUTCMonth()
+);
+
+});
+
     const ignoradosHoje =
       usuario.alertasIgnorados
       ?.filter(a=>{
@@ -111,13 +131,20 @@ router.get("/", async (req,res)=>{
     let alertas = [
 
       {
-        tipo:"aniversariantes",
-        titulo:"🎂 Alerta de Aniversariantes",
-        cor:"blue",
-        quantidade:0,
-        mensagem:"Hoje não existem aniversariantes.",
-        dados:[]
-      },
+    tipo: "aniversariantes",
+    titulo: "🎂 Alerta de Aniversariantes",
+    cor: "blue",
+    quantidade: aniversariantes.length,
+
+    mensagem:
+        aniversariantes.length > 0
+            ? `Hoje há ${aniversariantes.length} aniversariante(s).`
+            : "Hoje não existem aniversariantes.",
+
+    dados: aniversariantes.map(c => ({
+        nome: c.nome
+    }))
+},
 
 
       {

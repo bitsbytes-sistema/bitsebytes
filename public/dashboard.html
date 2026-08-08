@@ -270,6 +270,10 @@ body{
 
   border-radius:10px;
 
+  max-height:60vh;
+
+  overflow-y:auto;
+
 }
 
 
@@ -974,14 +978,60 @@ function mostrarAlerta(){
 
     alerta.dados.forEach(item=>{
 
-      html += `
+  if(alerta.tipo === "chamados"){
 
-      👤 ${item.nome || ""}
+    html += `
+
+      <div style="
+        padding:10px;
+        margin:8px 0;
+        background:#f8fafc;
+        border-radius:8px;
+        border-left:4px solid #f97316;
+      ">
+
+        👤 <b>${item.cliente || "Cliente não informado"}</b>
+
+        <br>
+
+        🔢 <b>OS:</b>
+        ${item.numeroOS || "-"}
+
+        <br>
+
+        🔧 <b>Equipamento:</b>
+        ${item.equipamento || "-"}
+
+        <br>
+
+        📌 <b>Status:</b>
+        ${item.status || "-"}
+
+        <br>
+
+        📅 <b>Data:</b>
+        ${
+          item.data
+            ? new Date(item.data).toLocaleDateString("pt-BR")
+            : "-"
+        }
+
+      </div>
+
+    `;
+
+  }else{
+
+    html += `
+
+      👤 <b>${item.nome || ""}</b>
       <br>
 
-      `;
+    `;
 
-    });
+  }
+
+});
 
   }
 

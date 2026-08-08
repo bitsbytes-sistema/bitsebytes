@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-
 const Cliente = require("../models/Cliente");
 const User = require("../models/User");
+const alertasService = require("../services/alertasService");
 
 
 /* ===================== IGNORAR ALERTA HOJE ===================== */
@@ -89,34 +89,148 @@ router.get("/", async (req,res)=>{
       req.session.user._id
     );
 
+    if(!usuario){
+
+      return res.status(404).json({
+        erro:"Usuário não encontrado"
+      });
+
+    }
 
     const hoje = new Date();
 
     hoje.setHours(0,0,0,0);
 
 
-// ===================== ANIVERSARIANTES =====================
+    // ===================== ANIVERSARIANTES =====================
 
-const clientes = await Cliente.find({
-    companyId: req.session.user.companyId
-});
+    const clientes = await Cliente.find({
+      companyId: req.session.user.companyId
+    });
 
-const aniversariantes = clientes.filter(c => {
+    const aniversariantes = clientes.filter(c => {
 
-    if (!c.aniversario) return false;
+      if(!c.aniversario) return false;
 
-    const data = new Date(c.aniversario);
-  
-return (
-    data.getUTCDate() === hoje.getUTCDate() &&
-    data.getUTCMonth() === hoje.getUTCMonth()
-);
+      const data = new Date(c.aniversario);
 
-});
+      return (
+        data.getUTCDate() === hoje.getUTCDate() &&
+        data.getUTCMonth() === hoje.getUTCMonth()
+      );
+
+    });
+
+
+    // ===================== CHAMADOS =====================
+
+    const alertaChamados =
+      await alertasService.chamados(
+        req.session.user.companyId
+      );
+
+
+    // ===================== ALERTAS =====================
+
+    const alertas = [
+
+      {
+        tipo:"aniversariantes",
+
+        titulo:"🎂 Alerta de Aniversariantes",
+
+        cor:"blue",
+
+        quantidade:
+          aniversariantes.length,
+
+        mensagem:
+          aniversariantes.length > 0
+            ? `Hoje há ${aniversariantes.length} aniversariante(s).`
+            : "Hoje não existem aniversariantes.",
+
+        dados:
+          aniversariantes.map(c => ({
+            nome:c.nome
+          }))
+
+      },
+
+
+      {
+        tipo:"receber",
+
+        titulo:"🟢 Contas a Receber",
+
+        cor:"green",
+
+        quantidade:0,
+
+        mensagem:"Ainda não implementado.",
+
+        dados:[]
+
+      },
+
+
+      {
+        tipo:"pagar",
+
+        titulo:"🔴 Contas a Pagar",
+
+        cor:"red",
+
+        quantidade:0,
+
+        mensagem:"Ainda não implementado.",
+
+        dados:[]
+
+      },
+
+
+      alertaChamados,
+
+
+      {
+        tipo:"orcamentos",
+
+        titulo:"💰 Orçamentos",
+
+        cor:"yellow",
+
+        quantidade:0,
+
+        mensagem:"Ainda não implementado.",
+
+        dados:[]
+
+      },
+
+
+      {
+        tipo:"estoque",
+
+        titulo:"📦 Estoque",
+
+        cor:"purple",
+
+        quantidade:0,
+
+        mensagem:"Ainda não implementado.",
+
+        dados:[]
+
+      }
+
+    ];
+
+
+    // ===================== IGNORADOS HOJE =====================
 
     const ignoradosHoje =
       usuario.alertasIgnorados
-      ?.filter(a=>{
+      ?.filter(a => {
 
         const data = new Date(a.data);
 
@@ -125,87 +239,16 @@ return (
         return data.getTime() === hoje.getTime();
 
       })
-      .map(a=>a.tipo) || [];
+      .map(a => a.tipo) || [];
 
 
-    let alertas = [
-
-      {
-    tipo: "aniversariantes",
-    titulo: "🎂 Alerta de Aniversariantes",
-    cor: "blue",
-    quantidade: aniversariantes.length,
-
-    mensagem:
-        aniversariantes.length > 0
-            ? `Hoje há ${aniversariantes.length} aniversariante(s).`
-            : "Hoje não existem aniversariantes.",
-
-    dados: aniversariantes.map(c => ({
-        nome: c.nome
-    }))
-},
-
-
-      {
-        tipo:"receber",
-        titulo:"🟢 Contas a Receber",
-        cor:"green",
-        quantidade:0,
-        mensagem:"Ainda não implementado.",
-        dados:[]
-      },
-
-
-      {
-        tipo:"pagar",
-        titulo:"🔴 Contas a Pagar",
-        cor:"red",
-        quantidade:0,
-        mensagem:"Ainda não implementado.",
-        dados:[]
-      },
-
-
-      {
-        tipo:"chamados",
-        titulo:"📋 Chamados",
-        cor:"orange",
-        quantidade:0,
-        mensagem:"Ainda não implementado.",
-        dados:[]
-      },
-
-
-      {
-        tipo:"orcamentos",
-        titulo:"💰 Orçamentos",
-        cor:"yellow",
-        quantidade:0,
-        mensagem:"Ainda não implementado.",
-        dados:[]
-      },
-
-
-      {
-        tipo:"estoque",
-        titulo:"📦 Estoque",
-        cor:"purple",
-        quantidade:0,
-        mensagem:"Ainda não implementado.",
-        dados:[]
-      }
-
-    ];
-
-
-    alertas =
+    const alertasFiltrados =
       alertas.filter(a =>
         !ignoradosHoje.includes(a.tipo)
       );
 
 
-    res.json(alertas);
+    res.json(alertasFiltrados);
 
 
   }catch(err){
@@ -219,6 +262,7 @@ return (
   }
 
 });
+
 
 /* ===================== RESETAR ALERTAS (TESTE) ===================== */
 

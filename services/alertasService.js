@@ -120,23 +120,65 @@ module.exports = {
 
     async chamados(companyId){
 
-        return {
+    const chamados = await Ticket.find({
 
-            tipo:"chamados",
+        companyId,
 
-            titulo:"📋 Chamados",
+        status:{
+            $in:[
+                "aberto",
+                "andamento",
+                "reparo"
+            ]
+        }
 
-            cor:"orange",
+    }).sort({
 
-            quantidade:0,
+        createdAt:-1
 
-            mensagem:"Ainda não implementado.",
+    });
 
-            dados:[]
 
-        };
+    return {
 
-    },
+        tipo:"chamados",
+
+        titulo:"📋 Chamados",
+
+        cor:"orange",
+
+        quantidade:chamados.length,
+
+        mensagem:
+
+            chamados.length
+
+            ?
+
+            `Existem ${chamados.length} chamado(s) em andamento.`
+
+            :
+
+            "Não existem chamados em andamento.",
+
+
+        dados: chamados.map(c=>({
+
+            numeroOS:c.numeroOS,
+
+            cliente:c.cliente,
+
+            equipamento:c.equipamento,
+
+            status:c.status,
+
+            data:c.createdAt
+
+        }))
+
+    };
+
+},
 
     async orcamentos(companyId){
 

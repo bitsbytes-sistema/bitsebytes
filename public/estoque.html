@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 
 <head>
@@ -114,6 +115,114 @@ body{
     padding:20px;
     border-radius:10px;
     box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin-bottom:20px;
+
+}
+
+/* ================= BOTÕES ================= */
+
+button{
+
+    padding:9px 14px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+
+}
+
+button:hover{
+
+    opacity:.9;
+
+}
+
+.botao-entrada{
+
+    background:#16a34a;
+
+}
+
+.botao-saida{
+
+    background:#dc2626;
+
+}
+
+.botao-historico{
+
+    background:#475569;
+
+}
+
+td button{
+
+    margin:4px;
+    min-width:60px;
+
+}
+
+/* ================= FORM MOVIMENTAÇÃO ================= */
+
+.form-movimentacao{
+
+    display:none;
+
+    background:#f8fafc;
+
+    padding:20px;
+
+    border-radius:10px;
+
+    margin-top:15px;
+
+}
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        2fr
+        1fr
+        2fr
+        auto;
+
+    gap:15px;
+
+    align-items:end;
+
+}
+
+.campo{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:6px;
+
+}
+
+.campo label{
+
+    font-weight:bold;
+
+    font-size:14px;
+
+}
+
+.campo input,
+.campo select{
+
+    padding:10px;
+
+    border:1px solid #cbd5e1;
+
+    border-radius:6px;
+
+    font-size:14px;
 
 }
 
@@ -122,8 +231,11 @@ body{
 table{
 
     width:100%;
+
     border-collapse:collapse;
+
     background:white;
+
     table-layout:fixed;
 
 }
@@ -131,8 +243,11 @@ table{
 th{
 
     background:#0f172a;
+
     color:white;
+
     padding:10px;
+
     text-align:center;
 
 }
@@ -140,8 +255,11 @@ th{
 td{
 
     padding:10px;
+
     border-bottom:1px solid #eee;
+
     text-align:center;
+
     vertical-align:middle;
 
 }
@@ -167,29 +285,49 @@ td:nth-child(6){ width:120px; }
 th:nth-child(7),
 td:nth-child(7){ width:180px; }
 
-/* ================= BUTTON ================= */
+/* ================= HISTÓRICO ================= */
 
-button{
+.historico{
 
-    padding:8px 12px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    background:#2563eb;
-    color:white;
+    display:none;
 
 }
 
-button:hover{
+.tipo-entrada{
 
-    opacity:.9;
+    color:#16a34a;
+
+    font-weight:bold;
 
 }
 
-td button{
+.tipo-saida{
 
-    margin:4px;
-    min-width:60px;
+    color:#dc2626;
+
+    font-weight:bold;
+
+}
+
+.mensagem-vazia{
+
+    text-align:center;
+
+    padding:20px;
+
+    color:#64748b;
+
+}
+
+/* ================= RESPONSIVO ================= */
+
+@media(max-width:900px){
+
+    .form-grid{
+
+        grid-template-columns:1fr;
+
+    }
 
 }
 
@@ -201,102 +339,238 @@ td button{
 
 <div class="sidebar">
 
-    <div class="logo">
 
-        <img src="/logo.png" width="45">
+<div class="logo">
 
-        <div>
+    <img src="/logo.png" width="45">
 
-            <b>Bits & Bytes</b><br>
+    <div>
 
-            <small>Tecnology</small>
+        <b>Bits & Bytes</b><br>
 
-        </div>
-
-    </div>
-
-    <a href="/dashboard.html">🏠 Dashboard</a>
-    <a href="/clientes.html">👥 Clientes</a>
-    <a href="/chamados.html">📋 Chamados</a>
-    <a href="/orcamentos.html">💰 Orçamentos</a>
-    <a href="/services.html">🛠 Serviços</a>
-    <a href="/laudos.html">📄 Laudos Técnicos</a>
-    <a href="/estoque.html">📦 Estoque</a>
-    <a href="/financeiro.html">💵 Financeiro</a>
-    <a href="/relatorios.html">📊 Relatórios</a>
-    <a href="/configuracoes.html">⚙️ Configurações</a>
-
-    <div class="usuario">
-
-        <b id="nomeUsuario">Carregando...</b>
-
-        <br>
-
-        <small id="cargoUsuario"></small>
+        <small>Tecnology</small>
 
     </div>
 
 </div>
 
+<a href="/dashboard.html">🏠 Dashboard</a>
+<a href="/clientes.html">👥 Clientes</a>
+<a href="/chamados.html">📋 Chamados</a>
+<a href="/orcamentos.html">💰 Orçamentos</a>
+<a href="/services.html">🛠 Serviços</a>
+<a href="/laudos.html">📄 Laudos Técnicos</a>
+<a href="/estoque.html">📦 Estoque</a>
+<a href="/vendas.html">🛒 Vendas</a>
+<a href="/financeiro.html">💵 Financeiro</a>
+<a href="/lembretes.html">🔔 Lembretes</a>
+<a href="/relatorios.html">📊 Relatórios</a>
+<a href="/configuracoes.html">⚙️ Configurações</a>
+
+<div class="usuario">
+
+    <b id="nomeUsuario">Carregando...</b>
+
+    <br>
+
+    <small id="cargoUsuario"></small>
+
+</div>
+
+
+</div>
+
 <div class="main">
 
-    <div class="topbar">
 
-        <div>📦 Estoque</div>
+<div class="topbar">
 
-        <a href="javascript:void(0)" onclick="logout()">
-            Sair
-        </a>
+    <div>📦 Estoque</div>
 
-    </div>
+    <a href="javascript:void(0)" onclick="logout()">
+        Sair
+    </a>
 
-    <div class="container">
+</div>
 
-        <h2>📦 Estoque</h2>
+<div class="container">
 
-        <button onclick="novoProduto()">
+    <h2>📦 Estoque</h2>
 
-            ➕ Novo Produto
+    <button onclick="novoProduto()">
+        ➕ Novo Produto
+    </button>
 
-        </button>
+    <button
+        class="botao-entrada"
+        onclick="abrirMovimentacao('entrada')">
 
-        <br><br>
+        📥 Entrada
 
-        <div class="card">
+    </button>
 
-            <table>
+    <button
+        class="botao-saida"
+        onclick="abrirMovimentacao('saida')">
 
-                <thead>
+        📤 Saída
 
-                    <tr>
+    </button>
 
-                        <th>Código</th>
-                        <th>Produto</th>
-                        <th>Categoria</th>
-                        <th>Qtde</th>
-                        <th>Custo</th>
-                        <th>Venda</th>
-                        <th>Ações</th>
+    <button
+        class="botao-historico"
+        onclick="alternarHistorico()">
 
-                    </tr>
+        📋 Histórico
 
-                </thead>
+    </button>
 
-                <tbody id="lista">
+    <!-- ================= FORM MOVIMENTAÇÃO ================= -->
 
-                </tbody>
+    <div
+        id="formMovimentacao"
+        class="form-movimentacao">
 
-            </table>
+        <h3 id="tituloMovimentacao">
+            📥 Entrada de estoque
+        </h3>
+
+        <div class="form-grid">
+
+            <div class="campo">
+
+                <label>
+                    Produto
+                </label>
+
+                <select id="produtoMovimentacao">
+
+                    <option value="">
+                        Selecione o produto
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="campo">
+
+                <label>
+                    Quantidade
+                </label>
+
+                <input
+                    type="number"
+                    id="quantidadeMovimentacao"
+                    min="1"
+                    step="1"
+                    placeholder="Quantidade">
+
+            </div>
+
+            <div class="campo">
+
+                <label>
+                    Motivo
+                </label>
+
+                <input
+                    type="text"
+                    id="motivoMovimentacao"
+                    placeholder="Ex.: Compra, ajuste, venda...">
+
+            </div>
+
+            <div>
+
+                <button
+                    onclick="salvarMovimentacao()">
+
+                    💾 Salvar
+
+                </button>
+
+            </div>
 
         </div>
 
     </div>
+
+    <br>
+
+    <!-- ================= PRODUTOS ================= -->
+
+    <div class="card">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Código</th>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th>Qtde</th>
+                    <th>Custo</th>
+                    <th>Venda</th>
+                    <th>Ações</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="lista">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- ================= HISTÓRICO ================= -->
+
+    <div
+        id="historico"
+        class="card historico">
+
+        <h3>
+            📋 Histórico de Movimentações
+        </h3>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Data</th>
+                    <th>Produto</th>
+                    <th>Tipo</th>
+                    <th>Quantidade</th>
+                    <th>Motivo</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="listaHistorico">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
 
 </div>
 
 <script>
 
 let produtos = [];
+
+let tipoMovimentacao = "entrada";
 
 /* ================= USUÁRIO ================= */
 
@@ -307,8 +581,11 @@ async function carregarUsuario(){
     });
 
     if(res.status === 401){
+
         window.location.href="/";
+
         return;
+
     }
 
     const data = await res.json();
@@ -345,7 +622,45 @@ async function load(){
 
     }
 
+    preencherProdutos();
+
     render();
+
+}
+
+/* ================= SELECT PRODUTOS ================= */
+
+function preencherProdutos(){
+
+    const select =
+        document.getElementById(
+            "produtoMovimentacao"
+        );
+
+    select.innerHTML = `
+
+        <option value="">
+            Selecione o produto
+        </option>
+
+    `;
+
+    produtos.forEach(p=>{
+
+        select.innerHTML += `
+
+            <option value="${p._id}">
+
+                ${p.codigo ? p.codigo + " - " : ""}
+                ${p.nome}
+
+                (Estoque: ${p.quantidade || 0})
+
+            </option>
+
+        `;
+
+    });
 
 }
 
@@ -353,47 +668,57 @@ async function load(){
 
 function render(){
 
-    const lista = document.getElementById("lista");
+    const lista =
+        document.getElementById("lista");
 
     lista.innerHTML = "";
 
     if(produtos.length === 0){
 
         lista.innerHTML = `
+
             <tr>
-                <td colspan="7" style="text-align:center;">
+
+                <td
+                    colspan="7"
+                    style="text-align:center;">
+
                     Nenhum produto cadastrado.
+
                 </td>
+
             </tr>
+
         `;
 
         return;
+
     }
 
     produtos.forEach(p=>{
 
-let estoque = "";
+        let estoque = "";
 
-if((p.quantidade || 0) <= 0){
+        if((p.quantidade || 0) <= 0){
 
-    estoque =
-    '<span style="color:#dc2626;font-weight:bold;">🔴 0</span>';
+            estoque =
+            '<span style="color:#dc2626;font-weight:bold;">🔴 0</span>';
 
-}else if((p.quantidade || 0) <= 5){
+        }else if((p.quantidade || 0) <= 5){
 
-    estoque =
-    '<span style="color:#f59e0b;font-weight:bold;">🟡 ' +
-    (p.quantidade || 0) +
-    '</span>';
+            estoque =
+            '<span style="color:#f59e0b;font-weight:bold;">🟡 ' +
+            (p.quantidade || 0) +
+            '</span>';
 
-}else{
+        }else{
 
-    estoque =
-    '<span style="color:#16a34a;font-weight:bold;">🟢 ' +
-    (p.quantidade || 0) +
-    '</span>';
+            estoque =
+            '<span style="color:#16a34a;font-weight:bold;">🟢 ' +
+            (p.quantidade || 0) +
+            '</span>';
 
-}
+        }
 
         lista.innerHTML += `
 
@@ -408,35 +733,361 @@ if((p.quantidade || 0) <= 0){
             <td>${estoque}</td>
 
             <td>
-                ${Number(p.custo || 0).toLocaleString("pt-BR",{
-                    style:"currency",
-                    currency:"BRL"
-                })}
+
+                ${Number(p.custo || 0).toLocaleString(
+                    "pt-BR",
+                    {
+                        style:"currency",
+                        currency:"BRL"
+                    }
+                )}
+
             </td>
 
             <td>
-                ${Number(p.venda || 0).toLocaleString("pt-BR",{
-                    style:"currency",
-                    currency:"BRL"
-                })}
+
+                ${Number(p.venda || 0).toLocaleString(
+                    "pt-BR",
+                    {
+                        style:"currency",
+                        currency:"BRL"
+                    }
+                )}
+
             </td>
 
             <td>
 
                 <button
                     onclick="abrir('${p._id}')">
+
                     Abrir
+
                 </button>
 
                 <button
                     style="background:#dc2626"
                     onclick="excluirProduto('${p._id}')">
+
                     Excluir
+
                 </button>
 
             </td>
 
         </tr>
+
+        `;
+
+    });
+
+}
+
+/* ================= ABRIR MOVIMENTAÇÃO ================= */
+
+function abrirMovimentacao(tipo){
+
+    tipoMovimentacao = tipo;
+
+    const form =
+        document.getElementById(
+            "formMovimentacao"
+        );
+
+    const titulo =
+        document.getElementById(
+            "tituloMovimentacao"
+        );
+
+    if(tipo === "entrada"){
+
+        titulo.innerText =
+            "📥 Entrada de estoque";
+
+    }else{
+
+        titulo.innerText =
+            "📤 Saída de estoque";
+
+    }
+
+    form.style.display = "block";
+
+    document.getElementById(
+        "produtoMovimentacao"
+    ).focus();
+
+}
+
+/* ================= SALVAR MOVIMENTAÇÃO ================= */
+
+async function salvarMovimentacao(){
+
+    const productId =
+        document.getElementById(
+            "produtoMovimentacao"
+        ).value;
+
+    const quantidade =
+        document.getElementById(
+            "quantidadeMovimentacao"
+        ).value;
+
+    const motivo =
+        document.getElementById(
+            "motivoMovimentacao"
+        ).value.trim();
+
+    if(!productId){
+
+        alert("Selecione um produto.");
+
+        return;
+
+    }
+
+    if(!quantidade || Number(quantidade) <= 0){
+
+        alert("Informe uma quantidade válida.");
+
+        return;
+
+    }
+
+    const endpoint =
+        tipoMovimentacao === "entrada"
+            ? "/api/stock-movements/entrada"
+            : "/api/stock-movements/saida";
+
+    const res = await fetch(
+
+        endpoint,
+
+        {
+
+            method:"POST",
+
+            credentials:"include",
+
+            headers:{
+                "Content-Type":
+                    "application/json"
+            },
+
+            body:JSON.stringify({
+
+                productId,
+
+                quantidade:Number(
+                    quantidade
+                ),
+
+                motivo
+
+            })
+
+        }
+
+    );
+
+    const data = await res.json();
+
+    if(!res.ok){
+
+        alert(
+            data.error ||
+            "Erro ao registrar movimentação."
+        );
+
+        return;
+
+    }
+
+    alert(
+
+        tipoMovimentacao === "entrada"
+
+            ? "Entrada registrada com sucesso!"
+
+            : "Saída registrada com sucesso!"
+
+    );
+
+    document.getElementById(
+        "quantidadeMovimentacao"
+    ).value = "";
+
+    document.getElementById(
+        "motivoMovimentacao"
+    ).value = "";
+
+    await load();
+
+    if(
+        document.getElementById(
+            "historico"
+        ).style.display === "block"
+    ){
+
+        carregarHistorico();
+
+    }
+
+}
+
+/* ================= HISTÓRICO ================= */
+
+function alternarHistorico(){
+
+    const historico =
+        document.getElementById(
+            "historico"
+        );
+
+    if(
+        historico.style.display === "block"
+    ){
+
+        historico.style.display = "none";
+
+        return;
+
+    }
+
+    historico.style.display = "block";
+
+    carregarHistorico();
+
+}
+
+/* ================= CARREGAR HISTÓRICO ================= */
+
+async function carregarHistorico(){
+
+    const lista =
+        document.getElementById(
+            "listaHistorico"
+        );
+
+    lista.innerHTML = `
+
+        <tr>
+
+            <td colspan="5">
+
+                Carregando...
+
+            </td>
+
+        </tr>
+
+    `;
+
+    const res = await fetch(
+        "/api/stock-movements",
+        {
+            credentials:"include"
+        }
+    );
+
+    if(!res.ok){
+
+        lista.innerHTML = `
+
+            <tr>
+
+                <td colspan="5">
+
+                    Erro ao carregar histórico.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+    const movimentacoes =
+        await res.json();
+
+    if(
+        !Array.isArray(movimentacoes) ||
+        movimentacoes.length === 0
+    ){
+
+        lista.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="5"
+                    class="mensagem-vazia">
+
+                    Nenhuma movimentação registrada.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+    lista.innerHTML = "";
+
+    movimentacoes.forEach(m=>{
+
+        const data =
+            m.createdAt
+                ? new Date(
+                    m.createdAt
+                ).toLocaleString(
+                    "pt-BR"
+                )
+                : "-";
+
+        const produto =
+            m.productId
+                ? (
+                    m.productId.codigo
+                        ? m.productId.codigo +
+                          " - "
+                        : ""
+                  ) +
+                  m.productId.nome
+                : "Produto removido";
+
+        const tipo =
+            m.tipo === "entrada"
+
+                ? `<span class="tipo-entrada">
+                    📥 Entrada
+                   </span>`
+
+                : `<span class="tipo-saida">
+                    📤 Saída
+                   </span>`;
+
+        lista.innerHTML += `
+
+            <tr>
+
+                <td>${data}</td>
+
+                <td>${produto}</td>
+
+                <td>${tipo}</td>
+
+                <td>${m.quantidade}</td>
+
+                <td>${m.motivo || "-"}</td>
+
+            </tr>
 
         `;
 
@@ -464,15 +1115,23 @@ function abrir(id){
 
 async function excluirProduto(id){
 
-    if(!confirm("Deseja excluir este produto?"))
+    if(!confirm(
+        "Deseja excluir este produto?"
+    ))
         return;
 
     const res = await fetch(
+
         "/api/products/"+id,
+
         {
+
             method:"DELETE",
+
             credentials:"include"
+
         }
+
     );
 
     const data = await res.json();
@@ -483,7 +1142,10 @@ async function excluirProduto(id){
 
     }else{
 
-        alert(data.error || "Erro ao excluir.");
+        alert(
+            data.error ||
+            "Erro ao excluir."
+        );
 
     }
 
@@ -493,9 +1155,12 @@ async function excluirProduto(id){
 
 async function logout(){
 
-    await fetch("/logout",{
-        credentials:"include"
-    });
+    await fetch(
+        "/logout",
+        {
+            credentials:"include"
+        }
+    );
 
     location.href="/";
 

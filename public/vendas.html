@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Bits & Bytes - Vendas</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f2f2f2;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+    width:250px;
+    background:#0f172a;
+    min-height:100vh;
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+}
+
+.logo{
+    padding:20px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:14px 20px;
+}
+
+.sidebar a:hover{
+    background:#1e293b;
+}
+
+.usuario{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+}
+
+/* ================= MAIN ================= */
+
+.main{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    min-height:100vh;
+}
+
+/* ================= TOPBAR ================= */
+
+.topbar{
+    height:70px;
+    background:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 30px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.topbar a{
+    color:#dc2626;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+    padding:20px;
+}
+
+/* ================= CARDS ================= */
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+.card h3{
+    margin-top:0;
+}
+
+/* ================= FORM ================= */
+
+.linha{
+    display:flex;
+    gap:15px;
+    align-items:end;
+    flex-wrap:wrap;
+}
+
+.campo{
+    flex:1;
+    min-width:200px;
+}
+
+.campo-pequeno{
+    width:120px;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+
+input,
+select{
+    width:100%;
+    padding:10px;
+    border:1px solid #cbd5e1;
+    border-radius:6px;
+    font-size:15px;
+}
+
+input:focus,
+select:focus{
+    outline:none;
+    border-color:#2563eb;
+}
+
+/* ================= BUTTONS ================= */
+
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.btn-verde{
+    background:#16a34a;
+}
+
+.btn-vermelho{
+    background:#dc2626;
+}
+
+.btn-cinza{
+    background:#64748b;
+}
+
+.btn-amarelo{
+    background:#d97706;
+}
+
+/* ================= RESULTADOS ================= */
+
+.resultados{
+    margin-top:8px;
+    border:1px solid #ddd;
+    border-radius:6px;
+    background:white;
+    max-height:220px;
+    overflow-y:auto;
+    display:none;
+}
+
+.resultado{
+    padding:10px;
+    border-bottom:1px solid #eee;
+    cursor:pointer;
+}
+
+.resultado:hover{
+    background:#f1f5f9;
+}
+
+.resultado:last-child{
+    border-bottom:none;
+}
+
+/* ================= CLIENTE SELECIONADO ================= */
+
+.cliente-selecionado{
+    margin-top:15px;
+    padding:15px;
+    background:#eff6ff;
+    border-left:4px solid #2563eb;
+    border-radius:6px;
+    display:none;
+}
+
+.cliente-selecionado strong{
+    font-size:17px;
+}
+
+/* ================= NOVO CLIENTE ================= */
+
+.novo-cliente{
+    margin-top:15px;
+    padding:15px;
+    background:#f8fafc;
+    border-radius:8px;
+    display:none;
+}
+
+/* ================= CARRINHO ================= */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#0f172a;
+    color:white;
+    padding:10px;
+    text-align:center;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid #eee;
+    text-align:center;
+}
+
+td input{
+    width:80px;
+    text-align:center;
+}
+
+.vazio{
+    text-align:center;
+    padding:25px;
+    color:#64748b;
+}
+
+/* ================= TOTAIS ================= */
+
+.totais{
+    margin-top:20px;
+    display:flex;
+    justify-content:flex-end;
+}
+
+.totais-box{
+    width:320px;
+}
+
+.total-linha{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 0;
+}
+
+.total-final{
+    border-top:2px solid #0f172a;
+    margin-top:8px;
+    padding-top:12px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+/* ================= FINALIZAÇÃO ================= */
+
+.finalizacao{
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.pagamento{
+    width:250px;
+}
+
+.btn-finalizar{
+    background:#16a34a;
+    font-size:17px;
+    padding:13px 25px;
+}
+
+/* ================= RESPONSIVO ================= */
+
+@media(max-width:900px){
+
+    .sidebar{
+        width:200px;
+    }
+
+    .main{
+        margin-left:200px;
+        width:calc(100% - 200px);
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar">
+
+<div class="logo">
+
+    <img src="/logo.png" width="45">
+
+    <div>
+
+        <b>Bits & Bytes</b><br>
+
+        <small>Tecnology</small>
+
+    </div>
+
+</div>
+
+<a href="/dashboard.html">🏠 Dashboard</a>
+<a href="/clientes.html">👥 Clientes</a>
+<a href="/chamados.html">📋 Chamados</a>
+<a href="/orcamentos.html">💰 Orçamentos</a>
+<a href="/services.html">🛠 Serviços</a>
+<a href="/laudos.html">📄 Laudos Técnicos</a>
+<a href="/estoque.html">📦 Estoque</a>
+<a href="/vendas.html">🛒 Vendas</a>
+<a href="/financeiro.html">💵 Financeiro</a>
+<a href="/lembretes.html">🔔 Lembretes</a>
+<a href="/relatorios.html">📊 Relatórios</a>
+<a href="/configuracoes.html">⚙️ Configurações</a>
+
+<div class="usuario">
+
+    <b id="nomeUsuario">Carregando...</b>
+
+    <br>
+
+    <small id="cargoUsuario"></small>
+
+</div>
+
+</div>
+
+<!-- ================= MAIN ================= -->
+
+<div class="main">
+
+<div class="topbar">
+
+    <div>🛒 Vendas</div>
+
+    <a href="javascript:void(0)" onclick="logout()">
+        Sair
+    </a>
+
+</div>
+
+
+<div class="container">
+
+    <h2>🛒 Nova Venda</h2>
+
+
+    <!-- ================= CLIENTE ================= -->
+
+    <div class="card">
+
+        <h3>👤 Cliente</h3>
+
+        <div class="linha">
+
+            <div class="campo">
+
+                <label>Buscar cliente</label>
+
+                <input
+                    type="text"
+                    id="buscaCliente"
+                    placeholder="Digite nome, telefone ou CPF/CNPJ"
+                    autocomplete="off"
+                    oninput="buscarClientes()"
+                >
+
+                <div
+                    id="resultadosClientes"
+                    class="resultados">
+                </div>
+
+            </div>
+
+            <button
+                class="btn-verde"
+                onclick="mostrarNovoCliente()">
+
+                ➕ Novo Cliente
+
+            </button>
+
+        </div>
+
+
+        <div
+            id="clienteSelecionado"
+            class="cliente-selecionado">
+
+            <strong id="clienteNomeSelecionado"></strong>
+
+            <br>
+
+            <span id="clienteTelefoneSelecionado"></span>
+
+            <br><br>
+
+            <button
+                class="btn-cinza"
+                onclick="limparCliente()">
+
+                Trocar Cliente
+
+            </button>
+
+        </div>
+
+
+        <!-- NOVO CLIENTE -->
+
+        <div
+            id="novoCliente"
+            class="novo-cliente">
+
+            <h4>➕ Cadastro rápido</h4>
+
+            <div class="linha">
+
+                <div class="campo">
+
+                    <label>Nome *</label>
+
+                    <input
+                        type="text"
+                        id="novoClienteNome"
+                        placeholder="Nome do cliente">
+
+                </div>
+
+
+                <div class="campo">
+
+                    <label>Telefone</label>
+
+                    <input
+                        type="text"
+                        id="novoClienteTelefone"
+                        placeholder="Telefone">
+
+                </div>
+
+            </div>
+
+            <br>
+
+            <button
+                class="btn-verde"
+                onclick="usarNovoCliente()">
+
+                Usar este cliente
+
+            </button>
+
+            <button
+                class="btn-cinza"
+                onclick="cancelarNovoCliente()">
+
+                Cancelar
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= PRODUTO ================= -->
+
+    <div class="card">
+
+        <h3>📦 Adicionar Produto</h3>
+
+        <div class="linha">
+
+            <div class="campo">
+
+                <label>Produto</label>
+
+                <input
+                    type="text"
+                    id="buscaProduto"
+                    placeholder="Digite o nome ou código do produto"
+                    autocomplete="off"
+                    oninput="buscarProdutos()"
+                >
+
+                <div
+                    id="resultadosProdutos"
+                    class="resultados">
+                </div>
+
+            </div>
+
+
+            <div class="campo-pequeno">
+
+                <label>Quantidade</label>
+
+                <input
+                    type="number"
+                    id="quantidadeProduto"
+                    min="1"
+                    value="1">
+
+            </div>
+
+
+            <button
+                onclick="adicionarProduto()">
+
+                ➕ Adicionar
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= CARRINHO ================= -->
+
+    <div class="card">
+
+        <h3>🛒 Carrinho</h3>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Preço Unitário</th>
+                    <th>Subtotal</th>
+                    <th>Ação</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="carrinho">
+
+                <tr>
+
+                    <td
+                        colspan="5"
+                        class="vazio">
+
+                        Nenhum produto adicionado.
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+
+        <div class="totais">
+
+            <div class="totais-box">
+
+                <div class="total-linha">
+
+                    <span>Subtotal:</span>
+
+                    <strong id="subtotal">
+                        R$ 0,00
+                    </strong>
+
+                </div>
+
+
+                <div class="total-linha">
+
+                    <span>Desconto:</span>
+
+                    <input
+                        type="number"
+                        id="desconto"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                        oninput="calcularTotal()">
+
+                </div>
+
+
+                <div class="total-linha total-final">
+
+                    <span>Total:</span>
+
+                    <span id="total">
+                        R$ 0,00
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= FINALIZAÇÃO ================= -->
+
+    <div class="card">
+
+        <h3>💳 Finalização</h3>
+
+        <div class="finalizacao">
+
+            <div class="pagamento">
+
+                <label>Forma de pagamento</label>
+
+                <select id="formaPagamento">
+
+                    <option value="Dinheiro">
+                        Dinheiro
+                    </option>
+
+                    <option value="PIX">
+                        PIX
+                    </option>
+
+                    <option value="Cartão de Débito">
+                        Cartão de Débito
+                    </option>
+
+                    <option value="Cartão de Crédito">
+                        Cartão de Crédito
+                    </option>
+
+                    <option value="Boleto">
+                        Boleto
+                    </option>
+
+                </select>
+
+            </div>
+
+            <button
+                class="btn-finalizar"
+                onclick="finalizarVenda()">
+
+                ✅ FINALIZAR VENDA
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= HISTÓRICO DE VENDAS ================= -->
+
+    <div class="card">
+
+        <h3>📋 Histórico de Vendas</h3>
+
+        <div style="overflow-x:auto;">
+
+            <table style="min-width:950px;">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Nº</th>
+                        <th>Data</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Pagamento</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="historicoVendas">
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            class="vazio">
+
+                            Carregando vendas...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+</div>
+
+<script>
+
+let clientes = [];
+let produtos = [];
+
+let clienteSelecionado = null;
+let produtoSelecionado = null;
+
+let carrinho = [];
+
+
+/* ================= USUÁRIO ================= */
+
+async function carregarUsuario(){
+
+    const res = await fetch("/me",{
+        credentials:"include"
+    });
+
+    if(res.status === 401){
+
+        window.location.href="/";
+
+        return;
+
+    }
+
+    const data = await res.json();
+
+    document.getElementById("nomeUsuario").innerText =
+        data.user.username;
+
+    document.getElementById("cargoUsuario").innerText =
+        data.user.role;
+
+}
+
+
+/* ================= CLIENTES ================= */
+
+async function carregarClientes(){
+
+    try{
+
+        const res = await fetch("/api/clientes",{
+            credentials:"include"
+        });
+
+        if(!res.ok){
+
+            console.error("Erro ao carregar clientes.");
+
+            return;
+
+        }
+
+        const data = await res.json();
+
+        clientes =
+            Array.isArray(data)
+            ? data
+            : data.clientes || [];
+
+    }catch(err){
+
+        console.error(err);
+
+    }
+
+}
+
+
+function buscarClientes(){
+
+    const termo =
+        document
+        .getElementById("buscaCliente")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const resultados =
+        document.getElementById("resultadosClientes");
+
+    resultados.innerHTML = "";
+
+    if(!termo){
+
+        resultados.style.display="none";
+
+        return;
+
+    }
+
+
+    const encontrados =
+        clientes.filter(c =>
+
+            (c.nome || "")
+            .toLowerCase()
+            .includes(termo)
+
+            ||
+
+            (c.telefone || "")
+            .toLowerCase()
+            .includes(termo)
+
+            ||
+
+            (c.cpfcnpj || "")
+            .toLowerCase()
+            .includes(termo)
+
+        ).slice(0,20);
+
+
+    if(encontrados.length === 0){
+
+        resultados.innerHTML = `
+            <div class="resultado">
+                Nenhum cliente encontrado.
+            </div>
+        `;
+
+        resultados.style.display="block";
+
+        return;
+
+    }
+
+
+    encontrados.forEach(c=>{
+
+        resultados.innerHTML += `
+
+            <div
+                class="resultado"
+                onclick="selecionarCliente('${c._id}')">
+
+                <strong>
+                    ${escaparHTML(c.nome)}
+                </strong>
+
+                <br>
+
+                <small>
+                    ${escaparHTML(c.telefone || "Sem telefone")}
+                </small>
+
+            </div>
+
+        `;
+
+    });
+
+
+    resultados.style.display="block";
+
+}
+
+
+function selecionarCliente(id){
+
+    const cliente =
+        clientes.find(c=>c._id === id);
+
+    if(!cliente)
+        return;
+
+
+    clienteSelecionado = {
+
+        id: cliente._id,
+
+        nome: cliente.nome,
+
+        telefone: cliente.telefone || ""
+
+    };
+
+
+    document.getElementById(
+        "clienteNomeSelecionado"
+    ).innerText = cliente.nome;
+
+
+    document.getElementById(
+        "clienteTelefoneSelecionado"
+    ).innerText =
+        cliente.telefone
+        ? "📞 " + cliente.telefone
+        : "📞 Sem telefone";
+
+
+    document.getElementById(
+        "clienteSelecionado"
+    ).style.display="block";
+
+
+    document.getElementById(
+        "resultadosClientes"
+    ).style.display="none";
+
+
+    document.getElementById(
+        "buscaCliente"
+    ).value="";
+
+
+    cancelarNovoCliente();
+
+}
+
+
+function limparCliente(){
+
+    clienteSelecionado = null;
+
+    document.getElementById(
+        "clienteSelecionado"
+    ).style.display="none";
+
+}
+
+
+function mostrarNovoCliente(){
+
+    document.getElementById(
+        "novoCliente"
+    ).style.display="block";
+
+}
+
+
+function cancelarNovoCliente(){
+
+    document.getElementById(
+        "novoCliente"
+    ).style.display="none";
+
+}
+
+
+function usarNovoCliente(){
+
+    const nome =
+        document
+        .getElementById("novoClienteNome")
+        .value
+        .trim();
+
+    const telefone =
+        document
+        .getElementById("novoClienteTelefone")
+        .value
+        .trim();
+
+
+    if(!nome){
+
+        alert("Informe o nome do cliente.");
+
+        return;
+
+    }
+
+
+    clienteSelecionado = {
+
+        id:null,
+
+        nome,
+
+        telefone
+
+    };
+
+
+    document.getElementById(
+        "clienteNomeSelecionado"
+    ).innerText = nome;
+
+
+    document.getElementById(
+        "clienteTelefoneSelecionado"
+    ).innerText =
+        telefone
+        ? "📞 " + telefone
+        : "📞 Sem telefone";
+
+
+    document.getElementById(
+        "clienteSelecionado"
+    ).style.display="block";
+
+
+    document.getElementById(
+        "novoCliente"
+    ).style.display="none";
+
+
+    document.getElementById(
+        "novoClienteNome"
+    ).value="";
+
+    document.getElementById(
+        "novoClienteTelefone"
+    ).value="";
+
+}
+
+
+/* ================= PRODUTOS ================= */
+
+async function carregarProdutos(){
+
+    try{
+
+        const res = await fetch("/api/products",{
+            credentials:"include"
+        });
+
+        if(!res.ok){
+
+            alert("Erro ao carregar produtos.");
+
+            return;
+
+        }
+
+        const data = await res.json();
+
+        produtos =
+            Array.isArray(data)
+            ? data
+            : [];
+
+    }catch(err){
+
+        console.error(err);
+
+    }
+
+}
+
+
+function buscarProdutos(){
+
+    const termo =
+        document
+        .getElementById("buscaProduto")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const resultados =
+        document.getElementById("resultadosProdutos");
+
+    resultados.innerHTML = "";
+
+    produtoSelecionado = null;
+
+
+    if(!termo){
+
+        resultados.style.display="none";
+
+        return;
+
+    }
+
+
+    const encontrados =
+        produtos.filter(p =>
+
+            (p.nome || "")
+            .toLowerCase()
+            .includes(termo)
+
+            ||
+
+            (p.codigo || "")
+            .toLowerCase()
+            .includes(termo)
+
+        ).slice(0,20);
+
+
+    if(encontrados.length === 0){
+
+        resultados.innerHTML = `
+            <div class="resultado">
+                Nenhum produto encontrado.
+            </div>
+        `;
+
+        resultados.style.display="block";
+
+        return;
+
+    }
+
+
+    encontrados.forEach(p=>{
+
+        const estoque =
+            Number(p.quantidade || 0);
+
+
+        resultados.innerHTML += `
+
+            <div
+                class="resultado"
+                onclick="selecionarProduto('${p._id}')">
+
+                <strong>
+                    ${escaparHTML(p.nome)}
+                </strong>
+
+                <br>
+
+                <small>
+
+                    Código:
+                    ${escaparHTML(p.codigo || "-")}
+
+                    |
+
+                    Estoque:
+                    ${estoque}
+
+                    |
+
+                    Venda:
+                    ${formatarMoeda(p.venda)}
+
+                </small>
+
+            </div>
+
+        `;
+
+    });
+
+
+    resultados.style.display="block";
+
+}
+
+
+function selecionarProduto(id){
+
+    const produto =
+        produtos.find(p=>p._id === id);
+
+    if(!produto)
+        return;
+
+
+    produtoSelecionado = produto;
+
+
+    document.getElementById(
+        "buscaProduto"
+    ).value = produto.nome;
+
+
+    document.getElementById(
+        "resultadosProdutos"
+    ).style.display="none";
+
+}
+
+
+/* ================= CARRINHO ================= */
+
+function adicionarProduto(){
+
+    if(!produtoSelecionado){
+
+        alert("Selecione um produto.");
+
+        return;
+
+    }
+
+
+    const quantidade =
+        Number(
+            document
+            .getElementById("quantidadeProduto")
+            .value
+        );
+
+
+    if(!Number.isInteger(quantidade) || quantidade <= 0){
+
+        alert("Informe uma quantidade válida.");
+
+        return;
+
+    }
+
+
+    const estoque =
+        Number(produtoSelecionado.quantidade || 0);
+
+
+    if(quantidade > estoque){
+
+        alert(
+            "Quantidade maior que o estoque disponível.\n\n" +
+            "Estoque atual: " + estoque
+        );
+
+        return;
+
+    }
+
+
+    const existente =
+        carrinho.find(
+            item =>
+                item.productId === produtoSelecionado._id
+        );
+
+
+    if(existente){
+
+        const novaQuantidade =
+            existente.quantidade + quantidade;
+
+
+        if(novaQuantidade > estoque){
+
+            alert(
+                "A quantidade total no carrinho ultrapassa o estoque disponível."
+            );
+
+            return;
+
+        }
+
+
+        existente.quantidade =
+            novaQuantidade;
+
+        existente.subtotal =
+            existente.quantidade *
+            existente.precoUnitario;
+
+    }else{
+
+        carrinho.push({
+
+            productId:
+                produtoSelecionado._id,
+
+            nomeProduto:
+                produtoSelecionado.nome,
+
+            quantidade,
+
+            precoUnitario:
+                Number(produtoSelecionado.venda || 0),
+
+            subtotal:
+                quantidade *
+                Number(produtoSelecionado.venda || 0)
+
+        });
+
+    }
+
+
+    produtoSelecionado = null;
+
+
+    document.getElementById(
+        "buscaProduto"
+    ).value="";
+
+
+    document.getElementById(
+        "quantidadeProduto"
+    ).value=1;
+
+
+    renderCarrinho();
+
+}
+
+
+function removerProduto(index){
+
+    carrinho.splice(index,1);
+
+    renderCarrinho();
+
+}
+
+
+function alterarQuantidade(index, quantidade){
+
+    quantidade = Number(quantidade);
+
+
+    if(!Number.isInteger(quantidade) || quantidade <= 0){
+
+        renderCarrinho();
+
+        return;
+
+    }
+
+
+    const item =
+        carrinho[index];
+
+
+    const produto =
+        produtos.find(
+            p=>p._id === item.productId
+        );
+
+
+    const estoque =
+        produto
+        ? Number(produto.quantidade || 0)
+        : 0;
+
+
+    if(quantidade > estoque){
+
+        alert(
+            "Quantidade maior que o estoque disponível."
+        );
+
+        renderCarrinho();
+
+        return;
+
+    }
+
+
+    item.quantidade =
+        quantidade;
+
+
+    item.subtotal =
+        item.quantidade *
+        item.precoUnitario;
+
+
+    renderCarrinho();
+
+}
+
+
+function renderCarrinho(){
+
+    const tbody =
+        document.getElementById("carrinho");
+
+
+    tbody.innerHTML="";
+
+
+    if(carrinho.length === 0){
+
+        tbody.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="5"
+                    class="vazio">
+
+                    Nenhum produto adicionado.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        calcularTotal();
+
+        return;
+
+    }
+
+
+    carrinho.forEach((item,index)=>{
+
+        tbody.innerHTML += `
+
+            <tr>
+
+                <td>
+                    ${escaparHTML(item.nomeProduto)}
+                </td>
+
+                <td>
+
+                    <input
+                        type="number"
+                        min="1"
+                        value="${item.quantidade}"
+                        onchange="alterarQuantidade(
+                            ${index},
+                            this.value
+                        )">
+
+                </td>
+
+                <td>
+                    ${formatarMoeda(item.precoUnitario)}
+                </td>
+
+                <td>
+                    ${formatarMoeda(item.subtotal)}
+                </td>
+
+                <td>
+
+                    <button
+                        class="btn-vermelho"
+                        onclick="removerProduto(${index})">
+
+                        🗑️
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+
+    calcularTotal();
+
+}
+
+
+/* ================= TOTAL ================= */
+
+function calcularTotal(){
+
+    const subtotal =
+        carrinho.reduce(
+            (total,item)=>
+                total + item.subtotal,
+            0
+        );
+
+
+    let desconto =
+        Number(
+            document
+            .getElementById("desconto")
+            .value
+        );
+
+
+    if(!Number.isFinite(desconto) || desconto < 0){
+
+        desconto=0;
+
+    }
+
+
+    if(desconto > subtotal){
+
+        desconto=subtotal;
+
+        document.getElementById(
+            "desconto"
+        ).value=subtotal;
+
+    }
+
+
+    const total =
+        subtotal - desconto;
+
+
+    document.getElementById(
+        "subtotal"
+    ).innerText =
+        formatarMoeda(subtotal);
+
+
+    document.getElementById(
+        "total"
+    ).innerText =
+        formatarMoeda(total);
+
+}
+
+
+/* ================= FINALIZAR ================= */
+
+async function finalizarVenda(){
+
+    if(!clienteSelecionado){
+
+        alert("Selecione um cliente ou cadastre um novo cliente.");
+
+        return;
+
+    }
+
+
+    if(carrinho.length === 0){
+
+        alert("Adicione pelo menos um produto à venda.");
+
+        return;
+
+    }
+
+
+    const desconto =
+        Number(
+            document
+            .getElementById("desconto")
+            .value || 0
+        );
+
+
+    const formaPagamento =
+        document
+        .getElementById("formaPagamento")
+        .value;
+
+
+    const total =
+        carrinho.reduce(
+            (soma,item)=>
+                soma + item.subtotal,
+            0
+        ) - desconto;
+
+
+    if(!confirm(
+        "Confirmar venda?\n\n" +
+        "Cliente: " +
+        clienteSelecionado.nome +
+        "\n" +
+        "Total: " +
+        formatarMoeda(total)
+    )){
+
+        return;
+
+    }
+
+
+    const dados = {
+
+        clienteId:
+            clienteSelecionado.id,
+
+        clienteNome:
+            clienteSelecionado.nome,
+
+        clienteTelefone:
+            clienteSelecionado.telefone || "",
+
+        itens:
+            carrinho.map(item=>({
+
+                productId:
+                    item.productId,
+
+                quantidade:
+                    item.quantidade
+
+            })),
+
+        desconto,
+
+        formaPagamento
+
+    };
+
+
+    try{
+
+        const res =
+            await fetch("/api/sales",{
+
+                method:"POST",
+
+                credentials:"include",
+
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify(dados)
+
+            });
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            alert(
+                data.error ||
+                "Erro ao registrar venda."
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Venda registrada com sucesso!\n\n" +
+            "Venda #" +
+            data.venda.numeroVenda +
+            "\n" +
+            "Total: " +
+            formatarMoeda(data.venda.total)
+        );
+
+
+        carrinho=[];
+
+        clienteSelecionado=null;
+
+        produtoSelecionado=null;
+
+
+        document.getElementById(
+            "clienteSelecionado"
+        ).style.display="none";
+
+
+        document.getElementById(
+            "buscaCliente"
+        ).value="";
+
+
+        document.getElementById(
+            "desconto"
+        ).value=0;
+
+
+        renderCarrinho();
+
+
+        await carregarProdutos();
+
+    }catch(err){
+
+        console.error(err);
+
+        alert(
+            "Erro de comunicação com o servidor."
+        );
+
+    }
+
+}
+
+/* ================= HISTÓRICO DE VENDAS ================= */
+
+let vendas = [];
+
+
+async function carregarVendas(){
+
+    try{
+
+        const res = await fetch("/api/sales",{
+            credentials:"include"
+        });
+
+        if(!res.ok){
+
+            console.error("Erro ao carregar vendas.");
+
+            return;
+
+        }
+
+        const data = await res.json();
+
+        vendas =
+            Array.isArray(data)
+            ? data
+            : [];
+
+        renderHistoricoVendas();
+
+    }catch(err){
+
+        console.error(err);
+
+    }
+
+}
+
+
+function renderHistoricoVendas(){
+
+    const tbody =
+        document.getElementById("historicoVendas");
+
+    if(!tbody)
+        return;
+
+    tbody.innerHTML = "";
+
+
+    if(vendas.length === 0){
+
+        tbody.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="7"
+                    class="vazio">
+
+                    Nenhuma venda registrada.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    vendas.forEach(venda => {
+
+        const data =
+            venda.createdAt
+            ? new Date(venda.createdAt)
+                .toLocaleString("pt-BR")
+            : "-";
+
+
+        const status =
+            venda.status === "cancelada"
+
+            ? '<span style="color:#dc2626;font-weight:bold;">❌ Cancelada</span>'
+
+            : '<span style="color:#16a34a;font-weight:bold;">✅ Finalizada</span>';
+
+
+        const botaoCancelar =
+            venda.status === "cancelada"
+
+            ? ""
+
+            : `
+
+                <button
+                    class="btn-vermelho"
+                    onclick="cancelarVenda('${venda._id}')">
+
+                    ❌ Cancelar
+
+                </button>
+
+            `;
+
+
+        tbody.innerHTML += `
+
+            <tr>
+
+                <td>
+                    #${venda.numeroVenda}
+                </td>
+
+                <td>
+                    ${data}
+                </td>
+
+                <td>
+                    ${escaparHTML(
+                        venda.clienteNome || "Cliente"
+                    )}
+                </td>
+
+                <td>
+                    ${formatarMoeda(venda.total)}
+                </td>
+
+                <td>
+                    ${escaparHTML(
+                        venda.formaPagamento || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${status}
+                </td>
+
+                <td>
+
+                    <button
+                        onclick="abrirVenda('${venda._id}')">
+
+                        👁️ Abrir
+
+                    </button>
+
+                    ${botaoCancelar}
+
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+}
+
+
+/* ================= ABRIR VENDA ================= */
+
+function abrirVenda(id){
+
+    location.href =
+        "/venda.html?id=" + id;
+
+}
+
+
+/* ================= CANCELAR VENDA ================= */
+
+async function cancelarVenda(id){
+
+    const venda =
+        vendas.find(v => v._id === id);
+
+    if(!venda)
+        return;
+
+
+    if(venda.status === "cancelada"){
+
+        alert("Esta venda já está cancelada.");
+
+        return;
+
+    }
+
+
+    const confirmar =
+        confirm(
+
+            "Deseja cancelar esta venda?\n\n" +
+
+            "Venda: #" +
+            venda.numeroVenda +
+
+            "\nCliente: " +
+            venda.clienteNome +
+
+            "\nTotal: " +
+            formatarMoeda(venda.total) +
+
+            "\n\n" +
+
+            "Os produtos serão devolvidos ao estoque."
+
+        );
+
+
+    if(!confirmar)
+        return;
+
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/sales/" +
+                id +
+                "/cancelar",
+                {
+                    method:"POST",
+                    credentials:"include"
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            alert(
+                data.error ||
+                "Erro ao cancelar venda."
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Venda #" +
+            venda.numeroVenda +
+            " cancelada com sucesso.\n\n" +
+
+            "Os produtos foram devolvidos ao estoque."
+        );
+
+
+        await carregarVendas();
+
+        await carregarProdutos();
+
+
+    }catch(err){
+
+        console.error(err);
+
+        alert(
+            "Erro de comunicação com o servidor."
+        );
+
+    }
+
+}
+
+/* ================= UTILIDADES ================= */
+
+function formatarMoeda(valor){
+
+    return Number(valor || 0)
+        .toLocaleString("pt-BR",{
+
+            style:"currency",
+
+            currency:"BRL"
+
+        });
+
+}
+
+
+function escaparHTML(texto){
+
+    return String(texto || "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* ================= LOGOUT ================= */
+
+async function logout(){
+
+    await fetch("/logout",{
+        credentials:"include"
+    });
+
+    location.href="/";
+
+}
+
+
+/* ================= INIT ================= */
+
+window.onload = async ()=>{
+
+    await carregarUsuario();
+
+    await carregarClientes();
+
+    await carregarProdutos();
+
+    await carregarVendas();
+
+    renderCarrinho();
+
+};
+
+</script>
+
+</body>
+
+</html>

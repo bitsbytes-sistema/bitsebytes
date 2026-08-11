@@ -27,6 +27,8 @@ const Lembrete = require("./models/Lembrete");
 
 const serviceRoutes = require("./routes/services");
 const productRoutes = require("./routes/products");
+const stockMovementRoutes = require("./routes/stockMovements");
+const saleRoutes = require("./routes/sales");
 const budgetRoutes = require("./routes/budgets");
 const notificationRoutes = require("./routes/notifications");
 const lembreteRoutes = require("./routes/lembretes");
@@ -2067,6 +2069,10 @@ app.use("/api/notifications", auth, notificationRoutes);
 app.use("/api/lembretes", lembreteRoutes);
 
 app.use("/api/alertas", require("./routes/alertas"));
+
+app.use("/api/stock-movements", stockMovementRoutes);
+
+app.use("/api/sales", saleRoutes);
 
 /* ===================== LOGOUT ===================== */
 

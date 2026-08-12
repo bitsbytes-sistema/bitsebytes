@@ -825,7 +825,10 @@ encodeURIComponent(clienteId),
     );
 
 
-    const chamados = await res.json();
+    const historicoData = await res.json();
+
+const chamados = historicoData.chamados || [];
+const vendas = historicoData.vendas || [];
 
 
     document.getElementById("tituloHistorico")
@@ -955,6 +958,24 @@ const resumo = chamados.reduce((acc, c)=>{
 });
 
 
+const totalVendas = vendas.length;
+
+const totalVendido = vendas.reduce(
+  (total, venda) => {
+
+    if(venda.status === "cancelada"){
+      return total;
+    }
+
+    return total + Number(
+      venda.total || 0
+    );
+
+  },
+  0
+);
+
+
 dados.innerHTML += `
 
 <div class="card">
@@ -973,7 +994,18 @@ dados.innerHTML += `
 
 🟠 <b>Em reparo:</b> ${resumo.reparo}<br>
 
-🟢 <b>Finalizados:</b> ${resumo.finalizados}
+🟢 <b>Finalizados:</b> ${resumo.finalizados}<br>
+
+🛒 <b>Total de vendas:</b> ${totalVendas}<br>
+
+💰 <b>Total vendido:</b>
+${totalVendido.toLocaleString(
+  "pt-BR",
+  {
+    style:"currency",
+    currency:"BRL"
+  }
+)}
 
 </div>
 
@@ -1051,8 +1083,225 @@ dados.innerHTML += `
     });
 
 
-    document.getElementById("modalHistorico")
-      .style.display="block";
+/* =====================================================
+   HISTÓRICO DE VENDAS
+===================================================== */
+
+conteudo.innerHTML += `
+
+  <hr>
+
+  <h3>
+    🛒 Histórico de Vendas
+  </h3>
+
+`;
+
+
+if(!vendas.length){
+
+  conteudo.innerHTML += `
+
+    <div class="chamado">
+
+      Nenhuma venda encontrada para este cliente.
+
+    </div>
+
+  `;
+
+}else{
+
+  vendas.forEach(venda => {
+
+    const dataVenda =
+      venda.createdAt
+        ? new Date(
+            venda.createdAt
+          ).toLocaleString("pt-BR")
+        : "-";
+
+
+    const status =
+      venda.status === "cancelada"
+
+        ? `
+          <span style="
+            color:#dc2626;
+            font-weight:bold;
+          ">
+            ❌ Cancelada
+          </span>
+        `
+
+        : `
+          <span style="
+            color:#16a34a;
+            font-weight:bold;
+          ">
+            ✅ Finalizada
+          </span>
+        `;
+
+
+    let produtosVenda = "";
+
+
+    if(
+      Array.isArray(venda.itens) &&
+      venda.itens.length
+    ){
+
+      venda.itens.forEach(item => {
+
+        produtosVenda += `
+
+          <div style="
+            padding:6px 0;
+            border-bottom:1px solid #e5e7eb;
+          ">
+
+            📦 <b>
+              ${item.nomeProduto || "Produto"}
+            </b>
+
+            — ${item.quantidade}x
+
+            ${Number(
+              item.precoUnitario || 0
+            ).toLocaleString(
+              "pt-BR",
+              {
+                style:"currency",
+                currency:"BRL"
+              }
+            )}
+
+            =
+
+            <b>
+              ${Number(
+                item.subtotal || 0
+              ).toLocaleString(
+                "pt-BR",
+                {
+                  style:"currency",
+                  currency:"BRL"
+                }
+              )}
+            </b>
+
+          </div>
+
+        `;
+
+      });
+
+    }
+
+
+    conteudo.innerHTML += `
+
+      <div class="chamado"
+        style="
+          border-left:5px solid #16a34a;
+        "
+      >
+
+        <b>
+          🛒 Venda #${venda.numeroVenda || "-"}
+        </b>
+
+        <br>
+
+        <b>📅 Data:</b>
+        ${dataVenda}
+
+        <br>
+
+        <b>💳 Pagamento:</b>
+        ${venda.formaPagamento || "-"}
+
+        <br><br>
+
+        <b>📦 Produtos:</b>
+
+        <div style="
+          margin-top:8px;
+          background:white;
+          padding:10px;
+          border-radius:6px;
+        ">
+
+          ${produtosVenda}
+
+        </div>
+
+        <br>
+
+        <b>💰 Subtotal:</b>
+
+        ${Number(
+          venda.subtotal || 0
+        ).toLocaleString(
+          "pt-BR",
+          {
+            style:"currency",
+            currency:"BRL"
+          }
+        )}
+
+        <br>
+
+        <b>🏷️ Desconto:</b>
+
+        ${Number(
+          venda.desconto || 0
+        ).toLocaleString(
+          "pt-BR",
+          {
+            style:"currency",
+            currency:"BRL"
+          }
+        )}
+
+        <br>
+
+        <b>💵 Total:</b>
+
+        <span style="
+          font-size:18px;
+          font-weight:bold;
+        ">
+
+          ${Number(
+            venda.total || 0
+          ).toLocaleString(
+            "pt-BR",
+            {
+              style:"currency",
+              currency:"BRL"
+            }
+          )}
+
+        </span>
+
+        <br><br>
+
+        <b>Status:</b>
+        ${status}
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+
+document.getElementById("modalHistorico")
+  .style.display="block";
 
 
   } catch(err){
@@ -1066,6 +1315,7 @@ dados.innerHTML += `
   }
 
 }
+
 
 
 function fecharModal(){

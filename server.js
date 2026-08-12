@@ -24,6 +24,7 @@ const Service = require("./models/Service");
 const Budget = require("./models/Budget");
 const Notification = require("./models/Notification");
 const Lembrete = require("./models/Lembrete");
+const Sale = require("./models/Sale");
 
 const serviceRoutes = require("./routes/services");
 const productRoutes = require("./routes/products");
@@ -743,46 +744,113 @@ app.get("/api/clientes/historico/:id", auth, async (req, res) => {
 
   try {
 
-    const cliente = await Cliente.findById(req.params.id);
+    const companyId =
+      req.session.user.companyId;
+
+
+    /* =====================================================
+       CLIENTE
+    ===================================================== */
+
+    const cliente = await Cliente.findOne({
+
+      _id: req.params.id,
+
+      companyId
+
+    });
+
 
     if(!cliente){
 
       return res.status(404).json({
-        error:"Cliente não encontrado"
+
+        error: "Cliente não encontrado"
+
       });
 
     }
 
 
+    /* =====================================================
+       CHAMADOS
+    ===================================================== */
+
     const chamados = await Ticket.find({
 
-      companyId: req.session.user.companyId,
+      companyId,
 
-      $or:[
+      $or: [
+
         {
           clienteId: cliente._id
         },
+
         {
           cliente: cliente.nome
         }
+
       ]
 
     }).sort({
 
-      createdAt:-1
+      createdAt: -1
 
     });
 
 
-    res.json(chamados);
+    /* =====================================================
+       VENDAS
+    ===================================================== */
+
+    const vendas = await Sale.find({
+
+      companyId,
+
+      clienteId: cliente._id
+
+    })
+
+    .populate(
+      "itens.productId",
+      "nome codigo"
+    )
+
+    .sort({
+
+      createdAt: -1
+
+    });
+
+
+    /* =====================================================
+       RESPOSTA
+    ===================================================== */
+
+    res.json({
+
+      chamados,
+
+      vendas
+
+    });
 
 
   } catch(err){
 
-    console.log(err);
+    console.error(
+      "Erro ao carregar histórico do cliente:",
+      err
+    );
+
 
     res.status(500).json({
-      error:true
+
+      error: true,
+
+      message:
+        "Erro ao carregar histórico do cliente."
+
     });
 
   }

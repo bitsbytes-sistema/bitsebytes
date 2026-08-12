@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Bits & Bytes - Detalhes da Venda</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f2f2f2;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+    width:250px;
+    background:#0f172a;
+    min-height:100vh;
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+}
+
+.logo{
+    padding:20px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:14px 20px;
+}
+
+.sidebar a:hover{
+    background:#1e293b;
+}
+
+.usuario{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+}
+
+/* ================= MAIN ================= */
+
+.main{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    min-height:100vh;
+}
+
+/* ================= TOPBAR ================= */
+
+.topbar{
+    height:70px;
+    background:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 30px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.topbar a{
+    color:#dc2626;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+    padding:20px;
+}
+
+/* ================= CARD ================= */
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+.card h3{
+    margin-top:0;
+}
+
+/* ================= CABEÇALHO ================= */
+
+.cabecalho-venda{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.numero-venda{
+    font-size:26px;
+    font-weight:bold;
+    color:#0f172a;
+}
+
+.status-finalizada{
+    color:#16a34a;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.status-cancelada{
+    color:#dc2626;
+    font-weight:bold;
+    font-size:18px;
+}
+
+/* ================= DADOS ================= */
+
+.dados-grid{
+    display:grid;
+    grid-template-columns:
+        repeat(2, minmax(250px, 1fr));
+    gap:15px;
+}
+
+.dado{
+    background:#f8fafc;
+    padding:15px;
+    border-radius:8px;
+    border-left:4px solid #2563eb;
+}
+
+.dado-label{
+    display:block;
+    font-size:13px;
+    color:#64748b;
+    margin-bottom:5px;
+}
+
+.dado-valor{
+    font-weight:bold;
+    color:#0f172a;
+    font-size:16px;
+}
+
+/* ================= TABELA ================= */
+
+.tabela-container{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:650px;
+}
+
+th{
+    background:#0f172a;
+    color:white;
+    padding:11px;
+    text-align:center;
+}
+
+td{
+    padding:11px;
+    border-bottom:1px solid #e5e7eb;
+    text-align:center;
+}
+
+td.produto{
+    text-align:left;
+    font-weight:bold;
+}
+
+.total-item{
+    font-weight:bold;
+}
+
+/* ================= TOTAIS ================= */
+
+.totais{
+    margin-top:20px;
+    display:flex;
+    justify-content:flex-end;
+}
+
+.totais-box{
+    width:350px;
+}
+
+.total-linha{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 0;
+}
+
+.total-final{
+    border-top:2px solid #0f172a;
+    margin-top:8px;
+    padding-top:12px;
+    font-size:23px;
+    font-weight:bold;
+}
+
+/* ================= BOTÕES ================= */
+
+.botoes{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.btn-voltar{
+    background:#64748b;
+}
+
+.btn-vermelho{
+    background:#dc2626;
+}
+
+.btn-verde{
+    background:#16a34a;
+}
+
+/* ================= CARREGANDO ================= */
+
+.carregando{
+    text-align:center;
+    padding:40px;
+    color:#64748b;
+    font-size:18px;
+}
+
+/* ================= RESPONSIVO ================= */
+
+@media(max-width:900px){
+
+    .sidebar{
+        width:200px;
+    }
+
+    .main{
+        margin-left:200px;
+        width:calc(100% - 200px);
+    }
+
+    .dados-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar">
+
+    <div class="logo">
+
+        <img src="/logo.png" width="45">
+
+        <div>
+
+            <b>Bits & Bytes</b><br>
+
+            <small>Tecnology</small>
+
+        </div>
+
+    </div>
+
+
+    <a href="/dashboard.html">🏠 Dashboard</a>
+
+    <a href="/clientes.html">👥 Clientes</a>
+
+    <a href="/chamados.html">📋 Chamados</a>
+
+    <a href="/orcamentos.html">💰 Orçamentos</a>
+
+    <a href="/services.html">🛠 Serviços</a>
+
+    <a href="/laudos.html">📄 Laudos Técnicos</a>
+
+    <a href="/estoque.html">📦 Estoque</a>
+
+    <a href="/vendas.html">🛒 Vendas</a>
+
+    <a href="/financeiro.html">💵 Financeiro</a>
+
+    <a href="/lembretes.html">🔔 Lembretes</a>
+
+    <a href="/relatorios.html">📊 Relatórios</a>
+
+    <a href="/configuracoes.html">⚙️ Configurações</a>
+
+
+    <div class="usuario">
+
+        <b id="nomeUsuario">Carregando...</b>
+
+        <br>
+
+        <small id="cargoUsuario"></small>
+
+    </div>
+
+</div>
+
+
+<!-- ================= MAIN ================= -->
+
+<div class="main">
+
+    <div class="topbar">
+
+        <div>🛒 Detalhes da Venda</div>
+
+        <a
+            href="javascript:void(0)"
+            onclick="logout()">
+
+            Sair
+
+        </a>
+
+    </div>
+
+
+    <div class="container">
+
+        <div id="conteudo">
+
+            <div class="card carregando">
+
+                Carregando venda...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ================= VARIÁVEIS ================= */
+
+let venda = null;
+
+
+/* ================= ID DA VENDA ================= */
+
+const parametros =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const vendaId =
+    parametros.get("id");
+
+
+/* ================= USUÁRIO ================= */
+
+async function carregarUsuario(){
+
+    const res =
+        await fetch(
+            "/me",
+            {
+                credentials:"include"
+            }
+        );
+
+
+    if(res.status === 401){
+
+        window.location.href="/";
+
+        return false;
+
+    }
+
+
+    const data =
+        await res.json();
+
+
+    document.getElementById(
+        "nomeUsuario"
+    ).innerText =
+        data.user.username;
+
+
+    document.getElementById(
+        "cargoUsuario"
+    ).innerText =
+        data.user.role;
+
+
+    return true;
+
+}
+
+
+/* ================= CARREGAR VENDA ================= */
+
+async function carregarVenda(){
+
+    const conteudo =
+        document.getElementById(
+            "conteudo"
+        );
+
+
+    if(!vendaId){
+
+        conteudo.innerHTML = `
+
+            <div class="card">
+
+                <h3>
+                    ❌ Venda não informada
+                </h3>
+
+                <p>
+                    Nenhuma venda foi informada
+                    para visualização.
+                </p>
+
+                <button
+                    class="btn-voltar"
+                    onclick="voltarVendas()">
+
+                    ← Voltar para Vendas
+
+                </button>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/sales/" +
+                encodeURIComponent(vendaId),
+                {
+                    credentials:"include"
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            conteudo.innerHTML = `
+
+                <div class="card">
+
+                    <h3>
+                        ❌ Erro
+                    </h3>
+
+                    <p>
+                        ${
+                            escaparHTML(
+                                data.error ||
+                                "Venda não encontrada."
+                            )
+                        }
+                    </p>
+
+                    <button
+                        class="btn-voltar"
+                        onclick="voltarVendas()">
+
+                        ← Voltar para Vendas
+
+                    </button>
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        venda = data;
+
+        renderVenda();
+
+
+    }catch(err){
+
+        console.error(err);
+
+
+        conteudo.innerHTML = `
+
+            <div class="card">
+
+                <h3>
+                    ❌ Erro de comunicação
+                </h3>
+
+                <p>
+                    Não foi possível carregar
+                    os dados da venda.
+                </p>
+
+                <button
+                    class="btn-voltar"
+                    onclick="voltarVendas()">
+
+                    ← Voltar para Vendas
+
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* ================= RENDER VENDA ================= */
+
+function renderVenda(){
+
+    const conteudo =
+        document.getElementById(
+            "conteudo"
+        );
+
+
+    const cancelada =
+        venda.status === "cancelada";
+
+
+    const status =
+        cancelada
+
+        ?
+
+        `
+        <span class="status-cancelada">
+            ❌ Cancelada
+        </span>
+        `
+
+        :
+
+        `
+        <span class="status-finalizada">
+            ✅ Finalizada
+        </span>
+        `;
+
+
+    const botaoCancelar =
+        cancelada
+
+        ?
+
+        ""
+
+        :
+
+        `
+        <button
+            class="btn-vermelho"
+            onclick="cancelarVenda()">
+
+            ❌ Cancelar Venda
+
+        </button>
+        `;
+
+
+    const dataVenda =
+        venda.createdAt
+
+        ?
+
+        new Date(
+            venda.createdAt
+        ).toLocaleString(
+            "pt-BR"
+        )
+
+        :
+
+        "-";
+
+
+    const itens =
+        Array.isArray(venda.itens)
+        ? venda.itens
+        : [];
+
+
+    let linhasItens = "";
+
+
+    if(itens.length === 0){
+
+        linhasItens = `
+
+            <tr>
+
+                <td
+                    colspan="5"
+                    style="
+                        text-align:center;
+                        padding:25px;
+                        color:#64748b;
+                    ">
+
+                    Nenhum produto registrado.
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }else{
+
+        itens.forEach(item => {
+
+            linhasItens += `
+
+                <tr>
+
+                    <td class="produto">
+
+                        📦
+                        ${escaparHTML(
+                            item.nomeProduto ||
+                            "Produto"
+                        )}
+
+                    </td>
+
+                    <td>
+
+                        ${item.quantidade || 0}
+
+                    </td>
+
+                    <td>
+
+                        ${formatarMoeda(
+                            item.precoUnitario
+                        )}
+
+                    </td>
+
+                    <td>
+
+                        ${formatarMoeda(
+                            item.subtotal
+                        )}
+
+                    </td>
+
+                    <td class="total-item">
+
+                        ${formatarMoeda(
+                            item.subtotal
+                        )}
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+    }
+
+
+    conteudo.innerHTML = `
+
+        <!-- ================= CABEÇALHO ================= -->
+
+        <div class="card">
+
+            <div class="cabecalho-venda">
+
+                <div>
+
+                    <div class="numero-venda">
+
+                        🛒 Venda #${venda.numeroVenda || "-"}
+
+                    </div>
+
+                    <div style="
+                        margin-top:6px;
+                        color:#64748b;
+                    ">
+
+                        📅 ${dataVenda}
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    ${status}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= CLIENTE ================= -->
+
+        <div class="card">
+
+            <h3>
+                👤 Cliente
+            </h3>
+
+
+            <div class="dados-grid">
+
+                <div class="dado">
+
+                    <span class="dado-label">
+                        Nome
+                    </span>
+
+                    <span class="dado-valor">
+
+                        ${escaparHTML(
+                            venda.clienteNome ||
+                            "Cliente"
+                        )}
+
+                    </span>
+
+                </div>
+
+
+                <div class="dado">
+
+                    <span class="dado-label">
+                        Telefone
+                    </span>
+
+                    <span class="dado-valor">
+
+                        ${
+                            escaparHTML(
+                                venda.clienteTelefone ||
+                                "Não informado"
+                            )
+                        }
+
+                    </span>
+
+                </div>
+
+
+                <div class="dado">
+
+                    <span class="dado-label">
+                        Forma de pagamento
+                    </span>
+
+                    <span class="dado-valor">
+
+                        💳
+                        ${escaparHTML(
+                            venda.formaPagamento ||
+                            "-"
+                        )}
+
+                    </span>
+
+                </div>
+
+
+                <div class="dado">
+
+                    <span class="dado-label">
+                        Status
+                    </span>
+
+                    <span class="dado-valor">
+
+                        ${status}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= PRODUTOS ================= -->
+
+        <div class="card">
+
+            <h3>
+                📦 Produtos da Venda
+            </h3>
+
+
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Produto</th>
+
+                            <th>Quantidade</th>
+
+                            <th>Preço Unitário</th>
+
+                            <th>Subtotal</th>
+
+                            <th>Total</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        ${linhasItens}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- ================= TOTAIS ================= -->
+
+            <div class="totais">
+
+                <div class="totais-box">
+
+                    <div class="total-linha">
+
+                        <span>
+                            Subtotal:
+                        </span>
+
+                        <strong>
+                            ${formatarMoeda(
+                                venda.subtotal
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="total-linha">
+
+                        <span>
+                            Desconto:
+                        </span>
+
+                        <strong>
+                            ${formatarMoeda(
+                                venda.desconto
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="total-linha total-final">
+
+                        <span>
+                            Total:
+                        </span>
+
+                        <span>
+                            ${formatarMoeda(
+                                venda.total
+                            )}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= AÇÕES ================= -->
+
+        <div class="card">
+
+            <div class="botoes">
+
+                <button
+                    class="btn-voltar"
+                    onclick="voltarVendas()">
+
+                    ← Voltar para Vendas
+
+                </button>
+
+
+                ${botaoCancelar}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* ================= CANCELAR VENDA ================= */
+
+async function cancelarVenda(){
+
+    if(!venda)
+        return;
+
+
+    if(venda.status === "cancelada"){
+
+        alert(
+            "Esta venda já está cancelada."
+        );
+
+        return;
+
+    }
+
+
+    const confirmar =
+        confirm(
+
+            "Deseja cancelar esta venda?\n\n" +
+
+            "Venda: #" +
+            venda.numeroVenda +
+
+            "\nCliente: " +
+            venda.clienteNome +
+
+            "\nTotal: " +
+            formatarMoeda(venda.total) +
+
+            "\n\n" +
+
+            "Os produtos serão devolvidos ao estoque."
+
+        );
+
+
+    if(!confirmar)
+        return;
+
+
+    try{
+
+        const res =
+            await fetch(
+
+                "/api/sales/" +
+                venda._id +
+                "/cancelar",
+
+                {
+                    method:"POST",
+
+                    credentials:"include"
+                }
+
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            alert(
+                data.error ||
+                "Erro ao cancelar venda."
+            );
+
+            return;
+
+        }
+
+
+        alert(
+
+            "Venda #" +
+            venda.numeroVenda +
+            " cancelada com sucesso.\n\n" +
+
+            "Os produtos foram devolvidos ao estoque."
+
+        );
+
+
+        venda =
+            data.venda;
+
+
+        renderVenda();
+
+
+    }catch(err){
+
+        console.error(err);
+
+
+        alert(
+            "Erro de comunicação com o servidor."
+        );
+
+    }
+
+}
+
+
+/* ================= VOLTAR ================= */
+
+function voltarVendas(){
+
+    window.location.href =
+        "/vendas.html";
+
+}
+
+
+/* ================= UTILIDADES ================= */
+
+function formatarMoeda(valor){
+
+    return Number(
+        valor || 0
+    ).toLocaleString(
+        "pt-BR",
+        {
+            style:"currency",
+            currency:"BRL"
+        }
+    );
+
+}
+
+
+function escaparHTML(texto){
+
+    return String(
+        texto || ""
+    )
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* ================= LOGOUT ================= */
+
+async function logout(){
+
+    await fetch(
+        "/logout",
+        {
+            credentials:"include"
+        }
+    );
+
+    location.href="/";
+
+}
+
+
+/* ================= INIT ================= */
+
+window.onload = async ()=>{
+
+    const autenticado =
+        await carregarUsuario();
+
+
+    if(!autenticado)
+        return;
+
+
+    await carregarVenda();
+
+};
+
+</script>
+
+</body>
+
+</html>

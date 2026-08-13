@@ -272,6 +272,12 @@ td input{
     display:flex;
     justify-content:space-between;
     padding:8px 0;
+    gap:15px;
+}
+
+.total-linha input{
+    width:140px;
+    text-align:right;
 }
 
 .total-final{
@@ -293,13 +299,43 @@ td input{
 }
 
 .pagamento{
-    width:250px;
+    width:320px;
 }
 
 .btn-finalizar{
     background:#16a34a;
     font-size:17px;
     padding:13px 25px;
+}
+
+/* ================= RESUMO DO CARTÃO ================= */
+
+.resumo-cartao{
+    margin-top:15px;
+    padding:15px;
+    background:#f8fafc;
+    border-radius:8px;
+    border:1px solid #e2e8f0;
+    display:none;
+}
+
+.resumo-cartao .linha-resumo{
+    display:flex;
+    justify-content:space-between;
+    padding:5px 0;
+}
+
+.resumo-cartao .linha-destaque{
+    border-top:1px solid #cbd5e1;
+    margin-top:7px;
+    padding-top:10px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.resumo-cartao .valor-juros{
+    color:#d97706;
+    font-weight:bold;
 }
 
 /* ================= RESPONSIVO ================= */
@@ -380,11 +416,9 @@ td input{
 
 </div>
 
-
 <div class="container">
 
     <h2>🛒 Nova Venda</h2>
-
 
     <!-- ================= CLIENTE ================= -->
 
@@ -423,7 +457,6 @@ td input{
 
         </div>
 
-
         <div
             id="clienteSelecionado"
             class="cliente-selecionado">
@@ -446,7 +479,6 @@ td input{
 
         </div>
 
-
         <!-- NOVO CLIENTE -->
 
         <div
@@ -467,7 +499,6 @@ td input{
                         placeholder="Nome do cliente">
 
                 </div>
-
 
                 <div class="campo">
 
@@ -504,7 +535,6 @@ td input{
 
     </div>
 
-
     <!-- ================= PRODUTO ================= -->
 
     <div class="card">
@@ -532,7 +562,6 @@ td input{
 
             </div>
 
-
             <div class="campo-pequeno">
 
                 <label>Quantidade</label>
@@ -545,7 +574,6 @@ td input{
 
             </div>
 
-
             <button
                 onclick="adicionarProduto()">
 
@@ -556,7 +584,6 @@ td input{
         </div>
 
     </div>
-
 
     <!-- ================= CARRINHO ================= -->
 
@@ -598,7 +625,6 @@ td input{
 
         </table>
 
-
         <div class="totais">
 
             <div class="totais-box">
@@ -613,7 +639,6 @@ td input{
 
                 </div>
 
-
                 <div class="total-linha">
 
                     <span>Desconto:</span>
@@ -627,7 +652,6 @@ td input{
                         oninput="calcularTotal()">
 
                 </div>
-
 
                 <div class="total-linha total-final">
 
@@ -655,124 +679,202 @@ td input{
 
             <div class="pagamento">
 
-    <label>Forma de pagamento</label>
+                <label>Forma de pagamento</label>
 
-    <select id="formaPagamento" onchange="alterarFormaPagamento()">
+                <select
+                    id="formaPagamento"
+                    onchange="alterarFormaPagamento()">
 
-    <option value="Dinheiro">
-        Dinheiro
-    </option>
+                    <option value="Dinheiro">
+                        Dinheiro
+                    </option>
 
-    <option value="PIX">
-        PIX
-    </option>
+                    <option value="PIX">
+                        PIX
+                    </option>
 
-    <option value="Cartão de Débito">
-        Cartão de Débito
-    </option>
+                    <option value="Cartão de Débito">
+                        Cartão de Débito
+                    </option>
 
-    <option value="Cartão de Crédito">
-        Cartão de Crédito
-    </option>
+                    <option value="Cartão de Crédito">
+                        Cartão de Crédito
+                    </option>
 
-    <option value="Boleto">
-        Boleto
-    </option>
+                    <option value="Boleto">
+                        Boleto
+                    </option>
 
-</select>
-
-<div
-    id="campoParcelas"
-    style="
-        display:none;
-        margin-top:15px;
-    "
->
-
-    <label>Parcelas</label>
-
-    <select id="parcelas">
-
-        <option value="1">1x</option>
-        <option value="2">2x</option>
-        <option value="3">3x</option>
-        <option value="4">4x</option>
-        <option value="5">5x</option>
-        <option value="6">6x</option>
-        <option value="7">7x</option>
-        <option value="8">8x</option>
-        <option value="9">9x</option>
-        <option value="10">10x</option>
-        <option value="11">11x</option>
-        <option value="12">12x</option>
-
-    </select>
-
-</div>
-
-</div>
+                </select>
 
 
-<div
-    class="pagamento"
-    id="campoParcelas"
-    style="display:none;">
+                <!-- ================= MAQUININHA ================= -->
 
-    <label>Parcelas</label>
+                <div
+                    id="campoMaquininha"
+                    style="
+                        display:none;
+                        margin-top:15px;
+                    "
+                >
 
-    <select id="parcelas">
+                    <label>Maquininha</label>
 
-        <option value="1">
-            1x
-        </option>
+                    <input
+                        type="text"
+                        id="maquininha"
+                        placeholder="Ex.: Stone, Mercado Pago, PagBank..."
+                    >
 
-        <option value="2">
-            2x
-        </option>
+                </div>
 
-        <option value="3">
-            3x
-        </option>
 
-        <option value="4">
-            4x
-        </option>
+                <!-- ================= PARCELAS ================= -->
 
-        <option value="5">
-            5x
-        </option>
+                <div
+                    id="campoParcelas"
+                    style="
+                        display:none;
+                        margin-top:15px;
+                    "
+                >
 
-        <option value="6">
-            6x
-        </option>
+                    <label>Parcelas</label>
 
-        <option value="7">
-            7x
-        </option>
+                    <select
+                        id="parcelas"
+                        onchange="calcularParcelamento()">
 
-        <option value="8">
-            8x
-        </option>
+                        <option value="1">1x</option>
+                        <option value="2">2x</option>
+                        <option value="3">3x</option>
+                        <option value="4">4x</option>
+                        <option value="5">5x</option>
+                        <option value="6">6x</option>
+                        <option value="7">7x</option>
+                        <option value="8">8x</option>
+                        <option value="9">9x</option>
+                        <option value="10">10x</option>
+                        <option value="11">11x</option>
+                        <option value="12">12x</option>
 
-        <option value="9">
-            9x
-        </option>
+                    </select>
 
-        <option value="10">
-            10x
-        </option>
+                </div>
 
-        <option value="11">
-            11x
-        </option>
 
-        <option value="12">
-            12x
-        </option>
+                <!-- ================= TIPO DE JUROS ================= -->
 
-    </select>
+                <div
+                    id="campoTipoJuros"
+                    style="
+                        display:none;
+                        margin-top:15px;
+                    "
+                >
 
-</div>
+                    <label>Tipo de parcelamento</label>
+
+                    <select
+                        id="tipoJuros"
+                        onchange="alterarTipoJuros()">
+
+                        <option value="sem_juros">
+                            Sem juros
+                        </option>
+
+                        <option value="com_juros">
+                            Com juros
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- ================= TAXA ================= -->
+
+                <div
+                    id="campoTaxa"
+                    style="
+                        display:none;
+                        margin-top:15px;
+                    "
+                >
+
+                    <label>Taxa (%)</label>
+
+                    <input
+                        type="number"
+                        id="taxaPercentual"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                        placeholder="Ex.: 0,89"
+                        oninput="calcularParcelamento()">
+
+                </div>
+
+
+                <!-- ================= RESUMO ================= -->
+
+                <div
+                    id="resumoCartao"
+                    class="resumo-cartao">
+
+                    <div class="linha-resumo">
+
+                        <span>Valor da venda:</span>
+
+                        <strong id="resumoTotal">
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+
+                    <div
+                        id="linhaJuros"
+                        class="linha-resumo"
+                        style="display:none;">
+
+                        <span>Taxa/Juros:</span>
+
+                        <span
+                            id="resumoJuros"
+                            class="valor-juros">
+                            R$ 0,00
+                        </span>
+
+                    </div>
+
+
+                    <div class="linha-resumo">
+
+                        <span>Valor final:</span>
+
+                        <strong id="resumoValorFinal">
+                            R$ 0,00
+                        </strong>
+
+                    </div>
+
+
+                    <div
+                        class="linha-resumo linha-destaque">
+
+                        <span>Valor da parcela:</span>
+
+                        <span id="resumoParcela">
+                            R$ 0,00
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
 
             <button
                 class="btn-finalizar"
@@ -785,7 +887,6 @@ td input{
         </div>
 
     </div>
-
 
     <!-- ================= HISTÓRICO DE VENDAS ================= -->
 
@@ -834,7 +935,6 @@ td input{
         </div>
 
     </div>
-
 
 </div>
 
@@ -934,7 +1034,6 @@ function buscarClientes(){
 
     }
 
-
     const encontrados =
         clientes.filter(c =>
 
@@ -956,7 +1055,6 @@ function buscarClientes(){
 
         ).slice(0,20);
 
-
     if(encontrados.length === 0){
 
         resultados.innerHTML = `
@@ -970,7 +1068,6 @@ function buscarClientes(){
         return;
 
     }
-
 
     encontrados.forEach(c=>{
 
@@ -996,7 +1093,6 @@ function buscarClientes(){
 
     });
 
-
     resultados.style.display="block";
 
 }
@@ -1010,7 +1106,6 @@ function selecionarCliente(id){
     if(!cliente)
         return;
 
-
     clienteSelecionado = {
 
         id: cliente._id,
@@ -1021,11 +1116,9 @@ function selecionarCliente(id){
 
     };
 
-
     document.getElementById(
         "clienteNomeSelecionado"
     ).innerText = cliente.nome;
-
 
     document.getElementById(
         "clienteTelefoneSelecionado"
@@ -1034,21 +1127,17 @@ function selecionarCliente(id){
         ? "📞 " + cliente.telefone
         : "📞 Sem telefone";
 
-
     document.getElementById(
         "clienteSelecionado"
     ).style.display="block";
-
 
     document.getElementById(
         "resultadosClientes"
     ).style.display="none";
 
-
     document.getElementById(
         "buscaCliente"
     ).value="";
-
 
     cancelarNovoCliente();
 
@@ -1098,7 +1187,6 @@ function usarNovoCliente(){
         .value
         .trim();
 
-
     if(!nome){
 
         alert("Informe o nome do cliente.");
@@ -1106,7 +1194,6 @@ function usarNovoCliente(){
         return;
 
     }
-
 
     clienteSelecionado = {
 
@@ -1118,11 +1205,9 @@ function usarNovoCliente(){
 
     };
 
-
     document.getElementById(
         "clienteNomeSelecionado"
     ).innerText = nome;
-
 
     document.getElementById(
         "clienteTelefoneSelecionado"
@@ -1131,16 +1216,13 @@ function usarNovoCliente(){
         ? "📞 " + telefone
         : "📞 Sem telefone";
 
-
     document.getElementById(
         "clienteSelecionado"
     ).style.display="block";
 
-
     document.getElementById(
         "novoCliente"
     ).style.display="none";
-
 
     document.getElementById(
         "novoClienteNome"
@@ -1203,7 +1285,6 @@ function buscarProdutos(){
 
     produtoSelecionado = null;
 
-
     if(!termo){
 
         resultados.style.display="none";
@@ -1211,7 +1292,6 @@ function buscarProdutos(){
         return;
 
     }
-
 
     const encontrados =
         produtos.filter(p =>
@@ -1228,7 +1308,6 @@ function buscarProdutos(){
 
         ).slice(0,20);
 
-
     if(encontrados.length === 0){
 
         resultados.innerHTML = `
@@ -1243,12 +1322,10 @@ function buscarProdutos(){
 
     }
 
-
     encontrados.forEach(p=>{
 
         const estoque =
             Number(p.quantidade || 0);
-
 
         resultados.innerHTML += `
 
@@ -1285,7 +1362,6 @@ function buscarProdutos(){
 
     });
 
-
     resultados.style.display="block";
 
 }
@@ -1299,14 +1375,11 @@ function selecionarProduto(id){
     if(!produto)
         return;
 
-
     produtoSelecionado = produto;
-
 
     document.getElementById(
         "buscaProduto"
     ).value = produto.nome;
-
 
     document.getElementById(
         "resultadosProdutos"
@@ -1327,14 +1400,12 @@ function adicionarProduto(){
 
     }
 
-
     const quantidade =
         Number(
             document
             .getElementById("quantidadeProduto")
             .value
         );
-
 
     if(!Number.isInteger(quantidade) || quantidade <= 0){
 
@@ -1344,10 +1415,8 @@ function adicionarProduto(){
 
     }
 
-
     const estoque =
         Number(produtoSelecionado.quantidade || 0);
-
 
     if(quantidade > estoque){
 
@@ -1360,19 +1429,16 @@ function adicionarProduto(){
 
     }
 
-
     const existente =
         carrinho.find(
             item =>
                 item.productId === produtoSelecionado._id
         );
 
-
     if(existente){
 
         const novaQuantidade =
             existente.quantidade + quantidade;
-
 
         if(novaQuantidade > estoque){
 
@@ -1383,7 +1449,6 @@ function adicionarProduto(){
             return;
 
         }
-
 
         existente.quantidade =
             novaQuantidade;
@@ -1415,19 +1480,15 @@ function adicionarProduto(){
 
     }
 
-
     produtoSelecionado = null;
-
 
     document.getElementById(
         "buscaProduto"
     ).value="";
 
-
     document.getElementById(
         "quantidadeProduto"
     ).value=1;
-
 
     renderCarrinho();
 
@@ -1442,31 +1503,362 @@ function removerProduto(index){
 
 }
 
+
+/* ================= FORMA DE PAGAMENTO ================= */
+
 function alterarFormaPagamento(){
 
     const formaPagamento =
-        document.getElementById("formaPagamento").value;
+        document.getElementById(
+            "formaPagamento"
+        ).value;
+
+
+    const campoMaquininha =
+        document.getElementById(
+            "campoMaquininha"
+        );
+
 
     const campoParcelas =
-        document.getElementById("campoParcelas");
+        document.getElementById(
+            "campoParcelas"
+        );
+
+
+    const campoTipoJuros =
+        document.getElementById(
+            "campoTipoJuros"
+        );
+
+
+    const campoTaxa =
+        document.getElementById(
+            "campoTaxa"
+        );
+
+
+    const resumoCartao =
+        document.getElementById(
+            "resumoCartao"
+        );
+
+
+    /*
+     * DINHEIRO / PIX / BOLETO
+     */
+
+    if(
+        formaPagamento !== "Cartão de Débito" &&
+        formaPagamento !== "Cartão de Crédito"
+    ){
+
+        campoMaquininha.style.display = "none";
+
+        campoParcelas.style.display = "none";
+
+        campoTipoJuros.style.display = "none";
+
+        campoTaxa.style.display = "none";
+
+        resumoCartao.style.display = "none";
+
+
+        document.getElementById(
+            "parcelas"
+        ).value = "1";
+
+
+        document.getElementById(
+            "tipoJuros"
+        ).value = "sem_juros";
+
+
+        document.getElementById(
+            "taxaPercentual"
+        ).value = "0";
+
+
+        document.getElementById(
+            "maquininha"
+        ).value = "";
+
+
+        return;
+
+    }
+
+
+    /*
+     * DÉBITO
+     */
+
+    if(formaPagamento === "Cartão de Débito"){
+
+        campoMaquininha.style.display = "block";
+
+        campoParcelas.style.display = "none";
+
+        campoTipoJuros.style.display = "none";
+
+        campoTaxa.style.display = "block";
+
+        resumoCartao.style.display = "block";
+
+
+        document.getElementById(
+            "tipoJuros"
+        ).value = "com_juros";
+
+
+        alterarTipoJurosDebito();
+
+
+        return;
+
+    }
+
+
+    /*
+     * CRÉDITO
+     */
 
     if(formaPagamento === "Cartão de Crédito"){
 
+        campoMaquininha.style.display = "block";
+
         campoParcelas.style.display = "block";
 
-    }else{
+        campoTipoJuros.style.display = "block";
 
-        campoParcelas.style.display = "none";
+        campoTaxa.style.display = "none";
+
+        resumoCartao.style.display = "block";
+
+
+        alterarTipoJuros();
 
     }
 
 }
 
 
+/* ================= TIPO DE JUROS ================= */
+
+function alterarTipoJuros(){
+
+    const tipo =
+        document.getElementById(
+            "tipoJuros"
+        ).value;
+
+
+    const campoTaxa =
+        document.getElementById(
+            "campoTaxa"
+        );
+
+
+    const linhaJuros =
+        document.getElementById(
+            "linhaJuros"
+        );
+
+
+    if(tipo === "com_juros"){
+
+        campoTaxa.style.display = "block";
+
+        linhaJuros.style.display = "flex";
+
+    }else{
+
+        campoTaxa.style.display = "none";
+
+        linhaJuros.style.display = "none";
+
+
+        document.getElementById(
+            "taxaPercentual"
+        ).value = "0";
+
+    }
+
+
+    calcularParcelamento();
+
+}
+
+
+/* ================= DÉBITO ================= */
+
+function alterarTipoJurosDebito(){
+
+    const campoTaxa =
+        document.getElementById(
+            "campoTaxa"
+        );
+
+
+    const linhaJuros =
+        document.getElementById(
+            "linhaJuros"
+        );
+
+
+    campoTaxa.style.display = "block";
+
+    linhaJuros.style.display = "flex";
+
+
+    calcularParcelamento();
+
+}
+
+
+/* ================= PARCELAMENTO ================= */
+
+function calcularParcelamento(){
+
+    const formaPagamento =
+        document.getElementById(
+            "formaPagamento"
+        ).value;
+
+
+    if(
+        formaPagamento !== "Cartão de Crédito" &&
+        formaPagamento !== "Cartão de Débito"
+    ){
+
+        return;
+
+    }
+
+
+    const totalVenda =
+        calcularTotalNumerico();
+
+
+    const parcelas =
+        formaPagamento === "Cartão de Crédito"
+        ?
+        (
+            Number(
+                document.getElementById(
+                    "parcelas"
+                ).value
+            ) || 1
+        )
+        :
+        1;
+
+
+    let taxa =
+        Number(
+            document.getElementById(
+                "taxaPercentual"
+            ).value
+        );
+
+
+    if(
+        !Number.isFinite(taxa) ||
+        taxa < 0
+    ){
+
+        taxa = 0;
+
+    }
+
+
+    let valorJuros = 0;
+
+    let valorFinal = totalVenda;
+
+
+    /*
+     * TAXA POR DENTRO
+     *
+     * Exemplo:
+     *
+     * Venda = R$ 104,00
+     * Taxa = 0,89%
+     *
+     * Valor final = 104 / (1 - 0,0089)
+     */
+
+
+    const percentual =
+        taxa / 100;
+
+
+    if(percentual >= 1){
+
+        valorJuros = 0;
+
+        valorFinal = totalVenda;
+
+    }else{
+
+        valorFinal =
+            totalVenda /
+            (1 - percentual);
+
+
+        valorJuros =
+            valorFinal -
+            totalVenda;
+
+    }
+
+
+    const valorParcela =
+        valorFinal / parcelas;
+
+
+    document.getElementById(
+        "resumoTotal"
+    ).innerText =
+        formatarMoeda(totalVenda);
+
+
+    document.getElementById(
+        "resumoJuros"
+    ).innerText =
+        formatarMoeda(valorJuros);
+
+
+    document.getElementById(
+        "resumoValorFinal"
+    ).innerText =
+        formatarMoeda(valorFinal);
+
+
+    document.getElementById(
+        "resumoParcela"
+    ).innerText =
+
+        formaPagamento === "Cartão de Crédito"
+
+        ?
+
+        parcelas +
+        "x de " +
+        formatarMoeda(valorParcela)
+
+        :
+
+        formatarMoeda(valorParcela);
+
+}
+
+
+/* ================= QUANTIDADE ================= */
+
 function alterarQuantidade(index, quantidade){
 
     quantidade = Number(quantidade);
-
 
     if(!Number.isInteger(quantidade) || quantidade <= 0){
 
@@ -1476,22 +1868,18 @@ function alterarQuantidade(index, quantidade){
 
     }
 
-
     const item =
         carrinho[index];
-
 
     const produto =
         produtos.find(
             p=>p._id === item.productId
         );
 
-
     const estoque =
         produto
         ? Number(produto.quantidade || 0)
         : 0;
-
 
     if(quantidade > estoque){
 
@@ -1505,29 +1893,26 @@ function alterarQuantidade(index, quantidade){
 
     }
 
-
     item.quantidade =
         quantidade;
-
 
     item.subtotal =
         item.quantidade *
         item.precoUnitario;
-
 
     renderCarrinho();
 
 }
 
 
+/* ================= RENDER CARRINHO ================= */
+
 function renderCarrinho(){
 
     const tbody =
         document.getElementById("carrinho");
 
-
     tbody.innerHTML="";
-
 
     if(carrinho.length === 0){
 
@@ -1552,7 +1937,6 @@ function renderCarrinho(){
         return;
 
     }
-
 
     carrinho.forEach((item,index)=>{
 
@@ -1603,7 +1987,6 @@ function renderCarrinho(){
 
     });
 
-
     calcularTotal();
 
 }
@@ -1611,7 +1994,7 @@ function renderCarrinho(){
 
 /* ================= TOTAL ================= */
 
-function calcularTotal(){
+function calcularTotalNumerico(){
 
     const subtotal =
         carrinho.reduce(
@@ -1647,8 +2030,26 @@ function calcularTotal(){
     }
 
 
+    return Math.max(
+        0,
+        subtotal - desconto
+    );
+
+}
+
+
+function calcularTotal(){
+
+    const subtotal =
+        carrinho.reduce(
+            (total,item)=>
+                total + item.subtotal,
+            0
+        );
+
+
     const total =
-        subtotal - desconto;
+        calcularTotalNumerico();
 
 
     document.getElementById(
@@ -1662,53 +2063,11 @@ function calcularTotal(){
     ).innerText =
         formatarMoeda(total);
 
-}
 
-/* ================= PARCELAS ================= */
-
-function atualizarParcelas(){
-
-    const formaPagamento =
-        document.getElementById(
-            "formaPagamento"
-        ).value;
-
-const parcelas =
-    formaPagamento === "Cartão de Crédito"
-        ? Number(
-            document
-            .getElementById("parcelas")
-            .value
-          )
-        : null;
-
-
-    const campoParcelas =
-        document.getElementById(
-            "campoParcelas"
-        );
-
-
-    if(
-        formaPagamento ===
-        "Cartão de Crédito"
-    ){
-
-        campoParcelas.style.display =
-            "block";
-
-    }else{
-
-        campoParcelas.style.display =
-            "none";
-
-        document.getElementById(
-            "parcelas"
-        ).value = "1";
-
-    }
+    calcularParcelamento();
 
 }
+
 
 /* ================= FINALIZAR ================= */
 
@@ -1716,7 +2075,9 @@ async function finalizarVenda(){
 
     if(!clienteSelecionado){
 
-        alert("Selecione um cliente ou cadastre um novo cliente.");
+        alert(
+            "Selecione um cliente ou cadastre um novo cliente."
+        );
 
         return;
 
@@ -1725,7 +2086,9 @@ async function finalizarVenda(){
 
     if(carrinho.length === 0){
 
-        alert("Adicione pelo menos um produto à venda.");
+        alert(
+            "Adicione pelo menos um produto à venda."
+        );
 
         return;
 
@@ -1747,11 +2110,7 @@ async function finalizarVenda(){
 
 
     const total =
-        carrinho.reduce(
-            (soma,item)=>
-                soma + item.subtotal,
-            0
-        ) - desconto;
+        calcularTotalNumerico();
 
 
     if(!confirm(
@@ -1769,42 +2128,114 @@ async function finalizarVenda(){
 
 
     const parcelas =
-    formaPagamento === "Cartão de Crédito"
+        formaPagamento === "Cartão de Crédito"
         ? Number(
-            document.getElementById("parcelas").value
-          )
+            document
+            .getElementById("parcelas")
+            .value
+        )
         : null;
 
 
-const dados = {
+    let tipoJuros = "sem_juros";
 
-    clienteId:
-        clienteSelecionado.id,
+    let taxaPercentual = 0;
 
-    clienteNome:
-        clienteSelecionado.nome,
 
-    clienteTelefone:
-        clienteSelecionado.telefone || "",
+    if(
+        formaPagamento === "Cartão de Crédito" ||
+        formaPagamento === "Cartão de Débito"
+    ){
 
-    itens:
-        carrinho.map(item=>({
+        taxaPercentual =
+            Number(
+                document
+                .getElementById("taxaPercentual")
+                .value || 0
+            );
 
-            productId:
-                item.productId,
 
-            quantidade:
-                item.quantidade
+        if(
+            !Number.isFinite(taxaPercentual) ||
+            taxaPercentual < 0
+        ){
 
-        })),
+            alert(
+                "Informe uma taxa válida."
+            );
 
-    desconto,
+            return;
 
-    formaPagamento,
+        }
 
-    parcelas
 
-};
+        if(formaPagamento === "Cartão de Crédito"){
+
+            tipoJuros =
+                document
+                .getElementById("tipoJuros")
+                .value;
+
+        }else{
+
+            /*
+             * Débito utiliza a taxa da maquininha
+             * sem parcelamento.
+             */
+
+            tipoJuros = "com_juros";
+
+        }
+
+    }
+
+
+    const dados = {
+
+        clienteId:
+            clienteSelecionado.id,
+
+        clienteNome:
+            clienteSelecionado.nome,
+
+        clienteTelefone:
+            clienteSelecionado.telefone || "",
+
+        itens:
+            carrinho.map(item=>({
+
+                productId:
+                    item.productId,
+
+                quantidade:
+                    item.quantidade
+
+            })),
+
+        desconto,
+
+        formaPagamento,
+
+        parcelas,
+
+        /*
+         * MAQUININHA
+         *
+         * Enviada para o backend exatamente
+         * como informada pelo usuário.
+         */
+
+        maquininha:
+            document
+            .getElementById("maquininha")
+            .value
+            .trim(),
+
+        tipoJuros,
+
+        taxaPercentual
+
+    };
 
 
     try{
@@ -1849,7 +2280,10 @@ const dados = {
             data.venda.numeroVenda +
             "\n" +
             "Total: " +
-            formatarMoeda(data.venda.total)
+            formatarMoeda(
+                data.venda.valorFinalCartao ||
+                data.venda.total
+            )
         );
 
 
@@ -1875,10 +2309,67 @@ const dados = {
         ).value=0;
 
 
+        document.getElementById(
+            "formaPagamento"
+        ).value="Dinheiro";
+
+
+        /*
+         * LIMPAR MAQUININHA
+         */
+
+        document.getElementById(
+            "maquininha"
+        ).value="";
+
+
+        document.getElementById(
+            "campoMaquininha"
+        ).style.display="none";
+
+
+        document.getElementById(
+            "campoParcelas"
+        ).style.display="none";
+
+
+        document.getElementById(
+            "campoTipoJuros"
+        ).style.display="none";
+
+
+        document.getElementById(
+            "campoTaxa"
+        ).style.display="none";
+
+
+        document.getElementById(
+            "resumoCartao"
+        ).style.display="none";
+
+
+        document.getElementById(
+            "parcelas"
+        ).value="1";
+
+
+        document.getElementById(
+            "tipoJuros"
+        ).value="sem_juros";
+
+
+        document.getElementById(
+            "taxaPercentual"
+        ).value="0";
+
+
         renderCarrinho();
 
 
         await carregarProdutos();
+
+        await carregarVendas();
+
 
     }catch(err){
 
@@ -1891,6 +2382,7 @@ const dados = {
     }
 
 }
+
 
 /* ================= HISTÓRICO DE VENDAS ================= */
 
@@ -1905,22 +2397,29 @@ async function carregarVendas(){
             credentials:"include"
         });
 
+
         if(!res.ok){
 
-            console.error("Erro ao carregar vendas.");
+            console.error(
+                "Erro ao carregar vendas."
+            );
 
             return;
 
         }
 
+
         const data = await res.json();
+
 
         vendas =
             Array.isArray(data)
             ? data
             : [];
 
+
         renderHistoricoVendas();
+
 
     }catch(err){
 
@@ -1934,10 +2433,14 @@ async function carregarVendas(){
 function renderHistoricoVendas(){
 
     const tbody =
-        document.getElementById("historicoVendas");
+        document.getElementById(
+            "historicoVendas"
+        );
+
 
     if(!tbody)
         return;
+
 
     tbody.innerHTML = "";
 
@@ -1977,17 +2480,25 @@ function renderHistoricoVendas(){
         const status =
             venda.status === "cancelada"
 
-            ? '<span style="color:#dc2626;font-weight:bold;">❌ Cancelada</span>'
+            ?
 
-            : '<span style="color:#16a34a;font-weight:bold;">✅ Finalizada</span>';
+            '<span style="color:#dc2626;font-weight:bold;">❌ Cancelada</span>'
+
+            :
+
+            '<span style="color:#16a34a;font-weight:bold;">✅ Finalizada</span>';
 
 
         const botaoCancelar =
             venda.status === "cancelada"
 
-            ? ""
+            ?
 
-            : `
+            ""
+
+            :
+
+            `
 
                 <button
                     class="btn-vermelho"
@@ -1998,6 +2509,162 @@ function renderHistoricoVendas(){
                 </button>
 
             `;
+
+
+        /*
+         * ================================
+         * PAGAMENTO
+         * ================================
+         */
+
+        let pagamentoTexto =
+            venda.formaPagamento || "-";
+
+
+        /*
+         * MAQUININHA
+         *
+         * Agora o histórico mostra a
+         * maquininha utilizada na venda.
+         */
+
+        if(
+            venda.formaPagamento === "Cartão de Crédito" ||
+            venda.formaPagamento === "Cartão de Débito"
+        ){
+
+            if(venda.maquininha){
+
+                pagamentoTexto +=
+                    `<br>
+                    <small style="
+                        color:#2563eb;
+                        font-weight:bold;
+                    ">
+                        🏧 Maquininha: ${escaparHTML(
+                            venda.maquininha
+                        )}
+                    </small>`;
+
+            }else{
+
+                pagamentoTexto +=
+                    `<br>
+                    <small style="
+                        color:#64748b;
+                        font-weight:bold;
+                    ">
+                        🏧 Maquininha: Não informada
+                    </small>`;
+
+            }
+
+        }
+
+
+        /*
+         * ================================
+         * CARTÃO DE CRÉDITO
+         * ================================
+         */
+
+        if(
+            venda.formaPagamento === "Cartão de Crédito" &&
+            venda.parcelas
+        ){
+
+            pagamentoTexto +=
+                `<br>
+                <small style="
+                    color:#64748b;
+                    font-weight:bold;
+                ">
+                    ${venda.parcelas}x
+                </small>`;
+
+
+            if(venda.tipoJuros === "com_juros"){
+
+                pagamentoTexto +=
+                    `<br>
+                    <small style="
+                        color:#d97706;
+                        font-weight:bold;
+                    ">
+                        Com juros: ${Number(
+                            venda.taxaPercentual || 0
+                        ).toLocaleString("pt-BR")}% 
+                    </small>`;
+
+            }else{
+
+                pagamentoTexto +=
+                    `<br>
+                    <small style="
+                        color:#16a34a;
+                        font-weight:bold;
+                    ">
+                        Sem juros
+                    </small>`;
+
+            }
+
+        }
+
+
+        /*
+         * ================================
+         * CARTÃO DE DÉBITO
+         * ================================
+         */
+
+        if(
+            venda.formaPagamento === "Cartão de Débito"
+        ){
+
+            const taxaDebito =
+                Number(
+                    venda.taxaPercentual || 0
+                );
+
+
+            if(taxaDebito > 0){
+
+                pagamentoTexto +=
+                    `<br>
+                    <small style="
+                        color:#d97706;
+                        font-weight:bold;
+                    ">
+                        Taxa: ${taxaDebito.toLocaleString(
+                            "pt-BR"
+                        )}%
+                    </small>`;
+
+            }
+
+        }
+
+
+        /*
+         * ================================
+         * TOTAL
+         * ================================
+         *
+         * Para cartão com juros, mostra o
+         * valor final cobrado.
+         *
+         * Para os demais casos, mostra
+         * o total original.
+         */
+
+        const valorExibido =
+            venda.tipoJuros === "com_juros"
+            && venda.valorFinalCartao
+            ?
+            venda.valorFinalCartao
+            :
+            venda.total;
 
 
         tbody.innerHTML += `
@@ -2019,31 +2686,14 @@ function renderHistoricoVendas(){
                 </td>
 
                 <td>
-                    ${formatarMoeda(venda.total)}
+                    ${formatarMoeda(
+                        valorExibido
+                    )}
                 </td>
 
                 <td>
-
-    ${escaparHTML(
-        venda.formaPagamento || "-"
-    )}
-
-    ${
-        venda.formaPagamento === "Cartão de Crédito"
-        && venda.parcelas
-        ?
-        `<br>
-         <small style="
-            color:#64748b;
-            font-weight:bold;
-         ">
-            ${venda.parcelas}x
-         </small>`
-        :
-        ""
-    }
-
-</td>
+                    ${pagamentoTexto}
+                </td>
 
                 <td>
                     ${status}
@@ -2088,13 +2738,16 @@ async function cancelarVenda(id){
     const venda =
         vendas.find(v => v._id === id);
 
+
     if(!venda)
         return;
 
 
     if(venda.status === "cancelada"){
 
-        alert("Esta venda já está cancelada.");
+        alert(
+            "Esta venda já está cancelada."
+        );
 
         return;
 
@@ -2113,7 +2766,11 @@ async function cancelarVenda(id){
             venda.clienteNome +
 
             "\nTotal: " +
-            formatarMoeda(venda.total) +
+            formatarMoeda(
+                venda.tipoJuros === "com_juros"
+                ? venda.valorFinalCartao
+                : venda.total
+            ) +
 
             "\n\n" +
 
@@ -2182,18 +2839,19 @@ async function cancelarVenda(id){
 
 }
 
+
 /* ================= UTILIDADES ================= */
 
 function formatarMoeda(valor){
 
     return Number(valor || 0)
-        .toLocaleString("pt-BR",{
-
-            style:"currency",
-
-            currency:"BRL"
-
-        });
+        .toLocaleString(
+            "pt-BR",
+            {
+                style:"currency",
+                currency:"BRL"
+            }
+        );
 
 }
 
@@ -2214,9 +2872,12 @@ function escaparHTML(texto){
 
 async function logout(){
 
-    await fetch("/logout",{
-        credentials:"include"
-    });
+    await fetch(
+        "/logout",
+        {
+            credentials:"include"
+        }
+    );
 
     location.href="/";
 

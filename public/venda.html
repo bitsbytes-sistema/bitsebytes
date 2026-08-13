@@ -1404,51 +1404,130 @@ function renderVenda(){
 
                 <div class="dado">
 
-                    <span class="dado-label">
-                        Forma de pagamento
-                    </span>
+    <span class="dado-label">
+        Forma de pagamento
+    </span>
 
-                    <span class="dado-valor">
+    <span class="dado-valor">
 
-                        💳
-                        ${escaparHTML(
-                            venda.formaPagamento ||
-                            "-"
-                        )}
+        💳
+        ${escaparHTML(
+            venda.formaPagamento || "-"
+        )}
 
-                        ${
-                            venda.formaPagamento === "Cartão de Crédito"
-                            && venda.parcelas
-                            ?
+        ${
+            (
+                venda.formaPagamento === "Cartão de Crédito" ||
+                venda.formaPagamento === "Cartão de Débito"
+            )
+            ?
+            `
 
-                            `<br>
-                             <span style="
-                                display:block;
-                                margin-top:6px;
-                                color:#2563eb;
-                             ">
-                                🔢 ${venda.parcelas}x
-                             </span>
+            ${
+                venda.maquininha
+                ?
+                `
+                <span style="
+                    display:block;
+                    margin-top:6px;
+                    font-size:14px;
+                    color:#64748b;
+                ">
+                    🏧 Maquininha:
+                    ${escaparHTML(venda.maquininha)}
+                </span>
+                `
+                :
+                ""
+            }
 
-                             <span style="
-                                display:block;
-                                margin-top:4px;
-                                font-size:14px;
-                                color:#64748b;
-                             ">
-                                💰 ${formatarMoeda(
-                                    venda.total / venda.parcelas
-                                )} por parcela
-                             </span>`
+            ${
+                venda.tipoJuros === "com_juros"
+                ?
+                `
+                <span style="
+                    display:block;
+                    margin-top:8px;
+                    color:#dc2626;
+                ">
+                    📈 Juros:
+                    ${Number(
+                        venda.taxaPercentual || 0
+                    ).toLocaleString("pt-BR")}%
+                </span>
 
-                            :
+                <span style="
+                    display:block;
+                    margin-top:4px;
+                    font-size:14px;
+                    color:#64748b;
+                ">
+                    💰 Valor dos juros:
+                    ${formatarMoeda(venda.valorTaxa)}
+                </span>
 
-                            ""
-                        }
+                <span style="
+                    display:block;
+                    margin-top:4px;
+                    color:#16a34a;
+                ">
+                    💳 Total no cartão:
+                    ${formatarMoeda(venda.valorFinalCartao)}
+                </span>
+                `
+                :
+                `
+                <span style="
+                    display:block;
+                    margin-top:6px;
+                    color:#16a34a;
+                    font-size:14px;
+                ">
+                    ✓ Sem juros
+                </span>
+                `
+            }
 
-                    </span>
+            ${
+                venda.parcelas
+                ?
+                `
+                <span style="
+                    display:block;
+                    margin-top:6px;
+                    color:#2563eb;
+                ">
+                    🔢 ${venda.parcelas}x
+                </span>
 
-                </div>
+                <span style="
+                    display:block;
+                    margin-top:4px;
+                    font-size:14px;
+                    color:#64748b;
+                ">
+                    💰 ${formatarMoeda(
+                        venda.valorParcela ||
+                        (
+                            venda.tipoJuros === "com_juros"
+                            ? venda.valorFinalCartao / venda.parcelas
+                            : venda.total / venda.parcelas
+                        )
+                    )} por parcela
+                </span>
+                `
+                :
+                ""
+            }
+
+            `
+            :
+            ""
+        }
+
+    </span>
+
+</div>
 
 
                 <div class="dado">
@@ -1535,32 +1614,95 @@ function renderVenda(){
 
                     <div class="total-linha">
 
-                        <span>
-                            Desconto:
-                        </span>
+    <span>
+        Desconto:
+    </span>
 
-                        <strong>
-                            ${formatarMoeda(
-                                venda.desconto
-                            )}
-                        </strong>
+    <strong>
+        ${formatarMoeda(
+            venda.desconto
+        )}
+    </strong>
 
-                    </div>
+</div>
 
 
-                    <div class="total-linha total-final">
+${
+    (
+        (
+            venda.formaPagamento === "Cartão de Crédito" ||
+            venda.formaPagamento === "Cartão de Débito"
+        )
+        &&
+        venda.tipoJuros === "com_juros"
+    )
+    ?
+    `
+    <div class="total-linha">
 
-                        <span>
-                            Total:
-                        </span>
+        <span>
+            Valor original:
+        </span>
 
-                        <span>
-                            ${formatarMoeda(
-                                venda.total
-                            )}
-                        </span>
+        <strong>
+            ${formatarMoeda(venda.total)}
+        </strong>
 
-                    </div>
+    </div>
+
+
+    <div class="total-linha">
+
+        <span>
+            Juros (${Number(
+                venda.taxaPercentual || 0
+            ).toLocaleString("pt-BR")}%):
+        </span>
+
+        <strong style="color:#dc2626;">
+
+            + ${formatarMoeda(
+                venda.valorTaxa
+            )}
+
+        </strong>
+
+    </div>
+
+
+    <div class="total-linha total-final">
+
+        <span>
+            Total no cartão:
+        </span>
+
+        <span style="color:#16a34a;">
+
+            ${formatarMoeda(
+                venda.valorFinalCartao
+            )}
+
+        </span>
+
+    </div>
+    `
+    :
+    `
+    <div class="total-linha total-final">
+
+        <span>
+            Total:
+        </span>
+
+        <span>
+            ${formatarMoeda(
+                venda.total
+            )}
+        </span>
+
+    </div>
+    `
+}
 
                 </div>
 
@@ -1728,12 +1870,125 @@ function prepararImpressao(){
     ).innerText =
         formatarMoeda(venda.desconto);
 
+const totaisImpressao =
+    document.querySelector(
+        ".totais-impressao"
+    );
+
+const jurosExistem =
+    (
+        venda.formaPagamento === "Cartão de Crédito" ||
+        venda.formaPagamento === "Cartão de Débito"
+    )
+    &&
+    venda.tipoJuros === "com_juros";
+
+
+let infoJurosImpressao =
+    document.getElementById(
+        "impInfoJuros"
+    );
+
+
+if(!infoJurosImpressao){
+
+    infoJurosImpressao =
+        document.createElement("div");
+
+    infoJurosImpressao.id =
+        "impInfoJuros";
+
+    infoJurosImpressao.style.marginTop =
+        "6px";
+
+    if(totaisImpressao){
+
+        totaisImpressao.appendChild(
+            infoJurosImpressao
+        );
+
+    }
+
+}
+
+
+if(jurosExistem){
+
+    infoJurosImpressao.innerHTML = `
+
+        <div style="
+            margin:6px 0;
+            display:flex;
+            justify-content:space-between;
+        ">
+            <span>Valor original:</span>
+
+            <strong>
+                ${formatarMoeda(venda.total)}
+            </strong>
+        </div>
+
+        <div style="
+            margin:6px 0;
+            display:flex;
+            justify-content:space-between;
+        ">
+            <span>
+                Juros
+                (${Number(
+                    venda.taxaPercentual || 0
+                ).toLocaleString("pt-BR")}%):
+            </span>
+
+            <strong>
+                ${formatarMoeda(venda.valorTaxa)}
+            </strong>
+        </div>
+
+        ${
+            venda.maquininha
+            ?
+            `
+            <div style="
+                margin:6px 0;
+                display:flex;
+                justify-content:space-between;
+            ">
+                <span>Maquininha:</span>
+
+                <strong>
+                    ${escaparHTML(venda.maquininha)}
+                </strong>
+            </div>
+            `
+            :
+            ""
+        }
+
+    `;
+
+}else{
+
+    infoJurosImpressao.innerHTML = "";
+
+}
+
 
     document.getElementById(
-        "impTotal"
-    ).innerText =
-        formatarMoeda(venda.total);
-
+    "impTotal"
+).innerText =
+    formatarMoeda(
+        (
+            (
+                venda.formaPagamento === "Cartão de Crédito" ||
+                venda.formaPagamento === "Cartão de Débito"
+            )
+            &&
+            venda.tipoJuros === "com_juros"
+        )
+        ? venda.valorFinalCartao
+        : venda.total
+    );
 
     document.getElementById(
         "impPagamento"
@@ -1748,26 +2003,34 @@ function prepararImpressao(){
 
 
     if(
-        venda.formaPagamento === "Cartão de Crédito"
-        &&
-        venda.parcelas
-    ){
+    venda.formaPagamento === "Cartão de Crédito"
+    &&
+    venda.parcelas
+){
 
-        const valorParcela =
+    const valorParcela =
+        venda.valorParcela ||
+        (
+            venda.tipoJuros === "com_juros"
+            ?
+            venda.valorFinalCartao /
+            venda.parcelas
+            :
             venda.total /
-            venda.parcelas;
+            venda.parcelas
+        );
 
 
-        parcelas.innerText =
-            venda.parcelas +
-            "x de " +
-            formatarMoeda(valorParcela);
+    parcelas.innerText =
+        venda.parcelas +
+        "x de " +
+        formatarMoeda(valorParcela);
 
-    }else{
+}else{
 
-        parcelas.innerText = "";
+    parcelas.innerText = "";
 
-    }
+}
 
 }
 

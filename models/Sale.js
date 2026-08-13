@@ -85,17 +85,70 @@ const SaleSchema = new mongoose.Schema({
         default: 0
     },
 
-    formaPagamento: {
-    type: String,
-    default: "Dinheiro"
-},
 
-parcelas: {
-    type: Number,
-    default: null,
-    min: 1,
-    max: 12
-},
+    /* =====================================================
+       PAGAMENTO
+    ===================================================== */
+
+    formaPagamento: {
+        type: String,
+        default: "Dinheiro"
+    },
+
+    parcelas: {
+        type: Number,
+        default: null,
+        min: 1,
+        max: 12
+    },
+
+
+    /* =====================================================
+       MAQUININHA / TAXA DO CARTÃO
+    ===================================================== */
+
+    maquininha: {
+        type: String,
+        default: null
+    },
+
+    tipoJuros: {
+        type: String,
+        enum: [
+            "sem_juros",
+            "com_juros"
+        ],
+        default: "sem_juros"
+    },
+
+    taxaPercentual: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+
+    valorTaxa: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+
+    valorFinalCartao: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+
+    valorParcela: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+
+
+    /* =====================================================
+       STATUS
+    ===================================================== */
 
     status: {
         type: String,
@@ -117,4 +170,8 @@ parcelas: {
 });
 
 
-module.exports = mongoose.model("Sale", SaleSchema);
+module.exports =
+    mongoose.model(
+        "Sale",
+        SaleSchema
+    );

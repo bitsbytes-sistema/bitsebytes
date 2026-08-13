@@ -100,21 +100,27 @@ router.post("/", auth, async (req, res) => {
 
         let {
 
-    clienteId,
+            clienteId,
 
-    clienteNome,
+            clienteNome,
 
-    clienteTelefone,
+            clienteTelefone,
 
-    itens,
+            itens,
 
-    desconto,
+            desconto,
 
-    formaPagamento,
+            formaPagamento,
 
-    parcelas
+            parcelas,
 
-} = req.body;
+            maquininha,
+
+            tipoJuros,
+
+            taxaPercentual
+
+        } = req.body;
 
 
         /* =====================================================
@@ -191,32 +197,36 @@ router.post("/", auth, async (req, res) => {
             }
 
 
-const ultimoCliente = await Cliente.findOne({
-    companyId
-}).sort({
-    codigo: -1
-});
-
-const proximoCodigo =
-    ultimoCliente
-        ? ultimoCliente.codigo + 1
-        : 1;
+            const ultimoCliente =
+                await Cliente.findOne({
+                    companyId
+                })
+                .sort({
+                    codigo: -1
+                });
 
 
-cliente = await Cliente.create({
+            const proximoCodigo =
+                ultimoCliente
+                    ? ultimoCliente.codigo + 1
+                    : 1;
 
-    companyId,
 
-    codigo:
-        proximoCodigo,
+            cliente =
+                await Cliente.create({
 
-    nome:
-        clienteNome.trim(),
+                    companyId,
 
-    telefone:
-        clienteTelefone || ""
+                    codigo:
+                        proximoCodigo,
 
-});
+                    nome:
+                        clienteNome.trim(),
+
+                    telefone:
+                        clienteTelefone || ""
+
+                });
 
         }
 
@@ -328,7 +338,10 @@ cliente = await Cliente.create({
             Number(desconto || 0);
 
 
-        if (valorDesconto < 0) {
+        if (
+            !Number.isFinite(valorDesconto) ||
+            valorDesconto < 0
+        ) {
 
             return res.status(400).json({
 
@@ -355,32 +368,330 @@ cliente = await Cliente.create({
         const total =
             subtotal - valorDesconto;
 
-/* =====================================================
-   PARCELAMENTO
-===================================================== */
 
-let numeroParcelas = null;
+        /* =====================================================
+           PAGAMENTO / PARCELAMENTO / JUROS
+        ===================================================== */
 
-if (formaPagamento === "Cartão de Crédito") {
+        let numeroParcelas = null;
 
-    numeroParcelas = Number(parcelas);
+        let nomeMaquininha = null;
 
-    if (
-        !Number.isInteger(numeroParcelas) ||
-        numeroParcelas < 1 ||
-        numeroParcelas > 12
-    ) {
+        let jurosTipo = "sem_juros";
 
-        return res.status(400).json({
+        let percentualTaxa = 0;
 
-            error:
-                "Para Cartão de Crédito, informe de 1 a 12 parcelas."
+        let valorTaxa = 0;
 
-        });
+        let valorFinalCartao = 0;
 
-    }
+        let valorParcela = 0;
 
-}
+
+        /* =====================================================
+           CARTÃO DE CRÉDITO
+        ===================================================== */
+
+        if (formaPagamento === "Cartão de Crédito") {
+
+            /* =================================================
+               PARCELAS
+            ================================================= */
+
+            numeroParcelas =
+                Number(parcelas);
+
+
+            if (
+                !Number.isInteger(numeroParcelas) ||
+                numeroParcelas < 1 ||
+                numeroParcelas > 12
+            ) {
+
+                return res.status(400).json({
+
+                    error:
+                        "Para Cartão de Crédito, informe de 1 a 12 parcelas."
+
+                });
+
+            }
+
+
+            /* =================================================
+               MAQUININHA
+            ================================================= */
+
+            if (maquininha) {
+
+                nomeMaquininha =
+                    String(maquininha).trim();
+
+            }
+
+
+            /* =================================================
+               TIPO DE JUROS
+            ================================================= */
+
+            jurosTipo =
+                tipoJuros === "com_juros"
+                    ? "com_juros"
+                    : "sem_juros";
+
+
+            /* =================================================
+               TAXA
+            ================================================= */
+
+            percentualTaxa =
+                Number(taxaPercentual || 0);
+
+
+            if (
+                !Number.isFinite(percentualTaxa) ||
+                percentualTaxa < 0
+            ) {
+
+                return res.status(400).json({
+
+                    error:
+                        "Taxa de juros inválida."
+
+                });
+
+            }
+
+
+            /* =================================================
+               SEM JUROS
+            ================================================= */
+
+            if (jurosTipo === "sem_juros") {
+
+                percentualTaxa = 0;
+
+                valorTaxa = 0;
+
+                valorFinalCartao = total;
+
+                valorParcela =
+                    total / numeroParcelas;
+
+            }
+
+
+            /* =================================================
+               COM JUROS
+            ================================================= */
+
+            else {
+
+                const percentualDecimal =
+                    percentualTaxa / 100;
+
+
+                if (percentualDecimal >= 1) {
+
+                    return res.status(400).json({
+
+                        error:
+                            "A taxa de juros deve ser menor que 100%."
+
+                    });
+
+                }
+
+
+                valorFinalCartao =
+                    total /
+                    (1 - percentualDecimal);
+
+
+                valorTaxa =
+                    valorFinalCartao -
+                    total;
+
+
+                valorParcela =
+                    valorFinalCartao /
+                    numeroParcelas;
+
+            }
+
+
+            /* =================================================
+               ARREDONDAMENTO MONETÁRIO
+            ================================================= */
+
+            valorTaxa =
+                Number(valorTaxa.toFixed(2));
+
+
+            valorFinalCartao =
+                Number(valorFinalCartao.toFixed(2));
+
+
+            valorParcela =
+                Number(valorParcela.toFixed(2));
+
+        }
+
+
+        /* =====================================================
+           CARTÃO DE DÉBITO
+        ===================================================== */
+
+        else if (
+            formaPagamento === "Cartão de Débito"
+        ) {
+
+            /*
+             * Débito não possui parcelamento,
+             * portanto trabalhamos sempre com 1x.
+             */
+
+            numeroParcelas = 1;
+
+
+            /* =================================================
+               MAQUININHA
+            ================================================= */
+
+            if (maquininha) {
+
+                nomeMaquininha =
+                    String(maquininha).trim();
+
+            }
+
+
+            /* =================================================
+               DÉBITO UTILIZA A TAXA DA MAQUININHA
+            ================================================= */
+
+            jurosTipo =
+                "com_juros";
+
+
+            percentualTaxa =
+                Number(taxaPercentual || 0);
+
+
+            if (
+                !Number.isFinite(percentualTaxa) ||
+                percentualTaxa < 0
+            ) {
+
+                return res.status(400).json({
+
+                    error:
+                        "Taxa da maquininha inválida."
+
+                });
+
+            }
+
+
+            /* =================================================
+               CALCULAR TAXA DO DÉBITO
+            ================================================= */
+
+            const percentualDecimal =
+                percentualTaxa / 100;
+
+
+            if (percentualDecimal >= 1) {
+
+                return res.status(400).json({
+
+                    error:
+                        "A taxa da maquininha deve ser menor que 100%."
+
+                });
+
+            }
+
+
+            /*
+             * A taxa é calculada "por dentro".
+             *
+             * Exemplo:
+             *
+             * Venda: R$ 104,00
+             * Taxa: 0,89%
+             *
+             * Valor cobrado:
+             *
+             * 104 / (1 - 0,0089)
+             *
+             * Resultado aproximado:
+             * R$ 104,93
+             *
+             * Taxa:
+             * R$ 0,93
+             *
+             * Líquido recebido:
+             * R$ 104,00
+             */
+
+            valorFinalCartao =
+                total /
+                (1 - percentualDecimal);
+
+
+            valorTaxa =
+                valorFinalCartao -
+                total;
+
+
+            /*
+             * No débito é sempre uma única parcela.
+             */
+
+            valorParcela =
+                valorFinalCartao;
+
+
+            /* =================================================
+               ARREDONDAMENTO MONETÁRIO
+            ================================================= */
+
+            valorTaxa =
+                Number(valorTaxa.toFixed(2));
+
+
+            valorFinalCartao =
+                Number(valorFinalCartao.toFixed(2));
+
+
+            valorParcela =
+                Number(valorParcela.toFixed(2));
+
+        }
+
+
+        /* =====================================================
+           OUTRAS FORMAS DE PAGAMENTO
+        ===================================================== */
+
+        else {
+
+            numeroParcelas = null;
+
+            nomeMaquininha = null;
+
+            jurosTipo = "sem_juros";
+
+            percentualTaxa = 0;
+
+            valorTaxa = 0;
+
+            valorFinalCartao = 0;
+
+            valorParcela = 0;
+
+        }
 
 
         /* =====================================================
@@ -435,14 +746,29 @@ if (formaPagamento === "Cartão de Crédito") {
                 total,
 
                 formaPagamento:
-    formaPagamento ||
-    "Dinheiro",
+                    formaPagamento ||
+                    "Dinheiro",
 
-parcelas:
-    numeroParcelas,
+                parcelas:
+                    numeroParcelas,
 
-status:
-    "finalizada",
+                maquininha:
+                    nomeMaquininha,
+
+                tipoJuros:
+                    jurosTipo,
+
+                taxaPercentual:
+                    percentualTaxa,
+
+                valorTaxa,
+
+                valorFinalCartao,
+
+                valorParcela,
+
+                status:
+                    "finalizada",
 
                 usuarioId
 

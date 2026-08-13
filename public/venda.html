@@ -283,15 +283,12 @@ button:hover{
 }
 
 /* =====================================================
-   IMPRESSÃO
+   ÁREA DE IMPRESSÃO
 ===================================================== */
 
 #areaImpressao{
     display:none;
 }
-
-
-/* ================= CABEÇALHO ================= */
 
 .impressao-cabecalho{
     text-align:center;
@@ -314,14 +311,12 @@ button:hover{
     font-size:16px;
 }
 
-
 /* ================= LINHAS ================= */
 
 .linha-impressao{
     border-top:1px dashed #000;
     margin:12px 0;
 }
-
 
 /* ================= DADOS ================= */
 
@@ -336,28 +331,42 @@ button:hover{
     line-height:1.6;
 }
 
-
 /* ================= PRODUTOS ================= */
 
 .produto-impressao{
     margin:8px 0;
+    page-break-inside:avoid;
+    break-inside:avoid;
 }
 
 .produto-impressao-nome{
     font-weight:bold;
+    overflow-wrap:anywhere;
+    word-break:break-word;
 }
 
 .produto-impressao-detalhes{
     display:flex;
     justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
 }
 
+.produto-impressao-detalhes span{
+    min-width:0;
+}
+
+.produto-impressao-detalhes strong{
+    white-space:nowrap;
+}
 
 /* ================= TOTAIS ================= */
 
 .totais-impressao > div{
     display:flex;
     justify-content:space-between;
+    align-items:center;
+    gap:10px;
     margin:6px 0;
 }
 
@@ -365,8 +374,9 @@ button:hover{
     font-size:20px;
     font-weight:bold;
     margin-top:10px !important;
+    padding-top:8px;
+    border-top:2px solid #000;
 }
-
 
 /* ================= PAGAMENTO ================= */
 
@@ -374,12 +384,22 @@ button:hover{
     line-height:1.7;
 }
 
+#impPagamento,
+#impParcelas{
+    overflow-wrap:anywhere;
+    word-break:break-word;
+}
+
+#impParcelas{
+    font-weight:bold;
+}
 
 /* ================= RODAPÉ ================= */
 
 .rodape-impressao{
     text-align:center;
     margin-top:15px;
+    padding-bottom:8mm;
     font-weight:bold;
 }
 
@@ -439,13 +459,13 @@ button:hover{
     background:#64748b;
 }
 
-
 /* =====================================================
-   IMPRESSÃO
+   IMPRESSÃO GERAL
 ===================================================== */
 
 @media print{
 
+    html,
     body{
         background:white !important;
         margin:0 !important;
@@ -468,9 +488,7 @@ button:hover{
 
     #comprovanteImpressao{
         display:block !important;
-        width:100%;
         margin:0;
-        padding:0;
         color:#000;
         background:#fff;
     }
@@ -479,8 +497,15 @@ button:hover{
         max-width:100%;
     }
 
-}
+    .produto-impressao,
+    .totais-impressao,
+    .pagamento-impressao,
+    .rodape-impressao{
+        page-break-inside:avoid;
+        break-inside:avoid;
+    }
 
+}
 
 /* =====================================================
    TÉRMICA 58 MM
@@ -488,34 +513,89 @@ button:hover{
 
 body.impressao-58mm #areaImpressao{
     width:58mm;
+    max-width:58mm;
 }
 
 body.impressao-58mm #comprovanteImpressao{
-    width:58mm;
-    padding:2mm;
-    font-size:11px;
+    width:100%;
+    max-width:100%;
+    padding:1.5mm 2mm 0 2mm;
+    font-size:10.5px;
+    line-height:1.3;
+}
+
+body.impressao-58mm .impressao-cabecalho{
+    width:100%;
 }
 
 body.impressao-58mm .logo-impressao{
-    width:35mm;
+    width:30mm;
+    max-width:30mm;
+    margin-bottom:2px;
 }
 
 body.impressao-58mm .impressao-cabecalho h1{
-    font-size:18px;
+    font-size:17px;
+    line-height:1.1;
 }
 
 body.impressao-58mm .titulo-comprovante{
-    font-size:12px;
+    margin-top:5px;
+    font-size:11px;
+}
+
+body.impressao-58mm .linha-impressao{
+    margin:7px 0;
+}
+
+body.impressao-58mm .dados-impressao{
+    display:block;
+}
+
+body.impressao-58mm .dados-impressao > div{
+    display:flex;
+    justify-content:space-between;
+    gap:5px;
+    margin:2px 0;
+}
+
+body.impressao-58mm .secao-impressao{
+    margin-top:6px;
+    line-height:1.4;
 }
 
 body.impressao-58mm .produto-impressao{
     margin:5px 0;
 }
 
-body.impressao-58mm .total-impressao{
-    font-size:16px;
+body.impressao-58mm .produto-impressao-nome{
+    line-height:1.25;
 }
 
+body.impressao-58mm .produto-impressao-detalhes{
+    gap:4px;
+    line-height:1.25;
+}
+
+body.impressao-58mm .totais-impressao > div{
+    margin:3px 0;
+}
+
+body.impressao-58mm .total-impressao{
+    font-size:15px;
+    margin-top:6px !important;
+    padding-top:6px;
+}
+
+body.impressao-58mm .pagamento-impressao{
+    line-height:1.45;
+}
+
+body.impressao-58mm .rodape-impressao{
+    margin-top:8px;
+    padding-bottom:10mm;
+    line-height:1.4;
+}
 
 /* =====================================================
    TÉRMICA 80 MM
@@ -523,22 +603,28 @@ body.impressao-58mm .total-impressao{
 
 body.impressao-80mm #areaImpressao{
     width:80mm;
+    max-width:80mm;
 }
 
 body.impressao-80mm #comprovanteImpressao{
-    width:80mm;
-    padding:3mm;
+    width:100%;
+    max-width:100%;
+    padding:3mm 3mm 0 3mm;
     font-size:12px;
 }
 
 body.impressao-80mm .logo-impressao{
     width:45mm;
+    max-width:45mm;
 }
 
 body.impressao-80mm .impressao-cabecalho h1{
     font-size:20px;
 }
 
+body.impressao-80mm .rodape-impressao{
+    padding-bottom:8mm;
+}
 
 /* =====================================================
    A4
@@ -570,6 +656,9 @@ body.impressao-a4 .produto-impressao{
     margin:10px 0;
 }
 
+body.impressao-a4 .rodape-impressao{
+    padding-bottom:0;
+}
 
 /* =====================================================
    CONFIGURAÇÃO DA PÁGINA
@@ -688,6 +777,7 @@ body.impressao-a4 .produto-impressao{
     </div>
 
 </div>
+
 
 <!-- ================= ÁREA DE IMPRESSÃO ================= -->
 
@@ -819,6 +909,7 @@ body.impressao-a4 .produto-impressao{
 
 </div>
 
+
 <!-- ================= MODAL DE IMPRESSÃO ================= -->
 
 <div
@@ -868,6 +959,7 @@ body.impressao-a4 .produto-impressao{
     </div>
 
 </div>
+
 
 <script>
 
@@ -1312,48 +1404,51 @@ function renderVenda(){
 
                 <div class="dado">
 
-    <span class="dado-label">
-        Forma de pagamento
-    </span>
+                    <span class="dado-label">
+                        Forma de pagamento
+                    </span>
 
-    <span class="dado-valor">
+                    <span class="dado-valor">
 
-        💳
-        ${escaparHTML(
-            venda.formaPagamento ||
-            "-"
-        )}
+                        💳
+                        ${escaparHTML(
+                            venda.formaPagamento ||
+                            "-"
+                        )}
 
-        ${
-            venda.formaPagamento === "Cartão de Crédito"
-            && venda.parcelas
-            ?
-            `<br>
-             <span style="
-                display:block;
-                margin-top:6px;
-                color:#2563eb;
-             ">
-                🔢 ${venda.parcelas}x
-             </span>
+                        ${
+                            venda.formaPagamento === "Cartão de Crédito"
+                            && venda.parcelas
+                            ?
 
-             <span style="
-                display:block;
-                margin-top:4px;
-                font-size:14px;
-                color:#64748b;
-             ">
-                💰 ${formatarMoeda(
-                    venda.total / venda.parcelas
-                )} por parcela
-             </span>`
-            :
-            ""
-        }
+                            `<br>
+                             <span style="
+                                display:block;
+                                margin-top:6px;
+                                color:#2563eb;
+                             ">
+                                🔢 ${venda.parcelas}x
+                             </span>
 
-    </span>
+                             <span style="
+                                display:block;
+                                margin-top:4px;
+                                font-size:14px;
+                                color:#64748b;
+                             ">
+                                💰 ${formatarMoeda(
+                                    venda.total / venda.parcelas
+                                )} por parcela
+                             </span>`
 
-</div>
+                            :
+
+                            ""
+                        }
+
+                    </span>
+
+                </div>
 
 
                 <div class="dado">
@@ -1480,33 +1575,34 @@ function renderVenda(){
 
             <div class="botoes">
 
-    <button
-        class="btn-voltar"
-        onclick="voltarVendas()">
+                <button
+                    class="btn-voltar"
+                    onclick="voltarVendas()">
 
-        ← Voltar para Vendas
+                    ← Voltar para Vendas
 
-    </button>
-
-
-    <button
-        class="btn-verde"
-        onclick="abrirModalImpressao()">
-
-        🖨️ Imprimir Venda
-
-    </button>
+                </button>
 
 
-    ${botaoCancelar}
+                <button
+                    class="btn-verde"
+                    onclick="abrirModalImpressao()">
 
-</div>
+                    🖨️ Imprimir Venda
+
+                </button>
+
+
+                ${botaoCancelar}
+
+            </div>
 
         </div>
 
     `;
 
 }
+
 
 /* =====================================================
    PREPARAR IMPRESSÃO
@@ -1529,17 +1625,24 @@ function prepararImpressao(){
         "#" + (venda.numeroVenda || "-");
 
 
-document.getElementById(
-    "impDataVenda"
-).innerText =
-    venda.createdAt
-    ? new Date(venda.createdAt).toLocaleString(
-        "pt-BR",
-        {
-            timeZone: "America/Porto_Velho"
-        }
-    )
-    : "-";
+    document.getElementById(
+        "impDataVenda"
+    ).innerText =
+        venda.createdAt
+        ?
+
+        new Date(
+            venda.createdAt
+        ).toLocaleString(
+            "pt-BR",
+            {
+                timeZone: "America/Porto_Velho"
+            }
+        )
+
+        :
+
+        "-";
 
 
     document.getElementById(
@@ -1667,6 +1770,7 @@ document.getElementById(
     }
 
 }
+
 
 /* =====================================================
    MODAL DE IMPRESSÃO
@@ -1888,6 +1992,7 @@ window.addEventListener(
 
     }
 );
+
 
 /* ================= CANCELAR VENDA ================= */
 

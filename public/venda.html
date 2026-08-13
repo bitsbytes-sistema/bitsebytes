@@ -282,6 +282,315 @@ button:hover{
 
 }
 
+/* =====================================================
+   IMPRESSÃO
+===================================================== */
+
+#areaImpressao{
+    display:none;
+}
+
+
+/* ================= CABEÇALHO ================= */
+
+.impressao-cabecalho{
+    text-align:center;
+}
+
+.logo-impressao{
+    width:70px;
+    height:auto;
+    margin-bottom:5px;
+}
+
+.impressao-cabecalho h1{
+    margin:0;
+    font-size:24px;
+}
+
+.titulo-comprovante{
+    margin-top:10px;
+    font-weight:bold;
+    font-size:16px;
+}
+
+
+/* ================= LINHAS ================= */
+
+.linha-impressao{
+    border-top:1px dashed #000;
+    margin:12px 0;
+}
+
+
+/* ================= DADOS ================= */
+
+.dados-impressao{
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.secao-impressao{
+    margin-top:10px;
+    line-height:1.6;
+}
+
+
+/* ================= PRODUTOS ================= */
+
+.produto-impressao{
+    margin:8px 0;
+}
+
+.produto-impressao-nome{
+    font-weight:bold;
+}
+
+.produto-impressao-detalhes{
+    display:flex;
+    justify-content:space-between;
+}
+
+
+/* ================= TOTAIS ================= */
+
+.totais-impressao > div{
+    display:flex;
+    justify-content:space-between;
+    margin:6px 0;
+}
+
+.total-impressao{
+    font-size:20px;
+    font-weight:bold;
+    margin-top:10px !important;
+}
+
+
+/* ================= PAGAMENTO ================= */
+
+.pagamento-impressao{
+    line-height:1.7;
+}
+
+
+/* ================= RODAPÉ ================= */
+
+.rodape-impressao{
+    text-align:center;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+/* =====================================================
+   MODAL DE IMPRESSÃO
+===================================================== */
+
+.modal-impressao{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+
+.modal-impressao-conteudo{
+    background:white;
+    width:380px;
+    max-width:90%;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 10px 40px rgba(0,0,0,.3);
+}
+
+.modal-impressao-conteudo h3{
+    margin-top:0;
+    margin-bottom:20px;
+}
+
+.opcoes-impressao{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.opcao-impressao{
+    width:100%;
+    padding:14px;
+    font-size:16px;
+}
+
+.opcao-58{
+    background:#2563eb;
+}
+
+.opcao-80{
+    background:#16a34a;
+}
+
+.opcao-a4{
+    background:#7c3aed;
+}
+
+.opcao-cancelar{
+    background:#64748b;
+}
+
+
+/* =====================================================
+   IMPRESSÃO
+===================================================== */
+
+@media print{
+
+    body{
+        background:white !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    .sidebar,
+    .topbar,
+    .container,
+    .modal-impressao{
+        display:none !important;
+    }
+
+    #areaImpressao{
+        display:block !important;
+        width:100%;
+        margin:0;
+        padding:0;
+    }
+
+    #comprovanteImpressao{
+        display:block !important;
+        width:100%;
+        margin:0;
+        padding:0;
+        color:#000;
+        background:#fff;
+    }
+
+    .logo-impressao{
+        max-width:100%;
+    }
+
+}
+
+
+/* =====================================================
+   TÉRMICA 58 MM
+===================================================== */
+
+body.impressao-58mm #areaImpressao{
+    width:58mm;
+}
+
+body.impressao-58mm #comprovanteImpressao{
+    width:58mm;
+    padding:2mm;
+    font-size:11px;
+}
+
+body.impressao-58mm .logo-impressao{
+    width:35mm;
+}
+
+body.impressao-58mm .impressao-cabecalho h1{
+    font-size:18px;
+}
+
+body.impressao-58mm .titulo-comprovante{
+    font-size:12px;
+}
+
+body.impressao-58mm .produto-impressao{
+    margin:5px 0;
+}
+
+body.impressao-58mm .total-impressao{
+    font-size:16px;
+}
+
+
+/* =====================================================
+   TÉRMICA 80 MM
+===================================================== */
+
+body.impressao-80mm #areaImpressao{
+    width:80mm;
+}
+
+body.impressao-80mm #comprovanteImpressao{
+    width:80mm;
+    padding:3mm;
+    font-size:12px;
+}
+
+body.impressao-80mm .logo-impressao{
+    width:45mm;
+}
+
+body.impressao-80mm .impressao-cabecalho h1{
+    font-size:20px;
+}
+
+
+/* =====================================================
+   A4
+===================================================== */
+
+body.impressao-a4 #areaImpressao{
+    width:210mm;
+}
+
+body.impressao-a4 #comprovanteImpressao{
+    width:210mm;
+    padding:15mm;
+    font-size:14px;
+}
+
+body.impressao-a4 .logo-impressao{
+    width:55px;
+}
+
+body.impressao-a4 .impressao-cabecalho h1{
+    font-size:28px;
+}
+
+body.impressao-a4 .titulo-comprovante{
+    font-size:18px;
+}
+
+body.impressao-a4 .produto-impressao{
+    margin:10px 0;
+}
+
+
+/* =====================================================
+   CONFIGURAÇÃO DA PÁGINA
+===================================================== */
+
+@media print{
+
+    body.impressao-58mm{
+        width:58mm !important;
+    }
+
+    body.impressao-80mm{
+        width:80mm !important;
+    }
+
+    body.impressao-a4{
+        width:210mm !important;
+    }
+
+}
+
 </style>
 
 </head>
@@ -380,6 +689,185 @@ button:hover{
 
 </div>
 
+<!-- ================= ÁREA DE IMPRESSÃO ================= -->
+
+<div id="areaImpressao">
+
+    <div id="comprovanteImpressao">
+
+        <div class="impressao-cabecalho">
+
+            <img
+                src="/logo.png"
+                class="logo-impressao"
+            >
+
+            <h1>Bits & Bytes</h1>
+
+            <div>Tecnology</div>
+
+            <div class="titulo-comprovante">
+                COMPROVANTE DE VENDA
+            </div>
+
+        </div>
+
+
+        <div class="linha-impressao"></div>
+
+
+        <div class="dados-impressao">
+
+            <div>
+                <b>Venda:</b>
+                <span id="impNumeroVenda"></span>
+            </div>
+
+            <div>
+                <b>Data:</b>
+                <span id="impDataVenda"></span>
+            </div>
+
+        </div>
+
+
+        <div class="secao-impressao">
+
+            <b>CLIENTE</b>
+
+            <div id="impCliente"></div>
+
+            <div id="impTelefone"></div>
+
+        </div>
+
+
+        <div class="linha-impressao"></div>
+
+
+        <div>
+
+            <b>PRODUTOS</b>
+
+            <div id="impProdutos"></div>
+
+        </div>
+
+
+        <div class="linha-impressao"></div>
+
+
+        <div class="totais-impressao">
+
+            <div>
+
+                <span>Subtotal:</span>
+
+                <strong id="impSubtotal"></strong>
+
+            </div>
+
+
+            <div>
+
+                <span>Desconto:</span>
+
+                <strong id="impDesconto"></strong>
+
+            </div>
+
+
+            <div class="total-impressao">
+
+                <span>TOTAL:</span>
+
+                <strong id="impTotal"></strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="linha-impressao"></div>
+
+
+        <div class="pagamento-impressao">
+
+            <b>Pagamento</b>
+
+            <div id="impPagamento"></div>
+
+            <div id="impParcelas"></div>
+
+        </div>
+
+
+        <div class="linha-impressao"></div>
+
+
+        <div class="rodape-impressao">
+
+            Obrigado pela preferência!
+
+            <br>
+
+            Bits & Bytes Tecnology
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= MODAL DE IMPRESSÃO ================= -->
+
+<div
+    id="modalImpressao"
+    class="modal-impressao"
+>
+
+    <div class="modal-impressao-conteudo">
+
+        <h3>🖨️ Escolha o formato de impressão</h3>
+
+        <div class="opcoes-impressao">
+
+            <button
+                class="opcao-impressao opcao-58"
+                onclick="imprimirVenda('58mm')"
+            >
+                🧾 Térmica 58 mm
+            </button>
+
+
+            <button
+                class="opcao-impressao opcao-80"
+                onclick="imprimirVenda('80mm')"
+            >
+                🧾 Térmica 80 mm
+            </button>
+
+
+            <button
+                class="opcao-impressao opcao-a4"
+                onclick="imprimirVenda('a4')"
+            >
+                📄 Impressora A4
+            </button>
+
+
+            <button
+                class="opcao-impressao opcao-cancelar"
+                onclick="fecharModalImpressao()"
+            >
+                ❌ Cancelar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 <script>
 
@@ -824,21 +1312,48 @@ function renderVenda(){
 
                 <div class="dado">
 
-                    <span class="dado-label">
-                        Forma de pagamento
-                    </span>
+    <span class="dado-label">
+        Forma de pagamento
+    </span>
 
-                    <span class="dado-valor">
+    <span class="dado-valor">
 
-                        💳
-                        ${escaparHTML(
-                            venda.formaPagamento ||
-                            "-"
-                        )}
+        💳
+        ${escaparHTML(
+            venda.formaPagamento ||
+            "-"
+        )}
 
-                    </span>
+        ${
+            venda.formaPagamento === "Cartão de Crédito"
+            && venda.parcelas
+            ?
+            `<br>
+             <span style="
+                display:block;
+                margin-top:6px;
+                color:#2563eb;
+             ">
+                🔢 ${venda.parcelas}x
+             </span>
 
-                </div>
+             <span style="
+                display:block;
+                margin-top:4px;
+                font-size:14px;
+                color:#64748b;
+             ">
+                💰 ${formatarMoeda(
+                    venda.total / venda.parcelas
+                )} por parcela
+             </span>`
+            :
+            ""
+        }
+
+    </span>
+
+</div>
 
 
                 <div class="dado">
@@ -965,18 +1480,27 @@ function renderVenda(){
 
             <div class="botoes">
 
-                <button
-                    class="btn-voltar"
-                    onclick="voltarVendas()">
+    <button
+        class="btn-voltar"
+        onclick="voltarVendas()">
 
-                    ← Voltar para Vendas
+        ← Voltar para Vendas
 
-                </button>
+    </button>
 
 
-                ${botaoCancelar}
+    <button
+        class="btn-verde"
+        onclick="abrirModalImpressao()">
 
-            </div>
+        🖨️ Imprimir Venda
+
+    </button>
+
+
+    ${botaoCancelar}
+
+</div>
 
         </div>
 
@@ -984,6 +1508,386 @@ function renderVenda(){
 
 }
 
+/* =====================================================
+   PREPARAR IMPRESSÃO
+===================================================== */
+
+function prepararImpressao(){
+
+    if(!venda){
+
+        alert("Venda ainda não carregada.");
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "impNumeroVenda"
+    ).innerText =
+        "#" + (venda.numeroVenda || "-");
+
+
+document.getElementById(
+    "impDataVenda"
+).innerText =
+    venda.createdAt
+    ? new Date(venda.createdAt).toLocaleString(
+        "pt-BR",
+        {
+            timeZone: "America/Porto_Velho"
+        }
+    )
+    : "-";
+
+
+    document.getElementById(
+        "impCliente"
+    ).innerText =
+        venda.clienteNome || "Cliente";
+
+
+    document.getElementById(
+        "impTelefone"
+    ).innerText =
+        venda.clienteTelefone
+        ? "Telefone: " + venda.clienteTelefone
+        : "";
+
+
+    const produtos =
+        document.getElementById(
+            "impProdutos"
+        );
+
+
+    produtos.innerHTML = "";
+
+
+    const itens =
+        Array.isArray(venda.itens)
+        ? venda.itens
+        : [];
+
+
+    itens.forEach(item => {
+
+        produtos.innerHTML += `
+
+            <div class="produto-impressao">
+
+                <div class="produto-impressao-nome">
+
+                    ${escaparHTML(
+                        item.nomeProduto || "Produto"
+                    )}
+
+                </div>
+
+                <div class="produto-impressao-detalhes">
+
+                    <span>
+
+                        ${item.quantidade || 0}x
+
+                        ${formatarMoeda(
+                            item.precoUnitario
+                        )}
+
+                    </span>
+
+                    <strong>
+
+                        ${formatarMoeda(
+                            item.subtotal
+                        )}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+        `;
+
+    });
+
+
+    document.getElementById(
+        "impSubtotal"
+    ).innerText =
+        formatarMoeda(venda.subtotal);
+
+
+    document.getElementById(
+        "impDesconto"
+    ).innerText =
+        formatarMoeda(venda.desconto);
+
+
+    document.getElementById(
+        "impTotal"
+    ).innerText =
+        formatarMoeda(venda.total);
+
+
+    document.getElementById(
+        "impPagamento"
+    ).innerText =
+        venda.formaPagamento || "-";
+
+
+    const parcelas =
+        document.getElementById(
+            "impParcelas"
+        );
+
+
+    if(
+        venda.formaPagamento === "Cartão de Crédito"
+        &&
+        venda.parcelas
+    ){
+
+        const valorParcela =
+            venda.total /
+            venda.parcelas;
+
+
+        parcelas.innerText =
+            venda.parcelas +
+            "x de " +
+            formatarMoeda(valorParcela);
+
+    }else{
+
+        parcelas.innerText = "";
+
+    }
+
+}
+
+/* =====================================================
+   MODAL DE IMPRESSÃO
+===================================================== */
+
+function abrirModalImpressao(){
+
+    if(!venda){
+
+        alert("Venda ainda não carregada.");
+
+        return;
+
+    }
+
+
+    prepararImpressao();
+
+
+    document.getElementById(
+        "modalImpressao"
+    ).style.display = "flex";
+
+}
+
+
+function fecharModalImpressao(){
+
+    document.getElementById(
+        "modalImpressao"
+    ).style.display = "none";
+
+}
+
+
+/* =====================================================
+   IMPRIMIR VENDA
+===================================================== */
+
+function imprimirVenda(formato){
+
+    if(!venda){
+
+        alert("Venda ainda não carregada.");
+
+        return;
+
+    }
+
+
+    fecharModalImpressao();
+
+
+    /* -----------------------------------------------
+       LIMPAR FORMATO ANTERIOR
+    ------------------------------------------------ */
+
+    document.body.classList.remove(
+        "impressao-58mm",
+        "impressao-80mm",
+        "impressao-a4"
+    );
+
+
+    /* -----------------------------------------------
+       DEFINIR FORMATO
+    ------------------------------------------------ */
+
+    if(formato === "58mm"){
+
+        document.body.classList.add(
+            "impressao-58mm"
+        );
+
+    }
+
+
+    if(formato === "80mm"){
+
+        document.body.classList.add(
+            "impressao-80mm"
+        );
+
+    }
+
+
+    if(formato === "a4"){
+
+        document.body.classList.add(
+            "impressao-a4"
+        );
+
+    }
+
+
+    /* -----------------------------------------------
+       CONFIGURAR @PAGE
+    ------------------------------------------------ */
+
+    let estiloImpressao =
+        document.getElementById(
+            "estiloImpressao"
+        );
+
+
+    if(estiloImpressao){
+
+        estiloImpressao.remove();
+
+    }
+
+
+    estiloImpressao =
+        document.createElement("style");
+
+
+    estiloImpressao.id =
+        "estiloImpressao";
+
+
+    if(formato === "58mm"){
+
+        estiloImpressao.innerHTML = `
+
+            @media print {
+
+                @page {
+                    size: 58mm auto;
+                    margin: 0;
+                }
+
+            }
+
+        `;
+
+    }
+
+
+    if(formato === "80mm"){
+
+        estiloImpressao.innerHTML = `
+
+            @media print {
+
+                @page {
+                    size: 80mm auto;
+                    margin: 0;
+                }
+
+            }
+
+        `;
+
+    }
+
+
+    if(formato === "a4"){
+
+        estiloImpressao.innerHTML = `
+
+            @media print {
+
+                @page {
+                    size: A4;
+                    margin: 10mm;
+                }
+
+            }
+
+        `;
+
+    }
+
+
+    document.head.appendChild(
+        estiloImpressao
+    );
+
+
+    /* -----------------------------------------------
+       ABRIR IMPRESSÃO
+    ------------------------------------------------ */
+
+    setTimeout(() => {
+
+        window.print();
+
+    }, 200);
+
+}
+
+
+/* =====================================================
+   APÓS A IMPRESSÃO
+===================================================== */
+
+window.addEventListener(
+    "afterprint",
+    () => {
+
+        document.body.classList.remove(
+            "impressao-58mm",
+            "impressao-80mm",
+            "impressao-a4"
+        );
+
+
+        const estilo =
+            document.getElementById(
+                "estiloImpressao"
+            );
+
+
+        if(estilo){
+
+            estilo.remove();
+
+        }
+
+    }
+);
 
 /* ================= CANCELAR VENDA ================= */
 

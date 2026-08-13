@@ -655,33 +655,124 @@ td input{
 
             <div class="pagamento">
 
-                <label>Forma de pagamento</label>
+    <label>Forma de pagamento</label>
 
-                <select id="formaPagamento">
+    <select id="formaPagamento" onchange="alterarFormaPagamento()">
 
-                    <option value="Dinheiro">
-                        Dinheiro
-                    </option>
+    <option value="Dinheiro">
+        Dinheiro
+    </option>
 
-                    <option value="PIX">
-                        PIX
-                    </option>
+    <option value="PIX">
+        PIX
+    </option>
 
-                    <option value="Cartão de Débito">
-                        Cartão de Débito
-                    </option>
+    <option value="Cartão de Débito">
+        Cartão de Débito
+    </option>
 
-                    <option value="Cartão de Crédito">
-                        Cartão de Crédito
-                    </option>
+    <option value="Cartão de Crédito">
+        Cartão de Crédito
+    </option>
 
-                    <option value="Boleto">
-                        Boleto
-                    </option>
+    <option value="Boleto">
+        Boleto
+    </option>
 
-                </select>
+</select>
 
-            </div>
+<div
+    id="campoParcelas"
+    style="
+        display:none;
+        margin-top:15px;
+    "
+>
+
+    <label>Parcelas</label>
+
+    <select id="parcelas">
+
+        <option value="1">1x</option>
+        <option value="2">2x</option>
+        <option value="3">3x</option>
+        <option value="4">4x</option>
+        <option value="5">5x</option>
+        <option value="6">6x</option>
+        <option value="7">7x</option>
+        <option value="8">8x</option>
+        <option value="9">9x</option>
+        <option value="10">10x</option>
+        <option value="11">11x</option>
+        <option value="12">12x</option>
+
+    </select>
+
+</div>
+
+</div>
+
+
+<div
+    class="pagamento"
+    id="campoParcelas"
+    style="display:none;">
+
+    <label>Parcelas</label>
+
+    <select id="parcelas">
+
+        <option value="1">
+            1x
+        </option>
+
+        <option value="2">
+            2x
+        </option>
+
+        <option value="3">
+            3x
+        </option>
+
+        <option value="4">
+            4x
+        </option>
+
+        <option value="5">
+            5x
+        </option>
+
+        <option value="6">
+            6x
+        </option>
+
+        <option value="7">
+            7x
+        </option>
+
+        <option value="8">
+            8x
+        </option>
+
+        <option value="9">
+            9x
+        </option>
+
+        <option value="10">
+            10x
+        </option>
+
+        <option value="11">
+            11x
+        </option>
+
+        <option value="12">
+            12x
+        </option>
+
+    </select>
+
+</div>
 
             <button
                 class="btn-finalizar"
@@ -1351,6 +1442,26 @@ function removerProduto(index){
 
 }
 
+function alterarFormaPagamento(){
+
+    const formaPagamento =
+        document.getElementById("formaPagamento").value;
+
+    const campoParcelas =
+        document.getElementById("campoParcelas");
+
+    if(formaPagamento === "Cartão de Crédito"){
+
+        campoParcelas.style.display = "block";
+
+    }else{
+
+        campoParcelas.style.display = "none";
+
+    }
+
+}
+
 
 function alterarQuantidade(index, quantidade){
 
@@ -1553,6 +1664,51 @@ function calcularTotal(){
 
 }
 
+/* ================= PARCELAS ================= */
+
+function atualizarParcelas(){
+
+    const formaPagamento =
+        document.getElementById(
+            "formaPagamento"
+        ).value;
+
+const parcelas =
+    formaPagamento === "Cartão de Crédito"
+        ? Number(
+            document
+            .getElementById("parcelas")
+            .value
+          )
+        : null;
+
+
+    const campoParcelas =
+        document.getElementById(
+            "campoParcelas"
+        );
+
+
+    if(
+        formaPagamento ===
+        "Cartão de Crédito"
+    ){
+
+        campoParcelas.style.display =
+            "block";
+
+    }else{
+
+        campoParcelas.style.display =
+            "none";
+
+        document.getElementById(
+            "parcelas"
+        ).value = "1";
+
+    }
+
+}
 
 /* ================= FINALIZAR ================= */
 
@@ -1612,33 +1768,43 @@ async function finalizarVenda(){
     }
 
 
-    const dados = {
+    const parcelas =
+    formaPagamento === "Cartão de Crédito"
+        ? Number(
+            document.getElementById("parcelas").value
+          )
+        : null;
 
-        clienteId:
-            clienteSelecionado.id,
 
-        clienteNome:
-            clienteSelecionado.nome,
+const dados = {
 
-        clienteTelefone:
-            clienteSelecionado.telefone || "",
+    clienteId:
+        clienteSelecionado.id,
 
-        itens:
-            carrinho.map(item=>({
+    clienteNome:
+        clienteSelecionado.nome,
 
-                productId:
-                    item.productId,
+    clienteTelefone:
+        clienteSelecionado.telefone || "",
 
-                quantidade:
-                    item.quantidade
+    itens:
+        carrinho.map(item=>({
 
-            })),
+            productId:
+                item.productId,
 
-        desconto,
+            quantidade:
+                item.quantidade
 
-        formaPagamento
+        })),
 
-    };
+    desconto,
+
+    formaPagamento,
+
+    parcelas
+
+};
 
 
     try{
@@ -1857,10 +2023,27 @@ function renderHistoricoVendas(){
                 </td>
 
                 <td>
-                    ${escaparHTML(
-                        venda.formaPagamento || "-"
-                    )}
-                </td>
+
+    ${escaparHTML(
+        venda.formaPagamento || "-"
+    )}
+
+    ${
+        venda.formaPagamento === "Cartão de Crédito"
+        && venda.parcelas
+        ?
+        `<br>
+         <small style="
+            color:#64748b;
+            font-weight:bold;
+         ">
+            ${venda.parcelas}x
+         </small>`
+        :
+        ""
+    }
+
+</td>
 
                 <td>
                     ${status}

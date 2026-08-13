@@ -100,19 +100,21 @@ router.post("/", auth, async (req, res) => {
 
         let {
 
-            clienteId,
+    clienteId,
 
-            clienteNome,
+    clienteNome,
 
-            clienteTelefone,
+    clienteTelefone,
 
-            itens,
+    itens,
 
-            desconto,
+    desconto,
 
-            formaPagamento
+    formaPagamento,
 
-        } = req.body;
+    parcelas
+
+} = req.body;
 
 
         /* =====================================================
@@ -353,6 +355,33 @@ cliente = await Cliente.create({
         const total =
             subtotal - valorDesconto;
 
+/* =====================================================
+   PARCELAMENTO
+===================================================== */
+
+let numeroParcelas = null;
+
+if (formaPagamento === "Cartão de Crédito") {
+
+    numeroParcelas = Number(parcelas);
+
+    if (
+        !Number.isInteger(numeroParcelas) ||
+        numeroParcelas < 1 ||
+        numeroParcelas > 12
+    ) {
+
+        return res.status(400).json({
+
+            error:
+                "Para Cartão de Crédito, informe de 1 a 12 parcelas."
+
+        });
+
+    }
+
+}
+
 
         /* =====================================================
            NÚMERO DA VENDA
@@ -406,11 +435,14 @@ cliente = await Cliente.create({
                 total,
 
                 formaPagamento:
-                    formaPagamento ||
-                    "Dinheiro",
+    formaPagamento ||
+    "Dinheiro",
 
-                status:
-                    "finalizada",
+parcelas:
+    numeroParcelas,
+
+status:
+    "finalizada",
 
                 usuarioId
 

@@ -86,9 +86,16 @@ const SaleSchema = new mongoose.Schema({
     },
 
     formaPagamento: {
-        type: String,
-        default: "Dinheiro"
-    },
+    type: String,
+    default: "Dinheiro"
+},
+
+parcelas: {
+    type: Number,
+    default: null,
+    min: 1,
+    max: 12
+},
 
     status: {
         type: String,

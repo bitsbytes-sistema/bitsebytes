@@ -433,12 +433,13 @@ td input{
                 <label>Buscar cliente</label>
 
                 <input
-                    type="text"
-                    id="buscaCliente"
-                    placeholder="Digite nome, telefone ou CPF/CNPJ"
-                    autocomplete="off"
-                    oninput="buscarClientes()"
-                >
+    type="text"
+    id="buscaCliente"
+    placeholder="Digite nome, telefone ou CPF/CNPJ"
+    autocomplete="off"
+    oninput="buscarClientes()"
+    onclick="buscarClientes()"
+>
 
                 <div
                     id="resultadosClientes"
@@ -553,6 +554,7 @@ td input{
                     placeholder="Digite o nome ou código do produto"
                     autocomplete="off"
                     oninput="buscarProdutos()"
+		    onclick="buscarProdutos()"
                 >
 
                 <div
@@ -1026,34 +1028,58 @@ function buscarClientes(){
 
     resultados.innerHTML = "";
 
-    if(!termo){
 
-        resultados.style.display="none";
-
-        return;
-
-    }
+    /*
+     * ================================
+     * FILTRAR CLIENTES
+     * ================================
+     *
+     * Se o campo estiver vazio,
+     * mostra os clientes cadastrados.
+     *
+     * Se houver texto, filtra por:
+     * - Nome
+     * - Telefone
+     * - CPF/CNPJ
+     */
 
     const encontrados =
-        clientes.filter(c =>
+        clientes.filter(c => {
 
-            (c.nome || "")
-            .toLowerCase()
-            .includes(termo)
+            if(!termo){
 
-            ||
+                return true;
 
-            (c.telefone || "")
-            .toLowerCase()
-            .includes(termo)
+            }
 
-            ||
+            return (
 
-            (c.cpfcnpj || "")
-            .toLowerCase()
-            .includes(termo)
+                (c.nome || "")
+                .toLowerCase()
+                .includes(termo)
 
-        ).slice(0,20);
+                ||
+
+                (c.telefone || "")
+                .toLowerCase()
+                .includes(termo)
+
+                ||
+
+                (c.cpfcnpj || "")
+                .toLowerCase()
+                .includes(termo)
+
+            );
+
+        }).slice(0,20);
+
+
+    /*
+     * ================================
+     * NENHUM CLIENTE
+     * ================================
+     */
 
     if(encontrados.length === 0){
 
@@ -1069,7 +1095,14 @@ function buscarClientes(){
 
     }
 
-    encontrados.forEach(c=>{
+
+    /*
+     * ================================
+     * MOSTRAR CLIENTES
+     * ================================
+     */
+
+    encontrados.forEach(c => {
 
         resultados.innerHTML += `
 
@@ -1084,14 +1117,32 @@ function buscarClientes(){
                 <br>
 
                 <small>
-                    ${escaparHTML(c.telefone || "Sem telefone")}
+                    ${escaparHTML(
+                        c.telefone || "Sem telefone"
+                    )}
                 </small>
+
+                ${
+                    c.cpfcnpj
+                    ?
+                    `
+                    <br>
+
+                    <small>
+                        CPF/CNPJ:
+                        ${escaparHTML(c.cpfcnpj)}
+                    </small>
+                    `
+                    :
+                    ""
+                }
 
             </div>
 
         `;
 
     });
+
 
     resultados.style.display="block";
 
@@ -1285,28 +1336,51 @@ function buscarProdutos(){
 
     produtoSelecionado = null;
 
-    if(!termo){
 
-        resultados.style.display="none";
-
-        return;
-
-    }
+    /*
+     * ================================
+     * FILTRAR PRODUTOS
+     * ================================
+     *
+     * Se o campo estiver vazio,
+     * mostra os produtos cadastrados.
+     *
+     * Se houver texto, filtra por:
+     * - Nome
+     * - Código
+     */
 
     const encontrados =
-        produtos.filter(p =>
+        produtos.filter(p => {
 
-            (p.nome || "")
-            .toLowerCase()
-            .includes(termo)
+            if(!termo){
 
-            ||
+                return true;
 
-            (p.codigo || "")
-            .toLowerCase()
-            .includes(termo)
+            }
 
-        ).slice(0,20);
+            return (
+
+                (p.nome || "")
+                .toLowerCase()
+                .includes(termo)
+
+                ||
+
+                (p.codigo || "")
+                .toLowerCase()
+                .includes(termo)
+
+            );
+
+        }).slice(0,20);
+
+
+    /*
+     * ================================
+     * NENHUM PRODUTO
+     * ================================
+     */
 
     if(encontrados.length === 0){
 
@@ -1322,10 +1396,18 @@ function buscarProdutos(){
 
     }
 
-    encontrados.forEach(p=>{
+
+    /*
+     * ================================
+     * MOSTRAR PRODUTOS
+     * ================================
+     */
+
+    encontrados.forEach(p => {
 
         const estoque =
             Number(p.quantidade || 0);
+
 
         resultados.innerHTML += `
 
@@ -1361,6 +1443,7 @@ function buscarProdutos(){
         `;
 
     });
+
 
     resultados.style.display="block";
 

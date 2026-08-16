@@ -16,6 +16,12 @@ router.post("/ignorar", async (req,res)=>{
     } = req.body;
 
 
+if (!req.session.user) {
+  return res.status(401).json({
+    erro: "Usuário não autenticado"
+  });
+}
+
     const usuario = await User.findById(
       req.session.user._id
     );
@@ -84,6 +90,12 @@ router.post("/ignorar", async (req,res)=>{
 router.get("/", async (req,res)=>{
 
   try{
+
+if (!req.session.user) {
+  return res.status(401).json({
+    erro: "Usuário não autenticado"
+  });
+}
 
     const usuario = await User.findById(
       req.session.user._id

@@ -1,0 +1,2991 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Configurações - Bits & Bytes</title>
+
+<style>
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f2f2f2;
+    color:#111827;
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.sidebar{
+
+    width:250px;
+
+    background:#0f172a;
+
+    min-height:100vh;
+
+    color:white;
+
+    position:fixed;
+
+    left:0;
+
+    top:0;
+
+    z-index:1000;
+
+}
+
+.logo{
+
+    padding:20px;
+
+    display:flex;
+
+    gap:10px;
+
+    align-items:center;
+
+    border-bottom:1px solid rgba(255,255,255,.1);
+
+}
+
+.logo img{
+
+    width:45px;
+
+    height:45px;
+
+    object-fit:contain;
+
+}
+
+.logo b{
+
+    font-size:16px;
+
+}
+
+.logo small{
+
+    color:#cbd5e1;
+
+}
+
+.sidebar a{
+
+    display:block;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:14px 20px;
+
+    transition:.2s;
+
+}
+
+.sidebar a:hover{
+
+    background:#1e293b;
+
+}
+
+.sidebar a.ativo{
+
+    background:#1e293b;
+
+}
+
+.usuario{
+
+    position:absolute;
+
+    bottom:20px;
+
+    left:20px;
+
+    right:20px;
+
+    padding-top:15px;
+
+    border-top:1px solid rgba(255,255,255,.1);
+
+}
+
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.main{
+
+    margin-left:250px;
+
+    width:calc(100% - 250px);
+
+    min-height:100vh;
+
+    background:#f2f2f2;
+
+}
+
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+.topbar{
+
+    background:white;
+
+    height:70px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 30px;
+
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+}
+
+.topbar-titulo{
+
+    font-size:18px;
+
+    font-weight:bold;
+
+}
+
+.topbar a{
+
+    color:#111827;
+
+    text-decoration:none;
+
+}
+
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.container{
+
+    padding:25px;
+
+}
+
+
+/* =========================================================
+   CABEÇALHO
+========================================================= */
+
+.titulo-pagina{
+
+    margin:0;
+
+    font-size:24px;
+
+}
+
+.subtitulo{
+
+    margin-top:7px;
+
+    color:#64748b;
+
+}
+
+
+/* =========================================================
+   GRID DE CONFIGURAÇÕES
+========================================================= */
+
+.config-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(3, 1fr);
+
+    gap:18px;
+
+    margin-top:25px;
+
+}
+
+.config-card{
+
+    background:white;
+
+    border-radius:12px;
+
+    padding:20px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+    cursor:pointer;
+
+    transition:.2s;
+
+    border:2px solid transparent;
+
+}
+
+.config-card:hover{
+
+    transform:translateY(-2px);
+
+    border-color:#2563eb;
+
+}
+
+.config-card.ativa{
+
+    border-color:#2563eb;
+
+}
+
+.config-icone{
+
+    font-size:30px;
+
+    margin-bottom:10px;
+
+}
+
+.config-card h3{
+
+    margin:0 0 7px 0;
+
+}
+
+.config-card p{
+
+    margin:0;
+
+    color:#64748b;
+
+    font-size:14px;
+
+}
+
+
+/* =========================================================
+   SEÇÕES
+========================================================= */
+
+.secao{
+
+    background:white;
+
+    margin-top:25px;
+
+    padding:25px;
+
+    border-radius:12px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+    display:none;
+
+}
+
+.secao.ativa{
+
+    display:block;
+
+}
+
+.secao-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin-bottom:20px;
+
+}
+
+.secao-header h2{
+
+    margin:0;
+
+}
+
+.secao-header p{
+
+    margin:5px 0 0;
+
+    color:#64748b;
+
+    font-size:14px;
+
+}
+
+
+/* =========================================================
+   BOTÕES
+========================================================= */
+
+.btn{
+
+    border:none;
+
+    border-radius:8px;
+
+    padding:10px 16px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
+
+.btn-primary{
+
+    background:#2563eb;
+
+    color:white;
+
+}
+
+.btn-primary:hover{
+
+    background:#1d4ed8;
+
+}
+
+.btn-secondary{
+
+    background:#e5e7eb;
+
+    color:#111827;
+
+}
+
+.btn-danger{
+
+    background:#dc2626;
+
+    color:white;
+
+}
+
+.btn-warning{
+
+    background:#f59e0b;
+
+    color:white;
+
+}
+
+.btn-success{
+
+    background:#16a34a;
+
+    color:white;
+
+}
+
+.btn-small{
+
+    padding:7px 11px;
+
+    font-size:12px;
+
+}
+
+
+/* =========================================================
+   TABELA
+========================================================= */
+
+.tabela-container{
+
+    width:100%;
+
+    overflow-x:auto;
+
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    min-width:1900px;
+
+}
+
+th{
+
+    background:#f8fafc;
+
+    text-align:left;
+
+    padding:12px;
+
+    border-bottom:2px solid #e5e7eb;
+
+    font-size:13px;
+
+    white-space:nowrap;
+
+}
+
+td{
+
+    padding:12px;
+
+    border-bottom:1px solid #e5e7eb;
+
+    font-size:13px;
+
+    white-space:nowrap;
+
+}
+
+tr:hover td{
+
+    background:#f8fafc;
+
+}
+
+
+/* =========================================================
+   CABEÇALHOS AGRUPADOS DA TABELA
+========================================================= */
+
+th.grupo-debito{
+
+    background:#eff6ff;
+
+    text-align:center;
+
+    color:#1e40af;
+
+}
+
+th.grupo-credito{
+
+    background:#f0fdf4;
+
+    text-align:center;
+
+    color:#166534;
+
+}
+
+th.subcoluna{
+
+    text-align:center;
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status{
+
+    display:inline-block;
+
+    padding:5px 9px;
+
+    border-radius:20px;
+
+    font-size:12px;
+
+    font-weight:bold;
+
+}
+
+.status.ativo{
+
+    background:#dcfce7;
+
+    color:#166534;
+
+}
+
+.status.inativo{
+
+    background:#fee2e2;
+
+    color:#991b1b;
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal{
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.55);
+
+    z-index:9999;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:20px;
+
+}
+
+.modal.ativo{
+
+    display:flex;
+
+}
+
+.modal-caixa{
+
+    width:900px;
+
+    max-width:100%;
+
+    max-height:90vh;
+
+    overflow-y:auto;
+
+    background:white;
+
+    border-radius:14px;
+
+    padding:25px;
+
+    box-shadow:0 10px 40px rgba(0,0,0,.3);
+
+}
+
+.modal-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+
+}
+
+.modal-header h2{
+
+    margin:0;
+
+}
+
+.fechar{
+
+    background:none;
+
+    border:none;
+
+    font-size:25px;
+
+    cursor:pointer;
+
+    color:#64748b;
+
+}
+
+
+/* =========================================================
+   FORMULÁRIO
+========================================================= */
+
+.form-group{
+
+    margin-bottom:16px;
+
+}
+
+.form-group label{
+
+    display:block;
+
+    margin-bottom:6px;
+
+    font-weight:bold;
+
+    font-size:14px;
+
+}
+
+.form-group input{
+
+    width:100%;
+
+    padding:11px;
+
+    border:1px solid #cbd5e1;
+
+    border-radius:8px;
+
+    outline:none;
+
+}
+
+.form-group input:focus{
+
+    border-color:#2563eb;
+
+}
+
+
+/* =========================================================
+   TAXAS
+========================================================= */
+
+.taxas-titulo{
+
+    margin-top:20px;
+
+    margin-bottom:12px;
+
+    font-weight:bold;
+
+    font-size:17px;
+
+}
+
+
+/* =========================================================
+   BLOCO DÉBITO
+========================================================= */
+
+.debito-bloco{
+
+    background:#eff6ff;
+
+    border:1px solid #bfdbfe;
+
+    border-radius:10px;
+
+    padding:15px;
+
+    margin-bottom:20px;
+
+}
+
+.debito-titulo{
+
+    font-weight:bold;
+
+    color:#1e40af;
+
+    margin-bottom:12px;
+
+}
+
+.debito-grid{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:12px;
+
+}
+
+
+/* =========================================================
+   BLOCO CRÉDITO
+========================================================= */
+
+.credito-bloco{
+
+    background:#f0fdf4;
+
+    border:1px solid #bbf7d0;
+
+    border-radius:10px;
+
+    padding:15px;
+
+}
+
+.credito-titulo{
+
+    font-weight:bold;
+
+    color:#166534;
+
+    margin-bottom:12px;
+
+}
+
+.taxas-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(3, 1fr);
+
+    gap:12px;
+
+}
+
+.taxa-item{
+
+    background:white;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    border:1px solid #e2e8f0;
+
+}
+
+.taxa-item-titulo{
+
+    font-weight:bold;
+
+    margin-bottom:10px;
+
+    font-size:14px;
+
+}
+
+.taxa-campo{
+
+    margin-bottom:8px;
+
+}
+
+.taxa-campo:last-child{
+
+    margin-bottom:0;
+
+}
+
+.taxa-campo label{
+
+    display:block;
+
+    font-size:12px;
+
+    font-weight:bold;
+
+    margin-bottom:5px;
+
+    color:#475569;
+
+}
+
+.taxa-input{
+
+    position:relative;
+
+}
+
+.taxa-input input{
+
+    width:100%;
+
+    padding:9px 28px 9px 9px;
+
+    border:1px solid #cbd5e1;
+
+    border-radius:7px;
+
+    outline:none;
+
+}
+
+.taxa-input input:focus{
+
+    border-color:#2563eb;
+
+}
+
+.taxa-input span{
+
+    position:absolute;
+
+    right:9px;
+
+    top:9px;
+
+    color:#64748b;
+
+    font-size:13px;
+
+}
+
+
+/* =========================================================
+   RODAPÉ MODAL
+========================================================= */
+
+.modal-footer{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:10px;
+
+    margin-top:25px;
+
+}
+
+
+/* =========================================================
+   MENSAGEM
+========================================================= */
+
+.mensagem{
+
+    position:fixed;
+
+    right:25px;
+
+    bottom:25px;
+
+    background:#111827;
+
+    color:white;
+
+    padding:14px 18px;
+
+    border-radius:9px;
+
+    box-shadow:0 5px 20px rgba(0,0,0,.2);
+
+    display:none;
+
+    z-index:10000;
+
+}
+
+.mensagem.sucesso{
+
+    background:#16a34a;
+
+}
+
+.mensagem.erro{
+
+    background:#dc2626;
+
+}
+
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media(max-width:1000px){
+
+    .config-grid{
+
+        grid-template-columns:repeat(2, 1fr);
+
+    }
+
+    .taxas-grid{
+
+        grid-template-columns:repeat(2, 1fr);
+
+    }
+
+}
+
+@media(max-width:750px){
+
+    .sidebar{
+
+        width:210px;
+
+    }
+
+    .main{
+
+        margin-left:210px;
+
+        width:calc(100% - 210px);
+
+    }
+
+    .config-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .taxas-grid{
+
+        grid-template-columns:1fr 1fr;
+
+    }
+
+    .debito-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .container{
+
+        padding:15px;
+
+    }
+
+}
+
+@media(max-width:550px){
+
+    .sidebar{
+
+        width:70px;
+
+    }
+
+    .logo{
+
+        justify-content:center;
+
+        padding:12px 5px;
+
+    }
+
+    .logo img{
+
+        width:40px;
+
+        height:40px;
+
+    }
+
+    .logo div{
+
+        display:none;
+
+    }
+
+    .sidebar a{
+
+        font-size:0;
+
+        text-align:center;
+
+        padding:15px 5px;
+
+    }
+
+    .sidebar a::first-letter{
+
+        font-size:20px;
+
+    }
+
+    .usuario{
+
+        display:none;
+
+    }
+
+    .main{
+
+        margin-left:70px;
+
+        width:calc(100% - 70px);
+
+    }
+
+    .topbar{
+
+        padding:0 15px;
+
+    }
+
+    .taxas-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<div class="sidebar">
+
+
+    <div class="logo">
+
+        <img src="/logo.png">
+
+        <div>
+
+            <b>Bits & Bytes</b>
+
+            <br>
+
+            <small>Tecnology</small>
+
+        </div>
+
+    </div>
+
+
+    <a href="/dashboard.html">
+        🏠 Dashboard
+    </a>
+
+    <a href="/clientes.html">
+        👥 Clientes
+    </a>
+
+    <a href="/chamados.html">
+        📋 Chamados
+    </a>
+
+    <a href="/orcamentos.html">
+        💰 Orçamentos
+    </a>
+
+    <a href="/services.html">
+        🛠 Serviços
+    </a>
+
+    <a href="/laudos.html">
+        📄 Laudos Técnicos
+    </a>
+
+    <a href="/estoque.html">
+        📦 Estoque
+    </a>
+
+    <a href="/vendas.html">
+        🛒 Vendas
+    </a>
+
+    <a href="/financeiro.html">
+        💵 Financeiro
+    </a>
+
+    <a href="/lembretes.html">
+        🔔 Lembretes
+    </a>
+
+    <a href="/relatorios.html">
+        📊 Relatórios
+    </a>
+
+    <a
+        href="/configuracoes.html"
+        class="ativo"
+    >
+        ⚙️ Configurações
+    </a>
+
+
+    <div class="usuario">
+
+        <b id="nomeUsuario">
+            Carregando...
+        </b>
+
+        <br>
+
+        <small id="cargoUsuario">
+            Usuário
+        </small>
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<div class="main">
+
+
+    <div class="topbar">
+
+        <div class="topbar-titulo">
+            ⚙️ Configurações
+        </div>
+
+
+        <a
+            href="javascript:void(0)"
+            onclick="logout()"
+        >
+            Sair
+        </a>
+
+    </div>
+
+
+    <div class="container">
+
+
+        <h1 class="titulo-pagina">
+            Configurações
+        </h1>
+
+        <p class="subtitulo">
+            Gerencie as configurações do sistema.
+        </p>
+
+
+        <!-- =================================================
+             CARDS
+        ================================================= -->
+
+        <div class="config-grid">
+
+
+            <div
+                class="config-card ativa"
+                onclick="abrirSecao('maquininhas', this)"
+            >
+
+                <div class="config-icone">
+                    💳
+                </div>
+
+                <h3>
+                    Maquininhas
+                </h3>
+
+                <p>
+                    Cadastre maquininhas e configure as taxas de cartão.
+                </p>
+
+            </div>
+
+
+            <div
+                class="config-card"
+                onclick="abrirSecao('empresa', this)"
+            >
+
+                <div class="config-icone">
+                    🏢
+                </div>
+
+                <h3>
+                    Empresa
+                </h3>
+
+                <p>
+                    Dados e informações da empresa.
+                </p>
+
+            </div>
+
+
+            <div
+                class="config-card"
+                onclick="abrirSecao('usuarios', this)"
+            >
+
+                <div class="config-icone">
+                    👤
+                </div>
+
+                <h3>
+                    Usuários
+                </h3>
+
+                <p>
+                    Gerenciamento de usuários e permissões.
+                </p>
+
+            </div>
+
+
+            <div
+                class="config-card"
+                onclick="abrirSecao('notificacoes', this)"
+            >
+
+                <div class="config-icone">
+                    🔔
+                </div>
+
+                <h3>
+                    Notificações
+                </h3>
+
+                <p>
+                    Configurações de notificações do sistema.
+                </p>
+
+            </div>
+
+
+            <div
+                class="config-card"
+                onclick="abrirSecao('seguranca', this)"
+            >
+
+                <div class="config-icone">
+                    🔐
+                </div>
+
+                <h3>
+                    Segurança
+                </h3>
+
+                <p>
+                    Opções de segurança e acesso.
+                </p>
+
+            </div>
+
+
+            <div
+                class="config-card"
+                onclick="abrirSecao('sistema', this)"
+            >
+
+                <div class="config-icone">
+                    ⚙️
+                </div>
+
+                <h3>
+                    Sistema
+                </h3>
+
+                <p>
+                    Preferências gerais do sistema.
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             MAQUININHAS
+        ================================================= -->
+
+        <div
+            id="secao-maquininhas"
+            class="secao ativa"
+        >
+
+
+            <div class="secao-header">
+
+                <div>
+
+                    <h2>
+                        💳 Maquininhas e Taxas
+                    </h2>
+
+                    <p>
+                        Cadastre suas maquininhas e configure as taxas de débito e crédito.
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="btn btn-primary"
+                    onclick="abrirModalNovaMaquininha()"
+                >
+                    + Nova Maquininha
+                </button>
+
+            </div>
+
+
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th rowspan="2">
+                                Maquininha
+                            </th>
+
+                            <th
+                                colspan="2"
+                                class="grupo-debito"
+                            >
+                                Débito
+                            </th>
+
+                            <th
+                                colspan="24"
+                                class="grupo-credito"
+                            >
+                                Crédito
+                            </th>
+
+                            <th rowspan="2">
+                                Status
+                            </th>
+
+                            <th rowspan="2">
+                                Ações
+                            </th>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <th class="subcoluna">
+                                Sem juros
+                            </th>
+
+                            <th class="subcoluna">
+                                Com juros
+                            </th>
+
+
+                            <th class="subcoluna">
+                                1x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                1x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                2x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                2x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                3x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                3x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                4x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                4x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                5x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                5x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                6x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                6x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                7x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                7x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                8x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                8x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                9x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                9x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                10x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                10x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                11x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                11x C/J
+                            </th>
+
+
+                            <th class="subcoluna">
+                                12x S/J
+                            </th>
+
+                            <th class="subcoluna">
+                                12x C/J
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="tabelaMaquininhas">
+
+                        <tr>
+
+                            <td
+                                colspan="28"
+                                style="text-align:center;"
+                            >
+                                Carregando...
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             EMPRESA
+        ================================================= -->
+
+        <div
+            id="secao-empresa"
+            class="secao"
+        >
+
+            <h2>
+                🏢 Empresa
+            </h2>
+
+            <p>
+                Esta área ficará responsável pelas configurações e informações da empresa.
+            </p>
+
+            <p style="color:#64748b;">
+                Os dados existentes no sistema serão mantidos.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             USUÁRIOS
+        ================================================= -->
+
+        <div
+            id="secao-usuarios"
+            class="secao"
+        >
+
+            <h2>
+                👤 Usuários
+            </h2>
+
+            <p>
+                Gerenciamento de usuários e permissões.
+            </p>
+
+            <p style="color:#64748b;">
+                Os recursos existentes de usuários continuam funcionando normalmente.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             NOTIFICAÇÕES
+        ================================================= -->
+
+        <div
+            id="secao-notificacoes"
+            class="secao"
+        >
+
+            <h2>
+                🔔 Notificações
+            </h2>
+
+            <p>
+                Configurações de notificações do sistema.
+            </p>
+
+            <p style="color:#64748b;">
+                Esta seção será expandida posteriormente.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             SEGURANÇA
+        ================================================= -->
+
+        <div
+            id="secao-seguranca"
+            class="secao"
+        >
+
+            <h2>
+                🔐 Segurança
+            </h2>
+
+            <p>
+                Configurações de segurança e acesso.
+            </p>
+
+            <p style="color:#64748b;">
+                Esta seção será expandida posteriormente.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             SISTEMA
+        ================================================= -->
+
+        <div
+            id="secao-sistema"
+            class="secao"
+        >
+
+            <h2>
+                ⚙️ Sistema
+            </h2>
+
+            <p>
+                Preferências gerais do sistema.
+            </p>
+
+            <p style="color:#64748b;">
+                Novas configurações poderão ser adicionadas aqui futuramente.
+            </p>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     MODAL MAQUININHA
+===================================================== -->
+
+<div
+    id="modalMaquininha"
+    class="modal"
+>
+
+
+    <div class="modal-caixa">
+
+
+        <div class="modal-header">
+
+            <h2 id="tituloModal">
+                Nova Maquininha
+            </h2>
+
+            <button
+                class="fechar"
+                onclick="fecharModal()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <input
+            type="hidden"
+            id="maquininhaId"
+        >
+
+
+        <!-- =================================================
+             NOME
+        ================================================= -->
+
+        <div class="form-group">
+
+            <label>
+                Nome da maquininha
+            </label>
+
+            <input
+                type="text"
+                id="nomeMaquininha"
+                placeholder="Ex.: Stone"
+            >
+
+        </div>
+
+
+        <!-- =================================================
+             DÉBITO
+        ================================================= -->
+
+        <div class="debito-bloco">
+
+            <div class="debito-titulo">
+                💳 Taxas de Débito
+            </div>
+
+
+            <div class="debito-grid">
+
+
+                <div class="taxa-item">
+
+                    <div class="taxa-campo">
+
+                        <label>
+                            Sem juros
+                        </label>
+
+                        <div class="taxa-input">
+
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                id="debito-sem-juros"
+                                value="0"
+                                placeholder="0,00"
+                            >
+
+                            <span>
+                                %
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="taxa-item">
+
+                    <div class="taxa-campo">
+
+                        <label>
+                            Com juros
+                        </label>
+
+                        <div class="taxa-input">
+
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                id="debito-com-juros"
+                                value="0"
+                                placeholder="0,00"
+                            >
+
+                            <span>
+                                %
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CRÉDITO
+        ================================================= -->
+
+        <div class="credito-bloco">
+
+            <div class="credito-titulo">
+                💰 Taxas de Crédito
+            </div>
+
+
+            <div
+                id="taxasGrid"
+                class="taxas-grid"
+            >
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             RODAPÉ
+        ================================================= -->
+
+        <div class="modal-footer">
+
+            <button
+                class="btn btn-secondary"
+                onclick="fecharModal()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                class="btn btn-primary"
+                onclick="salvarMaquininha()"
+            >
+                Salvar Maquininha
+            </button>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     MENSAGEM
+===================================================== -->
+
+<div
+    id="mensagem"
+    class="mensagem"
+>
+</div>
+
+
+<script>
+
+
+/* =========================================================
+   USUÁRIO
+========================================================= */
+
+async function carregarUsuario(){
+
+    try{
+
+        const res =
+            await fetch(
+                "/me",
+                {
+                    credentials:"include"
+                }
+            );
+
+
+        if(res.status === 401){
+
+            window.location.href="/";
+
+            return;
+
+        }
+
+
+        const data =
+            await res.json();
+
+
+        document.getElementById(
+            "nomeUsuario"
+        ).innerText =
+            data.user?.username ||
+            "Usuário";
+
+
+        document.getElementById(
+            "cargoUsuario"
+        ).innerText =
+            data.user?.role ||
+            "Usuário";
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao carregar usuário:",
+            err
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   NAVEGAÇÃO DAS CONFIGURAÇÕES
+========================================================= */
+
+function abrirSecao(nome, elemento){
+
+    document
+        .querySelectorAll(".secao")
+        .forEach(secao => {
+
+            secao.classList.remove("ativa");
+
+        });
+
+
+    document
+        .querySelectorAll(".config-card")
+        .forEach(card => {
+
+            card.classList.remove("ativa");
+
+        });
+
+
+    const secao =
+        document.getElementById(
+            "secao-" + nome
+        );
+
+
+    if(secao){
+
+        secao.classList.add("ativa");
+
+    }
+
+
+    if(elemento){
+
+        elemento.classList.add("ativa");
+
+    }
+
+}
+
+
+/* =========================================================
+   GERAR CAMPOS DE CRÉDITO
+========================================================= */
+
+function gerarCamposTaxas(credito = {}){
+
+    const grid =
+        document.getElementById(
+            "taxasGrid"
+        );
+
+
+    grid.innerHTML = "";
+
+
+    for(let i = 1; i <= 12; i++){
+
+        const parcela =
+            credito[String(i)] ||
+            credito[i] ||
+            {};
+
+
+        const semJuros =
+            Number(
+                parcela.sem_juros ?? 0
+            );
+
+
+        const comJuros =
+            Number(
+                parcela.com_juros ?? 0
+            );
+
+
+        grid.innerHTML += `
+
+            <div class="taxa-item">
+
+                <div class="taxa-item-titulo">
+                    ${i}x
+                </div>
+
+
+                <div class="taxa-campo">
+
+                    <label>
+                        Sem juros
+                    </label>
+
+                    <div class="taxa-input">
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            id="credito-${i}-sem-juros"
+                            value="${semJuros}"
+                            placeholder="0,00"
+                        >
+
+                        <span>
+                            %
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="taxa-campo">
+
+                    <label>
+                        Com juros
+                    </label>
+
+                    <div class="taxa-input">
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            id="credito-${i}-com-juros"
+                            value="${comJuros}"
+                            placeholder="0,00"
+                        >
+
+                        <span>
+                            %
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   CARREGAR MAQUININHAS
+========================================================= */
+
+async function carregarMaquininhas(){
+
+    const tabela =
+        document.getElementById(
+            "tabelaMaquininhas"
+        );
+
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/payment-machines",
+                {
+                    credentials:"include"
+                }
+            );
+
+
+        if(res.status === 401){
+
+            window.location.href="/";
+
+            return;
+
+        }
+
+
+        if(!res.ok){
+
+            throw new Error(
+                "Erro ao carregar maquininhas."
+            );
+
+        }
+
+
+        const lista =
+            await res.json();
+
+
+        tabela.innerHTML = "";
+
+
+        if(!lista.length){
+
+            tabela.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="28"
+                        style="text-align:center;padding:30px;"
+                    >
+
+                        Nenhuma maquininha cadastrada.
+
+                        <br><br>
+
+                        Cadastre sua primeira maquininha
+                        clicando em
+                        <b>+ Nova Maquininha</b>.
+
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        lista.forEach(maquininha => {
+
+            const debito =
+                maquininha.debito || {};
+
+
+            const credito =
+                maquininha.credito || {};
+
+
+            let linhaCredito = "";
+
+
+            for(let i = 1; i <= 12; i++){
+
+                const parcela =
+                    credito[String(i)] ||
+                    credito[i] ||
+                    {};
+
+
+                linhaCredito += `
+
+                    <td>
+                        ${formatarTaxa(parcela.sem_juros)}
+                    </td>
+
+                    <td>
+                        ${formatarTaxa(parcela.com_juros)}
+                    </td>
+
+                `;
+
+            }
+
+
+            const status =
+                maquininha.ativo
+                ? `
+                    <span class="status ativo">
+                        Ativa
+                    </span>
+                  `
+                : `
+                    <span class="status inativo">
+                        Inativa
+                    </span>
+                  `;
+
+
+            tabela.innerHTML += `
+
+                <tr>
+
+                    <td>
+                        <b>
+                            ${escaparHTML(maquininha.nome)}
+                        </b>
+                    </td>
+
+
+                    <td>
+                        ${formatarTaxa(debito.sem_juros)}
+                    </td>
+
+                    <td>
+                        ${formatarTaxa(debito.com_juros)}
+                    </td>
+
+
+                    ${linhaCredito}
+
+
+                    <td>
+                        ${status}
+                    </td>
+
+
+                    <td>
+
+                        <button
+                            class="btn btn-primary btn-small"
+                            onclick="editarMaquininha('${maquininha._id}')"
+                        >
+                            Editar
+                        </button>
+
+
+                        <button
+                            class="btn ${
+                                maquininha.ativo
+                                ? "btn-warning"
+                                : "btn-success"
+                            } btn-small"
+                            onclick="alterarStatus('${maquininha._id}')"
+                        >
+                            ${
+                                maquininha.ativo
+                                ? "Desativar"
+                                : "Ativar"
+                            }
+                        </button>
+
+
+                        <button
+                            class="btn btn-danger btn-small"
+                            onclick="excluirMaquininha('${maquininha._id}')"
+                        >
+                            Excluir
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+
+    }catch(err){
+
+        console.error(err);
+
+
+        tabela.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="28"
+                    style="text-align:center;color:#dc2626;padding:30px;"
+                >
+
+                    Erro ao carregar as maquininhas.
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   FORMATAR TAXA
+========================================================= */
+
+function formatarTaxa(valor){
+
+    const numero =
+        Number(valor || 0);
+
+
+    return numero.toLocaleString(
+        "pt-BR",
+        {
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        }
+    ) + "%";
+
+}
+
+
+/* =========================================================
+   ESCAPAR HTML
+========================================================= */
+
+function escaparHTML(valor){
+
+    return String(valor ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================================
+   VALIDAR TAXA
+========================================================= */
+
+function validarTaxa(valor, descricao){
+
+    const numero =
+        Number(valor || 0);
+
+
+    if(
+        !Number.isFinite(numero) ||
+        numero < 0
+    ){
+
+        throw new Error(
+            `Taxa inválida: ${descricao}.`
+        );
+
+    }
+
+
+    return numero;
+
+}
+
+
+/* =========================================================
+   ABRIR NOVA MAQUININHA
+========================================================= */
+
+function abrirModalNovaMaquininha(){
+
+    document.getElementById(
+        "tituloModal"
+    ).innerText =
+        "Nova Maquininha";
+
+
+    document.getElementById(
+        "maquininhaId"
+    ).value = "";
+
+
+    document.getElementById(
+        "nomeMaquininha"
+    ).value = "";
+
+
+    document.getElementById(
+        "debito-sem-juros"
+    ).value = 0;
+
+
+    document.getElementById(
+        "debito-com-juros"
+    ).value = 0;
+
+
+    gerarCamposTaxas();
+
+
+    document.getElementById(
+        "modalMaquininha"
+    ).classList.add("ativo");
+
+}
+
+
+/* =========================================================
+   EDITAR MAQUININHA
+========================================================= */
+
+async function editarMaquininha(id){
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/payment-machines/" + id,
+                {
+                    credentials:"include"
+                }
+            );
+
+
+        if(res.status === 401){
+
+            window.location.href="/";
+
+            return;
+
+        }
+
+
+        if(!res.ok){
+
+            throw new Error(
+                "Erro ao buscar maquininha."
+            );
+
+        }
+
+
+        const maquininha =
+            await res.json();
+
+
+        document.getElementById(
+            "tituloModal"
+        ).innerText =
+            "Editar Maquininha";
+
+
+        document.getElementById(
+            "maquininhaId"
+        ).value =
+            maquininha._id;
+
+
+        document.getElementById(
+            "nomeMaquininha"
+        ).value =
+            maquininha.nome || "";
+
+
+        const debito =
+            maquininha.debito || {};
+
+
+        document.getElementById(
+            "debito-sem-juros"
+        ).value =
+            debito.sem_juros ?? 0;
+
+
+        document.getElementById(
+            "debito-com-juros"
+        ).value =
+            debito.com_juros ?? 0;
+
+
+        gerarCamposTaxas(
+            maquininha.credito || {}
+        );
+
+
+        document.getElementById(
+            "modalMaquininha"
+        ).classList.add("ativo");
+
+
+    }catch(err){
+
+        console.error(err);
+
+
+        mostrarMensagem(
+            "Erro ao carregar a maquininha.",
+            "erro"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   FECHAR MODAL
+========================================================= */
+
+function fecharModal(){
+
+    document.getElementById(
+        "modalMaquininha"
+    ).classList.remove("ativo");
+
+}
+
+
+/* =========================================================
+   PEGAR DÉBITO
+========================================================= */
+
+function obterDebito(){
+
+    const semJuros =
+        validarTaxa(
+            document.getElementById(
+                "debito-sem-juros"
+            ).value,
+            "débito sem juros"
+        );
+
+
+    const comJuros =
+        validarTaxa(
+            document.getElementById(
+                "debito-com-juros"
+            ).value,
+            "débito com juros"
+        );
+
+
+    return {
+
+        sem_juros:
+            semJuros,
+
+        com_juros:
+            comJuros
+
+    };
+
+}
+
+
+/* =========================================================
+   PEGAR CRÉDITO
+========================================================= */
+
+function obterCredito(){
+
+    const credito = {};
+
+
+    for(let i = 1; i <= 12; i++){
+
+        const semJuros =
+            validarTaxa(
+                document.getElementById(
+                    `credito-${i}-sem-juros`
+                ).value,
+                `${i}x sem juros`
+            );
+
+
+        const comJuros =
+            validarTaxa(
+                document.getElementById(
+                    `credito-${i}-com-juros`
+                ).value,
+                `${i}x com juros`
+            );
+
+
+        credito[String(i)] = {
+
+            sem_juros:
+                semJuros,
+
+            com_juros:
+                comJuros
+
+        };
+
+    }
+
+
+    return credito;
+
+}
+
+
+/* =========================================================
+   SALVAR MAQUININHA
+========================================================= */
+
+async function salvarMaquininha(){
+
+    const nome =
+        document.getElementById(
+            "nomeMaquininha"
+        ).value.trim();
+
+
+    if(!nome){
+
+        mostrarMensagem(
+            "Informe o nome da maquininha.",
+            "erro"
+        );
+
+        return;
+
+    }
+
+
+    let debito;
+
+    let credito;
+
+
+    try{
+
+        debito =
+            obterDebito();
+
+
+        credito =
+            obterCredito();
+
+
+    }catch(err){
+
+        mostrarMensagem(
+            err.message,
+            "erro"
+        );
+
+        return;
+
+    }
+
+
+    const id =
+        document.getElementById(
+            "maquininhaId"
+        ).value;
+
+
+    const editar =
+        Boolean(id);
+
+
+    try{
+
+        const res =
+            await fetch(
+                editar
+                ? "/api/payment-machines/" + id
+                : "/api/payment-machines",
+                {
+
+                    method:
+                        editar
+                        ? "PUT"
+                        : "POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    credentials:"include",
+
+                    body:JSON.stringify({
+
+                        nome,
+
+                        debito,
+
+                        credito
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Erro ao salvar maquininha."
+            );
+
+        }
+
+
+        fecharModal();
+
+
+        mostrarMensagem(
+            editar
+            ? "Maquininha atualizada com sucesso!"
+            : "Maquininha cadastrada com sucesso!",
+            "sucesso"
+        );
+
+
+        carregarMaquininhas();
+
+
+    }catch(err){
+
+        console.error(err);
+
+
+        mostrarMensagem(
+            err.message ||
+            "Erro ao salvar maquininha.",
+            "erro"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   ALTERAR STATUS
+========================================================= */
+
+async function alterarStatus(id){
+
+    const confirmar =
+        confirm(
+            "Deseja realmente alterar o status desta maquininha?"
+        );
+
+
+    if(!confirmar){
+
+        return;
+
+    }
+
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/payment-machines/" +
+                id +
+                "/status",
+                {
+
+                    method:"PATCH",
+
+                    credentials:"include"
+
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Erro ao alterar status."
+            );
+
+        }
+
+
+        mostrarMensagem(
+            data.maquininha?.ativo
+            ? "Maquininha ativada."
+            : "Maquininha desativada.",
+            "sucesso"
+        );
+
+
+        carregarMaquininhas();
+
+
+    }catch(err){
+
+        console.error(err);
+
+
+        mostrarMensagem(
+            err.message ||
+            "Erro ao alterar status.",
+            "erro"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   EXCLUIR
+========================================================= */
+
+async function excluirMaquininha(id){
+
+    const confirmar =
+        confirm(
+            "Tem certeza que deseja excluir esta maquininha?\n\nEsta ação não poderá ser desfeita."
+        );
+
+
+    if(!confirmar){
+
+        return;
+
+    }
+
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/payment-machines/" +
+                id,
+                {
+
+                    method:"DELETE",
+
+                    credentials:"include"
+
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Erro ao excluir maquininha."
+            );
+
+        }
+
+
+        mostrarMensagem(
+            "Maquininha excluída com sucesso.",
+            "sucesso"
+        );
+
+
+        carregarMaquininhas();
+
+
+    }catch(err){
+
+        console.error(err);
+
+
+        mostrarMensagem(
+            err.message ||
+            "Erro ao excluir maquininha.",
+            "erro"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MENSAGEM
+========================================================= */
+
+let timerMensagem;
+
+
+function mostrarMensagem(texto, tipo){
+
+    const elemento =
+        document.getElementById(
+            "mensagem"
+        );
+
+
+    elemento.innerText =
+        texto;
+
+
+    elemento.className =
+        "mensagem " +
+        (tipo || "");
+
+
+    elemento.style.display =
+        "block";
+
+
+    clearTimeout(
+        timerMensagem
+    );
+
+
+    timerMensagem =
+        setTimeout(
+            () => {
+
+                elemento.style.display =
+                    "none";
+
+            },
+            3500
+        );
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logout(){
+
+    try{
+
+        await fetch(
+            "/logout",
+            {
+                credentials:"include"
+            }
+        );
+
+    }catch(err){
+
+        console.error(err);
+
+    }
+
+
+    window.location.href =
+        "/";
+
+}
+
+
+/* =========================================================
+   FECHAR MODAL CLICANDO FORA
+========================================================= */
+
+document
+    .getElementById("modalMaquininha")
+    .addEventListener(
+        "click",
+        function(event){
+
+            if(
+                event.target === this
+            ){
+
+                fecharModal();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+carregarUsuario();
+
+carregarMaquininhas();
+
+
+</script>
+
+
+</body>
+
+</html>

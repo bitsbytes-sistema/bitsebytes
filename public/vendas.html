@@ -433,13 +433,13 @@ td input{
                 <label>Buscar cliente</label>
 
                 <input
-    type="text"
-    id="buscaCliente"
-    placeholder="Digite nome, telefone ou CPF/CNPJ"
-    autocomplete="off"
-    oninput="buscarClientes()"
-    onclick="buscarClientes()"
->
+                    type="text"
+                    id="buscaCliente"
+                    placeholder="Digite nome, telefone ou CPF/CNPJ"
+                    autocomplete="off"
+                    oninput="buscarClientes()"
+                    onclick="buscarClientes()"
+                >
 
                 <div
                     id="resultadosClientes"
@@ -554,7 +554,7 @@ td input{
                     placeholder="Digite o nome ou código do produto"
                     autocomplete="off"
                     oninput="buscarProdutos()"
-		    onclick="buscarProdutos()"
+                    onclick="buscarProdutos()"
                 >
 
                 <div
@@ -709,7 +709,6 @@ td input{
 
                 </select>
 
-
                 <!-- ================= MAQUININHA ================= -->
 
                 <div
@@ -722,14 +721,17 @@ td input{
 
                     <label>Maquininha</label>
 
-                    <input
-                        type="text"
+                    <select
                         id="maquininha"
-                        placeholder="Ex.: Stone, Mercado Pago, PagBank..."
-                    >
+                        onchange="carregarTaxaMaquininha()">
+
+                        <option value="">
+                            Selecione a maquininha
+                        </option>
+
+                    </select>
 
                 </div>
-
 
                 <!-- ================= PARCELAS ================= -->
 
@@ -745,7 +747,7 @@ td input{
 
                     <select
                         id="parcelas"
-                        onchange="calcularParcelamento()">
+                        onchange="carregarTaxaMaquininha()">
 
                         <option value="1">1x</option>
                         <option value="2">2x</option>
@@ -763,7 +765,6 @@ td input{
                     </select>
 
                 </div>
-
 
                 <!-- ================= TIPO DE JUROS ================= -->
 
@@ -793,7 +794,6 @@ td input{
 
                 </div>
 
-
                 <!-- ================= TAXA ================= -->
 
                 <div
@@ -812,11 +812,10 @@ td input{
                         min="0"
                         step="0.01"
                         value="0"
-                        placeholder="Ex.: 0,89"
-                        oninput="calcularParcelamento()">
+                        readonly
+                    >
 
                 </div>
-
 
                 <!-- ================= RESUMO ================= -->
 
@@ -834,7 +833,6 @@ td input{
 
                     </div>
 
-
                     <div
                         id="linhaJuros"
                         class="linha-resumo"
@@ -850,7 +848,6 @@ td input{
 
                     </div>
 
-
                     <div class="linha-resumo">
 
                         <span>Valor final:</span>
@@ -860,7 +857,6 @@ td input{
                         </strong>
 
                     </div>
-
 
                     <div
                         class="linha-resumo linha-destaque">
@@ -877,7 +873,6 @@ td input{
 
             </div>
 
-
             <button
                 class="btn-finalizar"
                 onclick="finalizarVenda()">
@@ -890,7 +885,7 @@ td input{
 
     </div>
 
-    <!-- ================= HISTÓRICO DE VENDAS ================= -->
+    <!-- ================= HISTÓRICO ================= -->
 
     <div class="card">
 
@@ -946,36 +941,47 @@ td input{
 
 let clientes = [];
 let produtos = [];
+let maquininhas = [];
 
 let clienteSelecionado = null;
 let produtoSelecionado = null;
 
 let carrinho = [];
 
+let vendas = [];
+
 
 /* ================= USUÁRIO ================= */
 
 async function carregarUsuario(){
 
-    const res = await fetch("/me",{
-        credentials:"include"
-    });
+    try{
 
-    if(res.status === 401){
+        const res = await fetch("/me",{
+            credentials:"include"
+        });
 
-        window.location.href="/";
+        if(res.status === 401){
 
-        return;
+            window.location.href="/";
+
+            return;
+
+        }
+
+        const data = await res.json();
+
+        document.getElementById("nomeUsuario").innerText =
+            data.user.username;
+
+        document.getElementById("cargoUsuario").innerText =
+            data.user.role;
+
+    }catch(err){
+
+        console.error(err);
 
     }
-
-    const data = await res.json();
-
-    document.getElementById("nomeUsuario").innerText =
-        data.user.username;
-
-    document.getElementById("cargoUsuario").innerText =
-        data.user.role;
 
 }
 
@@ -1028,28 +1034,11 @@ function buscarClientes(){
 
     resultados.innerHTML = "";
 
-
-    /*
-     * ================================
-     * FILTRAR CLIENTES
-     * ================================
-     *
-     * Se o campo estiver vazio,
-     * mostra os clientes cadastrados.
-     *
-     * Se houver texto, filtra por:
-     * - Nome
-     * - Telefone
-     * - CPF/CNPJ
-     */
-
     const encontrados =
         clientes.filter(c => {
 
             if(!termo){
-
                 return true;
-
             }
 
             return (
@@ -1075,12 +1064,6 @@ function buscarClientes(){
         }).slice(0,20);
 
 
-    /*
-     * ================================
-     * NENHUM CLIENTE
-     * ================================
-     */
-
     if(encontrados.length === 0){
 
         resultados.innerHTML = `
@@ -1095,12 +1078,6 @@ function buscarClientes(){
 
     }
 
-
-    /*
-     * ================================
-     * MOSTRAR CLIENTES
-     * ================================
-     */
 
     encontrados.forEach(c => {
 
@@ -1337,19 +1314,6 @@ function buscarProdutos(){
     produtoSelecionado = null;
 
 
-    /*
-     * ================================
-     * FILTRAR PRODUTOS
-     * ================================
-     *
-     * Se o campo estiver vazio,
-     * mostra os produtos cadastrados.
-     *
-     * Se houver texto, filtra por:
-     * - Nome
-     * - Código
-     */
-
     const encontrados =
         produtos.filter(p => {
 
@@ -1376,12 +1340,6 @@ function buscarProdutos(){
         }).slice(0,20);
 
 
-    /*
-     * ================================
-     * NENHUM PRODUTO
-     * ================================
-     */
-
     if(encontrados.length === 0){
 
         resultados.innerHTML = `
@@ -1397,17 +1355,10 @@ function buscarProdutos(){
     }
 
 
-    /*
-     * ================================
-     * MOSTRAR PRODUTOS
-     * ================================
-     */
-
     encontrados.forEach(p => {
 
         const estoque =
             Number(p.quantidade || 0);
-
 
         resultados.innerHTML += `
 
@@ -1578,6 +1529,8 @@ function adicionarProduto(){
 }
 
 
+/* ================= REMOVER PRODUTO ================= */
+
 function removerProduto(index){
 
     carrinho.splice(index,1);
@@ -1587,7 +1540,271 @@ function removerProduto(index){
 }
 
 
-/* ================= FORMA DE PAGAMENTO ================= */
+/* =====================================================
+   MAQUININHAS
+===================================================== */
+
+async function carregarMaquininhas(){
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/payment-machines",
+                {
+                    credentials:"include"
+                }
+            );
+
+        if(!res.ok){
+
+            console.warn(
+                "Não foi possível carregar as maquininhas."
+            );
+
+            return;
+
+        }
+
+        const data =
+            await res.json();
+
+        maquininhas =
+            Array.isArray(data)
+            ? data
+            : data.maquininhas ||
+              data.paymentMachines ||
+              [];
+
+
+        preencherMaquininhas();
+
+    }catch(err){
+
+        console.error(
+            "Erro ao carregar maquininhas:",
+            err
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   PREENCHER MAQUININHAS
+===================================================== */
+
+function preencherMaquininhas(){
+
+    const select =
+        document.getElementById("maquininha");
+
+    if(!select)
+        return;
+
+    select.innerHTML = `
+
+        <option value="">
+            Selecione a maquininha
+        </option>
+
+    `;
+
+
+    maquininhas
+    .filter(m => m.ativo !== false)
+    .forEach(m => {
+
+        const option =
+            document.createElement("option");
+
+        option.value =
+            m.nome || "";
+
+        option.textContent =
+            m.nome || "Maquininha";
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+/* =====================================================
+   OBTER MAQUININHA SELECIONADA
+===================================================== */
+
+function obterMaquininhaSelecionada(){
+
+    const select =
+        document.getElementById("maquininha");
+
+    if(!select)
+        return null;
+
+    const nome =
+        String(
+            select.value || ""
+        ).trim();
+
+    if(!nome)
+        return null;
+
+    return maquininhas.find(
+        m =>
+            String(m.nome || "")
+            .trim()
+            .toLowerCase() ===
+            nome.toLowerCase()
+    ) || null;
+
+}
+
+
+/* =====================================================
+   CARREGAR TAXA DA MAQUININHA
+===================================================== */
+
+function carregarTaxaMaquininha(){
+
+    const formaPagamento =
+        document
+        .getElementById("formaPagamento")
+        .value;
+
+
+    const tipoJuros =
+        document
+        .getElementById("tipoJuros")
+        .value;
+
+
+    const maquininha =
+        obterMaquininhaSelecionada();
+
+
+    let taxa = 0;
+
+
+    /*
+     * Se não houver maquininha selecionada,
+     * zera a taxa.
+     */
+
+    if(!maquininha){
+
+        document.getElementById(
+            "taxaPercentual"
+        ).value = "0";
+
+        calcularParcelamento();
+
+        return;
+
+    }
+
+
+    /* =================================================
+       DÉBITO
+    ================================================= */
+
+    if(
+        formaPagamento === "Cartão de Débito"
+    ){
+
+        const debito =
+            maquininha.debito || {};
+
+
+        taxa =
+            Number(
+                debito[tipoJuros] || 0
+            );
+
+    }
+
+
+    /* =================================================
+       CRÉDITO
+    ================================================= */
+
+    if(
+        formaPagamento === "Cartão de Crédito"
+    ){
+
+        const parcelas =
+            String(
+                Number(
+                    document
+                    .getElementById("parcelas")
+                    .value || 1
+                )
+            );
+
+
+        const credito =
+            maquininha.credito || {};
+
+
+        /*
+         * IMPORTANTE:
+         *
+         * Aqui é feita a busca da taxa
+         * EXATAMENTE pela quantidade
+         * de parcelas selecionada.
+         *
+         * 1x  -> credito["1"]
+         * 2x  -> credito["2"]
+         * 3x  -> credito["3"]
+         * ...
+         * 12x -> credito["12"]
+         */
+
+        const taxaParcela =
+            credito[parcelas] || {};
+
+
+        taxa =
+            Number(
+                taxaParcela[tipoJuros] || 0
+            );
+
+    }
+
+
+    if(
+        !Number.isFinite(taxa) ||
+        taxa < 0
+    ){
+
+        taxa = 0;
+
+    }
+
+
+    /*
+     * Exibe a taxa encontrada.
+     */
+
+    document.getElementById(
+        "taxaPercentual"
+    ).value = taxa;
+
+
+    /*
+     * Recalcula os valores.
+     */
+
+    calcularParcelamento();
+
+}
+
+
+/* =====================================================
+   FORMA DE PAGAMENTO
+===================================================== */
 
 function alterarFormaPagamento(){
 
@@ -1628,7 +1845,7 @@ function alterarFormaPagamento(){
 
 
     /*
-     * DINHEIRO / PIX / BOLETO
+     * OUTRAS FORMAS
      */
 
     if(
@@ -1673,28 +1890,32 @@ function alterarFormaPagamento(){
 
 
     /*
+     * ================================
      * DÉBITO
+     * ================================
      */
 
-    if(formaPagamento === "Cartão de Débito"){
+    if(
+        formaPagamento === "Cartão de Débito"
+    ){
 
         campoMaquininha.style.display = "block";
 
         campoParcelas.style.display = "none";
 
-        campoTipoJuros.style.display = "none";
+        campoTipoJuros.style.display = "block";
 
-        campoTaxa.style.display = "block";
+        campoTaxa.style.display = "none";
 
         resumoCartao.style.display = "block";
 
 
         document.getElementById(
             "tipoJuros"
-        ).value = "com_juros";
+        ).value = "sem_juros";
 
 
-        alterarTipoJurosDebito();
+        alterarTipoJuros();
 
 
         return;
@@ -1703,10 +1924,14 @@ function alterarFormaPagamento(){
 
 
     /*
+     * ================================
      * CRÉDITO
+     * ================================
      */
 
-    if(formaPagamento === "Cartão de Crédito"){
+    if(
+        formaPagamento === "Cartão de Crédito"
+    ){
 
         campoMaquininha.style.display = "block";
 
@@ -1719,21 +1944,30 @@ function alterarFormaPagamento(){
         resumoCartao.style.display = "block";
 
 
-        alterarTipoJuros();
+        /*
+         * Garante que a taxa seja carregada
+         * de acordo com a parcela atual.
+         */
+
+        carregarTaxaMaquininha();
 
     }
 
 }
 
 
-/* ================= TIPO DE JUROS ================= */
+/* =====================================================
+   TIPO DE JUROS
+===================================================== */
 
 function alterarTipoJuros(){
 
     const tipo =
-        document.getElementById(
+        document
+        .getElementById(
             "tipoJuros"
-        ).value;
+        )
+        .value;
 
 
     const campoTaxa =
@@ -1748,18 +1982,28 @@ function alterarTipoJuros(){
         );
 
 
+    /*
+     * COM JUROS
+     */
+
     if(tipo === "com_juros"){
 
         campoTaxa.style.display = "block";
 
         linhaJuros.style.display = "flex";
 
-    }else{
+    }
+
+
+    /*
+     * SEM JUROS
+     */
+
+    else{
 
         campoTaxa.style.display = "none";
 
         linhaJuros.style.display = "none";
-
 
         document.getElementById(
             "taxaPercentual"
@@ -1768,38 +2012,18 @@ function alterarTipoJuros(){
     }
 
 
-    calcularParcelamento();
+    /*
+     * Busca novamente a taxa.
+     */
+
+    carregarTaxaMaquininha();
 
 }
 
 
-/* ================= DÉBITO ================= */
-
-function alterarTipoJurosDebito(){
-
-    const campoTaxa =
-        document.getElementById(
-            "campoTaxa"
-        );
-
-
-    const linhaJuros =
-        document.getElementById(
-            "linhaJuros"
-        );
-
-
-    campoTaxa.style.display = "block";
-
-    linhaJuros.style.display = "flex";
-
-
-    calcularParcelamento();
-
-}
-
-
-/* ================= PARCELAMENTO ================= */
+/* =====================================================
+   PARCELAMENTO
+===================================================== */
 
 function calcularParcelamento(){
 
@@ -1855,43 +2079,64 @@ function calcularParcelamento(){
     }
 
 
+    const tipoJuros =
+        document
+        .getElementById(
+            "tipoJuros"
+        )
+        .value;
+
+
     let valorJuros = 0;
 
     let valorFinal = totalVenda;
 
 
     /*
-     * TAXA POR DENTRO
-     *
-     * Exemplo:
-     *
-     * Venda = R$ 104,00
-     * Taxa = 0,89%
-     *
-     * Valor final = 104 / (1 - 0,0089)
+     * SEM JUROS
      */
 
+    if(tipoJuros === "sem_juros"){
 
-    const percentual =
-        taxa / 100;
-
-
-    if(percentual >= 1){
+        taxa = 0;
 
         valorJuros = 0;
 
         valorFinal = totalVenda;
 
-    }else{
-
-        valorFinal =
-            totalVenda /
-            (1 - percentual);
+    }
 
 
-        valorJuros =
-            valorFinal -
-            totalVenda;
+    /*
+     * COM JUROS
+     */
+
+    else{
+
+        const percentual =
+            taxa / 100;
+
+
+        if(percentual >= 1){
+
+            valorJuros = 0;
+
+            valorFinal = totalVenda;
+
+        }
+
+        else{
+
+            valorFinal =
+                totalVenda /
+                (1 - percentual);
+
+
+            valorJuros =
+                valorFinal -
+                totalVenda;
+
+        }
 
     }
 
@@ -1943,7 +2188,10 @@ function alterarQuantidade(index, quantidade){
 
     quantidade = Number(quantidade);
 
-    if(!Number.isInteger(quantidade) || quantidade <= 0){
+    if(
+        !Number.isInteger(quantidade) ||
+        quantidade <= 0
+    ){
 
         renderCarrinho();
 
@@ -1954,15 +2202,19 @@ function alterarQuantidade(index, quantidade){
     const item =
         carrinho[index];
 
+
     const produto =
         produtos.find(
-            p=>p._id === item.productId
+            p =>
+                p._id === item.productId
         );
+
 
     const estoque =
         produto
         ? Number(produto.quantidade || 0)
         : 0;
+
 
     if(quantidade > estoque){
 
@@ -1976,12 +2228,15 @@ function alterarQuantidade(index, quantidade){
 
     }
 
+
     item.quantidade =
         quantidade;
+
 
     item.subtotal =
         item.quantidade *
         item.precoUnitario;
+
 
     renderCarrinho();
 
@@ -1993,9 +2248,13 @@ function alterarQuantidade(index, quantidade){
 function renderCarrinho(){
 
     const tbody =
-        document.getElementById("carrinho");
+        document.getElementById(
+            "carrinho"
+        );
+
 
     tbody.innerHTML="";
+
 
     if(carrinho.length === 0){
 
@@ -2015,60 +2274,71 @@ function renderCarrinho(){
 
         `;
 
+
         calcularTotal();
 
         return;
 
     }
 
-    carrinho.forEach((item,index)=>{
 
-        tbody.innerHTML += `
+    carrinho.forEach(
+        (item,index)=>{
 
-            <tr>
+            tbody.innerHTML += `
 
-                <td>
-                    ${escaparHTML(item.nomeProduto)}
-                </td>
+                <tr>
 
-                <td>
+                    <td>
+                        ${escaparHTML(
+                            item.nomeProduto
+                        )}
+                    </td>
 
-                    <input
-                        type="number"
-                        min="1"
-                        value="${item.quantidade}"
-                        onchange="alterarQuantidade(
-                            ${index},
-                            this.value
-                        )">
+                    <td>
 
-                </td>
+                        <input
+                            type="number"
+                            min="1"
+                            value="${item.quantidade}"
+                            onchange="alterarQuantidade(
+                                ${index},
+                                this.value
+                            )">
 
-                <td>
-                    ${formatarMoeda(item.precoUnitario)}
-                </td>
+                    </td>
 
-                <td>
-                    ${formatarMoeda(item.subtotal)}
-                </td>
+                    <td>
+                        ${formatarMoeda(
+                            item.precoUnitario
+                        )}
+                    </td>
 
-                <td>
+                    <td>
+                        ${formatarMoeda(
+                            item.subtotal
+                        )}
+                    </td>
 
-                    <button
-                        class="btn-vermelho"
-                        onclick="removerProduto(${index})">
+                    <td>
 
-                        🗑️
+                        <button
+                            class="btn-vermelho"
+                            onclick="removerProduto(${index})">
 
-                    </button>
+                            🗑️
 
-                </td>
+                        </button>
 
-            </tr>
+                    </td>
 
-        `;
+                </tr>
 
-    });
+            `;
+
+        }
+    );
+
 
     calcularTotal();
 
@@ -2095,7 +2365,10 @@ function calcularTotalNumerico(){
         );
 
 
-    if(!Number.isFinite(desconto) || desconto < 0){
+    if(
+        !Number.isFinite(desconto) ||
+        desconto < 0
+    ){
 
         desconto=0;
 
@@ -2152,7 +2425,9 @@ function calcularTotal(){
 }
 
 
-/* ================= FINALIZAR ================= */
+/* =====================================================
+   FINALIZAR VENDA
+===================================================== */
 
 async function finalizarVenda(){
 
@@ -2197,12 +2472,17 @@ async function finalizarVenda(){
 
 
     if(!confirm(
+
         "Confirmar venda?\n\n" +
+
         "Cliente: " +
         clienteSelecionado.nome +
+
         "\n" +
+
         "Total: " +
         formatarMoeda(total)
+
     )){
 
         return;
@@ -2212,12 +2492,14 @@ async function finalizarVenda(){
 
     const parcelas =
         formaPagamento === "Cartão de Crédito"
-        ? Number(
+        ?
+        Number(
             document
             .getElementById("parcelas")
             .value
         )
-        : null;
+        :
+        null;
 
 
     let tipoJuros = "sem_juros";
@@ -2229,6 +2511,12 @@ async function finalizarVenda(){
         formaPagamento === "Cartão de Crédito" ||
         formaPagamento === "Cartão de Débito"
     ){
+
+        tipoJuros =
+            document
+            .getElementById("tipoJuros")
+            .value;
+
 
         taxaPercentual =
             Number(
@@ -2243,32 +2531,38 @@ async function finalizarVenda(){
             taxaPercentual < 0
         ){
 
-            alert(
-                "Informe uma taxa válida."
-            );
-
-            return;
+            taxaPercentual = 0;
 
         }
 
+    }
 
-        if(formaPagamento === "Cartão de Crédito"){
 
-            tipoJuros =
-                document
-                .getElementById("tipoJuros")
-                .value;
+    const maquininhaSelecionada =
+        document
+        .getElementById("maquininha")
+        .value
+        .trim();
 
-        }else{
 
-            /*
-             * Débito utiliza a taxa da maquininha
-             * sem parcelamento.
-             */
+    /*
+     * Para cartão, exige maquininha.
+     */
 
-            tipoJuros = "com_juros";
+    if(
+        (
+            formaPagamento === "Cartão de Crédito" ||
+            formaPagamento === "Cartão de Débito"
+        )
+        &&
+        !maquininhaSelecionada
+    ){
 
-        }
+        alert(
+            "Selecione a maquininha utilizada na venda."
+        );
+
+        return;
 
     }
 
@@ -2285,15 +2579,17 @@ async function finalizarVenda(){
             clienteSelecionado.telefone || "",
 
         itens:
-            carrinho.map(item=>({
+            carrinho.map(
+                item=>({
 
-                productId:
-                    item.productId,
+                    productId:
+                        item.productId,
 
-                quantidade:
-                    item.quantidade
+                    quantidade:
+                        item.quantidade
 
-            })),
+                })
+            ),
 
         desconto,
 
@@ -2301,18 +2597,8 @@ async function finalizarVenda(){
 
         parcelas,
 
-        /*
-         * MAQUININHA
-         *
-         * Enviada para o backend exatamente
-         * como informada pelo usuário.
-         */
-
         maquininha:
-            document
-            .getElementById("maquininha")
-            .value
-            .trim(),
+            maquininhaSelecionada,
 
         tipoJuros,
 
@@ -2324,21 +2610,24 @@ async function finalizarVenda(){
     try{
 
         const res =
-            await fetch("/api/sales",{
+            await fetch(
+                "/api/sales",
+                {
 
-                method:"POST",
+                    method:"POST",
 
-                credentials:"include",
+                    credentials:"include",
 
-                headers:{
-                    "Content-Type":
-                        "application/json"
-                },
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
 
-                body:
-                    JSON.stringify(dados)
+                    body:
+                        JSON.stringify(dados)
 
-            });
+                }
+            );
 
 
         const data =
@@ -2358,15 +2647,23 @@ async function finalizarVenda(){
 
 
         alert(
+
             "Venda registrada com sucesso!\n\n" +
+
             "Venda #" +
             data.venda.numeroVenda +
+
             "\n" +
+
             "Total: " +
+
             formatarMoeda(
+
                 data.venda.valorFinalCartao ||
                 data.venda.total
+
             )
+
         );
 
 
@@ -2396,10 +2693,6 @@ async function finalizarVenda(){
             "formaPagamento"
         ).value="Dinheiro";
 
-
-        /*
-         * LIMPAR MAQUININHA
-         */
 
         document.getElementById(
             "maquininha"
@@ -2467,18 +2760,19 @@ async function finalizarVenda(){
 }
 
 
-/* ================= HISTÓRICO DE VENDAS ================= */
-
-let vendas = [];
-
+/* ================= HISTÓRICO ================= */
 
 async function carregarVendas(){
 
     try{
 
-        const res = await fetch("/api/sales",{
-            credentials:"include"
-        });
+        const res =
+            await fetch(
+                "/api/sales",
+                {
+                    credentials:"include"
+                }
+            );
 
 
         if(!res.ok){
@@ -2492,7 +2786,8 @@ async function carregarVendas(){
         }
 
 
-        const data = await res.json();
+        const data =
+            await res.json();
 
 
         vendas =
@@ -2555,9 +2850,14 @@ function renderHistoricoVendas(){
 
         const data =
             venda.createdAt
-            ? new Date(venda.createdAt)
-                .toLocaleString("pt-BR")
-            : "-";
+            ?
+            new Date(
+                venda.createdAt
+            ).toLocaleString(
+                "pt-BR"
+            )
+            :
+            "-";
 
 
         const status =
@@ -2594,21 +2894,12 @@ function renderHistoricoVendas(){
             `;
 
 
-        /*
-         * ================================
-         * PAGAMENTO
-         * ================================
-         */
-
         let pagamentoTexto =
             venda.formaPagamento || "-";
 
 
         /*
          * MAQUININHA
-         *
-         * Agora o histórico mostra a
-         * maquininha utilizada na venda.
          */
 
         if(
@@ -2619,25 +2910,16 @@ function renderHistoricoVendas(){
             if(venda.maquininha){
 
                 pagamentoTexto +=
+
                     `<br>
                     <small style="
                         color:#2563eb;
                         font-weight:bold;
                     ">
-                        🏧 Maquininha: ${escaparHTML(
+                        🏧 Maquininha:
+                        ${escaparHTML(
                             venda.maquininha
                         )}
-                    </small>`;
-
-            }else{
-
-                pagamentoTexto +=
-                    `<br>
-                    <small style="
-                        color:#64748b;
-                        font-weight:bold;
-                    ">
-                        🏧 Maquininha: Não informada
                     </small>`;
 
             }
@@ -2646,9 +2928,7 @@ function renderHistoricoVendas(){
 
 
         /*
-         * ================================
-         * CARTÃO DE CRÉDITO
-         * ================================
+         * CRÉDITO
          */
 
         if(
@@ -2657,6 +2937,7 @@ function renderHistoricoVendas(){
         ){
 
             pagamentoTexto +=
+
                 `<br>
                 <small style="
                     color:#64748b;
@@ -2666,22 +2947,29 @@ function renderHistoricoVendas(){
                 </small>`;
 
 
-            if(venda.tipoJuros === "com_juros"){
+            if(
+                venda.tipoJuros === "com_juros"
+            ){
 
                 pagamentoTexto +=
+
                     `<br>
                     <small style="
                         color:#d97706;
                         font-weight:bold;
                     ">
-                        Com juros: ${Number(
+                        Com juros:
+                        ${Number(
                             venda.taxaPercentual || 0
-                        ).toLocaleString("pt-BR")}% 
+                        ).toLocaleString(
+                            "pt-BR"
+                        )}%
                     </small>`;
 
             }else{
 
                 pagamentoTexto +=
+
                     `<br>
                     <small style="
                         color:#16a34a;
@@ -2696,32 +2984,42 @@ function renderHistoricoVendas(){
 
 
         /*
-         * ================================
-         * CARTÃO DE DÉBITO
-         * ================================
+         * DÉBITO
          */
 
         if(
             venda.formaPagamento === "Cartão de Débito"
         ){
 
-            const taxaDebito =
-                Number(
-                    venda.taxaPercentual || 0
-                );
-
-
-            if(taxaDebito > 0){
+            if(
+                venda.tipoJuros === "com_juros"
+            ){
 
                 pagamentoTexto +=
+
                     `<br>
                     <small style="
                         color:#d97706;
                         font-weight:bold;
                     ">
-                        Taxa: ${taxaDebito.toLocaleString(
+                        Com juros:
+                        ${Number(
+                            venda.taxaPercentual || 0
+                        ).toLocaleString(
                             "pt-BR"
                         )}%
+                    </small>`;
+
+            }else{
+
+                pagamentoTexto +=
+
+                    `<br>
+                    <small style="
+                        color:#16a34a;
+                        font-weight:bold;
+                    ">
+                        Sem juros
                     </small>`;
 
             }
@@ -2730,23 +3028,19 @@ function renderHistoricoVendas(){
 
 
         /*
-         * ================================
-         * TOTAL
-         * ================================
-         *
-         * Para cartão com juros, mostra o
-         * valor final cobrado.
-         *
-         * Para os demais casos, mostra
-         * o total original.
+         * TOTAL EXIBIDO
          */
 
         const valorExibido =
             venda.tipoJuros === "com_juros"
-            && venda.valorFinalCartao
-            ?
+            &&
             venda.valorFinalCartao
+            ?
+
+            venda.valorFinalCartao
+
             :
+
             venda.total;
 
 
@@ -2764,7 +3058,8 @@ function renderHistoricoVendas(){
 
                 <td>
                     ${escaparHTML(
-                        venda.clienteNome || "Cliente"
+                        venda.clienteNome ||
+                        "Cliente"
                     )}
                 </td>
 
@@ -2819,7 +3114,10 @@ function abrirVenda(id){
 async function cancelarVenda(id){
 
     const venda =
-        vendas.find(v => v._id === id);
+        vendas.find(
+            v =>
+                v._id === id
+        );
 
 
     if(!venda)
@@ -2849,10 +3147,19 @@ async function cancelarVenda(id){
             venda.clienteNome +
 
             "\nTotal: " +
+
             formatarMoeda(
+
                 venda.tipoJuros === "com_juros"
-                ? venda.valorFinalCartao
-                : venda.total
+
+                ?
+
+                venda.valorFinalCartao
+
+                :
+
+                venda.total
+
             ) +
 
             "\n\n" +
@@ -2870,13 +3177,19 @@ async function cancelarVenda(id){
 
         const res =
             await fetch(
+
                 "/api/sales/" +
                 id +
                 "/cancelar",
+
                 {
+
                     method:"POST",
+
                     credentials:"include"
+
                 }
+
             );
 
 
@@ -2897,11 +3210,14 @@ async function cancelarVenda(id){
 
 
         alert(
+
             "Venda #" +
             venda.numeroVenda +
+
             " cancelada com sucesso.\n\n" +
 
             "Os produtos foram devolvidos ao estoque."
+
         );
 
 
@@ -2976,6 +3292,8 @@ window.onload = async ()=>{
     await carregarClientes();
 
     await carregarProdutos();
+
+    await carregarMaquininhas();
 
     await carregarVendas();
 

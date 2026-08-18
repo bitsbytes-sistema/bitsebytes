@@ -35,6 +35,9 @@ const notificationRoutes = require("./routes/notifications");
 const lembreteRoutes = require("./routes/lembretes");
 const OneSignal = require("onesignal-node");
 
+const paymentMachineRoutes =
+  require("./routes/paymentMachines");
+
 const alertasRoutes =
 require("./routes/alertas");
 
@@ -2141,6 +2144,12 @@ app.use("/api/alertas", require("./routes/alertas"));
 app.use("/api/stock-movements", stockMovementRoutes);
 
 app.use("/api/sales", saleRoutes);
+
+app.use(
+  "/api/payment-machines",
+  auth,
+  paymentMachineRoutes
+);
 
 /* ===================== LOGOUT ===================== */
 

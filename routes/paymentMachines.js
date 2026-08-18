@@ -3,25 +3,20 @@ const router = express.Router();
 
 const PaymentMachine = require("../models/PaymentMachine");
 
-const auth = require("../middleware/auth");
 
+/* =====================================================
+   LISTAR MÁQUINAS
+===================================================== */
 
-/* =========================================================
-   LISTAR MAQUININHAS
-========================================================= */
-
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
 
     try {
 
-        const companyId =
-            req.session.user.companyId;
-
-
-        const maquininhas =
+        const machines =
             await PaymentMachine.find({
 
-                companyId
+                companyId:
+                    req.session.user.companyId
 
             })
             .sort({
@@ -29,18 +24,23 @@ router.get("/", auth, async (req, res) => {
             });
 
 
-        res.json(maquininhas);
+        res.json(machines);
 
 
     } catch (err) {
 
-        console.error(err);
+        console.error(
+            "Erro ao listar máquinas de pagamento:",
+            err
+        );
 
 
         res.status(500).json({
 
-            error:
-                "Erro ao listar maquininhas."
+            error: true,
+
+            message:
+                "Erro ao listar máquinas de pagamento."
 
         });
 
@@ -49,53 +49,55 @@ router.get("/", auth, async (req, res) => {
 });
 
 
-/* =========================================================
-   BUSCAR MAQUININHA
-========================================================= */
+/* =====================================================
+   BUSCAR MÁQUINA POR ID
+===================================================== */
 
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", async (req, res) => {
 
     try {
 
-        const companyId =
-            req.session.user.companyId;
-
-
-        const maquininha =
+        const machine =
             await PaymentMachine.findOne({
 
                 _id:
                     req.params.id,
 
-                companyId
+                companyId:
+                    req.session.user.companyId
 
             });
 
 
-        if (!maquininha) {
+        if (!machine) {
 
             return res.status(404).json({
 
                 error:
-                    "Maquininha não encontrada."
+                    "Máquina não encontrada."
 
             });
 
         }
 
 
-        res.json(maquininha);
+        res.json(machine);
 
 
     } catch (err) {
 
-        console.error(err);
+        console.error(
+            "Erro ao buscar máquina de pagamento:",
+            err
+        );
 
 
         res.status(500).json({
 
-            error:
-                "Erro ao buscar maquininha."
+            error: true,
+
+            message:
+                "Erro ao buscar máquina de pagamento."
 
         });
 
@@ -104,146 +106,268 @@ router.get("/:id", auth, async (req, res) => {
 });
 
 
-/* =========================================================
-   CADASTRAR MAQUININHA
-========================================================= */
+/* =====================================================
+   CRIAR MÁQUINA
+===================================================== */
 
-router.post("/", auth, async (req, res) => {
+router.post("/", async (req, res) => {
 
     try {
 
-        const companyId =
-            req.session.user.companyId;
-
-
-        const {
-            nome,
-            taxas
-        } = req.body;
-
-
-        /* =================================================
-           VALIDAÇÃO
-        ================================================= */
-
-        if (!nome || !nome.trim()) {
-
-            return res.status(400).json({
-
-                error:
-                    "Informe o nome da maquininha."
-
-            });
-
-        }
-
-
-        /* =================================================
-           VERIFICAR DUPLICIDADE
-        ================================================= */
-
-        const existente =
-            await PaymentMachine.findOne({
-
-                companyId,
-
-                nome:
-                    nome.trim()
-
-            });
-
-
-        if (existente) {
-
-            return res.status(400).json({
-
-                error:
-                    "Já existe uma maquininha com esse nome."
-
-            });
-
-        }
-
-
-        /* =================================================
-           TAXAS
-        ================================================= */
-
-        const taxasRecebidas =
-            taxas || {};
-
-
-        const taxasFormatadas = {};
-
-
-        for (let i = 1; i <= 12; i++) {
-
-            const valor =
-                Number(
-                    taxasRecebidas[i] || 0
-                );
-
-
-            if (
-                !Number.isFinite(valor) ||
-                valor < 0
-            ) {
-
-                return res.status(400).json({
-
-                    error:
-                        `Taxa inválida para ${i}x.`
-
-                });
-
-            }
-
-
-            taxasFormatadas[i] =
-                valor;
-
-        }
-
-
-        /* =================================================
-           CRIAR
-        ================================================= */
-
-        const maquininha =
+        const machine =
             await PaymentMachine.create({
 
-                companyId,
+                /* =====================================
+                   EMPRESA
+                ===================================== */
+
+                companyId:
+                    req.session.user.companyId,
+
+
+                /* =====================================
+                   NOME
+                ===================================== */
 
                 nome:
-                    nome.trim(),
+                    String(
+                        req.body.nome || ""
+                    ).trim(),
 
-                taxas:
-                    taxasFormatadas,
 
-                ativo:
-                    true
+                /* =====================================
+                   DÉBITO
+                ===================================== */
+
+                debito: {
+
+                    sem_juros:
+                        Number(
+                            req.body.debito?.sem_juros || 0
+                        ),
+
+                    com_juros:
+                        Number(
+                            req.body.debito?.com_juros || 0
+                        )
+
+                },
+
+
+                /* =====================================
+                   CRÉDITO
+                ===================================== */
+
+                credito: {
+
+                    "1": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["1"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["1"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "2": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["2"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["2"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "3": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["3"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["3"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "4": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["4"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["4"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "5": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["5"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["5"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "6": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["6"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["6"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "7": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["7"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["7"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "8": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["8"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["8"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "9": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["9"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["9"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "10": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["10"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["10"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "11": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["11"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["11"]?.com_juros || 0
+                            )
+
+                    },
+
+
+                    "12": {
+
+                        sem_juros:
+                            Number(
+                                req.body.credito?.["12"]?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.credito?.["12"]?.com_juros || 0
+                            )
+
+                    }
+
+                },
+
+
+                /* =====================================
+                   STATUS
+                ===================================== */
+
+                ativo: true
 
             });
 
 
-        res.json({
-
-            ok: true,
-
-            maquininha
-
-        });
+        res.status(201).json(machine);
 
 
     } catch (err) {
 
-        console.error(err);
+        console.error(
+            "Erro ao criar máquina de pagamento:",
+            err
+        );
 
 
         res.status(500).json({
 
-            error:
-                "Erro ao cadastrar maquininha."
+            error: true,
+
+            message:
+                "Erro ao criar máquina de pagamento."
 
         });
 
@@ -252,178 +376,289 @@ router.post("/", auth, async (req, res) => {
 });
 
 
-/* =========================================================
-   EDITAR MAQUININHA
-========================================================= */
+/* =====================================================
+   EDITAR MÁQUINA
+===================================================== */
 
-router.put("/:id", auth, async (req, res) => {
+router.put("/:id", async (req, res) => {
 
     try {
 
-        const companyId =
-            req.session.user.companyId;
+        const machine =
+            await PaymentMachine.findOneAndUpdate(
+
+                {
+
+                    _id:
+                        req.params.id,
+
+                    companyId:
+                        req.session.user.companyId
+
+                },
 
 
-        const {
-            nome,
-            taxas,
-            ativo
-        } = req.body;
+                {
 
-
-        const maquininha =
-            await PaymentMachine.findOne({
-
-                _id:
-                    req.params.id,
-
-                companyId
-
-            });
-
-
-        if (!maquininha) {
-
-            return res.status(404).json({
-
-                error:
-                    "Maquininha não encontrada."
-
-            });
-
-        }
-
-
-        /* =================================================
-           NOME
-        ================================================= */
-
-        if (
-            nome !== undefined
-        ) {
-
-            if (
-                !String(nome).trim()
-            ) {
-
-                return res.status(400).json({
-
-                    error:
-                        "Informe o nome da maquininha."
-
-                });
-
-            }
-
-
-            const duplicada =
-                await PaymentMachine.findOne({
-
-                    companyId,
+                    /* =================================
+                       NOME
+                    ================================= */
 
                     nome:
-                        String(nome).trim(),
+                        String(
+                            req.body.nome || ""
+                        ).trim(),
 
-                    _id: {
-                        $ne:
-                            maquininha._id
+
+                    /* =================================
+                       DÉBITO
+                    ================================= */
+
+                    debito: {
+
+                        sem_juros:
+                            Number(
+                                req.body.debito?.sem_juros || 0
+                            ),
+
+                        com_juros:
+                            Number(
+                                req.body.debito?.com_juros || 0
+                            )
+
+                    },
+
+
+                    /* =================================
+                       CRÉDITO
+                    ================================= */
+
+                    credito: {
+
+                        "1": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["1"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["1"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "2": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["2"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["2"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "3": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["3"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["3"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "4": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["4"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["4"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "5": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["5"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["5"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "6": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["6"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["6"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "7": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["7"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["7"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "8": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["8"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["8"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "9": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["9"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["9"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "10": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["10"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["10"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "11": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["11"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["11"]?.com_juros || 0
+                                )
+
+                        },
+
+
+                        "12": {
+
+                            sem_juros:
+                                Number(
+                                    req.body.credito?.["12"]?.sem_juros || 0
+                                ),
+
+                            com_juros:
+                                Number(
+                                    req.body.credito?.["12"]?.com_juros || 0
+                                )
+
+                        }
+
                     }
 
-                });
+                },
 
 
-            if (duplicada) {
+                {
 
-                return res.status(400).json({
+                    new: true,
 
-                    error:
-                        "Já existe outra maquininha com esse nome."
-
-                });
-
-            }
-
-
-            maquininha.nome =
-                String(nome).trim();
-
-        }
-
-
-        /* =================================================
-           TAXAS
-        ================================================= */
-
-        if (
-            taxas !== undefined
-        ) {
-
-            for (let i = 1; i <= 12; i++) {
-
-                const valor =
-                    Number(
-                        taxas[i] || 0
-                    );
-
-
-                if (
-                    !Number.isFinite(valor) ||
-                    valor < 0
-                ) {
-
-                    return res.status(400).json({
-
-                        error:
-                            `Taxa inválida para ${i}x.`
-
-                    });
+                    runValidators: true
 
                 }
 
-
-                maquininha.taxas[String(i)] =
-                    valor;
-
-            }
-
-        }
+            );
 
 
-        /* =================================================
-           ATIVO
-        ================================================= */
+        if (!machine) {
 
-        if (
-            ativo !== undefined
-        ) {
+            return res.status(404).json({
 
-            maquininha.ativo =
-                Boolean(ativo);
+                error:
+                    "Máquina não encontrada."
+
+            });
 
         }
 
 
-        await maquininha.save();
-
-
-        res.json({
-
-            ok: true,
-
-            maquininha
-
-        });
+        res.json(machine);
 
 
     } catch (err) {
 
-        console.error(err);
+        console.error(
+            "Erro ao editar máquina de pagamento:",
+            err
+        );
 
 
         res.status(500).json({
 
-            error:
-                "Erro ao editar maquininha."
+            error: true,
+
+            message:
+                "Erro ao editar máquina de pagamento."
 
         });
 
@@ -432,66 +667,69 @@ router.put("/:id", auth, async (req, res) => {
 });
 
 
-/* =========================================================
-   ATIVAR / DESATIVAR
-========================================================= */
+/* =====================================================
+   ALTERAR STATUS
+===================================================== */
 
-router.patch("/:id/status", auth, async (req, res) => {
+router.patch("/:id/status", async (req, res) => {
 
     try {
 
-        const companyId =
-            req.session.user.companyId;
-
-
-        const maquininha =
+        const machine =
             await PaymentMachine.findOne({
 
                 _id:
                     req.params.id,
 
-                companyId
+                companyId:
+                    req.session.user.companyId
 
             });
 
 
-        if (!maquininha) {
+        if (!machine) {
 
             return res.status(404).json({
 
                 error:
-                    "Maquininha não encontrada."
+                    "Máquina não encontrada."
 
             });
 
         }
 
 
-        maquininha.ativo =
-            !maquininha.ativo;
+        machine.ativo =
+            !machine.ativo;
 
 
-        await maquininha.save();
+        await machine.save();
 
 
         res.json({
 
             ok: true,
 
-            maquininha
+            maquininha:
+                machine
 
         });
 
 
     } catch (err) {
 
-        console.error(err);
+        console.error(
+            "Erro ao alterar status da máquina:",
+            err
+        );
 
 
         res.status(500).json({
 
-            error:
-                "Erro ao alterar status da maquininha."
+            error: true,
+
+            message:
+                "Erro ao alterar status da máquina."
 
         });
 
@@ -500,47 +738,36 @@ router.patch("/:id/status", auth, async (req, res) => {
 });
 
 
-/* =========================================================
-   EXCLUIR MAQUININHA
-========================================================= */
+/* =====================================================
+   EXCLUIR MÁQUINA
+===================================================== */
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", async (req, res) => {
 
     try {
 
-        const companyId =
-            req.session.user.companyId;
-
-
-        const maquininha =
-            await PaymentMachine.findOne({
+        const machine =
+            await PaymentMachine.findOneAndDelete({
 
                 _id:
                     req.params.id,
 
-                companyId
+                companyId:
+                    req.session.user.companyId
 
             });
 
 
-        if (!maquininha) {
+        if (!machine) {
 
             return res.status(404).json({
 
                 error:
-                    "Maquininha não encontrada."
+                    "Máquina não encontrada."
 
             });
 
         }
-
-
-        await PaymentMachine.deleteOne({
-
-            _id:
-                maquininha._id
-
-        });
 
 
         res.json({
@@ -552,13 +779,18 @@ router.delete("/:id", auth, async (req, res) => {
 
     } catch (err) {
 
-        console.error(err);
+        console.error(
+            "Erro ao excluir máquina de pagamento:",
+            err
+        );
 
 
         res.status(500).json({
 
-            error:
-                "Erro ao excluir maquininha."
+            error: true,
+
+            message:
+                "Erro ao excluir máquina de pagamento."
 
         });
 

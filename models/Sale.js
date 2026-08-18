@@ -121,29 +121,35 @@ const SaleSchema = new mongoose.Schema({
         default: "sem_juros"
     },
 
-    taxaPercentual: {
-        type: Number,
-        default: 0,
-        min: 0
-    },
+taxaPercentual: {
+    type: Number,
+    default: 0,
+    min: 0
+},
 
-    valorTaxa: {
-        type: Number,
-        default: 0,
-        min: 0
-    },
+valorTaxa: {
+    type: Number,
+    default: 0,
+    min: 0
+},
 
-    valorFinalCartao: {
-        type: Number,
-        default: 0,
-        min: 0
-    },
+valorLiquido: {
+    type: Number,
+    default: 0,
+    min: 0
+},
 
-    valorParcela: {
-        type: Number,
-        default: 0,
-        min: 0
-    },
+valorFinalCartao: {
+    type: Number,
+    default: 0,
+    min: 0
+},
+
+valorParcela: {
+    type: Number,
+    default: 0,
+    min: 0
+},
 
 
     /* =====================================================

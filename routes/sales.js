@@ -5,6 +5,7 @@ const Sale = require("../models/Sale");
 const Product = require("../models/Product");
 const Cliente = require("../models/Cliente");
 const StockMovement = require("../models/StockMovement");
+const PaymentMachine = require("../models/PaymentMachine");
 
 const auth = require("../middleware/auth");
 
@@ -100,27 +101,17 @@ router.post("/", auth, async (req, res) => {
 
         let {
 
-            clienteId,
+    clienteId,
+    clienteNome,
+    clienteTelefone,
+    itens,
+    desconto,
+    formaPagamento,
+    parcelas,
+    maquininha,
+    tipoJuros
 
-            clienteNome,
-
-            clienteTelefone,
-
-            itens,
-
-            desconto,
-
-            formaPagamento,
-
-            parcelas,
-
-            maquininha,
-
-            tipoJuros,
-
-            taxaPercentual
-
-        } = req.body;
+} = req.body;
 
 
         /* =====================================================
@@ -387,6 +378,52 @@ router.post("/", auth, async (req, res) => {
 
         let valorParcela = 0;
 
+/* =====================================================
+   BUSCAR TAXA DA MAQUININHA
+===================================================== */
+
+let paymentMachine = null;
+
+if (
+    formaPagamento === "Cartão de Crédito" ||
+    formaPagamento === "Cartão de Débito"
+) {
+
+    if (!maquininha) {
+
+        return res.status(400).json({
+
+            error:
+                "Selecione a maquininha utilizada na venda."
+
+        });
+
+    }
+
+    paymentMachine =
+        await PaymentMachine.findOne({
+
+            companyId,
+
+            nome:
+                String(maquininha).trim(),
+
+            ativo: true
+
+        });
+
+    if (!paymentMachine) {
+
+        return res.status(404).json({
+
+            error:
+                "Maquininha não encontrada ou está inativa."
+
+        });
+
+    }
+}
+
 
         /* =====================================================
            CARTÃO DE CRÉDITO
@@ -441,28 +478,32 @@ router.post("/", auth, async (req, res) => {
 
 
             /* =================================================
-               TAXA
-            ================================================= */
+   TAXA DA MAQUININHA
+================================================= */
 
-            percentualTaxa =
-                Number(taxaPercentual || 0);
-
-
-            if (
-                !Number.isFinite(percentualTaxa) ||
-                percentualTaxa < 0
-            ) {
-
-                return res.status(400).json({
-
-                    error:
-                        "Taxa de juros inválida."
-
-                });
-
-            }
+percentualTaxa =
+    Number(
+        paymentMachine
+            .credito[String(numeroParcelas)]
+            ?.[jurosTipo] || 0
+    );
 
 
+if (
+    !Number.isFinite(percentualTaxa) ||
+    percentualTaxa < 0
+) {
+
+    return res.status(400).json({
+
+        error:
+            "Taxa cadastrada na maquininha é inválida."
+
+    });
+
+}
+
+            
             /* =================================================
                SEM JUROS
             ================================================= */
@@ -567,30 +608,37 @@ router.post("/", auth, async (req, res) => {
 
 
             /* =================================================
-               DÉBITO UTILIZA A TAXA DA MAQUININHA
-            ================================================= */
+   DÉBITO UTILIZA A TAXA CADASTRADA
+================================================= */
 
-            jurosTipo =
-                "com_juros";
-
-
-            percentualTaxa =
-                Number(taxaPercentual || 0);
+jurosTipo =
+    tipoJuros === "com_juros"
+        ? "com_juros"
+        : "sem_juros";
 
 
-            if (
-                !Number.isFinite(percentualTaxa) ||
-                percentualTaxa < 0
-            ) {
+percentualTaxa =
+    Number(
+        paymentMachine
+            .debito
+            ?.[jurosTipo] || 0
+    );
 
-                return res.status(400).json({
 
-                    error:
-                        "Taxa da maquininha inválida."
+if (
+    !Number.isFinite(percentualTaxa) ||
+    percentualTaxa < 0
+) {
 
-                });
+    return res.status(400).json({
 
-            }
+        error:
+            "Taxa cadastrada na maquininha é inválida."
+
+    });
+
+}
+
 
 
             /* =================================================

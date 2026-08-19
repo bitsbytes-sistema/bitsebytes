@@ -6,6 +6,26 @@
 
 <meta charset="UTF-8">
 
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
+<meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+>
+
+<meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="default"
+>
+
+<meta
+    name="format-detection"
+    content="telephone=no"
+>
+
 <title>Bits & Bytes - Detalhes da Venda</title>
 
 <style>
@@ -460,6 +480,27 @@ button:hover{
 }
 
 /* =====================================================
+   AVISO IOS PWA
+===================================================== */
+
+.aviso-ios-pwa{
+    display:none;
+    background:#fff7ed;
+    border:1px solid #fdba74;
+    color:#9a3412;
+    border-radius:8px;
+    padding:14px;
+    margin-top:15px;
+    line-height:1.5;
+}
+
+.aviso-ios-pwa button{
+    margin-top:10px;
+    background:#ea580c;
+    width:100%;
+}
+
+/* =====================================================
    IMPRESSÃO GERAL
 ===================================================== */
 
@@ -475,7 +516,8 @@ button:hover{
     .sidebar,
     .topbar,
     .container,
-    .modal-impressao{
+    .modal-impressao,
+    .aviso-ios-pwa{
         display:none !important;
     }
 
@@ -704,7 +746,6 @@ body.impressao-a4 .rodape-impressao{
 
     </div>
 
-
     <a href="/dashboard.html">🏠 Dashboard</a>
 
     <a href="/clientes.html">👥 Clientes</a>
@@ -729,7 +770,6 @@ body.impressao-a4 .rodape-impressao{
 
     <a href="/configuracoes.html">⚙️ Configurações</a>
 
-
     <div class="usuario">
 
         <b id="nomeUsuario">Carregando...</b>
@@ -753,14 +793,12 @@ body.impressao-a4 .rodape-impressao{
 
         <a
             href="javascript:void(0)"
-            onclick="logout()">
-
+            onclick="logout()"
+        >
             Sair
-
         </a>
 
     </div>
-
 
     <div class="container">
 
@@ -802,9 +840,7 @@ body.impressao-a4 .rodape-impressao{
 
         </div>
 
-
         <div class="linha-impressao"></div>
-
 
         <div class="dados-impressao">
 
@@ -820,7 +856,6 @@ body.impressao-a4 .rodape-impressao{
 
         </div>
 
-
         <div class="secao-impressao">
 
             <b>CLIENTE</b>
@@ -831,9 +866,7 @@ body.impressao-a4 .rodape-impressao{
 
         </div>
 
-
         <div class="linha-impressao"></div>
-
 
         <div>
 
@@ -843,9 +876,7 @@ body.impressao-a4 .rodape-impressao{
 
         </div>
 
-
         <div class="linha-impressao"></div>
-
 
         <div class="totais-impressao">
 
@@ -857,7 +888,6 @@ body.impressao-a4 .rodape-impressao{
 
             </div>
 
-
             <div>
 
                 <span>Desconto:</span>
@@ -865,7 +895,6 @@ body.impressao-a4 .rodape-impressao{
                 <strong id="impDesconto"></strong>
 
             </div>
-
 
             <div class="total-impressao">
 
@@ -877,9 +906,7 @@ body.impressao-a4 .rodape-impressao{
 
         </div>
 
-
         <div class="linha-impressao"></div>
-
 
         <div class="pagamento-impressao">
 
@@ -891,9 +918,7 @@ body.impressao-a4 .rodape-impressao{
 
         </div>
 
-
         <div class="linha-impressao"></div>
-
 
         <div class="rodape-impressao">
 
@@ -930,14 +955,12 @@ body.impressao-a4 .rodape-impressao{
                 🧾 Térmica 58 mm
             </button>
 
-
             <button
                 class="opcao-impressao opcao-80"
                 onclick="imprimirVenda('80mm')"
             >
                 🧾 Térmica 80 mm
             </button>
-
 
             <button
                 class="opcao-impressao opcao-a4"
@@ -946,12 +969,36 @@ body.impressao-a4 .rodape-impressao{
                 📄 Impressora A4
             </button>
 
-
             <button
                 class="opcao-impressao opcao-cancelar"
                 onclick="fecharModalImpressao()"
             >
                 ❌ Cancelar
+            </button>
+
+        </div>
+
+        <div
+            id="avisoIosPwa"
+            class="aviso-ios-pwa"
+        >
+
+            <b>📱 Impressão no iPhone</b>
+
+            <br><br>
+
+            O iPhone pode bloquear a impressão
+            diretamente dentro do aplicativo instalado.
+
+            <br>
+
+            O comprovante será aberto em uma
+            nova página para permitir a impressão.
+
+            <button
+                onclick="abrirImpressaoSafari()"
+            >
+                🌐 Abrir no Safari
             </button>
 
         </div>
@@ -963,12 +1010,18 @@ body.impressao-a4 .rodape-impressao{
 
 <script>
 
-/* ================= VARIÁVEIS ================= */
+/* =====================================================
+   VARIÁVEIS
+===================================================== */
 
 let venda = null;
 
+let formatoImpressaoAtual = null;
 
-/* ================= ID DA VENDA ================= */
+
+/* =====================================================
+   ID DA VENDA
+===================================================== */
 
 const parametros =
     new URLSearchParams(
@@ -979,7 +1032,113 @@ const vendaId =
     parametros.get("id");
 
 
-/* ================= USUÁRIO ================= */
+/* =====================================================
+   DETECÇÃO IOS
+===================================================== */
+
+function ehIOS(){
+
+    const ua =
+        window.navigator.userAgent ||
+        "";
+
+    const platform =
+        window.navigator.platform ||
+        "";
+
+    return (
+        /iPad|iPhone|iPod/.test(ua) ||
+        (
+            platform === "MacIntel" &&
+            navigator.maxTouchPoints > 1
+        )
+    );
+
+}
+
+
+/* =====================================================
+   DETECÇÃO PWA IOS
+===================================================== */
+
+function ehPWAIOS(){
+
+    if(!ehIOS()){
+
+        return false;
+
+    }
+
+    if(window.navigator.standalone === true){
+
+        return true;
+
+    }
+
+    try{
+
+        if(
+            window.matchMedia &&
+            window.matchMedia(
+                "(display-mode: standalone)"
+            ).matches
+        ){
+
+            return true;
+
+        }
+
+    }catch(err){
+
+        console.warn(
+            "Não foi possível detectar display-mode:",
+            err
+        );
+
+    }
+
+    return false;
+
+}
+
+
+/* =====================================================
+   DETECÇÃO DE PWA
+===================================================== */
+
+function ehPWA(){
+
+    try{
+
+        if(
+            window.matchMedia &&
+            window.matchMedia(
+                "(display-mode: standalone)"
+            ).matches
+        ){
+
+            return true;
+
+        }
+
+    }catch(err){}
+
+
+    if(window.navigator.standalone === true){
+
+        return true;
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =====================================================
+   USUÁRIO
+===================================================== */
 
 async function carregarUsuario(){
 
@@ -1022,7 +1181,9 @@ async function carregarUsuario(){
 }
 
 
-/* ================= CARREGAR VENDA ================= */
+/* =====================================================
+   CARREGAR VENDA
+===================================================== */
 
 async function carregarVenda(){
 
@@ -1049,10 +1210,9 @@ async function carregarVenda(){
 
                 <button
                     class="btn-voltar"
-                    onclick="voltarVendas()">
-
+                    onclick="voltarVendas()"
+                >
                     ← Voltar para Vendas
-
                 </button>
 
             </div>
@@ -1076,16 +1236,11 @@ async function carregarVenda(){
             );
 
 
-        /*
-         * IMPORTANTE:
-         * Algumas respostas do servidor podem não ser JSON.
-         * Por isso verificamos o conteúdo antes de usar res.json().
-         */
-
         const texto =
             await res.text();
 
         let data = {};
+
 
         try{
 
@@ -1115,10 +1270,9 @@ async function carregarVenda(){
 
                     <button
                         class="btn-voltar"
-                        onclick="voltarVendas()">
-
+                        onclick="voltarVendas()"
+                    >
                         ← Voltar para Vendas
-
                     </button>
 
                 </div>
@@ -1151,10 +1305,9 @@ async function carregarVenda(){
 
                     <button
                         class="btn-voltar"
-                        onclick="voltarVendas()">
-
+                        onclick="voltarVendas()"
+                    >
                         ← Voltar para Vendas
-
                     </button>
 
                 </div>
@@ -1191,10 +1344,9 @@ async function carregarVenda(){
 
                 <button
                     class="btn-voltar"
-                    onclick="voltarVendas()">
-
+                    onclick="voltarVendas()"
+                >
                     ← Voltar para Vendas
-
                 </button>
 
             </div>
@@ -1232,11 +1384,6 @@ function obterValorParcela(){
     }
 
 
-    /*
-     * Se o backend já salvou o valor da parcela,
-     * usamos ele primeiro.
-     */
-
     const valorSalvo =
         Number(
             venda.valorParcela
@@ -1252,11 +1399,6 @@ function obterValorParcela(){
 
     }
 
-
-    /*
-     * Cartão com juros:
-     * parcela = valor final do cartão / quantidade
-     */
 
     const cartaoComJuros =
         (
@@ -1286,11 +1428,6 @@ function obterValorParcela(){
     }
 
 
-    /*
-     * Cartão sem juros:
-     * usa o total normal da venda.
-     */
-
     const total =
         Number(
             venda.total || 0
@@ -1303,11 +1440,6 @@ function obterValorParcela(){
 
     }
 
-
-    /*
-     * Última tentativa:
-     * subtotal - desconto
-     */
 
     const subtotal =
         Number(
@@ -1328,7 +1460,9 @@ function obterValorParcela(){
 }
 
 
-/* ================= RENDER VENDA ================= */
+/* =====================================================
+   RENDER VENDA
+===================================================== */
 
 function renderVenda(){
 
@@ -1374,10 +1508,9 @@ function renderVenda(){
         `
         <button
             class="btn-vermelho"
-            onclick="cancelarVenda()">
-
+            onclick="cancelarVenda()"
+        >
             ❌ Cancelar Venda
-
         </button>
         `;
 
@@ -1419,10 +1552,9 @@ function renderVenda(){
                         text-align:center;
                         padding:25px;
                         color:#64748b;
-                    ">
-
+                    "
+                >
                     Nenhum produto registrado.
-
                 </td>
 
             </tr>
@@ -1448,33 +1580,25 @@ function renderVenda(){
                     </td>
 
                     <td>
-
                         ${item.quantidade || 0}
-
                     </td>
 
                     <td>
-
                         ${formatarMoeda(
                             item.precoUnitario
                         )}
-
                     </td>
 
                     <td>
-
                         ${formatarMoeda(
                             item.subtotal
                         )}
-
                     </td>
 
                     <td class="total-item">
-
                         ${formatarMoeda(
                             item.subtotal
                         )}
-
                     </td>
 
                 </tr>
@@ -1485,12 +1609,6 @@ function renderVenda(){
 
     }
 
-
-    /*
-     * ================================
-     * PARCELAS
-     * ================================
-     */
 
     const ehCartao =
         (
@@ -1630,8 +1748,6 @@ function renderVenda(){
 
     conteudo.innerHTML = `
 
-        <!-- ================= CABEÇALHO ================= -->
-
         <div class="card">
 
             <div class="cabecalho-venda">
@@ -1655,7 +1771,6 @@ function renderVenda(){
 
                 </div>
 
-
                 <div>
 
                     ${status}
@@ -1667,14 +1782,11 @@ function renderVenda(){
         </div>
 
 
-        <!-- ================= CLIENTE ================= -->
-
         <div class="card">
 
             <h3>
                 👤 Cliente
             </h3>
-
 
             <div class="dados-grid">
 
@@ -1755,14 +1867,11 @@ function renderVenda(){
         </div>
 
 
-        <!-- ================= PRODUTOS ================= -->
-
         <div class="card">
 
             <h3>
                 📦 Produtos da Venda
             </h3>
-
 
             <div class="tabela-container">
 
@@ -1796,8 +1905,6 @@ function renderVenda(){
 
             </div>
 
-
-            <!-- ================= TOTAIS ================= -->
 
             <div class="totais">
 
@@ -1917,27 +2024,23 @@ function renderVenda(){
         </div>
 
 
-        <!-- ================= AÇÕES ================= -->
-
         <div class="card">
 
             <div class="botoes">
 
                 <button
                     class="btn-voltar"
-                    onclick="voltarVendas()">
-
+                    onclick="voltarVendas()"
+                >
                     ← Voltar para Vendas
-
                 </button>
 
 
                 <button
                     class="btn-verde"
-                    onclick="abrirModalImpressao()">
-
+                    onclick="abrirModalImpressao()"
+                >
                     🖨️ Imprimir Venda
-
                 </button>
 
 
@@ -2220,12 +2323,6 @@ function prepararImpressao(){
         );
 
 
-    /*
-     * CORREÇÃO:
-     * O valor da parcela agora usa a mesma função
-     * utilizada na tela de detalhes.
-     */
-
     if(
         (
             venda.formaPagamento === "Cartão de Crédito" ||
@@ -2256,7 +2353,7 @@ function prepararImpressao(){
 
 
 /* =====================================================
-   MODAL DE IMPRESSÃO
+   MODAL
 ===================================================== */
 
 function abrirModalImpressao(){
@@ -2271,6 +2368,28 @@ function abrirModalImpressao(){
 
 
     prepararImpressao();
+
+
+    formatoImpressaoAtual = null;
+
+
+    const aviso =
+        document.getElementById(
+            "avisoIosPwa"
+        );
+
+
+    if(
+        ehPWAIOS()
+    ){
+
+        aviso.style.display = "block";
+
+    }else{
+
+        aviso.style.display = "none";
+
+    }
 
 
     document.getElementById(
@@ -2290,29 +2409,10 @@ function fecharModalImpressao(){
 
 
 /* =====================================================
-   IMPRIMIR VENDA
+   PREPARAR ESTILO DE IMPRESSÃO
 ===================================================== */
 
-function imprimirVenda(formato){
-
-    if(!venda){
-
-        alert("Venda ainda não carregada.");
-
-        return;
-
-    }
-
-
-    fecharModalImpressao();
-
-
-    /*
-     * IMPORTANTE PARA PWA:
-     *
-     * A impressão é feita diretamente nesta página.
-     * Não abrimos popup, nova aba ou janela.
-     */
+function aplicarFormatoImpressao(formato){
 
     document.body.classList.remove(
         "impressao-58mm",
@@ -2347,10 +2447,6 @@ function imprimirVenda(formato){
 
     }
 
-
-    /*
-     * Remove configuração anterior.
-     */
 
     let estiloImpressao =
         document.getElementById(
@@ -2431,15 +2527,17 @@ function imprimirVenda(formato){
         estiloImpressao
     );
 
+}
 
-    /*
-     * Dá tempo para o navegador aplicar
-     * as classes e o CSS antes de chamar
-     * a caixa de impressão.
-     *
-     * Isso é importante principalmente
-     * quando o sistema está instalado como PWA.
-     */
+
+/* =====================================================
+   IMPRESSÃO NORMAL
+===================================================== */
+
+function imprimirNormal(formato){
+
+    aplicarFormatoImpressao(formato);
+
 
     requestAnimationFrame(() => {
 
@@ -2470,7 +2568,996 @@ function imprimirVenda(formato){
 
 
 /* =====================================================
-   APÓS A IMPRESSÃO
+   CRIAR DOCUMENTO DE IMPRESSÃO IOS
+===================================================== */
+
+function criarDocumentoImpressao(formato){
+
+    if(!venda){
+
+        return "";
+
+    }
+
+
+    const itens =
+        Array.isArray(venda.itens)
+        ? venda.itens
+        : [];
+
+
+    let produtosHTML = "";
+
+
+    itens.forEach(item => {
+
+        produtosHTML += `
+
+            <div class="produto">
+
+                <div class="nome">
+
+                    ${escaparHTML(
+                        item.nomeProduto || "Produto"
+                    )}
+
+                </div>
+
+                <div class="detalhes">
+
+                    <span>
+                        ${item.quantidade || 0}x
+                        ${formatarMoeda(
+                            item.precoUnitario
+                        )}
+                    </span>
+
+                    <strong>
+                        ${formatarMoeda(
+                            item.subtotal
+                        )}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        `;
+
+    });
+
+
+    const jurosExistem =
+        (
+            venda.formaPagamento === "Cartão de Crédito" ||
+            venda.formaPagamento === "Cartão de Débito"
+        )
+        &&
+        venda.tipoJuros === "com_juros";
+
+
+    const total =
+        jurosExistem
+        ?
+        venda.valorFinalCartao
+        :
+        venda.total;
+
+
+    const valorParcela =
+        obterValorParcela();
+
+
+    const infoParcelas =
+        (
+            (
+                venda.formaPagamento === "Cartão de Crédito" ||
+                venda.formaPagamento === "Cartão de Débito"
+            )
+            &&
+            venda.parcelas
+        )
+        ?
+
+        `
+            <div>
+                <b>Parcelamento:</b>
+                ${venda.parcelas}x de
+                ${formatarMoeda(valorParcela)}
+            </div>
+        `
+
+        :
+
+        "";
+
+
+    const infoJuros =
+        jurosExistem
+
+        ?
+
+        `
+            <div class="linha-total">
+
+                <span>
+                    Valor original:
+                </span>
+
+                <strong>
+                    ${formatarMoeda(venda.total)}
+                </strong>
+
+            </div>
+
+            <div class="linha-total">
+
+                <span>
+                    Juros
+                    (${Number(
+                        venda.taxaPercentual || 0
+                    ).toLocaleString("pt-BR")}%):
+                </span>
+
+                <strong>
+                    ${formatarMoeda(venda.valorTaxa)}
+                </strong>
+
+            </div>
+
+            ${
+                venda.maquininha
+                ?
+                `
+                <div class="linha-total">
+
+                    <span>
+                        Maquininha:
+                    </span>
+
+                    <strong>
+                        ${escaparHTML(
+                            venda.maquininha
+                        )}
+                    </strong>
+
+                </div>
+                `
+                :
+                ""
+            }
+
+        `
+
+        :
+
+        "";
+
+
+    let largura = "auto";
+    let padding = "4mm";
+    let fonte = "14px";
+    let logo = "45mm";
+    let titulo = "20px";
+
+
+    if(formato === "58mm"){
+
+        largura = "58mm";
+        padding = "2mm";
+        fonte = "10.5px";
+        logo = "30mm";
+        titulo = "17px";
+
+    }
+
+
+    if(formato === "80mm"){
+
+        largura = "80mm";
+        padding = "3mm";
+        fonte = "12px";
+        logo = "45mm";
+        titulo = "20px";
+
+    }
+
+
+    if(formato === "a4"){
+
+        largura = "210mm";
+        padding = "15mm";
+        fonte = "14px";
+        logo = "55px";
+        titulo = "28px";
+
+    }
+
+
+    const pageSize =
+        formato === "a4"
+        ?
+        "A4"
+        :
+        largura + " auto";
+
+
+    return `
+
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+>
+
+<title>
+    Comprovante Venda #${venda.numeroVenda || "-"}
+</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+html,
+body{
+
+    margin:0;
+    padding:0;
+
+    background:white;
+    color:#000;
+
+    font-family:Arial,sans-serif;
+
+}
+
+body{
+
+    width:${largura};
+
+    max-width:${largura};
+
+    padding:${padding};
+
+    font-size:${fonte};
+
+}
+
+.cabecalho{
+
+    text-align:center;
+
+}
+
+.logo{
+
+    width:${logo};
+
+    max-width:100%;
+
+    height:auto;
+
+    margin-bottom:2mm;
+
+}
+
+h1{
+
+    margin:0;
+
+    font-size:${titulo};
+
+}
+
+.subtitulo{
+
+    font-size:12px;
+
+}
+
+.titulo{
+
+    margin-top:5px;
+
+    font-weight:bold;
+
+    font-size:14px;
+
+}
+
+.linha{
+
+    border-top:1px dashed #000;
+
+    margin:8px 0;
+
+}
+
+.dados{
+
+    line-height:1.5;
+
+}
+
+.produto{
+
+    margin:7px 0;
+
+    page-break-inside:avoid;
+
+    break-inside:avoid;
+
+}
+
+.nome{
+
+    font-weight:bold;
+
+    overflow-wrap:anywhere;
+
+    word-break:break-word;
+
+}
+
+.detalhes{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:8px;
+
+}
+
+.detalhes span{
+
+    min-width:0;
+
+}
+
+.detalhes strong{
+
+    white-space:nowrap;
+
+}
+
+.total-linha,
+.linha-total{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin:5px 0;
+
+    gap:8px;
+
+}
+
+.total{
+
+    border-top:2px solid #000;
+
+    padding-top:7px;
+
+    margin-top:8px;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+}
+
+.pagamento{
+
+    line-height:1.6;
+
+}
+
+.rodape{
+
+    text-align:center;
+
+    margin-top:12px;
+
+    font-weight:bold;
+
+    padding-bottom:8mm;
+
+}
+
+@media print{
+
+    html,
+    body{
+
+        width:${largura};
+
+        max-width:${largura};
+
+        margin:0;
+
+        padding:${padding};
+
+    }
+
+    @page{
+
+        size:${pageSize};
+
+        margin:0;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="cabecalho">
+
+    <img
+        src="/logo.png"
+        class="logo"
+    >
+
+    <h1>
+        Bits & Bytes
+    </h1>
+
+    <div class="subtitulo">
+        Tecnology
+    </div>
+
+    <div class="titulo">
+        COMPROVANTE DE VENDA
+    </div>
+
+</div>
+
+
+<div class="linha"></div>
+
+
+<div class="dados">
+
+    <div>
+        <b>Venda:</b>
+        #${venda.numeroVenda || "-"}
+    </div>
+
+    <div>
+        <b>Data:</b>
+        ${
+            venda.createdAt
+            ?
+            new Date(
+                venda.createdAt
+            ).toLocaleString(
+                "pt-BR",
+                {
+                    timeZone:
+                    "America/Porto_Velho"
+                }
+            )
+            :
+            "-"
+        }
+    </div>
+
+</div>
+
+
+<div class="linha"></div>
+
+
+<div class="dados">
+
+    <b>CLIENTE</b>
+
+    <div>
+        ${escaparHTML(
+            venda.clienteNome ||
+            "Cliente"
+        )}
+    </div>
+
+    ${
+        venda.clienteTelefone
+        ?
+        `
+        <div>
+            Telefone:
+            ${escaparHTML(
+                venda.clienteTelefone
+            )}
+        </div>
+        `
+        :
+        ""
+    }
+
+</div>
+
+
+<div class="linha"></div>
+
+
+<div>
+
+    <b>PRODUTOS</b>
+
+    ${produtosHTML}
+
+</div>
+
+
+<div class="linha"></div>
+
+
+<div>
+
+    <div class="total-linha">
+
+        <span>
+            Subtotal:
+        </span>
+
+        <strong>
+            ${formatarMoeda(
+                venda.subtotal
+            )}
+        </strong>
+
+    </div>
+
+
+    <div class="total-linha">
+
+        <span>
+            Desconto:
+        </span>
+
+        <strong>
+            ${formatarMoeda(
+                venda.desconto
+            )}
+        </strong>
+
+    </div>
+
+
+    ${infoJuros}
+
+
+    <div class="total-linha total">
+
+        <span>
+            TOTAL:
+        </span>
+
+        <strong>
+            ${formatarMoeda(total)}
+        </strong>
+
+    </div>
+
+</div>
+
+
+<div class="linha"></div>
+
+
+<div class="pagamento">
+
+    <b>Pagamento</b>
+
+    <div>
+        ${escaparHTML(
+            venda.formaPagamento || "-"
+        )}
+    </div>
+
+    ${infoParcelas}
+
+</div>
+
+
+<div class="linha"></div>
+
+
+<div class="rodape">
+
+    Obrigado pela preferência!
+
+    <br>
+
+    Bits & Bytes Tecnology
+
+</div>
+
+
+</body>
+
+</html>
+
+    `;
+
+}
+
+
+/* =====================================================
+   NOVA SOLUÇÃO IOS PWA
+===================================================== */
+
+function abrirJanelaImpressaoIOS(formato){
+
+    if(!venda){
+
+        alert(
+            "Venda ainda não carregada."
+        );
+
+        return false;
+
+    }
+
+
+    const html =
+        criarDocumentoImpressao(
+            formato
+        );
+
+
+    if(!html){
+
+        alert(
+            "Não foi possível preparar o comprovante."
+        );
+
+        return false;
+
+    }
+
+
+    /*
+     * IMPORTANTE:
+     *
+     * Não usamos mais:
+     *
+     * window.open("")
+     * novaJanela.document.write()
+     *
+     * O WebKit do iOS pode bloquear ou tratar
+     * esse fluxo de maneira diferente dentro
+     * de um PWA.
+     *
+     * Criamos um Blob HTML e abrimos sua URL.
+     */
+
+
+    let blobUrl = null;
+
+
+    try{
+
+        const blob =
+            new Blob(
+                [html],
+                {
+                    type:"text/html;charset=utf-8"
+                }
+            );
+
+
+        blobUrl =
+            URL.createObjectURL(
+                blob
+            );
+
+    }catch(err){
+
+        console.error(
+            "Erro ao criar documento Blob:",
+            err
+        );
+
+        return false;
+
+    }
+
+
+    /*
+     * IMPORTANTE:
+     *
+     * window.open precisa acontecer
+     * diretamente durante o clique do usuário.
+     */
+
+    let novaJanela = null;
+
+
+    try{
+
+        novaJanela =
+            window.open(
+                blobUrl,
+                "_blank"
+            );
+
+    }catch(err){
+
+        console.error(
+            "Erro ao abrir Blob:",
+            err
+        );
+
+    }
+
+
+    /*
+     * Não revogar imediatamente.
+     *
+     * O iOS pode ainda estar carregando
+     * o documento.
+     */
+
+    setTimeout(
+        () => {
+
+            try{
+
+                URL.revokeObjectURL(
+                    blobUrl
+                );
+
+            }catch(err){}
+
+        },
+        60000
+    );
+
+
+    if(novaJanela){
+
+        try{
+
+            novaJanela.focus();
+
+        }catch(err){}
+
+
+        /*
+         * A página criada possui o conteúdo
+         * de impressão, mas NÃO dependemos
+         * de window.print() automático.
+         *
+         * O usuário pode usar o menu de
+         * compartilhamento/impressão do Safari.
+         */
+
+        return true;
+
+    }
+
+
+    /*
+     * Se o PWA bloquear o popup, usamos
+     * navegação direta.
+     */
+
+    try{
+
+        window.location.href =
+            blobUrl;
+
+        return true;
+
+    }catch(err){
+
+        console.error(
+            "Fallback Blob falhou:",
+            err
+        );
+
+    }
+
+
+    const aviso =
+        document.getElementById(
+            "avisoIosPwa"
+        );
+
+
+    if(aviso){
+
+        aviso.style.display =
+            "block";
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =====================================================
+   ABRIR IMPRESSÃO NO SAFARI
+===================================================== */
+
+function abrirImpressaoSafari(){
+
+    if(!venda){
+
+        alert(
+            "Venda ainda não carregada."
+        );
+
+        return;
+
+    }
+
+
+    const formato =
+        formatoImpressaoAtual ||
+        "80mm";
+
+
+    const html =
+        criarDocumentoImpressao(
+            formato
+        );
+
+
+    if(!html){
+
+        alert(
+            "Não foi possível preparar o comprovante."
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        const blob =
+            new Blob(
+                [html],
+                {
+                    type:"text/html;charset=utf-8"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        window.open(
+            url,
+            "_blank"
+        );
+
+
+        setTimeout(
+            () => {
+
+                try{
+
+                    URL.revokeObjectURL(
+                        url
+                    );
+
+                }catch(err){}
+
+            },
+            60000
+        );
+
+
+    }catch(err){
+
+        console.error(err);
+
+        alert(
+            "Não foi possível abrir o comprovante."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   IMPRIMIR VENDA
+===================================================== */
+
+function imprimirVenda(formato){
+
+    if(!venda){
+
+        alert(
+            "Venda ainda não carregada."
+        );
+
+        return;
+
+    }
+
+
+    formatoImpressaoAtual =
+        formato;
+
+
+    fecharModalImpressao();
+
+
+    /*
+     * =================================================
+     * IOS + PWA
+     * =================================================
+     *
+     * No PWA do iPhone NÃO usamos window.print().
+     *
+     * Criamos uma página HTML independente.
+     */
+
+    if(
+        ehPWAIOS()
+    ){
+
+        const abriu =
+            abrirJanelaImpressaoIOS(
+                formato
+            );
+
+
+        if(abriu){
+
+            return;
+
+        }
+
+    }
+
+
+    /*
+     * =================================================
+     * SAFARI / ANDROID / DESKTOP
+     * =================================================
+     */
+
+    imprimirNormal(
+        formato
+    );
+
+}
+
+
+/* =====================================================
+   APÓS IMPRESSÃO
 ===================================================== */
 
 window.addEventListener(
@@ -2500,7 +3587,9 @@ window.addEventListener(
 );
 
 
-/* ================= CANCELAR VENDA ================= */
+/* =====================================================
+   CANCELAR VENDA
+===================================================== */
 
 async function cancelarVenda(){
 
@@ -2555,22 +3644,17 @@ async function cancelarVenda(){
 
                 {
                     method:"POST",
-
                     credentials:"include"
                 }
 
             );
 
 
-        /*
-         * Mesmo cuidado com respostas que não
-         * sejam JSON.
-         */
-
         const texto =
             await res.text();
 
         let data = {};
+
 
         try{
 
@@ -2638,7 +3722,9 @@ async function cancelarVenda(){
 }
 
 
-/* ================= VOLTAR ================= */
+/* =====================================================
+   VOLTAR
+===================================================== */
 
 function voltarVendas(){
 
@@ -2648,7 +3734,9 @@ function voltarVendas(){
 }
 
 
-/* ================= UTILIDADES ================= */
+/* =====================================================
+   UTILIDADES
+===================================================== */
 
 function formatarMoeda(valor){
 
@@ -2657,6 +3745,7 @@ function formatarMoeda(valor){
 
 
     return Number.isFinite(numero)
+
         ?
 
         numero.toLocaleString(
@@ -2688,7 +3777,9 @@ function escaparHTML(texto){
 }
 
 
-/* ================= LOGOUT ================= */
+/* =====================================================
+   LOGOUT
+===================================================== */
 
 async function logout(){
 
@@ -2704,7 +3795,9 @@ async function logout(){
 }
 
 
-/* ================= INIT ================= */
+/* =====================================================
+   INIT
+===================================================== */
 
 window.onload = async ()=>{
 

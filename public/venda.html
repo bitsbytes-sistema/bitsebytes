@@ -8,7 +8,7 @@
 
 <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover"
 >
 
 <meta
@@ -43,7 +43,7 @@ body{
 /* ================= SIDEBAR ================= */
 
 .sidebar{
-    width:250px;
+    width:200px;
     background:#0f172a;
     min-height:100vh;
     color:white;
@@ -80,8 +80,8 @@ body{
 /* ================= MAIN ================= */
 
 .main{
-    margin-left:250px;
-    width:calc(100% - 250px);
+    margin-left:200px;
+    width:calc(100% - 200px);
     min-height:100vh;
 }
 
@@ -289,11 +289,26 @@ button:hover{
 
     .sidebar{
         width:200px;
+        max-width:200px;
     }
 
     .main{
         margin-left:200px;
-        width:calc(100% - 200px);
+        width:calc(100vw - 200px);
+        max-width:calc(100vw - 200px);
+        min-width:0;
+    }
+
+    .container{
+        width:100%;
+        max-width:100%;
+        min-width:0;
+    }
+
+    .card{
+        width:100%;
+        max-width:100%;
+        min-width:0;
     }
 
     .dados-grid{
@@ -2585,6 +2600,12 @@ function criarDocumentoImpressao(formato){
         ? venda.itens
         : [];
 
+const urlLogo =
+    new URL(
+        "/logo.png",
+        window.location.origin
+    ).href;
+
 
     let produtosHTML = "";
 
@@ -3005,6 +3026,51 @@ h1{
 
 }
 
+/* =====================================================
+   CORREÇÃO IOS / TELAS PEQUENAS
+===================================================== */
+
+@media(max-width:700px){
+
+    html,
+    body{
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
+    }
+
+    .main{
+        width:calc(100vw - 200px);
+        max-width:calc(100vw - 200px);
+    }
+
+    .container{
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
+    }
+
+    .card{
+        max-width:100%;
+    }
+
+    .dados-grid{
+        grid-template-columns:1fr;
+    }
+
+    .tabela-container{
+        width:100%;
+        max-width:100%;
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    table{
+        min-width:650px;
+    }
+
+}
+
 </style>
 
 </head>
@@ -3014,8 +3080,8 @@ h1{
 <div class="cabecalho">
 
     <img
-        src="/logo.png"
-        class="logo"
+    src="${urlLogo}"
+    class="logo"
     >
 
     <h1>

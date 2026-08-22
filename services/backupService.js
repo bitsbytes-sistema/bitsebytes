@@ -111,7 +111,12 @@ function executarMongoDump(
 
             const processo =
                 spawn(
-                    process.env.MONGODUMP_PATH || "mongodump",
+                    process.env.MONGODUMP_PATH ||
+(
+    process.platform === "win32"
+        ? "mongodump"
+        : path.join(ROOT_DIR, "mongodump")
+),
                     [
                         `--uri=${process.env.MONGO_URL}`,
                         `--archive=${caminhoArquivo}`,

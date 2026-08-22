@@ -2151,6 +2151,151 @@ app.use(
   paymentMachineRoutes
 );
 
+/* ===================== ALTERAR SENHA ===================== */
+
+app.put("/api/security/password", auth, async (req, res) => {
+
+  try {
+
+    const {
+      senhaAtual,
+      novaSenha,
+      confirmarSenha
+    } = req.body;
+
+
+    /* =====================================================
+       VALIDAÇÕES
+    ===================================================== */
+
+    if (
+      !senhaAtual ||
+      !novaSenha ||
+      !confirmarSenha
+    ) {
+
+      return res.status(400).json({
+        error: "Preencha todos os campos."
+      });
+
+    }
+
+
+    if (novaSenha !== confirmarSenha) {
+
+      return res.status(400).json({
+        error: "A nova senha e a confirmação não coincidem."
+      });
+
+    }
+
+
+    if (novaSenha.length < 6) {
+
+      return res.status(400).json({
+        error: "A nova senha deve ter pelo menos 6 caracteres."
+      });
+
+    }
+
+
+    if (novaSenha === senhaAtual) {
+
+      return res.status(400).json({
+        error: "A nova senha deve ser diferente da senha atual."
+      });
+
+    }
+
+
+    /* =====================================================
+       BUSCAR USUÁRIO
+    ===================================================== */
+
+    const user = await User.findById(
+      req.session.user._id
+    );
+
+
+    if (!user) {
+
+      return res.status(404).json({
+        error: "Usuário não encontrado."
+      });
+
+    }
+
+
+    /* =====================================================
+       VERIFICAR SENHA ATUAL
+    ===================================================== */
+
+    const senhaCorreta =
+      await bcrypt.compare(
+        senhaAtual,
+        user.password
+      );
+
+
+    if (!senhaCorreta) {
+
+      return res.status(401).json({
+        error: "A senha atual está incorreta."
+      });
+
+    }
+
+
+    /* =====================================================
+       GERAR NOVA SENHA
+    ===================================================== */
+
+    const senhaHash =
+      await bcrypt.hash(
+        novaSenha,
+        10
+      );
+
+
+    user.password =
+      senhaHash;
+
+
+    await user.save();
+
+
+    /* =====================================================
+       ENCERRAR SESSÃO
+    ===================================================== */
+
+    req.session.destroy(() => {
+
+      return res.json({
+        success: true,
+        message:
+          "Senha alterada com sucesso. Faça login novamente."
+      });
+
+    });
+
+
+  } catch (err) {
+
+    console.error(
+      "Erro ao alterar senha:",
+      err
+    );
+
+
+    res.status(500).json({
+      error:
+        "Erro interno ao alterar a senha."
+    });
+
+  }
+
+});
+
 /* ===================== LOGOUT ===================== */
 
 app.get("/logout", (req, res) => {

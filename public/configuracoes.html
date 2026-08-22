@@ -1604,27 +1604,159 @@ th.subcoluna{
 
 
         <!-- =================================================
-             SEGURANÇA
-        ================================================= -->
+     SEGURANÇA
+================================================= -->
 
-        <div
-            id="secao-seguranca"
-            class="secao"
-        >
+<div
+    id="secao-seguranca"
+    class="secao"
+>
+
+    <div class="secao-header">
+
+        <div>
 
             <h2>
                 🔐 Segurança
             </h2>
 
             <p>
-                Configurações de segurança e acesso.
-            </p>
-
-            <p style="color:#64748b;">
-                Esta seção será expandida posteriormente.
+                Gerencie a segurança e o acesso da sua conta.
             </p>
 
         </div>
+
+    </div>
+
+
+    <!-- =================================================
+         ALTERAR SENHA
+    ================================================= -->
+
+    <div
+        style="
+            max-width:600px;
+            border:1px solid #e2e8f0;
+            border-radius:12px;
+            padding:20px;
+            background:#f8fafc;
+        "
+    >
+
+        <h3 style="margin-top:0;">
+            🔑 Alterar senha
+        </h3>
+
+        <p
+            style="
+                color:#64748b;
+                font-size:14px;
+                margin-bottom:20px;
+            "
+        >
+            Altere a senha utilizada para acessar sua conta.
+        </p>
+
+
+        <!-- SENHA ATUAL -->
+
+        <div class="form-group">
+
+            <label>
+                Senha atual
+            </label>
+
+            <input
+                type="password"
+                id="senhaAtual"
+                placeholder="Digite sua senha atual"
+                autocomplete="current-password"
+            >
+
+        </div>
+
+
+        <!-- NOVA SENHA -->
+
+        <div class="form-group">
+
+            <label>
+                Nova senha
+            </label>
+
+            <input
+                type="password"
+                id="novaSenha"
+                placeholder="Digite a nova senha"
+                autocomplete="new-password"
+            >
+
+        </div>
+
+
+        <!-- CONFIRMAR SENHA -->
+
+        <div class="form-group">
+
+            <label>
+                Confirmar nova senha
+            </label>
+
+            <input
+                type="password"
+                id="confirmarSenha"
+                placeholder="Digite novamente a nova senha"
+                autocomplete="new-password"
+            >
+
+        </div>
+
+
+        <div
+            style="
+                color:#64748b;
+                font-size:13px;
+                margin-bottom:18px;
+            "
+        >
+            A senha deve possuir pelo menos 6 caracteres.
+        </div>
+
+
+        <button
+            class="btn btn-primary"
+            onclick="alterarSenha()"
+        >
+            🔒 Alterar senha
+        </button>
+
+    </div>
+
+
+    <!-- =================================================
+         AVISO
+    ================================================= -->
+
+    <div
+        style="
+            margin-top:20px;
+            padding:15px;
+            background:#fff7ed;
+            border:1px solid #fed7aa;
+            border-radius:10px;
+            color:#9a3412;
+            font-size:14px;
+        "
+    >
+
+        <b>⚠️ Importante:</b>
+
+        Após alterar sua senha, sua sessão será encerrada
+        e será necessário fazer login novamente.
+
+    </div>
+
+</div>
 
 
         <!-- =================================================
@@ -2923,6 +3055,200 @@ function mostrarMensagem(texto, tipo){
 
 }
 
+/* =========================================================
+   ALTERAR SENHA
+========================================================= */
+
+async function alterarSenha(){
+
+    const senhaAtual =
+        document.getElementById(
+            "senhaAtual"
+        ).value;
+
+
+    const novaSenha =
+        document.getElementById(
+            "novaSenha"
+        ).value;
+
+
+    const confirmarSenha =
+        document.getElementById(
+            "confirmarSenha"
+        ).value;
+
+
+    /* =====================================================
+       VALIDAÇÕES
+    ===================================================== */
+
+    if(
+        !senhaAtual ||
+        !novaSenha ||
+        !confirmarSenha
+    ){
+
+        mostrarMensagem(
+            "Preencha todos os campos.",
+            "erro"
+        );
+
+        return;
+
+    }
+
+
+    if(novaSenha.length < 6){
+
+        mostrarMensagem(
+            "A nova senha deve ter pelo menos 6 caracteres.",
+            "erro"
+        );
+
+        return;
+
+    }
+
+
+    if(novaSenha !== confirmarSenha){
+
+        mostrarMensagem(
+            "A nova senha e a confirmação não coincidem.",
+            "erro"
+        );
+
+        return;
+
+    }
+
+
+    if(novaSenha === senhaAtual){
+
+        mostrarMensagem(
+            "A nova senha deve ser diferente da senha atual.",
+            "erro"
+        );
+
+        return;
+
+    }
+
+
+    const confirmar =
+        confirm(
+            "Tem certeza que deseja alterar sua senha?"
+        );
+
+
+    if(!confirmar){
+
+        return;
+
+    }
+
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/security/password",
+                {
+
+                    method:"PUT",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    credentials:"include",
+
+                    body:JSON.stringify({
+
+                        senhaAtual,
+
+                        novaSenha,
+
+                        confirmarSenha
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Erro ao alterar a senha."
+            );
+
+        }
+
+
+        mostrarMensagem(
+            "Senha alterada com sucesso. Redirecionando...",
+            "sucesso"
+        );
+
+
+        /* =================================================
+           LIMPAR CAMPOS
+        ================================================= */
+
+        document.getElementById(
+            "senhaAtual"
+        ).value = "";
+
+
+        document.getElementById(
+            "novaSenha"
+        ).value = "";
+
+
+        document.getElementById(
+            "confirmarSenha"
+        ).value = "";
+
+
+        /* =================================================
+           REDIRECIONAR PARA LOGIN
+        ================================================= */
+
+        setTimeout(
+            () => {
+
+                window.location.href = "/";
+
+            },
+            1800
+        );
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao alterar senha:",
+            err
+        );
+
+
+        mostrarMensagem(
+            err.message ||
+            "Erro ao alterar a senha.",
+            "erro"
+        );
+
+    }
+
+}
 
 /* =========================================================
    LOGOUT

@@ -710,6 +710,382 @@ button:hover{
 }
 
 /* =====================================================
+   IMPRESSÃO 40 MM
+===================================================== */
+
+@media print{
+
+    @page{
+
+        size:40mm auto;
+        margin:0 !important;
+
+    }
+
+    body.impressao-40mm{
+
+        width:40mm !important;
+        min-width:40mm !important;
+        max-width:40mm !important;
+
+        margin:0 !important;
+        padding:0 !important;
+
+        overflow-x:hidden !important;
+
+    }
+
+    body.impressao-40mm #areaImpressao{
+
+        display:block !important;
+
+        width:40mm !important;
+        min-width:40mm !important;
+        max-width:40mm !important;
+
+        margin:0 !important;
+        padding:0 !important;
+
+    }
+
+    body.impressao-40mm #comprovanteImpressao{
+
+        box-sizing:border-box !important;
+
+        width:40mm !important;
+        min-width:40mm !important;
+        max-width:40mm !important;
+
+        margin:0 !important;
+
+        padding:1mm 1mm 0 1mm !important;
+
+        font-size:10px !important;
+        line-height:1.25 !important;
+
+        text-align:left !important;
+
+        overflow:visible !important;
+
+    }
+
+
+    /* =========================
+       CABEÇALHO
+    ========================= */
+
+    body.impressao-40mm .impressao-cabecalho{
+
+        width:100% !important;
+
+        margin:0 !important;
+        padding:0 !important;
+
+        text-align:center !important;
+
+    }
+
+    body.impressao-40mm .logo-impressao{
+
+        display:block !important;
+
+        width:23mm !important;
+        max-width:23mm !important;
+
+        height:auto !important;
+
+        margin:0 auto 2px auto !important;
+
+    }
+
+    body.impressao-40mm .impressao-cabecalho h1{
+
+        margin:0 !important;
+        padding:0 !important;
+
+        font-size:15px !important;
+        line-height:1.1 !important;
+
+        text-align:center !important;
+
+    }
+
+    body.impressao-40mm .impressao-cabecalho > div{
+
+        text-align:center !important;
+
+    }
+
+    body.impressao-40mm .titulo-comprovante{
+
+        margin-top:4px !important;
+
+        font-size:10px !important;
+
+        font-weight:bold !important;
+
+    }
+
+
+    /* =========================
+       LINHAS
+    ========================= */
+
+    body.impressao-40mm .linha-impressao{
+
+        width:100% !important;
+
+        margin:6px 0 !important;
+
+        border-top:1px dashed #000 !important;
+
+    }
+
+
+    /* =========================
+       DADOS
+    ========================= */
+
+    body.impressao-40mm .dados-impressao{
+
+        display:block !important;
+
+        width:100% !important;
+
+    }
+
+    body.impressao-40mm .dados-impressao > div{
+
+        display:flex !important;
+
+        justify-content:space-between !important;
+
+        align-items:flex-start !important;
+
+        width:100% !important;
+
+        gap:3px !important;
+
+        margin:2px 0 !important;
+
+    }
+
+    body.impressao-40mm .secao-impressao{
+
+        width:100% !important;
+
+        margin-top:5px !important;
+
+        line-height:1.35 !important;
+
+    }
+
+
+    /* =========================
+       PRODUTOS
+    ========================= */
+
+    body.impressao-40mm .produto-impressao{
+
+        width:100% !important;
+
+        margin:5px 0 !important;
+
+        page-break-inside:avoid !important;
+        break-inside:avoid !important;
+
+    }
+
+    body.impressao-40mm .produto-impressao-nome{
+
+        width:100% !important;
+
+        font-weight:bold !important;
+
+        line-height:1.2 !important;
+
+        overflow-wrap:anywhere !important;
+        word-break:break-word !important;
+
+    }
+
+    body.impressao-40mm .produto-impressao-detalhes{
+
+        display:flex !important;
+
+        justify-content:space-between !important;
+
+        align-items:flex-start !important;
+
+        width:100% !important;
+
+        gap:3px !important;
+
+        line-height:1.2 !important;
+
+    }
+
+    body.impressao-40mm .produto-impressao-detalhes span{
+
+        min-width:0 !important;
+
+    }
+
+    body.impressao-40mm .produto-impressao-detalhes strong{
+
+        white-space:nowrap !important;
+
+    }
+
+
+    /* =========================
+       TOTAIS
+    ========================= */
+
+    body.impressao-40mm .totais-impressao{
+
+        width:100% !important;
+
+    }
+
+    body.impressao-40mm .totais-impressao > div{
+
+        display:flex !important;
+
+        justify-content:space-between !important;
+
+        align-items:flex-start !important;
+
+        width:100% !important;
+
+        gap:2px !important;
+
+        margin:3px 0 !important;
+
+        overflow:visible !important;
+
+    }
+
+    body.impressao-40mm .total-impressao{
+
+        width:100% !important;
+
+        font-size:13px !important;
+
+        margin-top:6px !important;
+
+        padding-top:5px !important;
+
+        border-top:2px solid #000 !important;
+
+        overflow:visible !important;
+
+    }
+
+    body.impressao-40mm .total-impressao span{
+
+        white-space:nowrap !important;
+
+        flex:1 1 auto !important;
+
+    }
+
+    body.impressao-40mm .total-impressao strong{
+
+        white-space:nowrap !important;
+
+        flex:0 0 auto !important;
+
+        font-size:13px !important;
+
+    }
+
+
+    /* =========================
+       PAGAMENTO
+    ========================= */
+
+    body.impressao-40mm .pagamento-impressao{
+
+        width:100% !important;
+
+        line-height:1.4 !important;
+
+    }
+
+
+    /* =========================
+       MAQUININHA
+    ========================= */
+
+    body.impressao-40mm .linha-maquininha{
+
+        display:block !important;
+
+        width:100% !important;
+        max-width:100% !important;
+
+        margin:4px 0 !important;
+        padding:0 !important;
+
+        overflow:visible !important;
+
+        text-align:left !important;
+
+    }
+
+    body.impressao-40mm .linha-maquininha span{
+
+        display:inline !important;
+
+        width:auto !important;
+        max-width:none !important;
+
+        margin:0 !important;
+        padding:0 !important;
+
+        white-space:nowrap !important;
+
+    }
+
+    body.impressao-40mm .linha-maquininha strong{
+
+        display:inline !important;
+
+        width:auto !important;
+        max-width:none !important;
+
+        margin:0 0 0 3px !important;
+        padding:0 !important;
+
+        white-space:nowrap !important;
+
+        overflow:visible !important;
+
+    }
+
+
+    /* =========================
+       RODAPÉ
+    ========================= */
+
+    body.impressao-40mm .rodape-impressao{
+
+        width:100% !important;
+
+        margin-top:7px !important;
+
+        padding-bottom:8mm !important;
+
+        text-align:center !important;
+
+        line-height:1.35 !important;
+
+    }
+
+}
+
+/* =====================================================
    IMPRESSÃO 58 MM
 ===================================================== */
 
@@ -1299,6 +1675,13 @@ button:hover{
         <h3>🖨️ Escolha o formato de impressão</h3>
 
         <div class="opcoes-impressao">
+
+ 	    <button
+    		class="opcao-impressao opcao-40"
+    		onclick="imprimirVenda('40mm')"
+	    >
+    		🧾 Térmica 40 mm
+	    </button>
 
             <button
                 class="opcao-impressao opcao-58"
@@ -2772,7 +3155,8 @@ function fecharModalImpressao(){
 function aplicarFormatoImpressao(formato){
 
     document.body.classList.remove(
-        "impressao-58mm",
+        "impressao-40mm",
+	"impressao-58mm",
         "impressao-80mm",
         "impressao-a4"
     );
@@ -2802,6 +3186,50 @@ function aplicarFormatoImpressao(formato){
 
     estiloImpressao.id =
         "estiloImpressao";
+
+if(formato === "40mm"){
+
+    estiloImpressao.innerHTML = `
+
+        @media print{
+
+            @page{
+
+                size:40mm auto;
+                margin:0 !important;
+
+            }
+
+            html,
+            body{
+
+                width:40mm !important;
+                min-width:40mm !important;
+                max-width:40mm !important;
+
+                margin:0 !important;
+                padding:0 !important;
+
+            }
+
+            body > #areaImpressao{
+
+                display:block !important;
+
+                width:40mm !important;
+                min-width:40mm !important;
+                max-width:40mm !important;
+
+                margin:0 !important;
+                padding:0 !important;
+
+            }
+
+        }
+
+    `;
+
+}
 
 
     if(formato === "58mm"){
@@ -3170,22 +3598,33 @@ function criarDocumentoImpressao(formato){
         "";
 
 
-    let largura = "auto";
-    let padding = "4mm";
-    let fonte = "14px";
-    let logo = "45mm";
-    let titulo = "20px";
+let largura = "auto";
+let padding = "4mm";
+let fonte = "14px";
+let logo = "45mm";
+let titulo = "20px";
 
 
-    if(formato === "58mm"){
+if(formato === "40mm"){
 
-        largura = "58mm";
-        padding = "2mm";
-        fonte = "10.5px";
-        logo = "30mm";
-        titulo = "17px";
+    largura = "40mm";
+    padding = "1mm 1.5mm 0 1.5mm";
+    fonte = "10px";
+    logo = "23mm";
+    titulo = "15px";
 
-    }
+}
+
+
+if(formato === "58mm"){
+
+    largura = "58mm";
+    padding = "2mm";
+    fonte = "10.5px";
+    logo = "30mm";
+    titulo = "17px";
+
+}
 
 
     if(formato === "80mm"){
@@ -3481,7 +3920,13 @@ h1{
 
         width:${largura} !important;
 
+        min-width:${largura} !important;
+
         max-width:${largura} !important;
+
+        background:#fff !important;
+
+        overflow-x:hidden !important;
 
     }
 
@@ -4003,7 +4448,8 @@ window.addEventListener(
     () => {
 
         document.body.classList.remove(
-            "impressao-58mm",
+            "impressao-40mm",
+	    "impressao-58mm",
             "impressao-80mm",
             "impressao-a4"
         );

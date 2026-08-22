@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
@@ -9,6 +10,10 @@ const bcrypt = require("bcrypt");
 const fs = require("fs");
 const path = require("path");
 
+
+const {
+  executarBackup
+} = require("./services/backupService");
 const puppeteer =
     process.env.RENDER
         ? require("puppeteer-core")
@@ -2290,6 +2295,90 @@ app.put("/api/security/password", auth, async (req, res) => {
     res.status(500).json({
       error:
         "Erro interno ao alterar a senha."
+    });
+
+  }
+
+});
+
+/* ===================== BACKUP MANUAL ===================== */
+
+app.post("/api/security/backup", auth, async (req, res) => {
+
+  try {
+
+    /* =====================================================
+       PERMISSÃO
+       Apenas MASTER e ADMIN podem executar backup manual.
+    ===================================================== */
+
+    const role = req.session.user.role;
+
+    if (
+      role !== "master" &&
+      role !== "admin"
+    ) {
+
+      return res.status(403).json({
+        error: "Sem permissão para executar backup."
+      });
+
+    }
+
+
+    /* =====================================================
+       EXECUTAR BACKUP
+    ===================================================== */
+
+    const resultado =
+      await executarBackup();
+
+
+    /* =====================================================
+       SUCESSO
+    ===================================================== */
+
+    return res.json({
+
+      success: true,
+
+      message:
+        "Backup realizado e enviado para o Google Drive com sucesso.",
+
+      backup: {
+
+        id:
+          resultado.id,
+
+        nome:
+          resultado.name,
+
+        tamanho:
+          resultado.size || null
+
+      }
+
+    });
+
+
+  } catch (erro) {
+
+    console.error(
+      "Erro ao executar backup manual:",
+      erro
+    );
+
+
+    return res.status(500).json({
+
+      success: false,
+
+      error:
+        "Não foi possível realizar o backup.",
+
+      details:
+        erro.message
+
     });
 
   }

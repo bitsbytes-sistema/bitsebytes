@@ -32,101 +32,61 @@ body{
 ========================================================= */
 
 .sidebar{
-
     width:250px;
-
     background:#0f172a;
-
     min-height:100vh;
-
     color:white;
-
     position:fixed;
-
     left:0;
-
     top:0;
-
     z-index:1000;
-
 }
 
 .logo{
-
     padding:20px;
-
     display:flex;
-
     gap:10px;
-
     align-items:center;
-
     border-bottom:1px solid rgba(255,255,255,.1);
-
 }
 
 .logo img{
-
     width:45px;
-
     height:45px;
-
     object-fit:contain;
-
 }
 
 .logo b{
-
     font-size:16px;
-
 }
 
 .logo small{
-
     color:#cbd5e1;
-
 }
 
 .sidebar a{
-
     display:block;
-
     color:white;
-
     text-decoration:none;
-
     padding:14px 20px;
-
     transition:.2s;
-
 }
 
 .sidebar a:hover{
-
     background:#1e293b;
-
 }
 
 .sidebar a.ativo{
-
     background:#1e293b;
-
 }
 
 .usuario{
-
     position:absolute;
-
     bottom:20px;
-
     left:20px;
-
     right:20px;
-
     padding-top:15px;
-
     border-top:1px solid rgba(255,255,255,.1);
-
 }
 
 
@@ -135,15 +95,10 @@ body{
 ========================================================= */
 
 .main{
-
     margin-left:250px;
-
     width:calc(100% - 250px);
-
     min-height:100vh;
-
     background:#f2f2f2;
-
 }
 
 
@@ -152,37 +107,23 @@ body{
 ========================================================= */
 
 .topbar{
-
     background:white;
-
     height:70px;
-
     display:flex;
-
     align-items:center;
-
     justify-content:space-between;
-
     padding:0 30px;
-
     box-shadow:0 2px 10px rgba(0,0,0,.08);
-
 }
 
 .topbar-titulo{
-
     font-size:18px;
-
     font-weight:bold;
-
 }
 
 .topbar a{
-
     color:#111827;
-
     text-decoration:none;
-
 }
 
 
@@ -191,9 +132,7 @@ body{
 ========================================================= */
 
 .container{
-
     padding:25px;
-
 }
 
 
@@ -202,19 +141,13 @@ body{
 ========================================================= */
 
 .titulo-pagina{
-
     margin:0;
-
     font-size:24px;
-
 }
 
 .subtitulo{
-
     margin-top:7px;
-
     color:#64748b;
-
 }
 
 
@@ -223,71 +156,44 @@ body{
 ========================================================= */
 
 .config-grid{
-
     display:grid;
-
     grid-template-columns:repeat(3, 1fr);
-
     gap:18px;
-
     margin-top:25px;
-
 }
 
 .config-card{
-
     background:white;
-
     border-radius:12px;
-
     padding:20px;
-
     box-shadow:0 2px 8px rgba(0,0,0,.08);
-
     cursor:pointer;
-
     transition:.2s;
-
     border:2px solid transparent;
-
 }
 
 .config-card:hover{
-
     transform:translateY(-2px);
-
     border-color:#2563eb;
-
 }
 
 .config-card.ativa{
-
     border-color:#2563eb;
-
 }
 
 .config-icone{
-
     font-size:30px;
-
     margin-bottom:10px;
-
 }
 
 .config-card h3{
-
     margin:0 0 7px 0;
-
 }
 
 .config-card p{
-
     margin:0;
-
     color:#64748b;
-
     font-size:14px;
-
 }
 
 
@@ -296,55 +202,34 @@ body{
 ========================================================= */
 
 .secao{
-
     background:white;
-
     margin-top:25px;
-
     padding:25px;
-
     border-radius:12px;
-
     box-shadow:0 2px 8px rgba(0,0,0,.08);
-
     display:none;
-
 }
 
 .secao.ativa{
-
     display:block;
-
 }
 
 .secao-header{
-
     display:flex;
-
     justify-content:space-between;
-
     align-items:center;
-
     gap:15px;
-
     margin-bottom:20px;
-
 }
 
 .secao-header h2{
-
     margin:0;
-
 }
 
 .secao-header p{
-
     margin:5px 0 0;
-
     color:#64748b;
-
     font-size:14px;
-
 }
 
 
@@ -353,71 +238,50 @@ body{
 ========================================================= */
 
 .btn{
-
     border:none;
-
     border-radius:8px;
-
     padding:10px 16px;
-
     cursor:pointer;
-
     font-weight:bold;
-
 }
 
 .btn-primary{
-
     background:#2563eb;
-
     color:white;
-
 }
 
 .btn-primary:hover{
-
     background:#1d4ed8;
-
 }
 
 .btn-secondary{
-
     background:#e5e7eb;
-
     color:#111827;
-
 }
 
 .btn-danger{
-
     background:#dc2626;
-
     color:white;
-
 }
 
 .btn-warning{
-
     background:#f59e0b;
-
     color:white;
-
 }
 
 .btn-success{
-
     background:#16a34a;
-
     color:white;
-
 }
 
 .btn-small{
-
     padding:7px 11px;
-
     font-size:12px;
+}
 
+.btn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
 }
 
 
@@ -426,55 +290,34 @@ body{
 ========================================================= */
 
 .tabela-container{
-
     width:100%;
-
     overflow-x:auto;
-
 }
 
 table{
-
     width:100%;
-
     border-collapse:collapse;
-
     min-width:1900px;
-
 }
 
 th{
-
     background:#f8fafc;
-
     text-align:left;
-
     padding:12px;
-
     border-bottom:2px solid #e5e7eb;
-
     font-size:13px;
-
     white-space:nowrap;
-
 }
 
 td{
-
     padding:12px;
-
     border-bottom:1px solid #e5e7eb;
-
     font-size:13px;
-
     white-space:nowrap;
-
 }
 
 tr:hover td{
-
     background:#f8fafc;
-
 }
 
 
@@ -483,29 +326,19 @@ tr:hover td{
 ========================================================= */
 
 th.grupo-debito{
-
     background:#eff6ff;
-
     text-align:center;
-
     color:#1e40af;
-
 }
 
 th.grupo-credito{
-
     background:#f0fdf4;
-
     text-align:center;
-
     color:#166534;
-
 }
 
 th.subcoluna{
-
     text-align:center;
-
 }
 
 
@@ -514,33 +347,21 @@ th.subcoluna{
 ========================================================= */
 
 .status{
-
     display:inline-block;
-
     padding:5px 9px;
-
     border-radius:20px;
-
     font-size:12px;
-
     font-weight:bold;
-
 }
 
 .status.ativo{
-
     background:#dcfce7;
-
     color:#166534;
-
 }
 
 .status.inativo{
-
     background:#fee2e2;
-
     color:#991b1b;
-
 }
 
 
@@ -549,81 +370,48 @@ th.subcoluna{
 ========================================================= */
 
 .modal{
-
     display:none;
-
     position:fixed;
-
     inset:0;
-
     background:rgba(0,0,0,.55);
-
     z-index:9999;
-
     align-items:center;
-
     justify-content:center;
-
     padding:20px;
-
 }
 
 .modal.ativo{
-
     display:flex;
-
 }
 
 .modal-caixa{
-
     width:900px;
-
     max-width:100%;
-
     max-height:90vh;
-
     overflow-y:auto;
-
     background:white;
-
     border-radius:14px;
-
     padding:25px;
-
     box-shadow:0 10px 40px rgba(0,0,0,.3);
-
 }
 
 .modal-header{
-
     display:flex;
-
     justify-content:space-between;
-
     align-items:center;
-
     margin-bottom:20px;
-
 }
 
 .modal-header h2{
-
     margin:0;
-
 }
 
 .fechar{
-
     background:none;
-
     border:none;
-
     font-size:25px;
-
     cursor:pointer;
-
     color:#64748b;
-
 }
 
 
@@ -632,41 +420,26 @@ th.subcoluna{
 ========================================================= */
 
 .form-group{
-
     margin-bottom:16px;
-
 }
 
 .form-group label{
-
     display:block;
-
     margin-bottom:6px;
-
     font-weight:bold;
-
     font-size:14px;
-
 }
 
 .form-group input{
-
     width:100%;
-
     padding:11px;
-
     border:1px solid #cbd5e1;
-
     border-radius:8px;
-
     outline:none;
-
 }
 
 .form-group input:focus{
-
     border-color:#2563eb;
-
 }
 
 
@@ -675,15 +448,10 @@ th.subcoluna{
 ========================================================= */
 
 .taxas-titulo{
-
     margin-top:20px;
-
     margin-bottom:12px;
-
     font-weight:bold;
-
     font-size:17px;
-
 }
 
 
@@ -692,37 +460,23 @@ th.subcoluna{
 ========================================================= */
 
 .debito-bloco{
-
     background:#eff6ff;
-
     border:1px solid #bfdbfe;
-
     border-radius:10px;
-
     padding:15px;
-
     margin-bottom:20px;
-
 }
 
 .debito-titulo{
-
     font-weight:bold;
-
     color:#1e40af;
-
     margin-bottom:12px;
-
 }
 
 .debito-grid{
-
     display:grid;
-
     grid-template-columns:1fr 1fr;
-
     gap:12px;
-
 }
 
 
@@ -731,123 +485,75 @@ th.subcoluna{
 ========================================================= */
 
 .credito-bloco{
-
     background:#f0fdf4;
-
     border:1px solid #bbf7d0;
-
     border-radius:10px;
-
     padding:15px;
-
 }
 
 .credito-titulo{
-
     font-weight:bold;
-
     color:#166534;
-
     margin-bottom:12px;
-
 }
 
 .taxas-grid{
-
     display:grid;
-
     grid-template-columns:repeat(3, 1fr);
-
     gap:12px;
-
 }
 
 .taxa-item{
-
     background:white;
-
     padding:12px;
-
     border-radius:8px;
-
     border:1px solid #e2e8f0;
-
 }
 
 .taxa-item-titulo{
-
     font-weight:bold;
-
     margin-bottom:10px;
-
     font-size:14px;
-
 }
 
 .taxa-campo{
-
     margin-bottom:8px;
-
 }
 
 .taxa-campo:last-child{
-
     margin-bottom:0;
-
 }
 
 .taxa-campo label{
-
     display:block;
-
     font-size:12px;
-
     font-weight:bold;
-
     margin-bottom:5px;
-
     color:#475569;
-
 }
 
 .taxa-input{
-
     position:relative;
-
 }
 
 .taxa-input input{
-
     width:100%;
-
     padding:9px 28px 9px 9px;
-
     border:1px solid #cbd5e1;
-
     border-radius:7px;
-
     outline:none;
-
 }
 
 .taxa-input input:focus{
-
     border-color:#2563eb;
-
 }
 
 .taxa-input span{
-
     position:absolute;
-
     right:9px;
-
     top:9px;
-
     color:#64748b;
-
     font-size:13px;
-
 }
 
 
@@ -856,15 +562,10 @@ th.subcoluna{
 ========================================================= */
 
 .modal-footer{
-
     display:flex;
-
     justify-content:flex-end;
-
     gap:10px;
-
     margin-top:25px;
-
 }
 
 
@@ -873,39 +574,24 @@ th.subcoluna{
 ========================================================= */
 
 .mensagem{
-
     position:fixed;
-
     right:25px;
-
     bottom:25px;
-
     background:#111827;
-
     color:white;
-
     padding:14px 18px;
-
     border-radius:9px;
-
     box-shadow:0 5px 20px rgba(0,0,0,.2);
-
     display:none;
-
     z-index:10000;
-
 }
 
 .mensagem.sucesso{
-
     background:#16a34a;
-
 }
 
 .mensagem.erro{
-
     background:#dc2626;
-
 }
 
 
@@ -916,15 +602,11 @@ th.subcoluna{
 @media(max-width:1000px){
 
     .config-grid{
-
         grid-template-columns:repeat(2, 1fr);
-
     }
 
     .taxas-grid{
-
         grid-template-columns:repeat(2, 1fr);
-
     }
 
 }
@@ -932,41 +614,28 @@ th.subcoluna{
 @media(max-width:750px){
 
     .sidebar{
-
         width:210px;
-
     }
 
     .main{
-
         margin-left:210px;
-
         width:calc(100% - 210px);
-
     }
 
     .config-grid{
-
         grid-template-columns:1fr;
-
     }
 
     .taxas-grid{
-
         grid-template-columns:1fr 1fr;
-
     }
 
     .debito-grid{
-
         grid-template-columns:1fr;
-
     }
 
     .container{
-
         padding:15px;
-
     }
 
 }
@@ -974,73 +643,48 @@ th.subcoluna{
 @media(max-width:550px){
 
     .sidebar{
-
         width:70px;
-
     }
 
     .logo{
-
         justify-content:center;
-
         padding:12px 5px;
-
     }
 
     .logo img{
-
         width:40px;
-
         height:40px;
-
     }
 
     .logo div{
-
         display:none;
-
     }
 
     .sidebar a{
-
         font-size:0;
-
         text-align:center;
-
         padding:15px 5px;
-
     }
 
     .sidebar a::first-letter{
-
         font-size:20px;
-
     }
 
     .usuario{
-
         display:none;
-
     }
 
     .main{
-
         margin-left:70px;
-
         width:calc(100% - 70px);
-
     }
 
     .topbar{
-
         padding:0 15px;
-
     }
 
     .taxas-grid{
-
         grid-template-columns:1fr;
-
     }
 
 }
@@ -1604,159 +1248,251 @@ th.subcoluna{
 
 
         <!-- =================================================
-     SEGURANÇA
-================================================= -->
-
-<div
-    id="secao-seguranca"
-    class="secao"
->
-
-    <div class="secao-header">
-
-        <div>
-
-            <h2>
-                🔐 Segurança
-            </h2>
-
-            <p>
-                Gerencie a segurança e o acesso da sua conta.
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <!-- =================================================
-         ALTERAR SENHA
-    ================================================= -->
-
-    <div
-        style="
-            max-width:600px;
-            border:1px solid #e2e8f0;
-            border-radius:12px;
-            padding:20px;
-            background:#f8fafc;
-        "
-    >
-
-        <h3 style="margin-top:0;">
-            🔑 Alterar senha
-        </h3>
-
-        <p
-            style="
-                color:#64748b;
-                font-size:14px;
-                margin-bottom:20px;
-            "
-        >
-            Altere a senha utilizada para acessar sua conta.
-        </p>
-
-
-        <!-- SENHA ATUAL -->
-
-        <div class="form-group">
-
-            <label>
-                Senha atual
-            </label>
-
-            <input
-                type="password"
-                id="senhaAtual"
-                placeholder="Digite sua senha atual"
-                autocomplete="current-password"
-            >
-
-        </div>
-
-
-        <!-- NOVA SENHA -->
-
-        <div class="form-group">
-
-            <label>
-                Nova senha
-            </label>
-
-            <input
-                type="password"
-                id="novaSenha"
-                placeholder="Digite a nova senha"
-                autocomplete="new-password"
-            >
-
-        </div>
-
-
-        <!-- CONFIRMAR SENHA -->
-
-        <div class="form-group">
-
-            <label>
-                Confirmar nova senha
-            </label>
-
-            <input
-                type="password"
-                id="confirmarSenha"
-                placeholder="Digite novamente a nova senha"
-                autocomplete="new-password"
-            >
-
-        </div>
-
+             SEGURANÇA
+        ================================================= -->
 
         <div
-            style="
-                color:#64748b;
-                font-size:13px;
-                margin-bottom:18px;
-            "
+            id="secao-seguranca"
+            class="secao"
         >
-            A senha deve possuir pelo menos 6 caracteres.
+
+            <div class="secao-header">
+
+                <div>
+
+                    <h2>
+                        🔐 Segurança
+                    </h2>
+
+                    <p>
+                        Gerencie a segurança, o acesso e os backups da sua conta.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ALTERAR SENHA
+            ================================================= -->
+
+            <div
+                style="
+                    max-width:600px;
+                    border:1px solid #e2e8f0;
+                    border-radius:12px;
+                    padding:20px;
+                    background:#f8fafc;
+                "
+            >
+
+                <h3 style="margin-top:0;">
+                    🔑 Alterar senha
+                </h3>
+
+                <p
+                    style="
+                        color:#64748b;
+                        font-size:14px;
+                        margin-bottom:20px;
+                    "
+                >
+                    Altere a senha utilizada para acessar sua conta.
+                </p>
+
+
+                <!-- SENHA ATUAL -->
+
+                <div class="form-group">
+
+                    <label>
+                        Senha atual
+                    </label>
+
+                    <input
+                        type="password"
+                        id="senhaAtual"
+                        placeholder="Digite sua senha atual"
+                        autocomplete="current-password"
+                    >
+
+                </div>
+
+
+                <!-- NOVA SENHA -->
+
+                <div class="form-group">
+
+                    <label>
+                        Nova senha
+                    </label>
+
+                    <input
+                        type="password"
+                        id="novaSenha"
+                        placeholder="Digite a nova senha"
+                        autocomplete="new-password"
+                    >
+
+                </div>
+
+
+                <!-- CONFIRMAR SENHA -->
+
+                <div class="form-group">
+
+                    <label>
+                        Confirmar nova senha
+                    </label>
+
+                    <input
+                        type="password"
+                        id="confirmarSenha"
+                        placeholder="Digite novamente a nova senha"
+                        autocomplete="new-password"
+                    >
+
+                </div>
+
+
+                <div
+                    style="
+                        color:#64748b;
+                        font-size:13px;
+                        margin-bottom:18px;
+                    "
+                >
+                    A senha deve possuir pelo menos 6 caracteres.
+                </div>
+
+
+                <button
+                    class="btn btn-primary"
+                    onclick="alterarSenha()"
+                >
+                    🔒 Alterar senha
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 BACKUP DO SISTEMA
+            ================================================= -->
+
+            <div
+                style="
+                    max-width:600px;
+                    margin-top:20px;
+                    border:1px solid #bfdbfe;
+                    border-radius:12px;
+                    padding:20px;
+                    background:#eff6ff;
+                "
+            >
+
+                <h3 style="margin-top:0;color:#1e3a8a;">
+                    💾 Backup do sistema
+                </h3>
+
+                <p
+                    style="
+                        color:#475569;
+                        font-size:14px;
+                        line-height:1.6;
+                        margin-bottom:18px;
+                    "
+                >
+                    Gere um backup completo dos dados do sistema.
+                    O backup será criado e enviado automaticamente para o
+                    Google Drive configurado no sistema.
+                </p>
+
+
+                <div
+                    style="
+                        padding:12px;
+                        background:white;
+                        border:1px solid #dbeafe;
+                        border-radius:8px;
+                        margin-bottom:18px;
+                        color:#475569;
+                        font-size:13px;
+                        line-height:1.5;
+                    "
+                >
+
+                    <b>Como funciona:</b>
+
+                    <br>
+
+                    1. O sistema gera o backup do banco de dados.
+
+                    <br>
+
+                    2. O arquivo é compactado.
+
+                    <br>
+
+                    3. O backup é enviado para o Google Drive.
+
+                    <br>
+
+                    4. O arquivo temporário local é removido após o envio.
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="btnBackup"
+                    class="btn btn-primary"
+                    onclick="executarBackupManual()"
+                >
+                    💾 Fazer backup agora
+                </button>
+
+
+                <div
+                    id="statusBackup"
+                    style="
+                        display:none;
+                        margin-top:15px;
+                        padding:12px;
+                        border-radius:8px;
+                        font-size:13px;
+                    "
+                >
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 AVISO
+            ================================================= -->
+
+            <div
+                style="
+                    margin-top:20px;
+                    padding:15px;
+                    background:#fff7ed;
+                    border:1px solid #fed7aa;
+                    border-radius:10px;
+                    color:#9a3412;
+                    font-size:14px;
+                "
+            >
+
+                <b>⚠️ Importante:</b>
+
+                Após alterar sua senha, sua sessão será encerrada
+                e será necessário fazer login novamente.
+
+            </div>
+
         </div>
-
-
-        <button
-            class="btn btn-primary"
-            onclick="alterarSenha()"
-        >
-            🔒 Alterar senha
-        </button>
-
-    </div>
-
-
-    <!-- =================================================
-         AVISO
-    ================================================= -->
-
-    <div
-        style="
-            margin-top:20px;
-            padding:15px;
-            background:#fff7ed;
-            border:1px solid #fed7aa;
-            border-radius:10px;
-            color:#9a3412;
-            font-size:14px;
-        "
-    >
-
-        <b>⚠️ Importante:</b>
-
-        Após alterar sua senha, sua sessão será encerrada
-        e será necessário fazer login novamente.
-
-    </div>
-
-</div>
 
 
         <!-- =================================================
@@ -3010,6 +2746,171 @@ async function excluirMaquininha(id){
 
 
 /* =========================================================
+   BACKUP MANUAL
+========================================================= */
+
+async function executarBackupManual(){
+
+    const confirmar =
+        confirm(
+            "Deseja iniciar um backup completo do sistema?\n\n" +
+            "O banco de dados será exportado e o arquivo será enviado para o Google Drive."
+        );
+
+
+    if(!confirmar){
+
+        return;
+
+    }
+
+
+    const botao =
+        document.getElementById(
+            "btnBackup"
+        );
+
+
+    const status =
+        document.getElementById(
+            "statusBackup"
+        );
+
+
+    try{
+
+        botao.disabled = true;
+
+        botao.innerText =
+            "⏳ Gerando backup...";
+
+
+        status.style.display =
+            "block";
+
+        status.style.background =
+            "#dbeafe";
+
+        status.style.color =
+            "#1e40af";
+
+        status.innerText =
+            "Gerando o backup e enviando para o Google Drive. Aguarde...";
+
+
+        const res =
+            await fetch(
+                "/api/security/backup",
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    credentials:"include"
+
+                }
+            );
+
+
+        if(res.status === 401){
+
+            window.location.href = "/";
+
+            return;
+
+        }
+
+
+        let data = {};
+
+        try{
+
+            data =
+                await res.json();
+
+        }catch(err){
+
+            data = {};
+
+        }
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Erro ao executar o backup."
+            );
+
+        }
+
+
+        status.style.background =
+            "#dcfce7";
+
+        status.style.color =
+            "#166534";
+
+
+        status.innerText =
+            data.message ||
+            "Backup concluído com sucesso e enviado para o Google Drive.";
+
+
+        mostrarMensagem(
+            "Backup concluído com sucesso!",
+            "sucesso"
+        );
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao executar backup:",
+            err
+        );
+
+
+        status.style.display =
+            "block";
+
+        status.style.background =
+            "#fee2e2";
+
+        status.style.color =
+            "#991b1b";
+
+
+        status.innerText =
+            err.message ||
+            "Erro ao executar o backup.";
+
+
+        mostrarMensagem(
+            err.message ||
+            "Erro ao executar o backup.",
+            "erro"
+        );
+
+
+    }finally{
+
+        botao.disabled = false;
+
+        botao.innerText =
+            "💾 Fazer backup agora";
+
+    }
+
+}
+
+
+/* =========================================================
    MENSAGEM
 ========================================================= */
 
@@ -3054,6 +2955,7 @@ function mostrarMensagem(texto, tipo){
         );
 
 }
+
 
 /* =========================================================
    ALTERAR SENHA
@@ -3249,6 +3151,7 @@ async function alterarSenha(){
     }
 
 }
+
 
 /* =========================================================
    LOGOUT

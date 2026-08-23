@@ -35,6 +35,15 @@ const companySchema = new mongoose.Schema({
   },
 
   /* ========================= */
+  /* EMPRESA PROTEGIDA */
+  /* ========================= */
+
+  protected: {
+    type: Boolean,
+    default: false
+  },
+
+  /* ========================= */
   /* PERSONALIZAÇÃO EMPRESA */
   /* ========================= */
 

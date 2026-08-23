@@ -30,6 +30,9 @@ const Budget = require("./models/Budget");
 const Notification = require("./models/Notification");
 const Lembrete = require("./models/Lembrete");
 const Sale = require("./models/Sale");
+const Product = require("./models/Product");
+const StockMovement = require("./models/StockMovement");
+const PaymentMachine = require("./models/PaymentMachine");
 
 const serviceRoutes = require("./routes/services");
 const productRoutes = require("./routes/products");
@@ -283,9 +286,20 @@ function auth(req, res, next){
 
 /* ===================== MASTER ===================== */
 function masterOnly(req, res, next){
-  if(req.session.user.role !== "master"){
-    return res.status(403).json({ error: "not_master" });
+
+  console.log("========== MASTER CHECK ==========");
+  console.log("SESSION USER:", req.session.user);
+  console.log("ROLE:", req.session.user?.role);
+  console.log("ROLE TYPE:", typeof req.session.user?.role);
+  console.log("==================================");
+
+  if(req.session.user?.role !== "master"){
+    return res.status(403).json({
+      error: "not_master",
+      roleRecebida: req.session.user?.role
+    });
   }
+
   next();
 }
 
@@ -436,13 +450,14 @@ app.post("/api/admin/create-company", auth, masterOnly, async (req, res) => {
       userLimit = -1;
     }
 
-    const company = await Company.create({
-      name,
-      plan: plan || "free",
-      ticketLimit,
-      userLimit,
-      active: true
-    });
+const company = await Company.create({
+  name,
+  plan: plan || "free",
+  ticketLimit,
+  userLimit,
+  active: true,
+  protected: false
+});
 
     const hash = await bcrypt.hash(password, 10);
 
@@ -511,18 +526,77 @@ app.put(
 
       const { plan } = req.body;
 
+      /* =========================
+         VALIDAR PLANO
+      ========================= */
+
+      if(!["free", "basic", "pro"].includes(plan)){
+
+        return res.status(400).json({
+          error: "Plano inválido."
+        });
+
+      }
+
+
+      /* =========================
+         BUSCAR EMPRESA
+      ========================= */
+
+      const empresaAlvo =
+        await Company.findById(req.params.id);
+
+
+      if(!empresaAlvo){
+
+        return res.status(404).json({
+          error: "Empresa não encontrada"
+        });
+
+      }
+
+
+      /* =========================
+         EMPRESA PROTEGIDA
+      ========================= */
+
+      if(empresaAlvo.protected){
+
+        return res.status(403).json({
+          error:
+            "Esta empresa é protegida e não pode ter o plano alterado."
+        });
+
+      }
+
+
+      /* =========================
+         LIMITES DO PLANO
+      ========================= */
+
       let ticketLimit = 10;
       let userLimit = 1;
 
+
       if(plan === "basic"){
+
         ticketLimit = 30;
         userLimit = 3;
+
       }
 
+
       if(plan === "pro"){
+
         ticketLimit = -1;
         userLimit = -1;
+
       }
+
+
+      /* =========================
+         ATUALIZAR EMPRESA
+      ========================= */
 
       const company =
         await Company.findByIdAndUpdate(
@@ -541,18 +615,12 @@ app.put(
 
         );
 
-      if(!company){
-
-        return res.status(404).json({
-          error: "Empresa não encontrada"
-        });
-
-      }
 
       res.json({
         ok: true,
         company
       });
+
 
     } catch(err){
 
@@ -576,6 +644,54 @@ app.put(
 
     try {
 
+      /* =========================
+         VALIDAR STATUS
+      ========================= */
+
+      if(typeof req.body.active !== "boolean"){
+
+        return res.status(400).json({
+          error: "Status inválido."
+        });
+
+      }
+
+
+      /* =========================
+         BUSCAR EMPRESA
+      ========================= */
+
+      const empresaAlvo =
+        await Company.findById(req.params.id);
+
+
+      if(!empresaAlvo){
+
+        return res.status(404).json({
+          error: "Empresa não encontrada"
+        });
+
+      }
+
+
+      /* =========================
+         EMPRESA PROTEGIDA
+      ========================= */
+
+      if(empresaAlvo.protected){
+
+        return res.status(403).json({
+          error:
+            "Esta empresa é protegida e não pode ser bloqueada ou desbloqueada."
+        });
+
+      }
+
+
+      /* =========================
+         ALTERAR STATUS
+      ========================= */
+
       const company =
         await Company.findByIdAndUpdate(
 
@@ -591,18 +707,12 @@ app.put(
 
         );
 
-      if(!company){
-
-        return res.status(404).json({
-          error: "Empresa não encontrada"
-        });
-
-      }
 
       res.json({
         ok: true,
         company
       });
+
 
     } catch(err){
 
@@ -616,6 +726,126 @@ app.put(
 
   }
 );
+
+
+/* ===================== EXCLUIR EMPRESA ===================== */
+app.delete(
+  "/api/admin/company/:id",
+  auth,
+  masterOnly,
+  async (req, res) => {
+
+    try {
+
+      /* =========================
+         BUSCAR EMPRESA
+      ========================= */
+
+      const empresa =
+        await Company.findById(req.params.id);
+
+
+      if(!empresa){
+
+        return res.status(404).json({
+          error: "Empresa não encontrada."
+        });
+
+      }
+
+
+      /* =========================
+         EMPRESA PROTEGIDA
+      ========================= */
+
+      if(empresa.protected){
+
+        return res.status(403).json({
+          error:
+            "Esta empresa é protegida e não pode ser excluída."
+        });
+
+      }
+
+
+      /* =========================
+         EXCLUIR DADOS DA EMPRESA
+      ========================= */
+
+      await User.deleteMany({
+        companyId: empresa._id
+      });
+
+      await Ticket.deleteMany({
+        companyId: empresa._id
+      });
+
+      await Cliente.deleteMany({
+        companyId: empresa._id
+      });
+
+      await Service.deleteMany({
+        companyId: empresa._id
+      });
+
+      await Budget.deleteMany({
+        companyId: empresa._id
+      });
+
+      await Notification.deleteMany({
+        companyId: empresa._id
+      });
+
+      await Lembrete.deleteMany({
+        companyId: empresa._id
+      });
+
+      await Sale.deleteMany({
+        companyId: empresa._id
+      });
+
+      await Product.deleteMany({
+        companyId: empresa._id
+      });
+
+      await StockMovement.deleteMany({
+        companyId: empresa._id
+      });
+
+      await PaymentMachine.deleteMany({
+        companyId: empresa._id
+      });
+
+      await Company.findByIdAndDelete(
+        empresa._id
+      );
+
+
+      res.json({
+        ok: true,
+        message:
+          "Empresa excluída com sucesso."
+      });
+
+
+    } catch(err){
+
+      console.log(
+        "Erro ao excluir empresa:",
+        err
+      );
+
+      res.status(500).json({
+        error:
+          "Não foi possível excluir a empresa."
+      });
+
+    }
+
+  }
+);
+
+
 /* ===================== CLIENTES (NOVA COLEÇÃO) ===================== */
 
 app.get("/api/clientes", auth, async (req, res) => {

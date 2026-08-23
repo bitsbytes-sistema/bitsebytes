@@ -1,129 +1,2276 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
-<title>Master Admin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Painel Master SaaS</title>
 
 <style>
 
+*{
+    box-sizing:border-box;
+}
+
 body{
-  font-family:Arial;
-  background:#f2f2f2;
-  margin:0;
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f1f5f9;
+    color:#111827;
 }
 
 .header{
-  background:#111827;
-  color:white;
-  padding:20px;
-  font-size:20px;
+    background:#111827;
+    color:white;
+    padding:20px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+}
+
+.header h1{
+    margin:0;
+    font-size:22px;
+}
+
+.header-sub{
+    margin-top:5px;
+    font-size:13px;
+    color:#cbd5e1;
+}
+
+.btn-voltar{
+    background:#374151;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:10px 15px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-voltar:hover{
+    background:#4b5563;
 }
 
 .container{
-  padding:20px;
+    width:100%;
+    max-width:1400px;
+    margin:0 auto;
+    padding:25px;
 }
 
-.card{
-  background:white;
-  padding:20px;
-  margin-bottom:15px;
-  border-radius:10px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+.cards-resumo{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:18px;
+    margin-bottom:25px;
 }
 
-.plan{
-  font-weight:bold;
-  color:#2563eb;
+.resumo-card{
+    background:white;
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.resumo-card .icone{
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+.resumo-card .titulo{
+    color:#64748b;
+    font-size:14px;
+}
+
+.resumo-card .numero{
+    margin-top:5px;
+    font-size:30px;
+    font-weight:bold;
+}
+
+.secao{
+    background:white;
+    border-radius:12px;
+    padding:22px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin-bottom:25px;
+}
+
+.secao-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+    gap:15px;
+}
+
+.secao-header h2{
+    margin:0;
+    font-size:20px;
+}
+
+.btn-atualizar{
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:9px 14px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-atualizar:hover{
+    background:#1d4ed8;
+}
+
+.tabela-container{
+    width:100%;
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1000px;
+}
+
+th{
+    background:#f8fafc;
+    text-align:left;
+    padding:13px;
+    border-bottom:2px solid #e5e7eb;
+    font-size:13px;
+    white-space:nowrap;
+}
+
+td{
+    padding:13px;
+    border-bottom:1px solid #e5e7eb;
+    font-size:14px;
+    vertical-align:middle;
+}
+
+tr:hover td{
+    background:#f8fafc;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.badge-ativo{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.badge-bloqueado{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.badge-free{
+    background:#e0f2fe;
+    color:#075985;
+}
+
+.badge-basic{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.badge-pro{
+    background:#ede9fe;
+    color:#6d28d9;
+}
+
+.loading{
+    text-align:center;
+    padding:40px;
+    color:#64748b;
+}
+
+.erro{
+    background:#fee2e2;
+    color:#991b1b;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:20px;
+    display:none;
+}
+
+.sucesso{
+    background:#dcfce7;
+    color:#166534;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:20px;
+    display:none;
+}
+
+.vazio{
+    text-align:center;
+    padding:35px;
+    color:#64748b;
+}
+
+.acoes{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.select-plano{
+    border:1px solid #cbd5e1;
+    border-radius:7px;
+    padding:8px 10px;
+    background:white;
+    color:#111827;
+    font-size:13px;
+    cursor:pointer;
+    min-width:105px;
+}
+
+.btn{
+    border:none;
+    border-radius:7px;
+    padding:8px 11px;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:12px;
+    white-space:nowrap;
+}
+
+.btn-salvar{
+    background:#2563eb;
+    color:white;
+}
+
+.btn-salvar:hover{
+    background:#1d4ed8;
+}
+
+.btn-bloquear{
+    background:#dc2626;
+    color:white;
+}
+
+.btn-bloquear:hover{
+    background:#b91c1c;
+}
+
+.btn-desbloquear{
+    background:#16a34a;
+    color:white;
+}
+
+.btn-desbloquear:hover{
+    background:#15803d;
+}
+
+.btn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+
+/* =========================================================
+   FORMULÁRIO
+========================================================= */
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:15px;
+}
+
+.campo{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.campo label{
+    font-size:13px;
+    font-weight:bold;
+    color:#374151;
+}
+
+.campo input,
+.campo select{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    outline:none;
+    font-size:14px;
+    background:white;
+}
+
+.campo input:focus,
+.campo select:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 2px rgba(37,99,235,.1);
+}
+
+.campo-completo{
+    grid-column:1 / -1;
+}
+
+.btn-criar{
+    background:#16a34a;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:11px 18px;
+    cursor:pointer;
+    font-weight:bold;
+    margin-top:18px;
+}
+
+.btn-criar:hover{
+    background:#15803d;
+}
+
+.btn-criar:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.info-form{
+    color:#64748b;
+    font-size:13px;
+    margin-top:5px;
+}
+
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media(max-width:800px){
+
+    .cards-resumo{
+        grid-template-columns:1fr;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .campo-completo{
+        grid-column:auto;
+    }
+
+    .header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .container{
+        padding:15px;
+    }
+
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="header">
-  Painel Master SaaS
+
+<header class="header">
+
+<div>
+
+    <h1>
+        Painel Master SaaS
+    </h1>
+
+    <div class="header-sub">
+        Administração geral do sistema
+    </div>
+
 </div>
 
-<div class="container">
 
-  <div id="lista"></div>
+<button
+    class="btn-voltar"
+    onclick="window.location.href='/dashboard.html'"
+>
+    ← Voltar
+</button>
+
+</header>
+
+
+<main class="container">
+
+
+<div
+    id="mensagemErro"
+    class="erro"
+></div>
+
+
+<div
+    id="mensagemSucesso"
+    class="sucesso"
+></div>
+
+
+<!-- =========================================
+     RESUMO
+========================================== -->
+
+<div class="cards-resumo">
+
+
+    <div class="resumo-card">
+
+        <div class="icone">
+            🏢
+        </div>
+
+        <div class="titulo">
+            Empresas
+        </div>
+
+        <div
+            id="totalEmpresas"
+            class="numero"
+        >
+            -
+        </div>
+
+    </div>
+
+
+    <div class="resumo-card">
+
+        <div class="icone">
+            👥
+        </div>
+
+        <div class="titulo">
+            Usuários
+        </div>
+
+        <div
+            id="totalUsuarios"
+            class="numero"
+        >
+            -
+        </div>
+
+    </div>
+
+
+    <div class="resumo-card">
+
+        <div class="icone">
+            🎫
+        </div>
+
+        <div class="titulo">
+            Chamados
+        </div>
+
+        <div
+            id="totalChamados"
+            class="numero"
+        >
+            -
+        </div>
+
+    </div>
+
 
 </div>
+
+
+
+<!-- =========================================
+     CRIAR EMPRESA
+========================================== -->
+
+<section class="secao">
+
+    <div class="secao-header">
+
+        <div>
+
+            <h2>
+                🏢 Criar nova empresa
+            </h2>
+
+            <div class="info-form">
+                Cadastre uma nova empresa e seu usuário administrador.
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <form
+        id="formCriarEmpresa"
+        onsubmit="criarEmpresa(event)"
+    >
+
+
+        <div class="form-grid">
+
+
+            <div class="campo campo-completo">
+
+                <label for="empresaNome">
+                    Nome da empresa
+                </label>
+
+                <input
+                    type="text"
+                    id="empresaNome"
+                    placeholder="Ex.: Bits & Bytes"
+                    required
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="empresaUsuario">
+                    Usuário administrador
+                </label>
+
+                <input
+                    type="text"
+                    id="empresaUsuario"
+                    placeholder="Digite o usuário"
+                    required
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="empresaSenha">
+                    Senha
+                </label>
+
+                <input
+                    type="password"
+                    id="empresaSenha"
+                    placeholder="Digite a senha"
+                    required
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="empresaPlano">
+                    Plano
+                </label>
+
+                <select
+                    id="empresaPlano"
+                    required
+                >
+
+                    <option value="free">
+                        Free — 10 chamados / 1 usuário
+                    </option>
+
+                    <option value="basic">
+                        Basic — 30 chamados / 3 usuários
+                    </option>
+
+                    <option value="pro">
+                        Pro — ilimitado
+                    </option>
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="btn-criar"
+            id="btnCriarEmpresa"
+        >
+            ➕ Criar empresa
+        </button>
+
+
+    </form>
+
+</section>
+
+
+
+<!-- =========================================
+     EMPRESAS
+========================================== -->
+
+<section class="secao">
+
+
+    <div class="secao-header">
+
+        <h2>
+            Empresas cadastradas
+        </h2>
+
+
+        <button
+            class="btn-atualizar"
+            onclick="carregarPainel()"
+        >
+            🔄 Atualizar
+        </button>
+
+    </div>
+
+
+    <div
+        id="loading"
+        class="loading"
+    >
+        Carregando empresas...
+    </div>
+
+
+    <div
+        id="listaVazia"
+        class="vazio"
+        style="display:none;"
+    >
+        Nenhuma empresa cadastrada.
+    </div>
+
+
+    <div
+        id="tabelaContainer"
+        class="tabela-container"
+        style="display:none;"
+    >
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Empresa
+                    </th>
+
+                    <th>
+                        Plano
+                    </th>
+
+                    <th>
+                        Limite de usuários
+                    </th>
+
+                    <th>
+                        Limite de chamados
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Ações
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="listaEmpresas">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+</section>
+
+
+
+<!-- =========================================
+     USUÁRIOS
+========================================== -->
+
+<section class="secao">
+
+
+    <div class="secao-header">
+
+        <div>
+
+            <h2>
+                👥 Usuários cadastrados
+            </h2>
+
+        </div>
+
+
+        <button
+            class="btn-atualizar"
+            onclick="carregarUsuarios()"
+        >
+            🔄 Atualizar
+        </button>
+
+    </div>
+
+
+    <div
+        id="loadingUsuarios"
+        class="loading"
+    >
+        Carregando usuários...
+    </div>
+
+
+    <div
+        id="usuariosVazio"
+        class="vazio"
+        style="display:none;"
+    >
+        Nenhum usuário cadastrado.
+    </div>
+
+
+    <div
+        id="usuariosContainer"
+        class="tabela-container"
+        style="display:none;"
+    >
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Usuário
+                    </th>
+
+                    <th>
+                        Cargo
+                    </th>
+
+                    <th>
+                        Empresa
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="listaUsuarios">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+</section>
+
+
+</main>
+
+
 
 <script>
 
-async function load(){
 
-  const res =
-    await fetch(
-      "/api/master/companies",
-      {
-        credentials: "include"
-      }
-    );
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
 
-  if(res.status === 403){
+function escaparHTML(valor){
 
-    alert("Sem permissão");
+    if(valor === null || valor === undefined){
+        return "";
+    }
 
-    location.href = "/dashboard";
-
-    return;
-  }
-
-  const data =
-    await res.json();
-
-  const lista =
-    document.getElementById("lista");
-
-  lista.innerHTML = "";
-
-  data.forEach(c => {
-
-    lista.innerHTML += `
-
-      <div class="card">
-
-        <h2>
-          ${c.name}
-        </h2>
-
-        <p class="plan">
-          Plano: ${c.plan}
-        </p>
-
-        <p>
-          Usuários:
-          ${c.usuarios}
-        </p>
-
-        <p>
-          Chamados:
-          ${c.chamados}
-        </p>
-
-        <p>
-          Status:
-          ${
-            c.active === false
-            ? "Bloqueado"
-            : "Ativo"
-          }
-        </p>
-
-      </div>
-
-    `;
-
-  });
+    return String(valor)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
 
-load();
+
+/* =========================================================
+   MENSAGENS
+========================================================= */
+
+function mostrarErro(mensagem){
+
+    const erro =
+        document.getElementById("mensagemErro");
+
+    const sucesso =
+        document.getElementById("mensagemSucesso");
+
+
+    sucesso.style.display = "none";
+
+
+    erro.innerText =
+        mensagem || "Ocorreu um erro.";
+
+
+    erro.style.display = "block";
+
+}
+
+
+function mostrarSucesso(mensagem){
+
+    const erro =
+        document.getElementById("mensagemErro");
+
+    const sucesso =
+        document.getElementById("mensagemSucesso");
+
+
+    erro.style.display = "none";
+
+
+    sucesso.innerText =
+        mensagem || "Operação realizada com sucesso.";
+
+
+    sucesso.style.display = "block";
+
+
+    setTimeout(() => {
+
+        sucesso.style.display = "none";
+
+    }, 4000);
+
+}
+
+
+/* =========================================================
+   PLANO
+========================================================= */
+
+function mostrarPlano(plano){
+
+    const valor =
+        String(plano || "free").toLowerCase();
+
+
+    let classe =
+        "badge-free";
+
+
+    if(valor === "basic"){
+        classe = "badge-basic";
+    }
+
+
+    if(valor === "pro"){
+        classe = "badge-pro";
+    }
+
+
+    return `
+
+        <span class="badge ${classe}">
+
+            ${escaparHTML(
+                valor.toUpperCase()
+            )}
+
+        </span>
+
+    `;
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function mostrarStatus(ativo){
+
+    if(ativo === false){
+
+        return `
+
+            <span class="badge badge-bloqueado">
+                Bloqueado
+            </span>
+
+        `;
+
+    }
+
+
+    return `
+
+        <span class="badge badge-ativo">
+            Ativo
+        </span>
+
+    `;
+
+}
+
+
+/* =========================================================
+   CRIAR EMPRESA
+========================================================= */
+
+async function criarEmpresa(event){
+
+    event.preventDefault();
+
+
+    const btn =
+        document.getElementById(
+            "btnCriarEmpresa"
+        );
+
+
+    const nome =
+        document.getElementById(
+            "empresaNome"
+        ).value.trim();
+
+
+    const username =
+        document.getElementById(
+            "empresaUsuario"
+        ).value.trim();
+
+
+    const password =
+        document.getElementById(
+            "empresaSenha"
+        ).value;
+
+
+    const plan =
+        document.getElementById(
+            "empresaPlano"
+        ).value;
+
+
+    if(!nome || !username || !password){
+
+        mostrarErro(
+            "Preencha todos os campos obrigatórios."
+        );
+
+        return;
+
+    }
+
+
+    const confirmacao =
+        confirm(
+            "Deseja criar a empresa \"" +
+            nome +
+            "\" com o plano " +
+            plan.toUpperCase() +
+            "?"
+        );
+
+
+    if(!confirmacao){
+        return;
+    }
+
+
+    btn.disabled = true;
+
+    btn.innerText =
+        "⏳ Criando empresa...";
+
+
+    try{
+
+
+        const res =
+            await fetch(
+                "/api/admin/create-company",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    credentials:"include",
+
+                    body:JSON.stringify({
+
+                        name:nome,
+
+                        username:username,
+
+                        password:password,
+
+                        plan:plan
+
+                    })
+                }
+            );
+
+
+        if(res.status === 401){
+
+            window.location.href="/";
+
+            return;
+
+        }
+
+
+        if(res.status === 403){
+
+            mostrarErro(
+                "Você não possui permissão para criar empresas."
+            );
+
+            return;
+
+        }
+
+
+        const data =
+            await res.json().catch(() => ({}));
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Não foi possível criar a empresa."
+            );
+
+        }
+
+
+        mostrarSucesso(
+            "Empresa criada com sucesso."
+        );
+
+
+        document
+            .getElementById(
+                "formCriarEmpresa"
+            )
+            .reset();
+
+
+        await carregarPainel();
+
+        await carregarUsuarios();
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao criar empresa:",
+            err
+        );
+
+
+        mostrarErro(
+            err.message ||
+            "Erro ao criar empresa."
+        );
+
+
+    }finally{
+
+        btn.disabled = false;
+
+        btn.innerText =
+            "➕ Criar empresa";
+
+    }
+
+}
+
+
+/* =========================================================
+   ALTERAR PLANO
+========================================================= */
+
+async function alterarPlano(id, plano){
+
+    if(!id){
+
+        mostrarErro(
+            "Empresa inválida."
+        );
+
+        return;
+
+    }
+
+
+    const confirmacao =
+        confirm(
+            "Deseja alterar o plano desta empresa para " +
+            plano.toUpperCase() +
+            "?"
+        );
+
+
+    if(!confirmacao){
+        return;
+    }
+
+
+    const botoes =
+        document.querySelectorAll(
+            `[data-company-id="${id}"]`
+        );
+
+
+    botoes.forEach(botao => {
+
+        botao.disabled = true;
+
+    });
+
+
+    try{
+
+
+        const res =
+            await fetch(
+                `/api/admin/company/${encodeURIComponent(id)}/plan`,
+                {
+                    method:"PUT",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    credentials:"include",
+
+                    body:JSON.stringify({
+                        plan:plano
+                    })
+                }
+            );
+
+
+        if(res.status === 401){
+
+            window.location.href="/";
+
+            return;
+
+        }
+
+
+        if(res.status === 403){
+
+            mostrarErro(
+                "Você não possui permissão para alterar o plano."
+            );
+
+            return;
+
+        }
+
+
+        const data =
+            await res.json().catch(() => ({}));
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Não foi possível alterar o plano."
+            );
+
+        }
+
+
+        mostrarSucesso(
+            "Plano alterado com sucesso."
+        );
+
+
+        await carregarPainel();
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao alterar plano:",
+            err
+        );
+
+
+        mostrarErro(
+            err.message ||
+            "Erro ao alterar o plano."
+        );
+
+
+    }finally{
+
+        botoes.forEach(botao => {
+
+            botao.disabled = false;
+
+        });
+
+    }
+
+}
+
+
+/* =========================================================
+   SALVAR PLANO
+========================================================= */
+
+async function salvarPlano(id){
+
+    const select =
+        document.getElementById(
+            `plano-${id}`
+        );
+
+
+    if(!select){
+
+        mostrarErro(
+            "Não foi possível localizar o plano da empresa."
+        );
+
+        return;
+
+    }
+
+
+    await alterarPlano(
+        id,
+        select.value
+    );
+
+}
+
+
+/* =========================================================
+   ALTERAR STATUS
+========================================================= */
+
+async function alterarStatus(id, ativoAtual){
+
+    if(!id){
+
+        mostrarErro(
+            "Empresa inválida."
+        );
+
+        return;
+
+    }
+
+
+    const novoStatus =
+        ativoAtual === true
+        ? false
+        : true;
+
+
+    const mensagem =
+        novoStatus
+
+        ? "Deseja DESBLOQUEAR esta empresa?"
+
+        : "Deseja BLOQUEAR esta empresa?\n\nA empresa perderá o acesso ao sistema enquanto estiver bloqueada.";
+
+
+    const confirmacao =
+        confirm(mensagem);
+
+
+    if(!confirmacao){
+        return;
+    }
+
+
+    const botoes =
+        document.querySelectorAll(
+            `[data-company-id="${id}"]`
+        );
+
+
+    botoes.forEach(botao => {
+
+        botao.disabled = true;
+
+    });
+
+
+    try{
+
+
+        const res =
+            await fetch(
+                `/api/admin/company/${encodeURIComponent(id)}/status`,
+                {
+                    method:"PUT",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    credentials:"include",
+
+                    body:JSON.stringify({
+                        active:novoStatus
+                    })
+                }
+            );
+
+
+const data =
+    await res.json().catch(() => ({}));
+
+
+if(res.status === 401){
+
+    window.location.href="/";
+
+    return;
+
+}
+
+if(res.status === 403){
+
+    mostrarErro(
+        data.error ||
+        "Você não possui permissão para alterar o status da empresa."
+    );
+
+    return;
+
+}
+
+
+if(!res.ok){
+
+    throw new Error(
+        data.error ||
+        "Não foi possível alterar o status da empresa."
+    );
+
+}
+
+
+        mostrarSucesso(
+            novoStatus
+            ? "Empresa desbloqueada com sucesso."
+            : "Empresa bloqueada com sucesso."
+        );
+
+
+        await carregarPainel();
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao alterar status:",
+            err
+        );
+
+
+        mostrarErro(
+            err.message ||
+            "Erro ao alterar o status da empresa."
+        );
+
+
+    }finally{
+
+        botoes.forEach(botao => {
+
+            botao.disabled = false;
+
+        });
+
+    }
+
+}
+
+/* =========================================================
+   EXCLUIR EMPRESA
+========================================================= */
+
+async function excluirEmpresa(id){
+
+    if(!id){
+
+        mostrarErro(
+            "Empresa inválida."
+        );
+
+        return;
+
+    }
+
+
+    const confirmacao =
+        confirm(
+            "ATENÇÃO!\n\n" +
+            "Deseja realmente EXCLUIR esta empresa?\n\n" +
+            "Todos os dados vinculados a ela poderão ser excluídos.\n\n" +
+            "Esta ação não poderá ser desfeita."
+        );
+
+
+    if(!confirmacao){
+
+        return;
+
+    }
+
+
+    const botoes =
+        document.querySelectorAll(
+            `[data-company-id="${id}"]`
+        );
+
+
+    botoes.forEach(botao => {
+
+        botao.disabled = true;
+
+    });
+
+
+    try{
+
+        const res =
+            await fetch(
+                `/api/admin/company/${encodeURIComponent(id)}`,
+                {
+                    method:"DELETE",
+
+                    credentials:"include"
+                }
+            );
+
+
+        const data =
+            await res.json().catch(() => ({}));
+
+
+        if(res.status === 401){
+
+            window.location.href = "/";
+
+            return;
+
+        }
+
+
+        if(res.status === 403){
+
+            mostrarErro(
+                data.error ||
+                "Você não possui permissão para excluir esta empresa."
+            );
+
+            return;
+
+        }
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Não foi possível excluir a empresa."
+            );
+
+        }
+
+
+        mostrarSucesso(
+            "Empresa excluída com sucesso."
+        );
+
+
+        await carregarPainel();
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao excluir empresa:",
+            err
+        );
+
+
+        mostrarErro(
+            err.message ||
+            "Erro ao excluir a empresa."
+        );
+
+
+    }finally{
+
+        botoes.forEach(botao => {
+
+            botao.disabled = false;
+
+        });
+
+    }
+
+}
+
+
+/* =========================================================
+   CARREGAR PAINEL
+========================================================= */
+
+async function carregarPainel(){
+
+    const loading =
+        document.getElementById(
+            "loading"
+        );
+
+
+    const tabelaContainer =
+        document.getElementById(
+            "tabelaContainer"
+        );
+
+
+    const listaVazia =
+        document.getElementById(
+            "listaVazia"
+        );
+
+
+    const lista =
+        document.getElementById(
+            "listaEmpresas"
+        );
+
+
+    const erro =
+        document.getElementById(
+            "mensagemErro"
+        );
+
+
+    erro.style.display =
+        "none";
+
+
+    tabelaContainer.style.display =
+        "none";
+
+
+    listaVazia.style.display =
+        "none";
+
+
+    loading.style.display =
+        "block";
+
+
+    try{
+
+
+        const res =
+            await fetch(
+                "/api/admin/stats",
+                {
+                    credentials:"include"
+                }
+            );
+
+
+        if(res.status === 401){
+
+            window.location.href="/";
+
+            return;
+
+        }
+
+
+        if(res.status === 403){
+
+            alert(
+                "Você não possui permissão para acessar o Painel Master."
+            );
+
+
+            window.location.href =
+                "/dashboard.html";
+
+
+            return;
+
+        }
+
+
+        if(!res.ok){
+
+            throw new Error(
+                "Erro HTTP " +
+                res.status
+            );
+
+        }
+
+
+        const data =
+            await res.json();
+
+
+        document.getElementById(
+            "totalEmpresas"
+        ).innerText =
+            data.empresas ?? 0;
+
+
+        document.getElementById(
+            "totalUsuarios"
+        ).innerText =
+            data.usuarios ?? 0;
+
+
+        document.getElementById(
+            "totalChamados"
+        ).innerText =
+            data.chamados ?? 0;
+
+
+        const companies =
+            Array.isArray(
+                data.companies
+            )
+            ? data.companies
+            : [];
+
+
+        lista.innerHTML =
+            "";
+
+
+        if(companies.length === 0){
+
+            loading.style.display =
+                "none";
+
+
+            listaVazia.style.display =
+                "block";
+
+
+            return;
+
+        }
+
+
+        companies.forEach(company => {
+
+
+            const nome =
+                company.name ||
+                "Empresa sem nome";
+
+
+            const plano =
+                String(
+                    company.plan ||
+                    "free"
+                ).toLowerCase();
+
+
+            const userLimit =
+                company.userLimit === -1
+
+                ? "Ilimitado"
+
+                : (
+                    company.userLimit ??
+                    "-"
+                );
+
+
+            const ticketLimit =
+                company.ticketLimit === -1
+
+                ? "Ilimitado"
+
+                : (
+                    company.ticketLimit ??
+                    "-"
+                );
+
+
+            const ativo =
+                company.active !== false;
+
+
+            const protegida =
+                company.protected === true;
+
+
+            const id =
+                String(
+                    company._id ||
+                    ""
+                );
+
+
+            /* =====================================================
+               CONTROLES DA EMPRESA
+            ===================================================== */
+
+            let controlesPlano = "";
+
+            let controlesStatus = "";
+
+
+            /*
+             * EMPRESA PROTEGIDA
+             *
+             * Bits & Bytes:
+             * - mostra somente o plano atual
+             * - não permite alterar plano
+             * - não permite bloquear
+             * - não permite excluir
+             */
+
+            if(protegida){
+
+                controlesPlano = `
+
+                    ${mostrarPlano(plano)}
+
+                    <span
+                        style="
+                            display:inline-flex;
+                            align-items:center;
+                            gap:5px;
+                            padding:6px 10px;
+                            border-radius:6px;
+                            background:#f1f5f9;
+                            color:#64748b;
+                            font-size:12px;
+                            font-weight:600;
+                        "
+                    >
+                        🔒 Protegida
+                    </span>
+
+                `;
+
+
+                controlesStatus = `
+
+                    ${mostrarStatus(ativo)}
+
+                    <span
+                        style="
+                            display:inline-flex;
+                            align-items:center;
+                            gap:5px;
+                            padding:6px 10px;
+                            border-radius:6px;
+                            background:#f1f5f9;
+                            color:#64748b;
+                            font-size:12px;
+                            font-weight:600;
+                        "
+                    >
+                        🔒 Protegida
+                    </span>
+
+                `;
+
+            }
+
+
+            /*
+             * DEMAIS EMPRESAS
+             *
+             * Permite:
+             * - alterar plano
+             * - bloquear/desbloquear
+             * - excluir
+             */
+
+            else {
+
+                controlesPlano = `
+
+                    ${mostrarPlano(plano)}
+
+
+                    <select
+                        class="select-plano"
+                        id="plano-${escaparHTML(id)}"
+                        data-company-id="${escaparHTML(id)}"
+                    >
+
+                        <option
+                            value="free"
+                            ${plano === "free" ? "selected" : ""}
+                        >
+                            Free
+                        </option>
+
+
+                        <option
+                            value="basic"
+                            ${plano === "basic" ? "selected" : ""}
+                        >
+                            Basic
+                        </option>
+
+
+                        <option
+                            value="pro"
+                            ${plano === "pro" ? "selected" : ""}
+                        >
+                            Pro
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        class="btn btn-salvar"
+                        data-company-id="${escaparHTML(id)}"
+                        onclick="salvarPlano('${escaparHTML(id)}')"
+                    >
+                        Salvar
+                    </button>
+
+                `;
+
+
+                controlesStatus = `
+
+                    ${mostrarStatus(ativo)}
+
+
+                    <button
+                        class="btn ${
+                            ativo
+                            ? "btn-bloquear"
+                            : "btn-desbloquear"
+                        }"
+                        data-company-id="${escaparHTML(id)}"
+                        onclick="alterarStatus('${escaparHTML(id)}', ${ativo})"
+                    >
+
+                        ${
+                            ativo
+                            ? "🔒 Bloquear"
+                            : "🔓 Desbloquear"
+                        }
+
+                    </button>
+
+
+                    <button
+                        class="btn"
+                        data-company-id="${escaparHTML(id)}"
+                        onclick="excluirEmpresa('${escaparHTML(id)}')"
+                        style="
+                            background:#dc2626;
+                            color:white;
+                            border:none;
+                        "
+                    >
+                        🗑️ Excluir
+                    </button>
+
+                `;
+
+            }
+
+
+            lista.innerHTML += `
+
+                <tr>
+
+
+                    <td>
+
+                        <strong>
+                            ${escaparHTML(nome)}
+                        </strong>
+
+                        ${
+                            protegida
+
+                            ? `
+                                <div
+                                    style="
+                                        margin-top:4px;
+                                        font-size:11px;
+                                        color:#64748b;
+                                    "
+                                >
+                                    🔒 Empresa protegida
+                                </div>
+                              `
+
+                            : ""
+                        }
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="acoes">
+
+                            ${controlesPlano}
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        ${escaparHTML(userLimit)}
+
+                    </td>
+
+
+                    <td>
+
+                        ${escaparHTML(ticketLimit)}
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="acoes">
+
+                            ${controlesStatus}
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        <span
+                            style="
+                                color:#64748b;
+                                font-size:12px;
+                            "
+                        >
+                            ID:
+                            ${escaparHTML(id)}
+                        </span>
+
+                    </td>
+
+
+                </tr>
+
+            `;
+
+        });
+
+
+        loading.style.display =
+            "none";
+
+
+        tabelaContainer.style.display =
+            "block";
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao carregar Painel Master:",
+            err
+        );
+
+
+        loading.style.display =
+            "none";
+
+
+        erro.innerText =
+            "Não foi possível carregar o Painel Master. Verifique sua conexão e tente novamente.";
+
+
+        erro.style.display =
+            "block";
+
+    }
+
+}
+
+
+/* =========================================================
+   CARREGAR USUÁRIOS
+========================================================= */
+
+async function carregarUsuarios(){
+
+    const loading =
+        document.getElementById(
+            "loadingUsuarios"
+        );
+
+
+    const container =
+        document.getElementById(
+            "usuariosContainer"
+        );
+
+
+    const vazio =
+        document.getElementById(
+            "usuariosVazio"
+        );
+
+
+    const lista =
+        document.getElementById(
+            "listaUsuarios"
+        );
+
+
+    loading.style.display =
+        "block";
+
+
+    container.style.display =
+        "none";
+
+
+    vazio.style.display =
+        "none";
+
+
+    try{
+
+
+        const res =
+            await fetch(
+                "/api/admin/users",
+                {
+                    credentials:"include"
+                }
+            );
+
+
+        if(res.status === 401){
+
+            window.location.href="/";
+
+            return;
+
+        }
+
+
+        if(res.status === 403){
+
+            mostrarErro(
+                "Você não possui permissão para visualizar os usuários."
+            );
+
+            return;
+
+        }
+
+
+        if(!res.ok){
+
+            throw new Error(
+                "Erro HTTP " +
+                res.status
+            );
+
+        }
+
+
+        const usuarios =
+            await res.json();
+
+
+        lista.innerHTML =
+            "";
+
+
+        if(
+            !Array.isArray(usuarios) ||
+            usuarios.length === 0
+        ){
+
+            loading.style.display =
+                "none";
+
+
+            vazio.style.display =
+                "block";
+
+
+            return;
+
+        }
+
+
+        usuarios.forEach(usuario => {
+
+
+            let cargo =
+                usuario.role ||
+                "Usuário";
+
+
+            if(cargo === "master"){
+                cargo = "Master";
+            }
+
+            else if(cargo === "admin"){
+                cargo = "Administrador";
+            }
+
+            else if(cargo === "tech"){
+                cargo = "Técnico";
+            }
+
+
+            lista.innerHTML += `
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${escaparHTML(
+                                usuario.username
+                            )}
+                        </strong>
+                    </td>
+
+
+                    <td>
+                        ${escaparHTML(cargo)}
+                    </td>
+
+
+                    <td>
+                        ${escaparHTML(
+                            usuario.companyName ||
+                            "Sem empresa"
+                        )}
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+
+        loading.style.display =
+            "none";
+
+
+        container.style.display =
+            "block";
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao carregar usuários:",
+            err
+        );
+
+
+        loading.style.display =
+            "none";
+
+
+        mostrarErro(
+            "Não foi possível carregar os usuários."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   INICIAR
+========================================================= */
+
+carregarPainel();
+
+carregarUsuarios();
+
 
 </script>
 
+
 </body>
+
 </html>

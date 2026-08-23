@@ -437,62 +437,121 @@ async function alterarPlano(
   plan
 ){
 
-  await fetch(
+  try {
 
-    "/api/admin/company/" + id + "/plan",
+    const res = await fetch(
 
-    {
+      "/api/admin/company/" + id + "/plan",
 
-      method:"PUT",
+      {
 
-      headers:{
-        "Content-Type":
-          "application/json"
-      },
+        method:"PUT",
 
-      credentials:"include",
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
 
-      body: JSON.stringify({
-        plan
-      })
+        credentials:"include",
+
+        body: JSON.stringify({
+          plan
+        })
+
+      }
+
+    );
+
+    const data = await res.json();
+
+    if(!res.ok){
+
+      alert(
+        data.error ||
+        "Não foi possível alterar o plano da empresa."
+      );
+
+      return;
 
     }
 
-  );
+    alert("Plano alterado com sucesso.");
 
-  load();
+    load();
+
+  } catch(err){
+
+    console.error(err);
+
+    alert(
+      "Erro de comunicação com o servidor."
+    );
+
+  }
 
 }
+
 
 async function alterarStatus(
   id,
   active
 ){
 
-  await fetch(
+  try {
 
-    "/api/admin/company/" + id + "/status",
+    const res = await fetch(
 
-    {
+      "/api/admin/company/" + id + "/status",
 
-      method:"PUT",
+      {
 
-      headers:{
-        "Content-Type":
-          "application/json"
-      },
+        method:"PUT",
 
-      credentials:"include",
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
 
-      body: JSON.stringify({
-        active
-      })
+        credentials:"include",
+
+        body: JSON.stringify({
+          active
+        })
+
+      }
+
+    );
+
+    const data = await res.json();
+
+    if(!res.ok){
+
+      alert(
+        data.error ||
+        "Não foi possível alterar o status da empresa."
+      );
+
+      return;
 
     }
 
-  );
+    alert(
+      active
+        ? "Empresa desbloqueada com sucesso."
+        : "Empresa bloqueada com sucesso."
+    );
 
-  load();
+    load();
+
+  } catch(err){
+
+    console.error(err);
+
+    alert(
+      "Erro de comunicação com o servidor."
+    );
+
+  }
 
 }
 

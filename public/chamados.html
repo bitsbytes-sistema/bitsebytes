@@ -990,6 +990,9 @@ Status
 🖨 OS
 </button>
 
+<button onclick="abrirDiagnostico('${c._id}')">
+🔍 Diagnóstico
+</button>
 
 ${
 c.status === "finalizado"
@@ -1000,7 +1003,7 @@ Laudo
 </button>
 `
 :
-"" 
+""
 }
 
 
@@ -1488,6 +1491,11 @@ async function status(id){
 
 }
 
+function abrirDiagnostico(id){
+  window.location.href =
+    "/diagnostico.html?id=" +
+    encodeURIComponent(id);
+}
 
 
 /* ===================== LAUDO ===================== */

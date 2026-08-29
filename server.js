@@ -1386,6 +1386,662 @@ ${textoStatus}`
   res.json({ ok: true, whatsapp });
 });
 
+/* ===================== DIAGNÓSTICO PRÉ-SERVIÇO ===================== */
+
+/* ===================== BUSCAR DIAGNÓSTICO ===================== */
+
+app.get("/api/tickets/:id/diagnostico", auth, async (req, res) => {
+
+  try {
+
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId: req.session.user.companyId
+    });
+
+    if (!ticket) {
+
+      return res.status(404).json({
+        error: "Chamado não encontrado"
+      });
+
+    }
+
+    res.json(ticket);
+
+  } catch (err) {
+
+    console.error(
+      "Erro ao buscar diagnóstico:",
+      err
+    );
+
+    res.status(500).json({
+      error: "Erro ao buscar diagnóstico"
+    });
+
+  }
+
+});
+
+
+/* ===================== SALVAR DIAGNÓSTICO ===================== */
+
+app.put("/api/tickets/:id/diagnostico", auth, async (req, res) => {
+
+  try {
+
+    const situacoesPermitidas = [
+      "rascunho",
+      "aguardando_aprovacao",
+      "aprovado",
+      "recusado"
+    ];
+
+    const situacaoDiagnostico =
+      req.body.situacaoDiagnostico ||
+      "rascunho";
+
+    if (
+      !situacoesPermitidas.includes(
+        situacaoDiagnostico
+      )
+    ) {
+
+      return res.status(400).json({
+        error: "Situação do diagnóstico inválida"
+      });
+
+    }
+
+    let valorDiagnostico =
+      Number(
+        req.body.valorDiagnostico || 0
+      );
+
+    if (
+      !Number.isFinite(valorDiagnostico) ||
+      valorDiagnostico < 0
+    ) {
+
+      valorDiagnostico = 0;
+
+    }
+
+    const agora = new Date();
+
+    const atualizacao = {
+
+      diagnosticoPreServico:
+        req.body.diagnosticoPreServico || "",
+
+      servicoRecomendado:
+        req.body.servicoRecomendado || "",
+
+      pecasRecomendadas:
+        req.body.pecasRecomendadas || "",
+
+      valorDiagnostico,
+
+      prazoEstimado:
+        req.body.prazoEstimado || "",
+
+      observacoesDiagnostico:
+        req.body.observacoesDiagnostico || "",
+
+      tecnicoDiagnostico:
+        req.body.tecnicoDiagnostico || "",
+
+      situacaoDiagnostico
+
+    };
+
+if (situacaoDiagnostico === "aprovado") {
+
+  atualizacao.status = "reparo";
+
+}
+
+
+    if (
+      situacaoDiagnostico !== "rascunho"
+    ) {
+
+      atualizacao.dataDiagnostico =
+        agora;
+
+    }
+
+
+    if (
+      situacaoDiagnostico === "aprovado" ||
+      situacaoDiagnostico === "recusado"
+    ) {
+
+      atualizacao.dataRespostaDiagnostico =
+        agora;
+
+    } else {
+
+      atualizacao.dataRespostaDiagnostico =
+        null;
+
+    }
+
+
+    const ticket =
+      await Ticket.findOneAndUpdate(
+        {
+          _id: req.params.id,
+          companyId: req.session.user.companyId
+        },
+        {
+          $set: atualizacao
+        },
+        {
+          new: true,
+          runValidators: true
+        }
+      );
+
+
+    if (!ticket) {
+
+      return res.status(404).json({
+        error: "Chamado não encontrado"
+      });
+
+    }
+
+
+    res.json({
+      ok: true,
+      ticket
+    });
+
+  } catch (err) {
+
+    console.error(
+      "Erro ao salvar diagnóstico:",
+      err
+    );
+
+    res.status(500).json({
+      error: "Erro ao salvar diagnóstico"
+    });
+
+  }
+
+});
+
+/* ===================== PDF DIAGNÓSTICO ===================== */
+
+app.get("/api/tickets/:id/diagnostico/pdf", auth, async (req, res) => {
+
+  let browser = null;
+
+  try {
+
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId: req.session.user.companyId
+    });
+
+    if (!ticket) {
+
+      return res.status(404).send(
+        "Chamado não encontrado"
+      );
+
+    }
+
+    const company = await Company.findById(
+      req.session.user.companyId
+    );
+
+    const formatarValor = (valor) => {
+
+      return Number(valor || 0)
+        .toLocaleString(
+          "pt-BR",
+          {
+            style: "currency",
+            currency: "BRL"
+          }
+        );
+
+    };
+
+    const formatarSituacao = (situacao) => {
+
+      switch (situacao) {
+
+        case "aguardando_aprovacao":
+          return "Aguardando aprovação";
+
+        case "aprovado":
+          return "Aprovado pelo cliente";
+
+        case "recusado":
+          return "Recusado pelo cliente";
+
+        default:
+          return "Rascunho";
+
+      }
+
+    };
+
+    const html = `
+
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  margin:0;
+  padding:0;
+  color:#0f172a;
+  font-size:12px;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  border-bottom:3px solid #0f172a;
+  padding-bottom:10px;
+  margin-bottom:12px;
+}
+
+.empresa h1{
+  margin:0;
+  font-size:24px;
+}
+
+.empresa p{
+  margin:4px 0 0;
+  color:#475569;
+}
+
+.documento{
+  text-align:right;
+}
+
+.documento h2{
+  margin:0;
+  font-size:20px;
+}
+
+.documento div{
+  margin-top:5px;
+  font-weight:bold;
+}
+
+.box{
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  padding:10px;
+  margin-bottom:7px;
+
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+
+.box h3{
+  margin:0 0 7px;
+  font-size:14px;
+  border-bottom:1px solid #e2e8f0;
+  padding-bottom:5px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px 24px;
+}
+
+.item{
+  margin-bottom:8px;
+}
+
+.label{
+  font-weight:bold;
+}
+
+.texto{
+  white-space:pre-wrap;
+  line-height:1.5;
+}
+
+.status{
+  font-weight:bold;
+  padding:10px;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  margin-top:8px;
+}
+
+.footer{
+  margin-top:35px;
+  text-align:center;
+  font-size:11px;
+  color:#64748b;
+}
+
+.assinaturas{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:60px;
+  margin-top:30px;
+
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+
+.assinatura{
+  text-align:center;
+  border-top:1px solid #000;
+  padding-top:6px;
+}
+
+.assinaturas{
+  break-inside:avoid;
+  page-break-inside:avoid;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+  <div class="empresa">
+
+    <h1>
+      ${company?.name || "Bits & Bytes Tecnology"}
+    </h1>
+
+    <p>
+      ${company?.phone || ""}
+    </p>
+
+    <p>
+      ${company?.email || ""}
+    </p>
+
+    <p>
+      ${company?.address || ""}
+    </p>
+
+  </div>
+
+  <div class="documento">
+
+    <h2>
+      DIAGNÓSTICO TÉCNICO
+    </h2>
+
+    <div>
+      OS #${ticket.numeroOS || ""}
+    </div>
+
+    <div>
+      ${new Date().toLocaleDateString(
+        "pt-BR",
+        {
+          timeZone:"America/Cuiaba"
+        }
+      )}
+    </div>
+
+  </div>
+
+</div>
+
+
+<div class="box">
+
+  <h3>Dados do Cliente</h3>
+
+  <div class="grid">
+
+    <div class="item">
+      <span class="label">Cliente:</span>
+      ${ticket.cliente || ""}
+    </div>
+
+    <div class="item">
+      <span class="label">Telefone:</span>
+      ${ticket.telefone || ""}
+    </div>
+
+    <div class="item">
+      <span class="label">CPF/CNPJ:</span>
+      ${ticket.cpfcnpj || ""}
+    </div>
+
+    <div class="item">
+      <span class="label">Equipamento:</span>
+      ${ticket.equipamento || ""}
+    </div>
+
+  </div>
+
+</div>
+
+
+<div class="box">
+
+  <h3>Problema Relatado pelo Cliente</h3>
+
+  <div class="texto">
+    ${ticket.problema || "Não informado"}
+  </div>
+
+</div>
+
+
+<div class="box">
+
+  <h3>Diagnóstico Técnico</h3>
+
+  <div class="texto">
+    ${ticket.diagnosticoPreServico || "Não informado"}
+  </div>
+
+</div>
+
+
+<div class="box">
+
+  <h3>Serviço Recomendado</h3>
+
+  <div class="texto">
+    ${ticket.servicoRecomendado || "Não informado"}
+  </div>
+
+</div>
+
+
+<div class="box">
+
+  <h3>Peças / Componentes Recomendados</h3>
+
+  <div class="texto">
+    ${ticket.pecasRecomendadas || "Não informado"}
+  </div>
+
+</div>
+
+
+<div class="box">
+
+  <h3>Condições do Serviço</h3>
+
+  <div class="grid">
+
+    <div class="item">
+      <span class="label">Valor:</span>
+      ${formatarValor(ticket.valorDiagnostico)}
+    </div>
+
+    <div class="item">
+      <span class="label">Prazo estimado:</span>
+      ${ticket.prazoEstimado || "Não informado"}
+    </div>
+
+    <div class="item">
+      <span class="label">Técnico responsável:</span>
+      ${ticket.tecnicoDiagnostico || "Não informado"}
+    </div>
+
+    <div class="item">
+      <span class="label">Situação:</span>
+      ${formatarSituacao(ticket.situacaoDiagnostico)}
+    </div>
+
+  </div>
+
+</div>
+
+
+<div class="box">
+
+  <h3>Observações</h3>
+
+  <div class="texto">
+    ${ticket.observacoesDiagnostico || "Nenhuma observação"}
+  </div>
+
+</div>
+
+
+<div class="assinaturas">
+
+  <div class="assinatura">
+    Técnico responsável
+  </div>
+
+  <div class="assinatura">
+    Cliente
+  </div>
+
+</div>
+
+
+<div class="footer">
+  Documento de diagnóstico técnico pré-serviço
+</div>
+
+</body>
+
+</html>
+
+`;
+
+    browser = await puppeteer.launch(
+
+      process.env.RENDER
+
+        ? {
+
+            executablePath:
+              await chromium.executablePath(),
+
+            args:
+              chromium.args,
+
+            headless:true
+
+          }
+
+        : {
+
+            headless:true
+
+          }
+
+    );
+
+    const page =
+      await browser.newPage();
+
+    await page.setContent(
+      html,
+      {
+        waitUntil:"networkidle0"
+      }
+    );
+
+    const pdf =
+      await page.pdf({
+
+        format:"A4",
+
+        printBackground:true,
+
+        margin:{
+  top:"10mm",
+  right:"12mm",
+  bottom:"10mm",
+  left:"12mm"
+}
+
+      });
+
+    await browser.close();
+
+    browser = null;
+
+    res.setHeader(
+      "Content-Type",
+      "application/pdf"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="Diagnostico-OS-${ticket.numeroOS}.pdf"`
+    );
+
+    res.end(pdf);
+
+  } catch (err) {
+
+    console.error(
+      "Erro ao gerar PDF do diagnóstico:",
+      err
+    );
+
+    if (browser) {
+
+      try{
+        await browser.close();
+      }catch{}
+
+    }
+
+    res.status(500).send(
+      "Erro ao gerar PDF do diagnóstico"
+    );
+
+  }
+
+});
+
 
 /* ===================== LAUDO ===================== */
 app.get("/api/tickets/:id/laudo", auth, async (req, res) => {

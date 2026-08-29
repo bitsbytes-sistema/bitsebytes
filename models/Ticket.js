@@ -68,6 +68,72 @@ bairro: {
     trim: true
   },
 
+  /* ===================== DIAGNÓSTICO PRÉ-SERVIÇO ===================== */
+
+  diagnosticoPreServico: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  servicoRecomendado: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  pecasRecomendadas: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  valorDiagnostico: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+
+  prazoEstimado: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  observacoesDiagnostico: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  tecnicoDiagnostico: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  situacaoDiagnostico: {
+    type: String,
+    enum: [
+      "rascunho",
+      "aguardando_aprovacao",
+      "aprovado",
+      "recusado"
+    ],
+    default: "rascunho"
+  },
+
+  dataDiagnostico: {
+    type: Date,
+    default: null
+  },
+
+  dataRespostaDiagnostico: {
+    type: Date,
+    default: null
+  },
+
+
   /* ===================== LAUDO ===================== */
 
   diagnostico: {

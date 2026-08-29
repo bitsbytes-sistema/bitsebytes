@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Diagnóstico Técnico</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f2f2f2;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+  width:250px;
+  background:#0f172a;
+  min-height:100vh;
+  color:white;
+  position:fixed;
+  left:0;
+  top:0;
+}
+
+.logo{
+  padding:20px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.sidebar a{
+  display:block;
+  color:white;
+  text-decoration:none;
+  padding:14px 20px;
+}
+
+.sidebar a:hover{
+  background:#1e293b;
+}
+
+.usuario{
+  position:absolute;
+  bottom:20px;
+  left:20px;
+}
+
+/* ================= MAIN ================= */
+
+.main{
+  margin-left:250px;
+  min-height:100vh;
+}
+
+.topbar{
+  height:70px;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 30px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.topbar a{
+  color:#dc2626;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+.container{
+  padding:25px;
+}
+
+/* ================= DIAGNÓSTICO ================= */
+
+.diagnostico{
+  background:white;
+  max-width:950px;
+  margin:auto;
+  padding:40px;
+  border-radius:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:2px solid #ddd;
+  padding-bottom:20px;
+  margin-bottom:30px;
+}
+
+.marca{
+  font-size:28px;
+  font-weight:bold;
+  color:#2c2c44;
+}
+
+.os{
+  font-size:18px;
+  font-weight:bold;
+}
+
+h2{
+  color:#2c2c44;
+  margin-top:30px;
+}
+
+.linha{
+  margin-bottom:15px;
+}
+
+.label{
+  font-weight:bold;
+}
+
+.box-info{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  padding:18px;
+  margin-bottom:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+textarea,
+input,
+select{
+  width:100%;
+  padding:10px;
+  border-radius:5px;
+  border:1px solid #ccc;
+  font-family:Arial;
+}
+
+textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+input[type="number"]{
+  min-height:40px;
+}
+
+.status-diagnostico{
+  margin-top:20px;
+  padding:15px;
+  border-radius:8px;
+  font-weight:bold;
+}
+
+.status-rascunho{
+  background:#e2e8f0;
+  color:#334155;
+}
+
+.status-aguardando_aprovacao{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.status-aprovado{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.status-recusado{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+/* ================= BOTÕES ================= */
+
+.acoes{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:25px;
+}
+
+button{
+  padding:12px 18px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  color:white;
+  font-weight:bold;
+}
+
+button:hover{
+  opacity:.88;
+}
+
+.salvar{
+  background:#16a34a;
+}
+
+.aguardando{
+  background:#ca8a04;
+}
+
+.aprovar{
+  background:#2563eb;
+}
+
+.recusar{
+  background:#dc2626;
+}
+
+.imprimir{
+  background:#0f172a;
+}
+
+.voltar{
+  background:#64748b;
+}
+
+/* ================= RESPONSIVO ================= */
+
+@media(max-width:900px){
+
+  .sidebar{
+    display:none;
+  }
+
+  .main{
+    margin-left:0;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .diagnostico{
+    padding:20px;
+  }
+
+}
+
+/* ================= IMPRESSÃO ================= */
+
+@media print{
+
+  .sidebar,
+  .topbar,
+  .acoes{
+    display:none !important;
+  }
+
+  .main{
+    margin:0 !important;
+    width:100% !important;
+  }
+
+  .container{
+    padding:0 !important;
+  }
+
+  body{
+    background:white;
+  }
+
+  .diagnostico{
+    max-width:100%;
+    margin:0;
+    box-shadow:none;
+    border-radius:0;
+    padding:20px;
+  }
+
+  textarea,
+input,
+select{
+  border:1px solid #cbd5e1 !important;
+  padding:8px !important;
+  border-radius:5px !important;
+  background:white !important;
+  color:#000 !important;
+}
+
+textarea{
+  min-height:90px !important;
+  overflow:visible !important;
+}
+
+select{
+  appearance:none;
+}
+
+h2{
+  break-after:avoid;
+}
+
+.box-info,
+textarea,
+input,
+select,
+.status-diagnostico{
+  break-inside:avoid;
+}
+
+.box-info{
+  border:1px solid #cbd5e1 !important;
+  background:white !important;
+}
+
+.status-diagnostico{
+  border:1px solid #cbd5e1 !important;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+  <div class="logo">
+
+    <img src="/logo.png" width="45">
+
+    <div>
+      <b>Bits & Bytes</b>
+      <br>
+      <small>Tecnology</small>
+    </div>
+
+  </div>
+
+  <a href="/dashboard.html">🏠 Dashboard</a>
+  <a href="/clientes.html">👥 Clientes</a>
+  <a href="/chamados.html">📋 Chamados</a>
+  <a href="/orcamentos.html">💰 Orçamentos</a>
+  <a href="/services.html">🛠 Serviços</a>
+  <a href="/laudos.html">📄 Laudos Técnicos</a>
+  <a href="/estoque.html">📦 Estoque</a>
+  <a href="/vendas.html">🛒 Vendas</a>
+  <a href="/financeiro.html">💵 Financeiro</a>
+  <a href="/lembretes.html">🔔 Lembretes</a>
+  <a href="/relatorios.html">📊 Relatórios</a>
+  <a href="/configuracoes.html">⚙️ Configurações</a>
+
+  <div class="usuario">
+
+    <b id="nomeUsuario">
+      Carregando...
+    </b>
+
+    <br>
+
+    <small id="cargoUsuario">
+      Usuário
+    </small>
+
+  </div>
+
+</div>
+
+
+<div class="main">
+
+  <div class="topbar">
+
+    <div>
+      🔍 Diagnóstico Técnico
+    </div>
+
+    <a href="javascript:void(0)" onclick="logout()">
+      Sair
+    </a>
+
+  </div>
+
+
+  <div class="container">
+
+    <div class="diagnostico">
+
+      <div class="topo">
+
+        <div class="marca">
+
+          Bits & Bytes
+
+          <br>
+
+          <small style="font-size:14px;">
+            Diagnóstico Técnico Pré-Serviço
+          </small>
+
+        </div>
+
+        <div class="os" id="numeroOS">
+          OS #
+        </div>
+
+      </div>
+
+
+      <h2>Dados do Chamado</h2>
+
+      <div class="box-info">
+
+        <div class="grid">
+
+          <div class="linha">
+            <span class="label">Cliente:</span>
+            <div id="cliente">-</div>
+          </div>
+
+          <div class="linha">
+            <span class="label">Telefone:</span>
+            <div id="telefone">-</div>
+          </div>
+
+          <div class="linha">
+            <span class="label">CPF/CNPJ:</span>
+            <div id="cpfcnpj">-</div>
+          </div>
+
+          <div class="linha">
+            <span class="label">Equipamento:</span>
+            <div id="equipamento">-</div>
+          </div>
+
+        </div>
+
+        <div class="linha">
+          <span class="label">Problema relatado pelo cliente:</span>
+          <div id="problema">-</div>
+        </div>
+
+        <div class="linha">
+          <span class="label">Observações da entrada:</span>
+          <div id="observacoesEntrada">-</div>
+        </div>
+
+      </div>
+
+
+      <h2>Diagnóstico Técnico</h2>
+
+      <textarea
+        id="diagnosticoPreServico"
+        placeholder="Descreva o defeito constatado, testes realizados e causa provável..."
+      ></textarea>
+
+
+      <h2>Serviço Recomendado</h2>
+
+      <textarea
+        id="servicoRecomendado"
+        placeholder="Informe o serviço recomendado para solucionar o problema..."
+      ></textarea>
+
+
+      <h2>Peças / Componentes Recomendados</h2>
+
+      <textarea
+        id="pecasRecomendadas"
+        placeholder="Informe peças ou componentes que deverão ser substituídos, se houver..."
+      ></textarea>
+
+
+      <div class="grid">
+
+        <div>
+
+          <h2>Valor do Serviço</h2>
+
+          <input
+            id="valorDiagnostico"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0,00"
+          >
+
+        </div>
+
+        <div>
+
+          <h2>Prazo Estimado</h2>
+
+          <input
+            id="prazoEstimado"
+            placeholder="Ex.: 2 dias úteis"
+          >
+
+        </div>
+
+      </div>
+
+
+      <h2>Observações do Diagnóstico</h2>
+
+      <textarea
+        id="observacoesDiagnostico"
+        placeholder="Informações adicionais para o cliente..."
+      ></textarea>
+
+
+      <h2>Técnico Responsável</h2>
+
+      <input
+        id="tecnicoDiagnostico"
+        placeholder="Nome do técnico responsável"
+      >
+
+
+      <h2>Situação do Diagnóstico</h2>
+
+      <select id="situacaoDiagnostico">
+
+        <option value="rascunho">
+          Rascunho
+        </option>
+
+        <option value="aguardando_aprovacao">
+          Aguardando aprovação do cliente
+        </option>
+
+        <option value="aprovado">
+          Aprovado pelo cliente
+        </option>
+
+        <option value="recusado">
+          Recusado pelo cliente
+        </option>
+
+      </select>
+
+
+      <div
+        id="statusVisual"
+        class="status-diagnostico status-rascunho"
+      >
+        RASCUNHO
+      </div>
+
+
+      <div class="acoes">
+
+        <button
+          class="salvar"
+          onclick="salvar('rascunho')"
+        >
+          💾 Salvar
+        </button>
+
+        <button
+          class="aguardando"
+          onclick="salvar('aguardando_aprovacao')"
+        >
+          ⏳ Aguardar Aprovação
+        </button>
+
+        <button
+          class="aprovar"
+          onclick="salvar('aprovado')"
+        >
+          ✅ Cliente Aprovou
+        </button>
+
+        <button
+          class="recusar"
+          onclick="salvar('recusado')"
+        >
+          ❌ Cliente Recusou
+        </button>
+
+        <button
+  class="imprimir"
+  onclick="enviarWhatsApp()"
+>
+  📱 Enviar WhatsApp
+</button>
+
+<button
+  class="imprimir"
+  onclick="abrirPDF()"
+>
+  🖨 Imprimir / PDF
+</button>
+
+<button
+  class="voltar"
+  onclick="window.location.href='/chamados.html'"
+>
+  ← Voltar
+</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const id =
+  params.get("id");
+
+let ticket = null;
+
+
+/* ===================== USUÁRIO ===================== */
+
+async function carregarUsuario(){
+
+  const res =
+    await fetch(
+      "/me",
+      {
+        credentials:"include"
+      }
+    );
+
+  if(res.status === 401){
+
+    window.location.href = "/";
+    return;
+
+  }
+
+  const data =
+    await res.json();
+
+  document
+    .getElementById("nomeUsuario")
+    .innerText =
+      data.user?.username ||
+      "Usuário";
+
+  document
+    .getElementById("cargoUsuario")
+    .innerText =
+      data.user?.role ||
+      "Usuário";
+
+}
+
+
+/* ===================== LOGOUT ===================== */
+
+async function logout(){
+
+  await fetch(
+    "/logout",
+    {
+      credentials:"include"
+    }
+  );
+
+  window.location.href = "/";
+
+}
+
+
+/* ===================== STATUS VISUAL ===================== */
+
+function atualizarStatusVisual(){
+
+  const situacao =
+    document
+      .getElementById("situacaoDiagnostico")
+      .value;
+
+  const statusVisual =
+    document
+      .getElementById("statusVisual");
+
+  statusVisual.className =
+    "status-diagnostico status-" +
+    situacao;
+
+  switch(situacao){
+
+    case "rascunho":
+
+      statusVisual.innerText =
+        "RASCUNHO";
+
+      break;
+
+    case "aguardando_aprovacao":
+
+      statusVisual.innerText =
+        "AGUARDANDO APROVAÇÃO DO CLIENTE";
+
+      break;
+
+    case "aprovado":
+
+      statusVisual.innerText =
+        "APROVADO PELO CLIENTE";
+
+      break;
+
+    case "recusado":
+
+      statusVisual.innerText =
+        "RECUSADO PELO CLIENTE";
+
+      break;
+
+  }
+
+}
+
+
+/* ===================== CARREGAR ===================== */
+
+async function carregar(){
+
+  if(!id){
+
+    alert(
+      "ID do chamado não encontrado."
+    );
+
+    window.location.href =
+      "/chamados.html";
+
+    return;
+
+  }
+
+  try{
+
+    const res =
+      await fetch(
+        "/api/tickets/" +
+        encodeURIComponent(id) +
+        "/diagnostico",
+        {
+          credentials:"include"
+        }
+      );
+
+    if(res.status === 401){
+
+      window.location.href = "/";
+      return;
+
+    }
+
+    if(!res.ok){
+
+      alert(
+        "Erro ao carregar diagnóstico."
+      );
+
+      return;
+
+    }
+
+    ticket =
+      await res.json();
+
+
+    document
+      .getElementById("numeroOS")
+      .innerText =
+        "OS #" +
+        (ticket.numeroOS || "-");
+
+
+    document
+      .getElementById("cliente")
+      .innerText =
+        ticket.cliente || "-";
+
+
+    document
+      .getElementById("telefone")
+      .innerText =
+        ticket.telefone || "-";
+
+
+    document
+      .getElementById("cpfcnpj")
+      .innerText =
+        ticket.cpfcnpj || "-";
+
+
+    document
+      .getElementById("equipamento")
+      .innerText =
+        ticket.equipamento || "-";
+
+
+    document
+      .getElementById("problema")
+      .innerText =
+        ticket.problema || "-";
+
+
+    document
+      .getElementById("observacoesEntrada")
+      .innerText =
+        ticket.observacoes || "-";
+
+
+    document
+      .getElementById("diagnosticoPreServico")
+      .value =
+        ticket.diagnosticoPreServico ||
+        "";
+
+
+    document
+      .getElementById("servicoRecomendado")
+      .value =
+        ticket.servicoRecomendado ||
+        "";
+
+
+    document
+      .getElementById("pecasRecomendadas")
+      .value =
+        ticket.pecasRecomendadas ||
+        "";
+
+
+    document
+      .getElementById("valorDiagnostico")
+      .value =
+        ticket.valorDiagnostico ||
+        "";
+
+
+    document
+      .getElementById("prazoEstimado")
+      .value =
+        ticket.prazoEstimado ||
+        "";
+
+
+    document
+      .getElementById("observacoesDiagnostico")
+      .value =
+        ticket.observacoesDiagnostico ||
+        "";
+
+
+    document
+      .getElementById("tecnicoDiagnostico")
+      .value =
+        ticket.tecnicoDiagnostico ||
+        "";
+
+
+    document
+      .getElementById("situacaoDiagnostico")
+      .value =
+        ticket.situacaoDiagnostico ||
+        "rascunho";
+
+
+    atualizarStatusVisual();
+
+  }catch(err){
+
+    console.error(
+      "Erro ao carregar diagnóstico:",
+      err
+    );
+
+    alert(
+      "Erro de conexão ao carregar diagnóstico."
+    );
+
+  }
+
+}
+
+
+/* ===================== SALVAR ===================== */
+
+async function salvar(novaSituacao){
+
+  const diagnostico =
+    document
+      .getElementById("diagnosticoPreServico")
+      .value
+      .trim();
+
+  const servico =
+    document
+      .getElementById("servicoRecomendado")
+      .value
+      .trim();
+
+
+  if(
+    novaSituacao !== "rascunho" &&
+    !diagnostico
+  ){
+
+    alert(
+      "Informe o diagnóstico técnico antes de alterar a situação."
+    );
+
+    return;
+
+  }
+
+
+  if(
+    novaSituacao !== "rascunho" &&
+    !servico
+  ){
+
+    alert(
+      "Informe o serviço recomendado antes de enviar o diagnóstico para aprovação."
+    );
+
+    return;
+
+  }
+
+
+  const body = {
+
+    diagnosticoPreServico:
+      diagnostico,
+
+    servicoRecomendado:
+      servico,
+
+    pecasRecomendadas:
+      document
+        .getElementById("pecasRecomendadas")
+        .value
+        .trim(),
+
+    valorDiagnostico:
+      Number(
+        document
+          .getElementById("valorDiagnostico")
+          .value ||
+        0
+      ),
+
+    prazoEstimado:
+      document
+        .getElementById("prazoEstimado")
+        .value
+        .trim(),
+
+    observacoesDiagnostico:
+      document
+        .getElementById("observacoesDiagnostico")
+        .value
+        .trim(),
+
+    tecnicoDiagnostico:
+      document
+        .getElementById("tecnicoDiagnostico")
+        .value
+        .trim(),
+
+    situacaoDiagnostico:
+      novaSituacao
+
+  };
+
+
+  try{
+
+    const res =
+      await fetch(
+        "/api/tickets/" +
+        encodeURIComponent(id) +
+        "/diagnostico",
+        {
+
+          method:"PUT",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          credentials:"include",
+
+          body:
+            JSON.stringify(body)
+
+        }
+      );
+
+
+    const data =
+      await res
+        .json()
+        .catch(() => ({}));
+
+
+    if(res.status === 401){
+
+      window.location.href = "/";
+      return;
+
+    }
+
+
+    if(!res.ok){
+
+      alert(
+        data.error ||
+        "Erro ao salvar diagnóstico."
+      );
+
+      return;
+
+    }
+
+
+    ticket =
+      data.ticket;
+
+
+    document
+      .getElementById("situacaoDiagnostico")
+      .value =
+        ticket.situacaoDiagnostico ||
+        novaSituacao;
+
+
+    atualizarStatusVisual();
+
+
+    switch(
+      ticket.situacaoDiagnostico
+    ){
+
+      case "rascunho":
+
+        alert(
+          "Diagnóstico salvo como rascunho."
+        );
+
+        break;
+
+      case "aguardando_aprovacao":
+
+        alert(
+          "Diagnóstico salvo e aguardando aprovação do cliente."
+        );
+
+        break;
+
+      case "aprovado":
+
+        alert(
+          "Diagnóstico aprovado pelo cliente."
+        );
+
+        break;
+
+      case "recusado":
+
+        alert(
+          "Diagnóstico recusado pelo cliente."
+        );
+
+        break;
+
+    }
+
+  }catch(err){
+
+    console.error(
+      "Erro ao salvar diagnóstico:",
+      err
+    );
+
+    alert(
+      "Erro de conexão ao salvar diagnóstico."
+    );
+
+  }
+
+}
+
+
+document
+  .getElementById("situacaoDiagnostico")
+  .addEventListener(
+    "change",
+    atualizarStatusVisual
+  );
+
+function enviarWhatsApp(){
+
+  if(!ticket){
+
+    alert("Diagnóstico ainda não foi carregado.");
+    return;
+
+  }
+
+  let numero =
+    String(ticket.telefone || "")
+      .replace(/\D/g, "");
+
+  if(!numero){
+
+    alert("O cliente não possui telefone cadastrado.");
+    return;
+
+  }
+
+  if(numero.startsWith("55")){
+
+    numero = numero.substring(2);
+
+  }
+
+  const valor =
+    Number(
+      document
+        .getElementById("valorDiagnostico")
+        .value || 0
+    )
+    .toLocaleString(
+      "pt-BR",
+      {
+        style:"currency",
+        currency:"BRL"
+      }
+    );
+
+  const diagnostico =
+    document
+      .getElementById("diagnosticoPreServico")
+      .value
+      .trim();
+
+  const servico =
+    document
+      .getElementById("servicoRecomendado")
+      .value
+      .trim();
+
+  const pecas =
+    document
+      .getElementById("pecasRecomendadas")
+      .value
+      .trim();
+
+  const prazo =
+    document
+      .getElementById("prazoEstimado")
+      .value
+      .trim();
+
+  if(!diagnostico){
+
+    alert("Informe o diagnóstico técnico antes de enviar ao cliente.");
+    return;
+
+  }
+
+  const mensagem = `*Bits & Bytes Tecnology*
+*Diagnóstico Técnico*
+
+*OS:* ${ticket.numeroOS || ""}
+*Cliente:* ${ticket.cliente || ""}
+*Equipamento:* ${ticket.equipamento || ""}
+
+*Diagnóstico:*
+${diagnostico}
+
+*Serviço recomendado:*
+${servico || "Não informado"}
+
+*Peças / componentes:*
+${pecas || "Não informado"}
+
+*Valor:*
+${valor}
+
+*Prazo estimado:*
+${prazo || "Não informado"}
+
+Aguardamos sua autorização para iniciar o reparo.`;
+
+  const url =
+    "https://wa.me/55" +
+    numero +
+    "?text=" +
+    encodeURIComponent(mensagem);
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
+function abrirPDF(){
+
+  if(!id){
+
+    alert("Chamado não identificado.");
+    return;
+
+  }
+
+  window.open(
+    `/api/tickets/${encodeURIComponent(id)}/diagnostico/pdf`,
+    "_blank"
+  );
+
+}
+
+carregarUsuario();
+carregar();
+
+</script>
+
+</body>
+
+</html>

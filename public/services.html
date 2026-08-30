@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<title>Serviços</title>
+<title>Peças e Serviços</title>
 
 <style>
 
@@ -137,7 +137,7 @@ td{
  border-radius:10px;
 }
 
-input,textarea{
+input,textarea,select{
  width:100%;
  padding:10px;
  margin-bottom:10px;
@@ -165,7 +165,7 @@ input,textarea{
 <a href="/clientes.html">👥 Clientes</a>
 <a href="/chamados.html">📋 Chamados</a>
 <a href="/orcamentos.html">💰 Orçamentos</a>
-<a href="/services.html">🛠 Serviços</a>
+<a href="/services.html">🛠 Peças e Serviços</a>
 <a href="/laudos.html">📄 Laudos Técnicos</a>
 <a href="/estoque.html">📦 Estoque</a>
 <a href="/vendas.html">🛒 Vendas</a>
@@ -185,7 +185,7 @@ input,textarea{
 <div class="main">
 
 <div class="topbar">
-<div>🛠 Serviços</div>
+<div>🛠 Peças e Serviços</div>
 <a href="javascript:void(0)" onclick="logout()">Sair</a>
 </div>
 
@@ -193,15 +193,15 @@ input,textarea{
 
 <div class="card">
 
-<h3>🛠 Serviços cadastrados</h3>
+<h3>🛠 Peças e Serviços cadastrados</h3>
 
 <button class="btn" onclick="abrirModal(); limparCampos(); editandoId=null;">
-➕ Novo Serviço
+➕ Nova Peça / Serviço
 </button>
 
 <input 
 id="busca"
-placeholder="Buscar serviço..."
+placeholder="Buscar peça ou serviço..."
 onkeyup="filtrar()"
 >
 
@@ -211,6 +211,7 @@ onkeyup="filtrar()"
 <tr>
 <th>Código</th>
 <th>Nome</th>
+<th>Tipo</th>
 <th>Categoria</th>
 <th>Valor</th>
 <th>Tempo</th>
@@ -234,7 +235,12 @@ onkeyup="filtrar()"
 
 <div class="modal-box">
 
-<h2>Serviço</h2>
+<h2>Peça / Serviço</h2>
+
+<select id="tipo">
+<option value="servico">Serviço</option>
+<option value="peca">Peça</option>
+</select>
 
 <input id="nome" placeholder="Nome">
 <input id="categoria" placeholder="Categoria">
@@ -285,6 +291,7 @@ tabela.innerHTML += `
 <tr>
 <td>${s.codigo || "-"}</td>
 <td>${s.nome}</td>
+<td>${s.tipo === "peca" ? "Peça" : "Serviço"}</td>
 <td>${s.categoria}</td>
 <td>R$ ${Number(s.valor).toFixed(2)}</td>
 <td>${s.tempo || "-"}</td>
@@ -316,6 +323,7 @@ if(!servico) return;
 abrirModal();
 
 document.getElementById("nome").value = servico.nome;
+document.getElementById("tipo").value = servico.tipo || "servico";
 document.getElementById("categoria").value = servico.categoria;
 document.getElementById("valor").value = servico.valor;
 document.getElementById("tempo").value = servico.tempo || "";
@@ -331,6 +339,7 @@ document.getElementById("btnSalvar").innerText = "💾 Salvar Alteração";
 async function salvarServico(){
 
 const nome = document.getElementById("nome").value;
+const tipo = document.getElementById("tipo").value;
 const categoria = document.getElementById("categoria").value;
 const valor = document.getElementById("valor").value;
 const tempo = document.getElementById("tempo").value;
@@ -352,6 +361,7 @@ headers:{
 credentials:"include",
 body:JSON.stringify({
 nome,
+tipo,
 categoria,
 valor,
 tempo,
@@ -375,6 +385,7 @@ headers:{
 credentials:"include",
 body:JSON.stringify({
 nome,
+tipo,
 categoria,
 valor,
 tempo,
@@ -403,6 +414,7 @@ document.getElementById("modal").style.display="none";
 function limparCampos(){
 
 document.getElementById("nome").value="";
+document.getElementById("tipo").value="servico";
 document.getElementById("categoria").value="";
 document.getElementById("valor").value="";
 document.getElementById("tempo").value="";
@@ -413,7 +425,7 @@ document.getElementById("garantia").value="";
 /* ===================== EXCLUIR ===================== */
 async function excluir(id){
 
-if(!confirm("Excluir serviço?")) return;
+if(!confirm("Excluir esta peça ou serviço?")) return;
 
 await fetch("/api/services/"+id,{
 method:"DELETE",
@@ -430,7 +442,9 @@ function filtrar(){
 const termo = document.getElementById("busca").value.toLowerCase();
 
 mostrar(servicos.filter(s =>
-s.nome.toLowerCase().includes(termo)
+  (s.nome || "").toLowerCase().includes(termo) ||
+  (s.categoria || "").toLowerCase().includes(termo) ||
+  (s.tipo === "peca" ? "peça peca" : "serviço servico").includes(termo)
 ));
 
 }

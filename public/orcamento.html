@@ -391,7 +391,7 @@ function renderItens() {
         padding-bottom:8px;
         margin-bottom:10px;
     ">
-        <div>Serviço</div>
+        <div>Peça / Serviço</div>
         <div>Qtd</div>
         <div>Valor</div>
         <div>Total</div>
@@ -417,7 +417,7 @@ function renderItens() {
                 <option
                     value="${servico._id}"
                     ${selecionado ? "selected" : ""}>
-                    ${servico.nome}
+                    ${servico.tipo === "peca" ? "📦 Peça" : "🛠 Serviço"} — ${servico.nome}
                 </option>
 
             `;

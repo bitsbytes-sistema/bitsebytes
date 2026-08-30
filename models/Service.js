@@ -13,6 +13,15 @@ const serviceSchema = new mongoose.Schema({
     trim: true
   },
 
+  tipo: {
+    type: String,
+    enum: [
+      "servico",
+      "peca"
+    ],
+    default: "servico"
+  },
+
   categoria: {
     type: String,
     default: "",

@@ -174,7 +174,7 @@ button:hover{
 <a href="/clientes.html">👥 Clientes</a>
 <a href="/chamados.html">📋 Chamados</a>
 <a href="/orcamentos.html">💰 Orçamentos</a>
-<a href="/services.html">🛠 Serviços</a>
+<a href="/services.html">🛠 Peças e Serviços</a>
 <a href="/laudos.html">📄 Laudos Técnicos</a>
 <a href="/estoque.html">📦 Estoque</a>
 <a href="/financeiro.html">💵 Financeiro</a>
@@ -238,7 +238,7 @@ Voltar
 
 <h3>Itens do Orçamento</h3>
 
-<label>Serviço</label>
+<label>Peça / Serviço</label>
 <select id="servico"></select>
 
 <label>Quantidade</label>
@@ -346,12 +346,12 @@ async function loadServicos(){
     const res = await fetch("/api/services",{credentials:"include"});
     servicos = await res.json();
 
-    servicoSelect.innerHTML = `<option value="">Selecione um serviço</option>`;
+    servicoSelect.innerHTML = `<option value="">Selecione uma peça ou serviço</option>`;
 
     servicos.forEach(s=>{
         servicoSelect.innerHTML += `
             <option value="${s._id}">
-                ${s.nome || s.descricao}
+                ${s.tipo === "peca" ? "📦 Peça" : "🛠 Serviço"} — ${s.nome || s.descricao}
             </option>
         `;
     });

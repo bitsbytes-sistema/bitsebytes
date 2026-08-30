@@ -114,6 +114,8 @@ router.post("/", async (req, res) => {
 
       nome: req.body.nome,
 
+      tipo: req.body.tipo || "servico",
+
       categoria: req.body.categoria,
 
       descricao: req.body.descricao,
@@ -160,6 +162,8 @@ router.put("/:id", async (req, res) => {
 
       {
         nome: req.body.nome,
+        tipo: req.body.tipo || "servico",
+
         categoria: req.body.categoria,
         descricao: req.body.descricao,
         valor: converterValor(req.body.valor),

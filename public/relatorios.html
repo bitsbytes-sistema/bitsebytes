@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Bits & Bytes - Relatórios</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f2f2f2;
+    color:#0f172a;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+    width:250px;
+    background:#0f172a;
+    min-height:100vh;
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+}
+
+.logo{
+    padding:20px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:14px 20px;
+}
+
+.sidebar a:hover{
+    background:#1e293b;
+}
+
+.usuario{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+}
+
+/* ================= MAIN ================= */
+
+.main{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    min-height:100vh;
+}
+
+/* ================= TOPBAR ================= */
+
+.topbar{
+    height:70px;
+    background:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 30px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.topbar a{
+    color:#dc2626;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+.card h3{
+    margin-top:0;
+}
+
+/* ================= FILTROS ================= */
+
+.linha{
+    display:flex;
+    gap:15px;
+    align-items:end;
+    flex-wrap:wrap;
+}
+
+.campo{
+    flex:1;
+    min-width:180px;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    border:1px solid #cbd5e1;
+    border-radius:6px;
+    font-size:15px;
+}
+
+input:focus{
+    outline:none;
+    border-color:#2563eb;
+}
+
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.btn-cinza{
+    background:#64748b;
+}
+
+/* ================= CARDS ================= */
+
+.cards-resumo{
+    display:grid;
+    grid-template-columns:
+        repeat(
+            5,
+            minmax(170px,1fr)
+        );
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.resumo-card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.resumo-card span{
+    display:block;
+    color:#64748b;
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.resumo-card strong{
+    font-size:24px;
+}
+
+/* ================= BLOCOS ================= */
+
+.grid-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.indicadores{
+    display:grid;
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(130px,1fr)
+        );
+    gap:12px;
+}
+
+.indicador{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:8px;
+    padding:15px;
+}
+
+.indicador span{
+    display:block;
+    color:#64748b;
+    font-size:13px;
+    margin-bottom:5px;
+}
+
+.indicador strong{
+    font-size:20px;
+}
+
+/* ================= TABLE ================= */
+
+.tabela-wrapper{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,
+td{
+    padding:12px 10px;
+    border-bottom:1px solid #e2e8f0;
+    text-align:left;
+}
+
+th{
+    background:#f8fafc;
+    color:#334155;
+}
+
+td.valor{
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+.vazio{
+    text-align:center;
+    color:#64748b;
+    padding:25px;
+}
+
+/* ================= RESPONSIVO ================= */
+
+@media(max-width:1200px){
+
+    .cards-resumo{
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(170px,1fr)
+            );
+    }
+
+    .grid-2{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:800px){
+
+    .sidebar{
+        width:220px;
+    }
+
+    .main{
+        margin-left:220px;
+        width:calc(100% - 220px);
+    }
+
+    .cards-resumo{
+        grid-template-columns:1fr;
+    }
+
+    .indicadores{
+        grid-template-columns:1fr 1fr;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar">
+
+    <div class="logo">
+
+        <img
+            src="/logo.png"
+            width="45"
+            alt="Logo"
+        >
+
+        <div>
+            <strong>Bits & Bytes</strong><br>
+            <small>Tecnology</small>
+        </div>
+
+    </div>
+
+    <a href="/dashboard.html">🏠 Dashboard</a>
+    <a href="/clientes.html">👥 Clientes</a>
+    <a href="/chamados.html">📋 Chamados</a>
+    <a href="/orcamentos.html">💰 Orçamentos</a>
+    <a href="/services.html">🛠 Peças e Serviços</a>
+    <a href="/laudos.html">📄 Laudos Técnicos</a>
+    <a href="/estoque.html">📦 Estoque</a>
+    <a href="/vendas.html">🛒 Vendas</a>
+    <a href="/financeiro.html">💵 Financeiro</a>
+    <a href="/lembretes.html">🔔 Lembretes</a>
+    <a href="/relatorios.html">📊 Relatórios</a>
+    <a href="/configuracoes.html">⚙️ Configurações</a>
+
+    <div class="usuario">
+
+        <b id="nomeUsuario">
+            Carregando...
+        </b>
+
+        <br>
+
+        <small id="perfilUsuario"></small>
+
+    </div>
+
+</div>
+
+<!-- ================= MAIN ================= -->
+
+<div class="main">
+
+    <div class="topbar">
+
+        <div>
+            📊 Relatórios
+        </div>
+
+        <a
+            href="javascript:void(0)"
+            onclick="logout()"
+        >
+            Sair
+        </a>
+
+    </div>
+
+    <div class="container">
+
+        <!-- ================= FILTROS ================= -->
+
+        <div class="card">
+
+            <h3>
+                🔎 Período
+            </h3>
+
+            <div class="linha">
+
+                <div class="campo">
+
+                    <label>
+                        Data inicial
+                    </label>
+
+                    <input
+                        type="date"
+                        id="filtroInicio"
+                    >
+
+                </div>
+
+                <div class="campo">
+
+                    <label>
+                        Data final
+                    </label>
+
+                    <input
+                        type="date"
+                        id="filtroFim"
+                    >
+
+                </div>
+
+                <button onclick="carregarRelatorios()">
+                    Filtrar
+                </button>
+
+                <button
+                    class="btn-cinza"
+                    onclick="limparFiltros()"
+                >
+                    Limpar
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- ================= FINANCEIRO ================= -->
+
+        <div class="cards-resumo">
+
+            <div class="resumo-card">
+                <span>Faturamento</span>
+                <strong id="faturamento">
+                    R$ 0,00
+                </strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>Despesas</span>
+                <strong id="despesas">
+                    R$ 0,00
+                </strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>Resultado</span>
+                <strong id="resultado">
+                    R$ 0,00
+                </strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>A receber</span>
+                <strong id="aReceber">
+                    R$ 0,00
+                </strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>A pagar</span>
+                <strong id="aPagar">
+                    R$ 0,00
+                </strong>
+            </div>
+
+        </div>
+
+        <div class="grid-2">
+
+            <!-- ================= VENDAS ================= -->
+
+            <div class="card">
+
+                <h3>
+                    🛒 Vendas
+                </h3>
+
+                <div class="indicadores">
+
+                    <div class="indicador">
+                        <span>Quantidade</span>
+                        <strong id="vendasQuantidade">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Total</span>
+                        <strong id="vendasTotal">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Ticket médio</span>
+                        <strong id="ticketMedio">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ================= ORÇAMENTOS ================= -->
+
+            <div class="card">
+
+                <h3>
+                    💰 Orçamentos
+                </h3>
+
+                <div class="indicadores">
+
+                    <div class="indicador">
+                        <span>Total</span>
+                        <strong id="orcamentosQuantidade">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Pendentes</span>
+                        <strong id="orcamentosPendentes">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Aprovados</span>
+                        <strong id="orcamentosAprovados">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Reprovados</span>
+                        <strong id="orcamentosReprovados">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Convertidos</span>
+                        <strong id="orcamentosConvertidos">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Pagos</span>
+                        <strong id="orcamentosPagos">
+                            0
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ================= CHAMADOS ================= -->
+
+            <div class="card">
+
+                <h3>
+                    📋 Chamados
+                </h3>
+
+                <div class="indicadores">
+
+                    <div class="indicador">
+                        <span>Total</span>
+                        <strong id="chamadosQuantidade">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Abertos</span>
+                        <strong id="chamadosAbertos">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Em andamento</span>
+                        <strong id="chamadosAndamento">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Em reparo</span>
+                        <strong id="chamadosReparo">
+                            0
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Finalizados</span>
+                        <strong id="chamadosFinalizados">
+                            0
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ================= RECEITAS ================= -->
+
+            <div class="card">
+
+                <h3>
+                    💵 Composição do faturamento
+                </h3>
+
+                <div class="indicadores">
+
+                    <div class="indicador">
+                        <span>Vendas</span>
+                        <strong id="financeiroVendas">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Orçamentos pagos</span>
+                        <strong id="financeiroOrcamentos">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                    <div class="indicador">
+                        <span>Entradas manuais</span>
+                        <strong id="financeiroEntradasManuais">
+                            R$ 0,00
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= FORMAS DE PAGAMENTO ================= -->
+
+        <div class="card">
+
+            <h3>
+                💳 Formas de pagamento
+            </h3>
+
+            <div class="tabela-wrapper">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Forma</th>
+                            <th>Quantidade</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tabelaFormasPagamento">
+
+                        <tr>
+                            <td
+                                colspan="3"
+                                class="vazio"
+                            >
+                                Carregando...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function moeda(valor){
+
+    return Number(valor || 0)
+        .toLocaleString(
+            "pt-BR",
+            {
+                style:"currency",
+                currency:"BRL"
+            }
+        );
+}
+
+
+function escapar(valor){
+
+    return String(valor ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+
+async function carregarUsuario(){
+
+    try{
+
+        const resposta =
+            await fetch("/me");
+
+        if(!resposta.ok){
+            return;
+        }
+
+        const dados =
+            await resposta.json();
+
+        const usuario =
+            dados.user || dados.usuario || dados;
+
+        document.getElementById(
+            "nomeUsuario"
+        ).textContent =
+            usuario.username ||
+            usuario.nome ||
+            "Usuário";
+
+        document.getElementById(
+            "perfilUsuario"
+        ).textContent =
+            usuario.role ||
+            usuario.perfil ||
+            "";
+
+    }catch(erro){
+
+        console.error(
+            "Erro ao carregar usuário:",
+            erro
+        );
+
+    }
+
+}
+
+
+async function carregarRelatorios(){
+
+    try{
+
+        const inicio =
+            document.getElementById(
+                "filtroInicio"
+            ).value;
+
+        const fim =
+            document.getElementById(
+                "filtroFim"
+            ).value;
+
+        const parametros =
+            new URLSearchParams();
+
+        if(inicio){
+            parametros.set(
+                "inicio",
+                inicio
+            );
+        }
+
+        if(fim){
+            parametros.set(
+                "fim",
+                fim
+            );
+        }
+
+        const url =
+            "/api/relatorios/resumo" +
+            (
+                parametros.toString()
+                    ? "?" + parametros.toString()
+                    : ""
+            );
+
+        const resposta =
+            await fetch(url);
+
+        if(!resposta.ok){
+
+            throw new Error(
+                "Erro ao carregar relatórios."
+            );
+
+        }
+
+        const dados =
+            await resposta.json();
+
+        renderizarFinanceiro(
+            dados.financeiro || {}
+        );
+
+        renderizarVendas(
+            dados.vendas || {}
+        );
+
+        renderizarOrcamentos(
+            dados.orcamentos || {}
+        );
+
+        renderizarChamados(
+            dados.chamados || {}
+        );
+
+        renderizarFormasPagamento(
+            dados.formasPagamento || []
+        );
+
+    }catch(erro){
+
+        console.error(erro);
+
+        alert(
+            "Não foi possível carregar os relatórios."
+        );
+
+    }
+
+}
+
+
+function renderizarFinanceiro(financeiro){
+
+    document.getElementById(
+        "faturamento"
+    ).textContent =
+        moeda(financeiro.faturamento);
+
+    document.getElementById(
+        "despesas"
+    ).textContent =
+        moeda(financeiro.despesas);
+
+    document.getElementById(
+        "resultado"
+    ).textContent =
+        moeda(financeiro.resultado);
+
+    document.getElementById(
+        "aReceber"
+    ).textContent =
+        moeda(financeiro.aReceber);
+
+    document.getElementById(
+        "aPagar"
+    ).textContent =
+        moeda(financeiro.aPagar);
+
+    document.getElementById(
+        "financeiroVendas"
+    ).textContent =
+        moeda(financeiro.vendas);
+
+    document.getElementById(
+        "financeiroOrcamentos"
+    ).textContent =
+        moeda(financeiro.orcamentosPagos);
+
+    document.getElementById(
+        "financeiroEntradasManuais"
+    ).textContent =
+        moeda(financeiro.entradasManuais);
+
+}
+
+
+function renderizarVendas(vendas){
+
+    document.getElementById(
+        "vendasQuantidade"
+    ).textContent =
+        vendas.quantidade || 0;
+
+    document.getElementById(
+        "vendasTotal"
+    ).textContent =
+        moeda(vendas.total);
+
+    document.getElementById(
+        "ticketMedio"
+    ).textContent =
+        moeda(vendas.ticketMedio);
+
+}
+
+
+function renderizarOrcamentos(orcamentos){
+
+    document.getElementById(
+        "orcamentosQuantidade"
+    ).textContent =
+        orcamentos.quantidade || 0;
+
+    document.getElementById(
+        "orcamentosPendentes"
+    ).textContent =
+        orcamentos.pendentes || 0;
+
+    document.getElementById(
+        "orcamentosAprovados"
+    ).textContent =
+        orcamentos.aprovados || 0;
+
+    document.getElementById(
+        "orcamentosReprovados"
+    ).textContent =
+        orcamentos.reprovados || 0;
+
+    document.getElementById(
+        "orcamentosConvertidos"
+    ).textContent =
+        orcamentos.convertidos || 0;
+
+    document.getElementById(
+        "orcamentosPagos"
+    ).textContent =
+        orcamentos.pagos || 0;
+
+}
+
+
+function renderizarChamados(chamados){
+
+    document.getElementById(
+        "chamadosQuantidade"
+    ).textContent =
+        chamados.quantidade || 0;
+
+    document.getElementById(
+        "chamadosAbertos"
+    ).textContent =
+        chamados.aberto || 0;
+
+    document.getElementById(
+        "chamadosAndamento"
+    ).textContent =
+        chamados.andamento || 0;
+
+    document.getElementById(
+        "chamadosReparo"
+    ).textContent =
+        chamados.reparo || 0;
+
+    document.getElementById(
+        "chamadosFinalizados"
+    ).textContent =
+        chamados.finalizado || 0;
+
+}
+
+
+function renderizarFormasPagamento(formas){
+
+    const tbody =
+        document.getElementById(
+            "tabelaFormasPagamento"
+        );
+
+    if(!formas.length){
+
+        tbody.innerHTML = `
+            <tr>
+                <td
+                    colspan="3"
+                    class="vazio"
+                >
+                    Nenhum pagamento encontrado no período.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    tbody.innerHTML =
+        formas.map(
+            item => `
+                <tr>
+                    <td>
+                        ${escapar(item.forma)}
+                    </td>
+
+                    <td>
+                        ${Number(item.quantidade || 0)}
+                    </td>
+
+                    <td class="valor">
+                        ${moeda(item.total)}
+                    </td>
+                </tr>
+            `
+        ).join("");
+
+}
+
+
+function limparFiltros(){
+
+    document.getElementById(
+        "filtroInicio"
+    ).value = "";
+
+    document.getElementById(
+        "filtroFim"
+    ).value = "";
+
+    carregarRelatorios();
+
+}
+
+
+async function logout(){
+
+    try{
+
+        await fetch("/logout");
+
+    }catch(erro){
+
+        console.error(erro);
+
+    }
+
+    window.location.href =
+        "/login.html";
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        carregarUsuario();
+        carregarRelatorios();
+
+    }
+);
+
+</script>
+
+</body>
+
+</html>

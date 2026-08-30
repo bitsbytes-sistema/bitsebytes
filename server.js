@@ -41,6 +41,7 @@ const stockMovementRoutes = require("./routes/stockMovements");
 const saleRoutes = require("./routes/sales");
 const budgetRoutes = require("./routes/budgets");
 const financeiroRoutes = require("./routes/financeiro");
+const relatoriosRoutes = require("./routes/relatorios");
 const notificationRoutes = require("./routes/notifications");
 const lembreteRoutes = require("./routes/lembretes");
 const OneSignal = require("onesignal-node");
@@ -3220,6 +3221,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/budgets", budgetRoutes);
 
 app.use("/api/financeiro", financeiroRoutes);
+app.use("/api/relatorios", relatoriosRoutes);
 
 app.use("/api/products", productRoutes);
 

@@ -40,6 +40,7 @@ const productRoutes = require("./routes/products");
 const stockMovementRoutes = require("./routes/stockMovements");
 const saleRoutes = require("./routes/sales");
 const budgetRoutes = require("./routes/budgets");
+const financeiroRoutes = require("./routes/financeiro");
 const notificationRoutes = require("./routes/notifications");
 const lembreteRoutes = require("./routes/lembretes");
 const OneSignal = require("onesignal-node");
@@ -3217,6 +3218,8 @@ erro: err.message
 app.use("/api/services", serviceRoutes);
 
 app.use("/api/budgets", budgetRoutes);
+
+app.use("/api/financeiro", financeiroRoutes);
 
 app.use("/api/products", productRoutes);
 

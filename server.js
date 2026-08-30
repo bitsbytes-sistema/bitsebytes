@@ -33,6 +33,7 @@ const Sale = require("./models/Sale");
 const Product = require("./models/Product");
 const StockMovement = require("./models/StockMovement");
 const PaymentMachine = require("./models/PaymentMachine");
+const BackupControl = require("./models/BackupControl");
 
 const serviceRoutes = require("./routes/services");
 const productRoutes = require("./routes/products");
@@ -111,6 +112,185 @@ async function atualizarTagsOneSignal(user){
 
 }
 
+
+/* ===================== BACKUP AUTOMÁTICO ===================== */
+
+let backupAutomaticoEmExecucao = false;
+
+function obterDataRondonia(data = new Date()) {
+
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: "America/Porto_Velho",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }
+  ).format(data);
+
+}
+
+function obterHoraRondonia(data = new Date()) {
+
+  return Number(
+    new Intl.DateTimeFormat(
+      "pt-BR",
+      {
+        timeZone: "America/Porto_Velho",
+        hour: "2-digit",
+        hour12: false
+      }
+    ).format(data)
+  );
+
+}
+
+async function verificarBackupAutomatico() {
+
+  if (backupAutomaticoEmExecucao) {
+    return;
+  }
+
+  try {
+
+    const agora = new Date();
+
+    const horaAtual =
+      obterHoraRondonia(agora);
+
+    if (horaAtual < 3) {
+      return;
+    }
+
+    const hoje =
+      obterDataRondonia(agora);
+
+    const controle =
+      await BackupControl.findOne({
+        chave: "backup-diario"
+      });
+
+    if (
+      controle &&
+      controle.ultimoBackupAutomatico
+    ) {
+
+      const dataUltimoBackup =
+        obterDataRondonia(
+          controle.ultimoBackupAutomatico
+        );
+
+      if (dataUltimoBackup === hoje) {
+        return;
+      }
+
+    }
+
+    backupAutomaticoEmExecucao = true;
+
+    console.log(
+      "Iniciando backup automático diário..."
+    );
+
+    await BackupControl.findOneAndUpdate(
+      {
+        chave: "backup-diario"
+      },
+      {
+        $set: {
+          ultimaTentativa: agora
+        },
+        $setOnInsert: {
+          chave: "backup-diario"
+        }
+      },
+      {
+        upsert: true,
+        new: true
+      }
+    );
+
+    await executarBackup();
+
+    await BackupControl.updateOne(
+      {
+        chave: "backup-diario"
+      },
+      {
+        $set: {
+          ultimoBackupAutomatico:
+            new Date(),
+
+          ultimaTentativa:
+            new Date(),
+
+          ultimoStatus:
+            "sucesso",
+
+          ultimoErro:
+            ""
+        }
+      }
+    );
+
+    console.log(
+      "Backup automático diário concluído."
+    );
+
+  } catch (erro) {
+
+    console.error(
+      "Erro no backup automático:",
+      erro
+    );
+
+    try {
+
+      await BackupControl.findOneAndUpdate(
+        {
+          chave: "backup-diario"
+        },
+        {
+          $set: {
+            ultimaTentativa:
+              new Date(),
+
+            ultimoStatus:
+              "erro",
+
+            ultimoErro:
+              String(
+                erro.message || erro
+              )
+          },
+
+          $setOnInsert: {
+            chave: "backup-diario"
+          }
+        },
+        {
+          upsert: true
+        }
+      );
+
+    } catch (erroRegistro) {
+
+      console.error(
+        "Erro ao registrar falha do backup:",
+        erroRegistro
+      );
+
+    }
+
+  } finally {
+
+    backupAutomaticoEmExecucao = false;
+
+  }
+
+}
+
 /* ===================== TRUST PROXY ===================== */
 app.set("trust proxy", 1);
 
@@ -144,6 +324,20 @@ mongoose.connect(process.env.MONGO_URL)
   .then(() => {
 
     console.log("Mongo conectado");
+
+    setTimeout(
+      verificarBackupAutomatico,
+      60 * 1000
+    );
+
+    setInterval(
+      verificarBackupAutomatico,
+      30 * 60 * 1000
+    );
+
+    console.log(
+      "Verificador de backup automático ativado."
+    );
 
   })
   .catch(err => console.log("Erro Mongo:", err));
@@ -3233,14 +3427,31 @@ app.post("/api/security/backup", auth, async (req, res) => {
 
       backup: {
 
-        id:
-          resultado.id,
+        banco: {
 
-        nome:
-          resultado.name,
+          id:
+            resultado.banco?.id || null,
 
-        tamanho:
-          resultado.size || null
+          nome:
+            resultado.banco?.name || null,
+
+          tamanho:
+            resultado.banco?.size || null
+
+        },
+
+        sistema: {
+
+          id:
+            resultado.sistema?.id || null,
+
+          nome:
+            resultado.sistema?.name || null,
+
+          tamanho:
+            resultado.sistema?.size || null
+
+        }
 
       }
 

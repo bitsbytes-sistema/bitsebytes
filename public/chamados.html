@@ -5,6 +5,8 @@
 
 <meta charset="UTF-8">
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Bits & Bytes - Chamados</title>
 
 
@@ -501,6 +503,144 @@ h3{
 .autocomplete-item:hover{
 
   background:#f1f5f9;
+
+}
+
+
+/* ================= RESPONSIVIDADE GERAL - TABLET E CELULAR ================= */
+
+@media (max-width:900px){
+
+  body{
+    overflow-x:hidden;
+  }
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    min-height:auto;
+    height:auto;
+    display:flex;
+    align-items:center;
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    scrollbar-width:thin;
+  }
+
+  .logo{
+    flex:0 0 auto;
+    min-width:190px;
+    border-bottom:none;
+    border-right:1px solid rgba(255,255,255,.1);
+  }
+
+  .sidebar a{
+    flex:0 0 auto;
+    padding:18px 14px;
+  }
+
+  .usuario{
+    position:relative;
+    left:auto;
+    bottom:auto;
+    flex:0 0 auto;
+    padding:10px 20px;
+    min-width:170px;
+  }
+
+  .main{
+    margin-left:0;
+    width:100%;
+    min-height:100vh;
+  }
+
+  .topbar{
+    padding:0 18px;
+  }
+
+  .container{
+    padding:14px;
+  }
+
+  .stats-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .card{
+    overflow:hidden;
+  }
+
+  .card > div[style*="display:inline-block"]{
+    display:block !important;
+    width:100%;
+  }
+
+  .card input,
+  .card textarea{
+    max-width:100%;
+  }
+
+  .card > div[style*="display:inline-block"] input{
+    width:100%;
+    margin-left:0;
+    margin-right:0;
+  }
+
+  .autocomplete-box{
+    width:100%;
+  }
+
+  #observacoes{
+    width:100% !important;
+    margin-left:0;
+    margin-right:0;
+  }
+
+  .filtros{
+    align-items:stretch;
+  }
+
+  .filtros input{
+    min-width:0;
+    width:100%;
+    flex:1 1 100%;
+  }
+
+  .filtros select{
+    min-width:0;
+    flex:1 1 200px;
+  }
+
+  #tabelaChamados{
+    min-width:900px;
+  }
+
+  .card:has(#tabelaChamados){
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+}
+
+@media (max-width:600px){
+
+  .stats-grid{
+    grid-template-columns:1fr;
+  }
+
+  .topbar{
+    height:60px;
+    padding:0 12px;
+  }
+
+  .container{
+    padding:10px;
+  }
+
+  .card{
+    padding:14px;
+  }
 
 }
 
@@ -2701,6 +2841,7 @@ setInterval(() => {
     width:100%;
   }
 }
+
 
 </style>
 

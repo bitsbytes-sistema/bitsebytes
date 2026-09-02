@@ -1791,7 +1791,7 @@ let assinaturaTemTraco = false;
 let desenhandoAssinatura = false;
 
 
-function prepararCanvasAssinatura(){
+function prepararCanvasAssinatura(preservar = false){
 
   const canvas =
     document.getElementById("canvasAssinaturaCliente");
@@ -1799,20 +1799,68 @@ function prepararCanvasAssinatura(){
   if(!canvas)
     return;
 
+  const rect =
+    canvas.getBoundingClientRect();
+
   const larguraVisual =
-    canvas.getBoundingClientRect().width;
+    rect.width;
 
   const alturaVisual =
-    canvas.getBoundingClientRect().height;
+    rect.height;
+
+  if(
+    larguraVisual <= 0 ||
+    alturaVisual <= 0
+  )
+    return;
+
+  const haviaAssinatura =
+    preservar &&
+    assinaturaTemTraco &&
+    canvas.width > 0 &&
+    canvas.height > 0;
+
+  let copiaCanvas = null;
+
+  if(haviaAssinatura){
+
+    copiaCanvas =
+      document.createElement("canvas");
+
+    copiaCanvas.width =
+      canvas.width;
+
+    copiaCanvas.height =
+      canvas.height;
+
+    copiaCanvas
+      .getContext("2d")
+      .drawImage(
+        canvas,
+        0,
+        0
+      );
+
+  }
 
   const escala =
     window.devicePixelRatio || 1;
 
   canvas.width =
-    Math.max(1, Math.round(larguraVisual * escala));
+    Math.max(
+      1,
+      Math.round(
+        larguraVisual * escala
+      )
+    );
 
   canvas.height =
-    Math.max(1, Math.round(alturaVisual * escala));
+    Math.max(
+      1,
+      Math.round(
+        alturaVisual * escala
+      )
+    );
 
   const ctx =
     canvas.getContext("2d");
@@ -1826,7 +1874,8 @@ function prepararCanvasAssinatura(){
     0
   );
 
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle =
+    "#ffffff";
 
   ctx.fillRect(
     0,
@@ -1835,16 +1884,40 @@ function prepararCanvasAssinatura(){
     alturaVisual
   );
 
+  if(copiaCanvas){
+
+    ctx.drawImage(
+      copiaCanvas,
+      0,
+      0,
+      copiaCanvas.width,
+      copiaCanvas.height,
+      0,
+      0,
+      larguraVisual,
+      alturaVisual
+    );
+
+    assinaturaTemTraco =
+      true;
+
+  }
+  else{
+
+    assinaturaTemTraco =
+      false;
+
+  }
+
   ctx.lineWidth = 2.2;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.strokeStyle = "#0f172a";
 
-  assinaturaTemTraco = false;
-  desenhandoAssinatura = false;
+  desenhandoAssinatura =
+    false;
 
 }
-
 
 function obterPosicaoAssinatura(evento){
 
@@ -2155,6 +2228,65 @@ async function confirmarConclusaoComAssinatura(){
 }
 
 
+let timerAjusteAssinatura = null;
+
+function ajustarAssinaturaAoViewport(){
+
+  const modal =
+    document.getElementById(
+      "modalAssinaturaCliente"
+    );
+
+  if(
+    !modal ||
+    !modal.classList.contains("ativo")
+  )
+    return;
+
+  clearTimeout(
+    timerAjusteAssinatura
+  );
+
+  timerAjusteAssinatura =
+    setTimeout(
+      () => {
+
+        requestAnimationFrame(
+          () => {
+
+            prepararCanvasAssinatura(
+              true
+            );
+
+          }
+        );
+
+      },
+      150
+    );
+
+}
+
+
+window.addEventListener(
+  "resize",
+  ajustarAssinaturaAoViewport
+);
+
+window.addEventListener(
+  "orientationchange",
+  ajustarAssinaturaAoViewport
+);
+
+if(window.visualViewport){
+
+  window.visualViewport.addEventListener(
+    "resize",
+    ajustarAssinaturaAoViewport
+  );
+
+}
+
 document.addEventListener(
   "DOMContentLoaded",
   () => {
@@ -2312,6 +2444,8 @@ setInterval(() => {
 #modalAssinaturaCliente{
   position:fixed;
   inset:0;
+  height:100vh;
+  height:100dvh;
   background:rgba(15,23,42,.72);
   display:none;
   align-items:center;
@@ -2326,7 +2460,7 @@ setInterval(() => {
 
 .assinatura-modal-card{
   width:min(620px, 100%);
-  max-height:92vh;
+  max-height:calc(100dvh - 36px);
   overflow:auto;
   background:#ffffff;
   border-radius:18px;
@@ -2548,7 +2682,7 @@ setInterval(() => {
     width:100%;
     border-radius:18px 18px 0 0;
     padding:18px;
-    max-height:95vh;
+    max-height:calc(100dvh - 8px);
   }
 
   .assinatura-resumo{

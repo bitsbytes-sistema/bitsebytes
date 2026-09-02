@@ -297,8 +297,8 @@ async function verificarBackupAutomatico() {
 app.set("trust proxy", 1);
 
 /* ===================== MIDDLEWARE ===================== */
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
 /* ===================== SESSION ===================== */
 app.use(
@@ -1502,54 +1502,142 @@ app.post("/api/tickets", auth, async (req, res) => {
 /* ===================== STATUS UPDATE ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
 
-  const statusValidos = ["aberto", "andamento", "reparo", "finalizado"];
+  try {
 
-  if(!statusValidos.includes(req.body.status)){
-    return res.status(400).json({ error: "status_invalido" });
-  }
+    const statusValidos = [
+      "aberto",
+      "andamento",
+      "reparo",
+      "finalizado"
+    ];
 
-  const ticket = await Ticket.findOneAndUpdate(
-    {
-      _id: req.params.id,
-      companyId: req.session.user.companyId
-    },
-    {
+    if(!statusValidos.includes(req.body.status)){
+      return res.status(400).json({
+        error: "status_invalido"
+      });
+    }
+
+    const atualizacao = {
       status: req.body.status,
       updatedAt: new Date()
-    },
-    { new: true }
-  );
+    };
 
-  if(!ticket){
-    return res.status(404).json({ error: true });
-  }
 
-  const numero = String(ticket.telefone || "").replace(/\D/g, "");
+    /* ===================== ASSINATURA DO CLIENTE ===================== */
 
-  let textoStatus = "";
+    if(req.body.status === "finalizado"){
 
-  if(req.body.status === "aberto"){
-    textoStatus = "Seu chamado foi aberto e aguarda análise.";
-  }
-  if(req.body.status === "andamento"){
-    textoStatus = "Seu equipamento está em análise.";
-  }
-  if(req.body.status === "reparo"){
-    textoStatus = "Seu equipamento está em manutenção na bancada.";
-  }
-  if(req.body.status === "finalizado"){
-    textoStatus = "Seu equipamento está pronto, aguarde que em breve entraremos em contato.";
-  }
+      const assinaturaCliente =
+        String(req.body.assinaturaCliente || "").trim();
 
-  let whatsapp = null;
+      if(!assinaturaCliente){
+        return res.status(400).json({
+          error: "assinatura_obrigatoria",
+          message: "A assinatura do cliente é obrigatória para finalizar o chamado."
+        });
+      }
 
-  if(numero.length >= 10){
+      if(!assinaturaCliente.startsWith("data:image/png;base64,")){
+        return res.status(400).json({
+          error: "assinatura_invalida",
+          message: "Formato de assinatura inválido."
+        });
+      }
 
-    const data = new Date().toLocaleString("pt-BR", {
-      timeZone: "America/Cuiaba"
-    });
+      if(assinaturaCliente.length > 1500000){
+        return res.status(400).json({
+          error: "assinatura_muito_grande",
+          message: "A assinatura excede o tamanho permitido."
+        });
+      }
 
-    const msg = encodeURIComponent(
+      atualizacao.assinaturaCliente =
+        assinaturaCliente;
+
+      atualizacao.nomeAssinante =
+        String(req.body.nomeAssinante || "")
+          .trim()
+          .slice(0, 150);
+
+      atualizacao.documentoAssinante =
+        String(req.body.documentoAssinante || "")
+          .trim()
+          .slice(0, 50);
+
+      atualizacao.dataAssinaturaCliente =
+        new Date();
+
+      atualizacao.assinaturaConfirmada =
+        true;
+    }
+
+
+    const ticket = await Ticket.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        companyId: req.session.user.companyId
+      },
+      {
+        $set: atualizacao
+      },
+      {
+        new: true,
+        runValidators: true
+      }
+    );
+
+
+    if(!ticket){
+      return res.status(404).json({
+        error: true
+      });
+    }
+
+
+    const numero =
+      String(ticket.telefone || "")
+        .replace(/\D/g, "");
+
+
+    let textoStatus = "";
+
+
+    if(req.body.status === "aberto"){
+      textoStatus =
+        "Seu chamado foi aberto e aguarda análise.";
+    }
+
+    if(req.body.status === "andamento"){
+      textoStatus =
+        "Seu equipamento está em análise.";
+    }
+
+    if(req.body.status === "reparo"){
+      textoStatus =
+        "Seu equipamento está em manutenção na bancada.";
+    }
+
+    if(req.body.status === "finalizado"){
+      textoStatus =
+        "Seu equipamento está pronto, aguarde que em breve entraremos em contato.";
+    }
+
+
+    let whatsapp = null;
+
+
+    if(numero.length >= 10){
+
+      const data =
+        new Date().toLocaleString(
+          "pt-BR",
+          {
+            timeZone: "America/Cuiaba"
+          }
+        );
+
+
+      const msg = encodeURIComponent(
 `Bits & Bytes Assistência Técnica
 
 ORDEM DE SERVIÇO:
@@ -1574,14 +1662,36 @@ Atualizado em:
 ${data}
 
 ${textoStatus}`
+      );
+
+
+      whatsapp =
+        `https://wa.me/55${numero}?text=${msg}`;
+    }
+
+
+    res.json({
+      ok: true,
+      whatsapp,
+      assinaturaConfirmada:
+        ticket.assinaturaConfirmada || false
+    });
+
+  }
+  catch(err){
+
+    console.error(
+      "Erro ao atualizar status do chamado:",
+      err
     );
 
-    whatsapp = `https://wa.me/55${numero}?text=${msg}`;
+    res.status(500).json({
+      error: "erro_atualizar_chamado"
+    });
+
   }
 
-  res.json({ ok: true, whatsapp });
 });
-
 /* ===================== DIAGNÓSTICO PRÉ-SERVIÇO ===================== */
 
 /* ===================== BUSCAR DIAGNÓSTICO ===================== */
@@ -2710,6 +2820,92 @@ if(fs.existsSync(logoPath)){
 
 
 
+const assinaturaOSHTML =
+  ticket.assinaturaConfirmada &&
+  ticket.assinaturaCliente
+    ? `
+
+<div
+  class="box"
+  style="
+    margin-top:15px;
+    page-break-inside:avoid;
+  "
+>
+
+  <h3>
+    Confirmação e Assinatura do Cliente
+  </h3>
+
+  <div
+    style="
+      margin-top:12px;
+      text-align:center;
+    "
+  >
+
+    <img
+      src="${ticket.assinaturaCliente}"
+      alt="Assinatura do cliente"
+      style="
+        display:block;
+        margin:0 auto;
+        max-width:360px;
+        width:100%;
+        max-height:130px;
+        object-fit:contain;
+      "
+    >
+
+    <div
+      style="
+        width:360px;
+        max-width:90%;
+        margin:4px auto 8px auto;
+        border-top:1px solid #555;
+      "
+    ></div>
+
+    <strong>
+      ${ticket.nomeAssinante || ticket.cliente || ""}
+    </strong>
+
+    ${
+      ticket.documentoAssinante
+        ? `
+          <div style="margin-top:4px;">
+            Documento:
+            ${ticket.documentoAssinante}
+          </div>
+        `
+        : ""
+    }
+
+    ${
+      ticket.dataAssinaturaCliente
+        ? `
+          <div style="margin-top:4px;">
+            Assinado em:
+            ${new Date(
+              ticket.dataAssinaturaCliente
+            ).toLocaleString(
+              "pt-BR",
+              {
+                timeZone: "America/Cuiaba"
+              }
+            )}
+          </div>
+        `
+        : ""
+    }
+
+  </div>
+
+</div>
+
+`
+    : "";
+
 const html = `
 
 <!DOCTYPE html>
@@ -3072,6 +3268,8 @@ ${ticket.observacoes || "Nenhuma observação"}
 
 </div>
 
+
+${assinaturaOSHTML}
 <br><br>
 
 

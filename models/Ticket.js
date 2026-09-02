@@ -156,6 +156,34 @@ bairro: {
     default: ""
   },
 
+  /* ===================== ASSINATURA DO CLIENTE ===================== */
+
+  assinaturaCliente: {
+    type: String,
+    default: ""
+  },
+
+  nomeAssinante: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  documentoAssinante: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  dataAssinaturaCliente: {
+    type: Date,
+    default: null
+  },
+
+  assinaturaConfirmada: {
+    type: Boolean,
+    default: false
+  },
   garantia: {
     type: String,
     default: ""

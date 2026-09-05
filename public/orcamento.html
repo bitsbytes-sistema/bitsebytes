@@ -168,7 +168,7 @@ button{
 
     <div class="botoes">
 
-        <button class="back" onclick="history.back()">Voltar</button>
+        <button class="back" onclick="window.location.href='/orcamentos.html'">Voltar</button>
 
         <button class="edit" onclick="abrirModal()">Editar</button>
 
@@ -176,6 +176,11 @@ button{
            style="background:#16a34a;color:white;"
            onclick="aprovarOrcamento()">
            ✅ Aprovar
+        </button>
+        <button id="btnReprovar"
+           style="display:none;background:#dc2626;color:white;"
+           onclick="reprovarOrcamento()">
+           ❌ Reprovar
         </button>
 
         <button
@@ -318,11 +323,14 @@ document.getElementById("observacoes").innerText =
     budget.observacoes || "-";
 
     const btn = document.getElementById("btnAprovar");
+    const btnReprovar = document.getElementById("btnReprovar");
 
     if(budget.status === "aprovado"){
         btn.style.display = "none";
+        btnReprovar.style.display = "inline-block";
     }else{
         btn.style.display = "inline-block";
+        btnReprovar.style.display = "none";
     }
 
     document.getElementById("total").innerText =
@@ -665,6 +673,39 @@ async function enviarWhatsImagem(){
     await carregar();
 
 })();
+
+async function reprovarOrcamento(){
+
+    if(!confirm("Deseja reprovar este orçamento?")){
+        return;
+    }
+
+    const res = await fetch(
+        "/api/budgets/" + id + "/reprovar",
+        {
+            method:"PUT",
+            credentials:"include"
+        }
+    );
+
+    const data = await res.json();
+
+    if(data.ok){
+
+        alert("Orçamento reprovado!");
+
+        await carregar();
+
+    }else{
+
+        alert(
+            data.error ||
+            "Erro ao reprovar orçamento."
+        );
+
+    }
+
+}
 
 async function aprovarOrcamento(){
 

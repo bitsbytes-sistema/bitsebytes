@@ -79,7 +79,8 @@ const BudgetSchema = new mongoose.Schema({
     enum: [
       "pendente",
       "pago",
-      "cortesia"
+      "cortesia",
+      "permuta"
     ],
     default: "pendente"
   },

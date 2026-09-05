@@ -1023,6 +1023,50 @@ router.put("/:id/aprovar", auth, async (req, res) => {
 
 });
 
+/* ===================== REPROVAR ORÇAMENTO ===================== */
+
+router.put("/:id/reprovar", auth, async (req, res) => {
+
+    try {
+
+        const budget = await Budget.findOne({
+            _id: req.params.id,
+            companyId: req.session.user.companyId
+        });
+
+        if (!budget) {
+            return res.status(404).json({
+                error: "Orçamento não encontrado"
+            });
+        }
+
+        budget.status = "reprovado";
+
+        budget.historico.push({
+            acao: "Orçamento reprovado",
+            usuario: req.session.user.username,
+            data: new Date()
+        });
+
+        await budget.save();
+
+        res.json({
+            ok: true,
+            budget
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+            error: true
+        });
+
+    }
+
+});
+
 /* ===================== MARCAR COMO PAGO ===================== */
 
 router.put("/:id/pagar", auth, async (req, res) => {
@@ -1129,6 +1173,59 @@ router.put("/:id/cortesia", auth, async (req, res) => {
 
 });
 
+/* ===================== MARCAR COMO PERMUTA ===================== */
+
+router.put("/:id/permuta", auth, async (req, res) => {
+
+    try {
+
+        const budget = await Budget.findOne({
+            _id: req.params.id,
+            companyId: req.session.user.companyId
+        });
+
+        if (!budget) {
+            return res.status(404).json({
+                error: "Orçamento não encontrado"
+            });
+        }
+
+        if (budget.pagamento === "permuta") {
+            return res.json({
+                ok: false,
+                error: "Este orçamento já está marcado como permuta."
+            });
+        }
+
+        budget.pagamento = "permuta";
+        budget.dataPagamento = new Date();
+        budget.usuarioPagamento = req.session.user.username;
+
+        budget.historico.push({
+            acao: "Orçamento marcado como permuta",
+            usuario: req.session.user.username,
+            data: new Date()
+        });
+
+        await budget.save();
+
+        res.json({
+            ok: true,
+            budget
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+            error: true
+        });
+
+    }
+
+});
+
 /* ===================== CANCELAR PAGAMENTO ===================== */
 
 router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
@@ -1176,6 +1273,53 @@ router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
 });
 
 /* ===================== CONVERTER ORÇAMENTO EM CHAMADO ===================== */
+
+/* ===================== EXCLUIR ORÇAMENTO ===================== */
+
+router.delete("/:id", auth, async (req, res) => {
+
+    try {
+
+        const budget = await Budget.findOne({
+            _id: req.params.id,
+            companyId: req.session.user.companyId
+        });
+
+        if (!budget) {
+            return res.status(404).json({
+                ok: false,
+                error: "Orçamento não encontrado."
+            });
+        }
+
+        if (budget.status === "convertido" || budget.ticketId) {
+            return res.status(400).json({
+                ok: false,
+                error: "Este orçamento já foi convertido em Ordem de Serviço e não pode ser excluído."
+            });
+        }
+
+        await Budget.deleteOne({
+            _id: budget._id,
+            companyId: req.session.user.companyId
+        });
+
+        res.json({
+            ok: true
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+            ok: false,
+            error: "Erro ao excluir orçamento."
+        });
+
+    }
+
+});
 
 router.post("/:id/converter", auth, async(req,res)=>{
 

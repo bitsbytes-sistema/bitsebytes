@@ -1021,7 +1021,291 @@ function mostrarAlerta(){
 
     `;
 
-  }else{
+  }else if(alerta.tipo === "receber"){
+
+    html += `
+
+      <div style="
+        padding:10px;
+        margin:8px 0;
+        background:#f8fafc;
+        border-radius:8px;
+        border-left:4px solid #22c55e;
+      ">
+
+        &#128176; <b>${item.descricao || "Conta sem descrição"}</b>
+
+        <br>
+
+        &#128181; <b>Valor:</b>
+        ${
+          Number(item.valor || 0).toLocaleString(
+            "pt-BR",
+            {
+              style:"currency",
+              currency:"BRL"
+            }
+          )
+        }
+
+        <br>
+
+        &#128193; <b>Categoria:</b>
+        ${item.categoria || "-"}
+
+        <br>
+
+        &#128197; <b>Vencimento:</b>
+        ${
+          item.dataVencimento
+            ? new Date(item.dataVencimento).toLocaleDateString(
+                "pt-BR",
+                {
+                  timeZone:"UTC"
+                }
+              )
+            : "Sem vencimento"
+        }
+
+        ${
+          item.observacoes
+            ? `
+              <br>
+              &#128221; <b>Observação:</b>
+              ${item.observacoes}
+            `
+            : ""
+        }
+
+      </div>
+
+    `;
+
+  }else if(alerta.tipo === "pagar"){
+
+    html += `
+
+      <div style="
+        padding:10px;
+        margin:8px 0;
+        background:#f8fafc;
+        border-radius:8px;
+        border-left:4px solid #ef4444;
+      ">
+
+        &#128179; <b>${item.descricao || "Conta sem descrição"}</b>
+
+        <br>
+
+        &#128181; <b>Valor:</b>
+        ${
+          Number(item.valor || 0).toLocaleString(
+            "pt-BR",
+            {
+              style:"currency",
+              currency:"BRL"
+            }
+          )
+        }
+
+        <br>
+
+        &#128193; <b>Categoria:</b>
+        ${item.categoria || "-"}
+
+        <br>
+
+        &#128197; <b>Vencimento:</b>
+        ${
+          item.dataVencimento
+            ? new Date(item.dataVencimento).toLocaleDateString(
+                "pt-BR",
+                {
+                  timeZone:"UTC"
+                }
+              )
+            : "Sem vencimento"
+        }
+
+        ${
+          item.observacoes
+            ? `
+              <br>
+              &#128221; <b>Observação:</b>
+              ${item.observacoes}
+            `
+            : ""
+        }
+
+      </div>
+
+    `;
+
+  }else if(alerta.tipo === "orcamentos"){
+
+    html += `
+
+      <div style="
+        padding:10px;
+        margin:8px 0;
+        background:#f8fafc;
+        border-radius:8px;
+        border-left:4px solid #eab308;
+      ">
+
+        &#128100; <b>${item.cliente || "Cliente não informado"}</b>
+
+        <br>
+
+        &#128196; <b>Orçamento:</b>
+        ${item.codigo || item.numero || "-"}
+
+        <br>
+
+        &#128176; <b>Valor:</b>
+        ${
+          Number(item.total || 0).toLocaleString(
+            "pt-BR",
+            {
+              style:"currency",
+              currency:"BRL"
+            }
+          )
+        }
+
+        <br>
+
+        &#128197; <b>Criado em:</b>
+        ${
+          item.criadoEm
+            ? new Date(item.criadoEm).toLocaleDateString(
+                "pt-BR",
+                {
+                  timeZone:"UTC"
+                }
+              )
+            : "-"
+        }
+
+        <br>
+
+        &#9203; <b>Validade:</b>
+        ${item.validade || 10} dia(s)
+
+        <br>
+
+        &#128198; <b>Vence em:</b>
+        ${
+          item.venceEm
+            ? new Date(item.venceEm).toLocaleDateString(
+                "pt-BR",
+                {
+                  timeZone:"UTC"
+                }
+              )
+            : "-"
+        }
+
+        ${
+          item.observacoes
+            ? `
+              <br>
+              &#128221; <b>Observação:</b>
+              ${item.observacoes}
+            `
+            : ""
+        }
+
+      </div>
+
+    `;
+}else if(alerta.tipo === "estoque"){
+
+    html += `
+
+      <div style="
+        padding:10px;
+        margin:8px 0;
+        background:#f8fafc;
+        border-radius:8px;
+        border-left:4px solid #9333ea;
+      ">
+
+        &#128230; <b>${item.nome || "Produto não informado"}</b>
+
+        ${
+          item.codigo
+            ? `
+              <br>
+              &#128290; <b>Código:</b>
+              ${item.codigo}
+            `
+            : ""
+        }
+
+        <br>
+
+        &#128202; <b>Quantidade atual:</b>
+        ${Number(item.quantidade || 0)}
+
+        <br>
+
+        &#9888;&#65039; <b>Estoque mínimo:</b>
+        ${Number(item.estoqueMinimo || 0)}
+
+        <br>
+
+        &#128680; <b>Situação:</b>
+        ${
+          Number(item.quantidade || 0) <= 0
+            ? "<b>ESTOQUE ZERADO</b>"
+            : "<b>ESTOQUE BAIXO</b>"
+        }
+
+        ${
+          item.categoria
+            ? `
+              <br>
+              &#128193; <b>Categoria:</b>
+              ${item.categoria}
+            `
+            : ""
+        }
+
+        ${
+          item.marca
+            ? `
+              <br>
+              &#127991;&#65039; <b>Marca:</b>
+              ${item.marca}
+            `
+            : ""
+        }
+
+        ${
+          item.fornecedor
+            ? `
+              <br>
+              &#128666; <b>Fornecedor:</b>
+              ${item.fornecedor}
+            `
+            : ""
+        }
+
+        ${
+          item.localizacao
+            ? `
+              <br>
+              &#128205; <b>Localização:</b>
+              ${item.localizacao}
+            `
+            : ""
+        }
+
+      </div>
+
+    `;
+}else{
 
     html += `
 

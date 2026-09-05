@@ -142,6 +142,38 @@ if (!req.session.user) {
       );
 
 
+
+    // ===================== CONTAS A RECEBER =====================
+
+    const alertaReceber =
+      await alertasService.contasReceber(
+        req.session.user.companyId
+      );
+
+
+    // ===================== CONTAS A PAGAR =====================
+
+    const alertaPagar =
+      await alertasService.contasPagar(
+        req.session.user.companyId
+      );
+
+
+    // ===================== ORÇAMENTOS =====================
+
+    const alertaOrcamentos =
+      await alertasService.orcamentos(
+        req.session.user.companyId
+      );
+
+
+    // ===================== ESTOQUE =====================
+
+    const alertaEstoque =
+      await alertasService.estoque(
+        req.session.user.companyId
+      );
+
     // ===================== ALERTAS =====================
 
     const alertas = [
@@ -169,71 +201,19 @@ if (!req.session.user) {
       },
 
 
-      {
-        tipo:"receber",
-
-        titulo:"🟢 Contas a Receber",
-
-        cor:"green",
-
-        quantidade:0,
-
-        mensagem:"Ainda não implementado.",
-
-        dados:[]
-
-      },
+      alertaReceber,
 
 
-      {
-        tipo:"pagar",
-
-        titulo:"🔴 Contas a Pagar",
-
-        cor:"red",
-
-        quantidade:0,
-
-        mensagem:"Ainda não implementado.",
-
-        dados:[]
-
-      },
+      alertaPagar,
 
 
       alertaChamados,
 
 
-      {
-        tipo:"orcamentos",
-
-        titulo:"💰 Orçamentos",
-
-        cor:"yellow",
-
-        quantidade:0,
-
-        mensagem:"Ainda não implementado.",
-
-        dados:[]
-
-      },
+      alertaOrcamentos,
 
 
-      {
-        tipo:"estoque",
-
-        titulo:"📦 Estoque",
-
-        cor:"purple",
-
-        quantidade:0,
-
-        mensagem:"Ainda não implementado.",
-
-        dados:[]
-
-      }
+      alertaEstoque
 
     ];
 

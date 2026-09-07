@@ -98,26 +98,16 @@ const BudgetSchema = new mongoose.Schema({
   formaPagamento: {
     type: String,
     enum: [
+      "",
       "Dinheiro",
       "PIX",
       "Cartão de Débito",
       "Cartão de Crédito",
       "Transferência"
     ],
-    default: null
+    default: ""
   },
 
-  formaPagamento: {
-    type: String,
-    enum: [
-      "Dinheiro",
-      "PIX",
-      "Cartão de Débito",
-      "Cartão de Crédito",
-      "Transferência"
-    ],
-    default: null
-  },
 
   /* ================================================ */
 

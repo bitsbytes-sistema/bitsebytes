@@ -1328,7 +1328,7 @@ router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
         budget.pagamento = "pendente";
         budget.dataPagamento = null;
         budget.usuarioPagamento = null;
-        budget.formaPagamento = null;
+        budget.formaPagamento = "";
 
         budget.historico.push({
             acao: "Pagamento cancelado",

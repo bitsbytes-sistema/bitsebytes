@@ -1692,6 +1692,78 @@ ${textoStatus}`
   }
 
 });
+
+/* ===================== EXCLUIR ASSINATURA DO CLIENTE ===================== */
+
+app.delete("/api/tickets/:id/assinatura", auth, async (req, res) => {
+
+  try {
+
+    const perfil =
+      String(req.session.user.role || "").toLowerCase();
+
+    if(
+      perfil !== "admin" &&
+      perfil !== "master"
+    ){
+      return res.status(403).json({
+        ok: false,
+        error: "Sem permissão para excluir assinatura."
+      });
+    }
+
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId: req.session.user.companyId
+    });
+
+    if(!ticket){
+      return res.status(404).json({
+        ok: false,
+        error: "Chamado não encontrado."
+      });
+    }
+
+    if(
+      !ticket.assinaturaConfirmada &&
+      !ticket.assinaturaCliente
+    ){
+      return res.status(400).json({
+        ok: false,
+        error: "Este chamado não possui assinatura registrada."
+      });
+    }
+
+    ticket.assinaturaCliente = "";
+    ticket.nomeAssinante = "";
+    ticket.documentoAssinante = "";
+    ticket.dataAssinaturaCliente = null;
+    ticket.assinaturaConfirmada = false;
+
+    await ticket.save();
+
+    res.json({
+      ok: true,
+      message: "Assinatura excluída com sucesso."
+    });
+
+  }
+  catch(err){
+
+    console.error(
+      "Erro ao excluir assinatura do cliente:",
+      err
+    );
+
+    res.status(500).json({
+      ok: false,
+      error: "Erro ao excluir assinatura."
+    });
+
+  }
+
+});
+
 /* ===================== DIAGNÓSTICO PRÉ-SERVIÇO ===================== */
 
 /* ===================== BUSCAR DIAGNÓSTICO ===================== */

@@ -1775,6 +1775,94 @@ function abrirAssinaturaCliente(id){
   }
 
 
+  const excluirAssinatura =
+    document.createElement("button");
+
+  excluirAssinatura.type = "button";
+  excluirAssinatura.textContent =
+    "🗑 Excluir assinatura";
+
+  excluirAssinatura.style.display = "block";
+  excluirAssinatura.style.width = "100%";
+  excluirAssinatura.style.marginTop = "22px";
+  excluirAssinatura.style.padding = "11px";
+  excluirAssinatura.style.border = "0";
+  excluirAssinatura.style.borderRadius = "8px";
+  excluirAssinatura.style.cursor = "pointer";
+  excluirAssinatura.style.fontWeight = "700";
+  excluirAssinatura.style.background = "#dc2626";
+  excluirAssinatura.style.color = "#ffffff";
+
+  excluirAssinatura.onclick = async function(){
+
+    const confirmou = confirm(
+      "Tem certeza que deseja excluir esta assinatura? Esta ação não poderá ser desfeita."
+    );
+
+    if(!confirmou)
+      return;
+
+    excluirAssinatura.disabled = true;
+    excluirAssinatura.textContent =
+      "Excluindo...";
+
+    try{
+
+      const res = await fetch(
+        "/api/tickets/" +
+        ticket._id +
+        "/assinatura",
+        {
+          method: "DELETE",
+          credentials: "include"
+        }
+      );
+
+      const resultado =
+        await res.json();
+
+      if(!res.ok){
+
+        alert(
+          resultado.error ||
+          "Não foi possível excluir a assinatura."
+        );
+
+        excluirAssinatura.disabled = false;
+        excluirAssinatura.textContent =
+          "🗑 Excluir assinatura";
+
+        return;
+      }
+
+      overlay.remove();
+
+      alert(
+        "Assinatura excluída com sucesso."
+      );
+
+      await carregarChamados();
+
+    }
+    catch(err){
+
+      console.error(
+        "Erro ao excluir assinatura:",
+        err
+      );
+
+      alert(
+        "Erro ao excluir assinatura."
+      );
+
+      excluirAssinatura.disabled = false;
+      excluirAssinatura.textContent =
+        "🗑 Excluir assinatura";
+
+    }
+
+  };
+
   const fechar =
     document.createElement("button");
 
@@ -1811,6 +1899,7 @@ function abrirAssinaturaCliente(id){
   modal.appendChild(nome);
   modal.appendChild(documento);
   modal.appendChild(data);
+  modal.appendChild(excluirAssinatura);
   modal.appendChild(fechar);
 
   overlay.appendChild(modal);

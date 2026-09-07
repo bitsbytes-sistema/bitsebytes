@@ -460,87 +460,148 @@ router.post("/", auth, async(req,res)=>{
 
     try{
 
+        const companyId = req.session.user.companyId;
 
         const ultimo = await Budget.findOne({
-
-            companyId:req.session.user.companyId
-
+            companyId
         }).sort({
-
             numero:-1
-
         });
-
 
         const numero =
             ultimo && ultimo.numero
             ? ultimo.numero + 1
             : 1;
 
-const ano = new Date().getFullYear();
+        const ano = new Date().getFullYear();
 
-const codigo = `ORC-${ano}-${String(numero).padStart(6, "0")}`;
+        const codigo = `ORC-${ano}-${String(numero).padStart(6, "0")}`;
 
+        const cliente = await Cliente.findOne({
+            _id: req.body.clienteId,
+            companyId
+        });
 
-        const cliente =
-            await Cliente.findById(req.body.clienteId);
-
-
-
-const budget = await Budget.create({
-
-    companyId:req.session.user.companyId,
-
-    numero,
-
-    codigo,
-
-    validade:req.body.validade || 10,
-
-    historico:[
-        {
-            acao:"Orçamento criado",
-            usuario:req.session.user.username,
-            data:new Date()
+        if(!cliente){
+            return res.status(400).json({
+                error: true,
+                message: "Cliente não encontrado."
+            });
         }
-    ],
 
-    clienteId:req.body.clienteId || null,
+        let ticket = null;
 
-    cliente:req.body.cliente || "",
+        if(req.body.ticketId){
 
-        telefone:cliente?.telefone || "",
+            if(!mongoose.Types.ObjectId.isValid(req.body.ticketId)){
+                return res.status(400).json({
+                    error: true,
+                    message: "Chamado inválido."
+                });
+            }
 
-    observacoes:req.body.observacoes || "",
+            ticket = await Ticket.findOne({
+                _id: req.body.ticketId,
+                companyId
+            });
 
-    dataAgendamento:req.body.dataAgendamento || null,
+            if(!ticket){
+                return res.status(404).json({
+                    error: true,
+                    message: "Chamado não encontrado."
+                });
+            }
 
-    horaAgendamento:req.body.horaAgendamento || null,
+            if(
+                ticket.clienteId &&
+                String(ticket.clienteId) !== String(cliente._id)
+            ){
+                return res.status(400).json({
+                    error: true,
+                    message: "O chamado selecionado pertence a outro cliente."
+                });
+            }
 
-    itens:req.body.itens || [],
+            if(ticket.budgetId){
+                return res.status(400).json({
+                    error: true,
+                    message: "Este chamado já possui um orçamento vinculado."
+                });
+            }
+        }
 
-    total:req.body.total || 0,
+        const historico = [
+            {
+                acao:"Orçamento criado",
+                usuario:req.session.user.username,
+                data:new Date()
+            }
+        ];
 
-    status:req.body.status || "pendente"
+        if(ticket){
+            historico.push({
+                acao:`Vinculado ao chamado OS ${ticket.numeroOS}`,
+                usuario:req.session.user.username,
+                data:new Date()
+            });
+        }
+
+        const budget = await Budget.create({
+
+            companyId,
+
+            numero,
+
+            codigo,
+
+            validade:req.body.validade || 10,
+
+            historico,
+
+            clienteId:cliente._id,
+
+            cliente:req.body.cliente || cliente.nome || "",
+
+            telefone:cliente.telefone || "",
+
+            observacoes:req.body.observacoes || "",
+
+            dataAgendamento:req.body.dataAgendamento || null,
+
+            horaAgendamento:req.body.horaAgendamento || null,
+
+            itens:req.body.itens || [],
+
+            total:req.body.total || 0,
+
+            status:req.body.status || "pendente",
+
+            ticketId:ticket ? ticket._id : null,
+
+            numeroOS:ticket ? ticket.numeroOS : null
+
+        });
+
+        if(ticket){
+            ticket.budgetId = budget._id;
+            await ticket.save();
+        }
+
+        console.log(budget);
+
+        res.json(budget);
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+            error: true
+        });
+
+    }
 
 });
-
-console.log(budget);
-
-res.json(budget);
-
-} catch (err) {
-
-    console.log(err);
-
-    res.status(500).json({
-        error: true
-    });
-
-}
-
-});
-
 
 /* ===================== BUSCAR ===================== */
 
@@ -1091,12 +1152,33 @@ router.put("/:id/pagar", auth, async (req, res) => {
             });
         }
 
+        const formasPermitidas = [
+            "Dinheiro",
+            "PIX",
+            "Cartão de Débito",
+            "Cartão de Crédito",
+            "Transferência"
+        ];
+
+        const formaPagamento =
+            String(req.body.formaPagamento || "").trim();
+
+        if (!formasPermitidas.includes(formaPagamento)) {
+
+            return res.status(400).json({
+                ok: false,
+                error: "Selecione uma forma de pagamento válida."
+            });
+
+        }
+
         budget.pagamento = "pago";
+        budget.formaPagamento = formaPagamento;
         budget.dataPagamento = new Date();
         budget.usuarioPagamento = req.session.user.username;
 
         budget.historico.push({
-            acao: "Pagamento recebido",
+            acao: `Pagamento recebido - ${formaPagamento}`,
             usuario: req.session.user.username,
             data: new Date()
         });
@@ -1246,6 +1328,7 @@ router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
         budget.pagamento = "pendente";
         budget.dataPagamento = null;
         budget.usuarioPagamento = null;
+        budget.formaPagamento = null;
 
         budget.historico.push({
             acao: "Pagamento cancelado",
@@ -1315,6 +1398,194 @@ router.delete("/:id", auth, async (req, res) => {
         res.status(500).json({
             ok: false,
             error: "Erro ao excluir orçamento."
+        });
+
+    }
+
+});
+
+/* ===================== VINCULAR ORÇAMENTO A CHAMADO EXISTENTE ===================== */
+
+router.put("/:id/vincular-chamado", auth, async (req, res) => {
+
+    try {
+
+        const companyId = req.session.user.companyId;
+        const ticketId = req.body.ticketId;
+
+        if(!ticketId || !mongoose.Types.ObjectId.isValid(ticketId)){
+
+            return res.status(400).json({
+                ok:false,
+                error:"Chamado inválido."
+            });
+
+        }
+
+
+        const budget = await Budget.findOne({
+            _id:req.params.id,
+            companyId
+        });
+
+        if(!budget){
+
+            return res.status(404).json({
+                ok:false,
+                error:"Orçamento não encontrado."
+            });
+
+        }
+
+
+        const ticket = await Ticket.findOne({
+            _id:ticketId,
+            companyId
+        });
+
+        if(!ticket){
+
+            return res.status(404).json({
+                ok:false,
+                error:"Chamado não encontrado."
+            });
+
+        }
+
+
+        const statusPermitidos = [
+            "aberto",
+            "andamento",
+            "reparo"
+        ];
+
+        if(!statusPermitidos.includes(
+            String(ticket.status || "").toLowerCase()
+        )){
+
+            return res.status(400).json({
+                ok:false,
+                error:"Somente chamados abertos, em andamento ou em reparo podem ser vinculados."
+            });
+
+        }
+
+
+        if(!budget.clienteId){
+
+            return res.status(400).json({
+                ok:false,
+                error:"Este orçamento não possui cliente vinculado corretamente."
+            });
+
+        }
+
+
+        if(!ticket.clienteId){
+
+            return res.status(400).json({
+                ok:false,
+                error:"Este chamado não possui cliente vinculado corretamente."
+            });
+
+        }
+
+
+        if(
+            String(budget.clienteId) !==
+            String(ticket.clienteId)
+        ){
+
+            return res.status(400).json({
+                ok:false,
+                error:"O orçamento e o chamado pertencem a clientes diferentes."
+            });
+
+        }
+
+
+        if(
+            budget.ticketId &&
+            String(budget.ticketId) !== String(ticket._id)
+        ){
+
+            return res.status(400).json({
+                ok:false,
+                error:"Este orçamento já está vinculado a outro chamado."
+            });
+
+        }
+
+
+        if(
+            ticket.budgetId &&
+            String(ticket.budgetId) !== String(budget._id)
+        ){
+
+            return res.status(400).json({
+                ok:false,
+                error:"Este chamado já está vinculado a outro orçamento."
+            });
+
+        }
+
+
+        if(
+            budget.ticketId &&
+            String(budget.ticketId) === String(ticket._id) &&
+            ticket.budgetId &&
+            String(ticket.budgetId) === String(budget._id)
+        ){
+
+            return res.json({
+                ok:true,
+                message:"Orçamento e chamado já estão vinculados.",
+                numeroOS:ticket.numeroOS
+            });
+
+        }
+
+
+        budget.ticketId = ticket._id;
+        budget.numeroOS = ticket.numeroOS;
+
+        if(!Array.isArray(budget.historico)){
+            budget.historico = [];
+        }
+
+        budget.historico.push({
+            acao:`Vinculado ao chamado OS ${ticket.numeroOS}`,
+            usuario:
+                req.session.user.username ||
+                req.session.user.nome ||
+                "Usuário",
+            data:new Date()
+        });
+
+
+        ticket.budgetId = budget._id;
+
+
+        await budget.save();
+        await ticket.save();
+
+
+        return res.json({
+            ok:true,
+            message:"Chamado vinculado com sucesso.",
+            ticketId:ticket._id,
+            numeroOS:ticket.numeroOS
+        });
+
+
+    } catch(err) {
+
+        console.log("ERRO AO VINCULAR ORÇAMENTO AO CHAMADO:");
+        console.log(err);
+
+        return res.status(500).json({
+            ok:false,
+            error:err.message
         });
 
     }

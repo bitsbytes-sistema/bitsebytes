@@ -215,6 +215,17 @@ Voltar
 <label>Cliente</label>
 <select id="cliente"></select>
 
+<div id="blocoChamado" style="display:none;">
+<label>📋 Chamado / OS vinculada</label>
+<select id="ticket">
+<option value="">Sem chamado vinculado</option>
+</select>
+
+<div id="infoChamado" style="font-size:13px;color:#64748b;margin-top:6px;">
+Selecione uma OS existente deste cliente ou deixe sem vínculo.
+</div>
+</div>
+
 <div class="grid">
 
 <div>
@@ -298,10 +309,13 @@ Salvar Orçamento
 
 /* ===== DADOS ===== */
 let clientes = [];
+let tickets = [];
 let servicos = [];
 let itens = [];
 
 const clienteSelect = document.getElementById("cliente");
+const ticketSelect = document.getElementById("ticket");
+const blocoChamado = document.getElementById("blocoChamado");
 const servicoSelect = document.getElementById("servico");
 const listaItens = document.getElementById("listaItens");
 const totalEl = document.getElementById("total");
@@ -339,6 +353,97 @@ async function loadClientes(){
     });
 
 }
+
+/* ===== CHAMADOS DO CLIENTE ===== */
+async function loadTickets(){
+
+    const res = await fetch(
+        "/api/tickets?t=" + Date.now(),
+        {
+            credentials:"include",
+            cache:"no-store"
+        }
+    );
+
+    if(!res.ok){
+        tickets = [];
+        return;
+    }
+
+    tickets = await res.json();
+}
+
+function atualizarChamadosCliente(){
+
+    const clienteId = clienteSelect.value;
+
+    ticketSelect.innerHTML =
+        `<option value="">Sem chamado vinculado</option>`;
+
+    if(!clienteId){
+        blocoChamado.style.display = "none";
+        return;
+    }
+
+    blocoChamado.style.display = "block";
+
+    const statusPermitidos = [
+        "aberto",
+        "andamento",
+        "reparo"
+    ];
+
+    const chamados = tickets.filter(t =>
+        String(t.clienteId || "") === String(clienteId) &&
+        statusPermitidos.includes(
+            String(t.status || "").toLowerCase()
+        ) &&
+        !t.budgetId
+    );
+
+    chamados
+        .sort(
+            (a,b) =>
+                Number(b.numeroOS || 0) -
+                Number(a.numeroOS || 0)
+        )
+        .forEach(t => {
+
+            const equipamento =
+                t.equipamento
+                ? ` — ${t.equipamento}`
+                : "";
+
+            const status =
+                t.status
+                ? ` — ${String(t.status).toUpperCase()}`
+                : "";
+
+            ticketSelect.innerHTML += `
+                <option value="${t._id}">
+                    OS ${t.numeroOS}${equipamento}${status}
+                </option>
+            `;
+        });
+
+    const info =
+        document.getElementById("infoChamado");
+
+    if(chamados.length === 0){
+        info.innerText =
+            "Este cliente não possui chamado aberto disponível para vínculo.";
+    }
+    else{
+        info.innerText =
+            `${chamados.length} chamado(s) disponível(is). Selecione uma OS ou deixe sem vínculo.`;
+    }
+}
+
+clienteSelect.addEventListener(
+    "change",
+    atualizarChamadosCliente
+);
+
 
 /* ===== SERVIÇOS ===== */
 async function loadServicos(){
@@ -441,6 +546,7 @@ async function salvarOrcamento(){
         credentials:"include",
 body: JSON.stringify({
     clienteId,
+    ticketId: ticketSelect.value || null,
     cliente: cliente?.nome || "",
     telefone: cliente?.telefone || "",
     observacoes: document.getElementById("observacoes").value,
@@ -465,6 +571,7 @@ body: JSON.stringify({
 window.onload=()=>{
     carregarUsuario();
     loadClientes();
+        loadTickets();
     loadServicos();
 };
 

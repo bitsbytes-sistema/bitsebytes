@@ -172,6 +172,21 @@ button{
 
         <button class="edit" onclick="abrirModal()">Editar</button>
 
+        <button
+            id="btnVincularChamado"
+            onclick="abrirVinculoChamado()"
+            style="display:none;background:#2563eb;color:white;">
+            🔗 Vincular a Chamado
+        </button>
+
+        <button
+            id="btnChamadoVinculado"
+            type="button"
+            disabled
+            style="display:none;background:#0f766e;color:white;cursor:default;opacity:1;">
+            🔗 OS vinculada
+        </button>
+
         <button id="btnAprovar"
            style="background:#16a34a;color:white;"
            onclick="aprovarOrcamento()">
@@ -342,13 +357,41 @@ document.getElementById("observacoes").innerText =
 	const btnConverter =
     document.getElementById("btnConverter");
 
-if(budget.status === "aprovado"){
+const btnVincularChamado =
+    document.getElementById("btnVincularChamado");
+
+const btnChamadoVinculado =
+    document.getElementById("btnChamadoVinculado");
+
+
+if(
+    budget.status === "aprovado" &&
+    !budget.ticketId
+){
 
     btnConverter.style.display = "inline-block";
 
 }else{
 
     btnConverter.style.display = "none";
+
+}
+
+
+if(budget.ticketId){
+
+    btnVincularChamado.style.display = "none";
+
+    btnChamadoVinculado.style.display = "inline-block";
+
+    btnChamadoVinculado.innerText =
+        `🔗 OS ${budget.numeroOS || ""} vinculada`;
+
+}else{
+
+    btnVincularChamado.style.display = "inline-block";
+
+    btnChamadoVinculado.style.display = "none";
 
 }
 
@@ -365,6 +408,309 @@ if(budget.status === "aprovado"){
             </tr>
         `;
     });
+
+}
+
+/* ===== VINCULAR A CHAMADO EXISTENTE ===== */
+
+async function abrirVinculoChamado(){
+
+    try{
+
+        const res = await fetch(
+            "/api/tickets?t=" + Date.now(),
+            {
+                credentials:"include",
+                cache:"no-store"
+            }
+        );
+
+        if(!res.ok){
+
+            alert("Não foi possível carregar os chamados.");
+            return;
+
+        }
+
+        const tickets = await res.json();
+
+        const statusPermitidos = [
+            "aberto",
+            "andamento",
+            "reparo"
+        ];
+
+        const chamados = tickets
+            .filter(t =>
+                String(t.clienteId || "") ===
+                    String(budget.clienteId || "") &&
+
+                statusPermitidos.includes(
+                    String(t.status || "").toLowerCase()
+                ) &&
+
+                (
+                    !t.budgetId ||
+                    String(t.budgetId) === String(budget._id)
+                )
+            )
+            .sort(
+                (a,b) =>
+                    Number(b.numeroOS || 0) -
+                    Number(a.numeroOS || 0)
+            );
+
+
+        if(chamados.length === 0){
+
+            alert(
+                "Este cliente não possui chamado aberto disponível para vínculo."
+            );
+
+            return;
+
+        }
+
+
+        const overlay = document.createElement("div");
+
+        overlay.id = "modalVincularChamado";
+
+        overlay.style.cssText = `
+            position:fixed;
+            inset:0;
+            background:rgba(15,23,42,.65);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            z-index:99999;
+            padding:20px;
+        `;
+
+
+        const caixa = document.createElement("div");
+
+        caixa.style.cssText = `
+            width:100%;
+            max-width:520px;
+            background:white;
+            border-radius:12px;
+            padding:24px;
+            box-shadow:0 20px 50px rgba(0,0,0,.30);
+        `;
+
+
+        caixa.innerHTML = `
+            <h3 style="margin-top:0;">
+                🔗 Vincular orçamento a chamado
+            </h3>
+
+            <p style="color:#64748b;">
+                Orçamento Nº ${budget.numero} — ${budget.cliente}
+            </p>
+
+            <label
+                for="selectVinculoChamado"
+                style="display:block;font-weight:600;margin-bottom:8px;">
+                Chamado / Ordem de Serviço
+            </label>
+
+            <select
+                id="selectVinculoChamado"
+                style="
+                    width:100%;
+                    padding:11px;
+                    border:1px solid #cbd5e1;
+                    border-radius:8px;
+                    margin-bottom:18px;
+                ">
+                <option value="">
+                    Selecione uma OS
+                </option>
+
+                ${chamados.map(t => {
+
+                    const equipamento =
+                        t.equipamento
+                        ? ` — ${t.equipamento}`
+                        : "";
+
+                    const status =
+                        t.status
+                        ? ` — ${String(t.status).toUpperCase()}`
+                        : "";
+
+                    return `
+                        <option value="${t._id}">
+                            OS ${t.numeroOS}${equipamento}${status}
+                        </option>
+                    `;
+
+                }).join("")}
+
+            </select>
+
+            <div
+                style="
+                    display:flex;
+                    gap:10px;
+                    justify-content:flex-end;
+                    flex-wrap:wrap;
+                ">
+
+                <button
+                    type="button"
+                    id="btnCancelarVinculo"
+                    style="
+                        background:#64748b;
+                        color:white;
+                        border:none;
+                        border-radius:8px;
+                        padding:10px 16px;
+                        cursor:pointer;
+                    ">
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    id="btnConfirmarVinculo"
+                    style="
+                        background:#2563eb;
+                        color:white;
+                        border:none;
+                        border-radius:8px;
+                        padding:10px 16px;
+                        cursor:pointer;
+                    ">
+                    🔗 Vincular
+                </button>
+
+            </div>
+        `;
+
+
+        overlay.appendChild(caixa);
+        document.body.appendChild(overlay);
+
+
+        document
+            .getElementById("btnCancelarVinculo")
+            .addEventListener(
+                "click",
+                () => overlay.remove()
+            );
+
+
+        document
+            .getElementById("btnConfirmarVinculo")
+            .addEventListener(
+                "click",
+                confirmarVinculoChamado
+            );
+
+
+    }catch(err){
+
+        console.error(err);
+
+        alert(
+            "Erro ao carregar os chamados disponíveis."
+        );
+
+    }
+
+}
+
+
+async function confirmarVinculoChamado(){
+
+    const select =
+        document.getElementById(
+            "selectVinculoChamado"
+        );
+
+    const ticketId =
+        select ? select.value : "";
+
+
+    if(!ticketId){
+
+        alert("Selecione uma OS.");
+        return;
+
+    }
+
+
+    if(!confirm(
+        "Deseja vincular este orçamento à OS selecionada?"
+    )){
+
+        return;
+
+    }
+
+
+    try{
+
+        const res = await fetch(
+            "/api/budgets/" +
+            id +
+            "/vincular-chamado",
+            {
+                method:"PUT",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                credentials:"include",
+                body:JSON.stringify({
+                    ticketId
+                })
+            }
+        );
+
+
+        const data = await res.json();
+
+
+        if(!res.ok || !data.ok){
+
+            alert(
+                data.error ||
+                "Erro ao vincular chamado."
+            );
+
+            return;
+
+        }
+
+
+        const modal =
+            document.getElementById(
+                "modalVincularChamado"
+            );
+
+        if(modal){
+            modal.remove();
+        }
+
+
+        alert(
+            `Orçamento vinculado com sucesso à OS ${data.numeroOS}.`
+        );
+
+        location.reload();
+
+
+    }catch(err){
+
+        console.error(err);
+
+        alert(
+            "Erro ao vincular o orçamento ao chamado."
+        );
+
+    }
 
 }
 

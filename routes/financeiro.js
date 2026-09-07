@@ -302,7 +302,7 @@ router.get("/resumo", auth, async (req, res) => {
                     "pago",
 
                 formaPagamento:
-                    "",
+                    budget.formaPagamento || "",
 
                 data:
                     budget.dataPagamento ||

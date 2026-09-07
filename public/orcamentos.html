@@ -523,14 +523,54 @@ function pdf(id){
 
 async function receber(id){
 
-    if(!confirm("Confirmar recebimento deste orçamento?"))
+    const opcoes = [
+        "1 - Dinheiro",
+        "2 - PIX",
+        "3 - Cartão de Débito",
+        "4 - Cartão de Crédito",
+        "5 - Transferência"
+    ].join("\n");
+
+    const escolha = prompt(
+        "Selecione a forma de pagamento:\n\n" + opcoes
+    );
+
+    if(escolha === null)
         return;
+
+    const formas = {
+        "1": "Dinheiro",
+        "2": "PIX",
+        "3": "Cartão de Débito",
+        "4": "Cartão de Crédito",
+        "5": "Transferência"
+    };
+
+    const formaPagamento = formas[String(escolha).trim()];
+
+    if(!formaPagamento){
+        alert("Forma de pagamento inválida.");
+        return;
+    }
+
+    if(!confirm(
+        "Confirmar recebimento deste orçamento?\n\n" +
+        "Forma de pagamento: " + formaPagamento
+    )){
+        return;
+    }
 
     const res = await fetch(
         "/api/budgets/" + id + "/pagar",
         {
             method:"PUT",
-            credentials:"include"
+            credentials:"include",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                formaPagamento
+            })
         }
     );
 

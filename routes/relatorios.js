@@ -403,6 +403,34 @@ router.get(
             );
 
 
+            orcamentosPagos.forEach(
+                orcamento => {
+
+                    const forma =
+                        orcamento.formaPagamento ||
+                        "Não informado";
+
+                    if (!formasPagamento[forma]) {
+
+                        formasPagamento[forma] = {
+                            quantidade: 0,
+                            total: 0
+                        };
+
+                    }
+
+                    formasPagamento[
+                        forma
+                    ].quantidade++;
+
+                    formasPagamento[
+                        forma
+                    ].total +=
+                        numero(orcamento.total);
+
+                }
+            );
+
             movimentos.forEach(
                 movimento => {
 

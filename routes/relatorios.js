@@ -178,7 +178,22 @@ router.get(
 
             let entradasManuais = 0;
             let saidasManuais = 0;
-            let pendenteReceber = 0;
+
+            const budgetsPendentes = await Budget.find({
+                companyId,
+                pagamento: "pendente",
+                status: {
+                    $ne: "reprovado"
+                }
+            }).lean();
+
+            let pendenteReceber =
+                budgetsPendentes.reduce(
+                    (total, budget) =>
+                        total + numero(budget.total),
+                    0
+                );
+
             let pendentePagar = 0;
 
 

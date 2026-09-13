@@ -511,16 +511,82 @@ router.post("/", auth, async(req,res)=>{
                     message: "Chamado não encontrado."
                 });
             }
+            const statusChamado =
+                String(ticket.status || "").toLowerCase();
 
-            if(
-                ticket.clienteId &&
-                String(ticket.clienteId) !== String(cliente._id)
-            ){
+            if(statusChamado === "finalizado"){
+
                 return res.status(400).json({
                     error: true,
-                    message: "O chamado selecionado pertence a outro cliente."
+                    message: "Chamados finalizados não podem receber vínculo de orçamento."
                 });
+
             }
+
+
+            if(ticket.clienteId){
+
+                if(
+                    String(ticket.clienteId) !==
+                    String(cliente._id)
+                ){
+
+                    return res.status(400).json({
+                        error: true,
+                        message: "O chamado selecionado pertence a outro cliente."
+                    });
+
+                }
+
+            }else{
+
+                const nomeChamado =
+                    String(ticket.cliente || "")
+                        .trim()
+                        .toLowerCase();
+
+                const nomeCliente =
+                    String(cliente.nome || "")
+                        .trim()
+                        .toLowerCase();
+
+                const telefoneChamado =
+                    String(ticket.telefone || "")
+                        .replace(/\D/g, "");
+
+                const telefoneCliente =
+                    String(cliente.telefone || "")
+                        .replace(/\D/g, "");
+
+
+                const mesmoCliente =
+                    (
+                        telefoneChamado &&
+                        telefoneCliente &&
+                        telefoneChamado === telefoneCliente
+                    ) ||
+                    (
+                        nomeChamado &&
+                        nomeCliente &&
+                        nomeChamado === nomeCliente
+                    );
+
+
+                if(!mesmoCliente){
+
+                    return res.status(400).json({
+                        error: true,
+                        message: "O chamado selecionado não pertence a este cliente."
+                    });
+
+                }
+
+
+                ticket.clienteId =
+                    cliente._id;
+
+            }
+
 
             if(ticket.budgetId){
                 return res.status(400).json({
@@ -546,6 +612,100 @@ router.post("/", auth, async(req,res)=>{
             });
         }
 
+                /* ===== CÁLCULO SEGURO DOS ITENS E DESCONTOS ===== */
+
+        const itensRecebidos =
+            Array.isArray(req.body.itens)
+            ? req.body.itens
+            : [];
+
+        if(itensRecebidos.length === 0){
+            return res.status(400).json({
+                error: true,
+                message: "Adicione pelo menos um item ao orçamento."
+            });
+        }
+
+        const itensCalculados = [];
+
+        let subtotalCalculado = 0;
+        let descontoCalculado = 0;
+        let totalCalculado = 0;
+
+        for(const item of itensRecebidos){
+
+            const quantidade =
+                Number(item.quantidade);
+
+            const valor =
+                Number(item.valor);
+
+            let descontoItem =
+                item.desconto === undefined ||
+                item.desconto === null ||
+                item.desconto === ""
+                ? 0
+                : Number(item.desconto);
+
+            if(
+                !Number.isFinite(quantidade) ||
+                quantidade <= 0 ||
+                !Number.isFinite(valor) ||
+                valor < 0 ||
+                !Number.isFinite(descontoItem) ||
+                descontoItem < 0
+            ){
+                return res.status(400).json({
+                    error: true,
+                    message: "Existe um item com quantidade, valor ou desconto inválido."
+                });
+            }
+
+            const totalBruto =
+                Number(
+                    (quantidade * valor).toFixed(2)
+                );
+
+            descontoItem =
+                Number(
+                    descontoItem.toFixed(2)
+                );
+
+            if(descontoItem > totalBruto){
+                return res.status(400).json({
+                    error: true,
+                    message: `O desconto de "${item.descricao || "item"}" não pode ser maior que o valor bruto.`
+                });
+            }
+
+            const totalLiquido =
+                Number(
+                    (totalBruto - descontoItem).toFixed(2)
+                );
+
+            itensCalculados.push({
+                ...item,
+                quantidade,
+                valor,
+                total: totalBruto,
+                desconto: descontoItem,
+                totalLiquido
+            });
+
+            subtotalCalculado += totalBruto;
+            descontoCalculado += descontoItem;
+            totalCalculado += totalLiquido;
+        }
+
+        subtotalCalculado =
+            Number(subtotalCalculado.toFixed(2));
+
+        descontoCalculado =
+            Number(descontoCalculado.toFixed(2));
+
+        totalCalculado =
+            Number(totalCalculado.toFixed(2));
+
         const budget = await Budget.create({
 
             companyId,
@@ -570,9 +730,13 @@ router.post("/", auth, async(req,res)=>{
 
             horaAgendamento:req.body.horaAgendamento || null,
 
-            itens:req.body.itens || [],
+            itens:itensCalculados,
 
-            total:req.body.total || 0,
+            subtotal:subtotalCalculado,
+
+            desconto:descontoCalculado,
+
+            total:totalCalculado,
 
             status:req.body.status || "pendente",
 
@@ -698,12 +862,98 @@ router.put("/:id", auth, async(req,res)=>{
             budget.observacoes=req.body.observacoes;
 
 
-        if(req.body.itens !== undefined)
-            budget.itens=req.body.itens;
+        if(req.body.itens !== undefined){
 
+            if(!Array.isArray(req.body.itens)){
+                return res.status(400).json({
+                    error: true,
+                    message: "Itens do orçamento inválidos."
+                });
+            }
 
-        if(req.body.total !== undefined)
-            budget.total=req.body.total;
+            const itensCalculados = [];
+
+            let subtotalCalculado = 0;
+            let descontoCalculado = 0;
+            let totalCalculado = 0;
+
+            for(const item of req.body.itens){
+
+                const quantidade =
+                    Number(item.quantidade);
+
+                const valor =
+                    Number(item.valor);
+
+                let descontoItem =
+                    item.desconto === undefined ||
+                    item.desconto === null ||
+                    item.desconto === ""
+                    ? 0
+                    : Number(item.desconto);
+
+                if(
+                    !Number.isFinite(quantidade) ||
+                    quantidade <= 0 ||
+                    !Number.isFinite(valor) ||
+                    valor < 0 ||
+                    !Number.isFinite(descontoItem) ||
+                    descontoItem < 0
+                ){
+                    return res.status(400).json({
+                        error: true,
+                        message: "Existe um item com quantidade, valor ou desconto inválido."
+                    });
+                }
+
+                const totalBruto =
+                    Number(
+                        (quantidade * valor).toFixed(2)
+                    );
+
+                descontoItem =
+                    Number(
+                        descontoItem.toFixed(2)
+                    );
+
+                if(descontoItem > totalBruto){
+                    return res.status(400).json({
+                        error: true,
+                        message: `O desconto de "${item.descricao || "item"}" não pode ser maior que o valor bruto.`
+                    });
+                }
+
+                const totalLiquido =
+                    Number(
+                        (totalBruto - descontoItem).toFixed(2)
+                    );
+
+                itensCalculados.push({
+                    ...item,
+                    quantidade,
+                    valor,
+                    total: totalBruto,
+                    desconto: descontoItem,
+                    totalLiquido
+                });
+
+                subtotalCalculado += totalBruto;
+                descontoCalculado += descontoItem;
+                totalCalculado += totalLiquido;
+            }
+
+            budget.itens =
+                itensCalculados;
+
+            budget.subtotal =
+                Number(subtotalCalculado.toFixed(2));
+
+            budget.desconto =
+                Number(descontoCalculado.toFixed(2));
+
+            budget.total =
+                Number(totalCalculado.toFixed(2));
+        }
 
 
         if(req.body.status !== undefined)
@@ -800,37 +1050,82 @@ if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 
         let itensHTML = "";
 
+let subtotalPdf = 0;
+let descontoPdf = 0;
+let totalPdf = 0;
 
+budget.itens.forEach(item=>{
 
-        budget.itens.forEach(item=>{
+    const quantidade =
+        Number(item.quantidade || 0);
 
+    const valor =
+        Number(item.valor || 0);
 
-            itensHTML += `
+    const totalBruto =
+        Number.isFinite(Number(item.total))
+            ? Number(item.total)
+            : quantidade * valor;
 
-            <tr>
+    const descontoItem =
+        Number(item.desconto || 0);
 
-                <td>${item.descricao || ""}</td>
+    const totalLiquido =
+        Math.max(
+            0,
+            totalBruto - descontoItem
+        );
 
-                <td>${item.quantidade || 1}</td>
+    subtotalPdf += totalBruto;
+    descontoPdf += descontoItem;
+    totalPdf += totalLiquido;
 
-                <td>
-                R$ ${Number(item.valor || 0)
-                .toFixed(2)
-                .replace(".",",")}
-                </td>
+    itensHTML += `
 
-                <td>
-                R$ ${Number(item.total || 0)
-                .toFixed(2)
-                .replace(".",",")}
-                </td>
+    <tr>
 
-            </tr>
+        <td>${item.descricao || ""}</td>
 
-            `;
+        <td>${quantidade || 1}</td>
 
+        <td>
+        R$ ${valor
+        .toFixed(2)
+        .replace(".",",")}
+        </td>
 
-        });
+        <td>
+        R$ ${totalBruto
+        .toFixed(2)
+        .replace(".",",")}
+        </td>
+
+        <td>
+        R$ ${descontoItem
+        .toFixed(2)
+        .replace(".",",")}
+        </td>
+
+        <td>
+        R$ ${totalLiquido
+        .toFixed(2)
+        .replace(".",",")}
+        </td>
+
+    </tr>
+
+    `;
+
+});
+
+subtotalPdf =
+    Number(subtotalPdf.toFixed(2));
+
+descontoPdf =
+    Number(descontoPdf.toFixed(2));
+
+totalPdf =
+    Number(totalPdf.toFixed(2));
 
 const logoPath = path.join(process.cwd(), "public", "logo.png");
 
@@ -951,8 +1246,22 @@ const qrCodeHTML = `
         )
 
         .replaceAll(
+            "{{SUBTOTAL}}",
+            subtotalPdf
+            .toFixed(2)
+            .replace(".",",")
+        )
+
+        .replaceAll(
+            "{{DESCONTO}}",
+            descontoPdf
+            .toFixed(2)
+            .replace(".",",")
+        )
+
+        .replaceAll(
             "{{TOTAL}}",
-            Number(budget.total || 0)
+            totalPdf
             .toFixed(2)
             .replace(".",",")
         )
@@ -1451,26 +1760,17 @@ router.put("/:id/vincular-chamado", auth, async (req, res) => {
             });
 
         }
+        const statusChamado =
+            String(ticket.status || "").toLowerCase();
 
-
-        const statusPermitidos = [
-            "aberto",
-            "andamento",
-            "reparo"
-        ];
-
-        if(!statusPermitidos.includes(
-            String(ticket.status || "").toLowerCase()
-        )){
+        if(statusChamado === "finalizado"){
 
             return res.status(400).json({
                 ok:false,
-                error:"Somente chamados abertos, em andamento ou em reparo podem ser vinculados."
+                error:"Chamados finalizados não podem receber vínculo de orçamento."
             });
 
         }
-
-
         if(!budget.clienteId){
 
             return res.status(400).json({
@@ -1481,25 +1781,66 @@ router.put("/:id/vincular-chamado", auth, async (req, res) => {
         }
 
 
-        if(!ticket.clienteId){
+        if(ticket.clienteId){
 
-            return res.status(400).json({
-                ok:false,
-                error:"Este chamado não possui cliente vinculado corretamente."
-            });
+            if(
+                String(budget.clienteId) !==
+                String(ticket.clienteId)
+            ){
 
-        }
+                return res.status(400).json({
+                    ok:false,
+                    error:"O orçamento e o chamado pertencem a clientes diferentes."
+                });
+
+            }
+
+        }else{
+
+            const nomeOrcamento =
+                String(budget.cliente || "")
+                    .trim()
+                    .toLowerCase();
+
+            const nomeChamado =
+                String(ticket.cliente || "")
+                    .trim()
+                    .toLowerCase();
+
+            const telefoneOrcamento =
+                String(budget.telefone || "")
+                    .replace(/\D/g, "");
+
+            const telefoneChamado =
+                String(ticket.telefone || "")
+                    .replace(/\D/g, "");
 
 
-        if(
-            String(budget.clienteId) !==
-            String(ticket.clienteId)
-        ){
+            const mesmoCliente =
+                (
+                    telefoneOrcamento &&
+                    telefoneChamado &&
+                    telefoneOrcamento === telefoneChamado
+                ) ||
+                (
+                    nomeOrcamento &&
+                    nomeChamado &&
+                    nomeOrcamento === nomeChamado
+                );
 
-            return res.status(400).json({
-                ok:false,
-                error:"O orçamento e o chamado pertencem a clientes diferentes."
-            });
+
+            if(!mesmoCliente){
+
+                return res.status(400).json({
+                    ok:false,
+                    error:"Este chamado não está vinculado ao cliente deste orçamento."
+                });
+
+            }
+
+
+            ticket.clienteId =
+                budget.clienteId;
 
         }
 

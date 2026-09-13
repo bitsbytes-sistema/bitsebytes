@@ -97,10 +97,27 @@ button{
     border-radius:8px;
 }
 
-.modal-content input{
+.modal-content input,
+.modal-content select{
     width:100%;
+    min-width:0;
+    box-sizing:border-box;
+}
+
+.modal-content input{
     padding:10px;
     margin:5px 0;
+}
+
+#listaItens > div{
+    min-width:0;
+}
+
+#listaItens input,
+#listaItens select{
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
 }
 
 </style>
@@ -155,7 +172,9 @@ button{
                 <th>Descrição</th>
                 <th>Qtd</th>
                 <th>Valor</th>
-                <th>Total</th>
+                <th>Total Bruto</th>
+                <th>Desconto</th>
+                <th>Líquido</th>
             </tr>
         </thead>
 
@@ -163,7 +182,11 @@ button{
     </table>
 
     <div class="total">
-        Total: <span id="total"></span>
+        <div>Subtotal: <span id="subtotal"></span></div>
+        <div>Descontos: <span id="descontoTotal"></span></div>
+        <div style="margin-top:6px;">
+            Total Líquido: <span id="total"></span>
+        </div>
     </div>
 
     <div class="botoes">
@@ -348,11 +371,44 @@ document.getElementById("observacoes").innerText =
         btnReprovar.style.display = "none";
     }
 
-    document.getElementById("total").innerText =
-        Number(budget.total || 0).toLocaleString("pt-BR", {
-            style:"currency",
-            currency:"BRL"
-        });
+    let subtotalVisual = 0;
+let descontoVisual = 0;
+
+(budget.itens || []).forEach(item => {
+
+    const quantidade = Number(item.quantidade || 0);
+    const valor = Number(item.valor || 0);
+
+    const bruto =
+        Number.isFinite(Number(item.total))
+            ? Number(item.total)
+            : quantidade * valor;
+
+    const descontoItem =
+        Number(item.desconto || 0);
+
+    subtotalVisual += bruto;
+    descontoVisual += descontoItem;
+
+});
+
+document.getElementById("subtotal").innerText =
+    subtotalVisual.toLocaleString("pt-BR", {
+        style:"currency",
+        currency:"BRL"
+    });
+
+document.getElementById("descontoTotal").innerText =
+    descontoVisual.toLocaleString("pt-BR", {
+        style:"currency",
+        currency:"BRL"
+    });
+
+document.getElementById("total").innerText =
+    Number(budget.total || 0).toLocaleString("pt-BR", {
+        style:"currency",
+        currency:"BRL"
+    });
 
 	const btnConverter =
     document.getElementById("btnConverter");
@@ -405,6 +461,8 @@ if(budget.ticketId){
                 <td>${i.quantidade}</td>
                 <td>${Number(i.valor || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
                 <td>${Number(i.total || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
+                <td>${Number(i.desconto || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
+                <td>${Number(i.totalLiquido ?? ((i.total || 0) - (i.desconto || 0))).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
             </tr>
         `;
     });
@@ -433,27 +491,75 @@ async function abrirVinculoChamado(){
         }
 
         const tickets = await res.json();
-
-        const statusPermitidos = [
-            "aberto",
-            "andamento",
-            "reparo"
-        ];
-
         const chamados = tickets
-            .filter(t =>
-                String(t.clienteId || "") ===
-                    String(budget.clienteId || "") &&
+            .filter(t => {
 
-                statusPermitidos.includes(
-                    String(t.status || "").toLowerCase()
-                ) &&
+                const statusChamado =
+                    String(t.status || "").toLowerCase();
 
-                (
-                    !t.budgetId ||
-                    String(t.budgetId) === String(budget._id)
-                )
-            )
+                if(statusChamado === "finalizado"){
+                    return false;
+                }
+
+
+                if(
+                    t.budgetId &&
+                    String(t.budgetId) !== String(budget._id)
+                ){
+                    return false;
+                }
+
+
+                const clienteIdChamado =
+                    String(t.clienteId || "");
+
+                const clienteIdOrcamento =
+                    String(budget.clienteId || "");
+
+
+                if(clienteIdChamado){
+
+                    return (
+                        clienteIdChamado ===
+                        clienteIdOrcamento
+                    );
+
+                }
+
+
+                const nomeChamado =
+                    String(t.cliente || "")
+                        .trim()
+                        .toLowerCase();
+
+                const nomeOrcamento =
+                    String(budget.cliente || "")
+                        .trim()
+                        .toLowerCase();
+
+                const telefoneChamado =
+                    String(t.telefone || "")
+                        .replace(/\D/g, "");
+
+                const telefoneOrcamento =
+                    String(budget.telefone || "")
+                        .replace(/\D/g, "");
+
+
+                return (
+                    (
+                        telefoneChamado &&
+                        telefoneOrcamento &&
+                        telefoneChamado === telefoneOrcamento
+                    ) ||
+                    (
+                        nomeChamado &&
+                        nomeOrcamento &&
+                        nomeChamado === nomeOrcamento
+                    )
+                );
+
+            })
             .sort(
                 (a,b) =>
                     Number(b.numeroOS || 0) -
@@ -738,7 +844,7 @@ function renderItens() {
 
     <div style="
         display:grid;
-        grid-template-columns:4fr 80px 120px 120px 45px;
+        grid-template-columns:4fr 80px 120px 120px 120px 120px 45px;
         gap:8px;
         font-weight:bold;
         border-bottom:1px solid #ddd;
@@ -748,7 +854,9 @@ function renderItens() {
         <div>Peça / Serviço</div>
         <div>Qtd</div>
         <div>Valor</div>
-        <div>Total</div>
+        <div>Bruto</div>
+        <div>Desconto</div>
+        <div>Líquido</div>
         <div></div>
     </div>
 
@@ -782,7 +890,7 @@ function renderItens() {
 
         <div style="
             display:grid;
-            grid-template-columns:4fr 80px 120px 120px 45px;
+            grid-template-columns:4fr 80px 120px 120px 120px 120px 45px;
             gap:8px;
             align-items:center;
             margin-bottom:8px;
@@ -807,6 +915,21 @@ function renderItens() {
             <input
                 disabled
                 value="${Number(item.total || 0).toLocaleString('pt-BR',{
+                    minimumFractionDigits:2,
+                    maximumFractionDigits:2
+                })}">
+
+            <input
+                type="number"
+                min="0"
+                step="0.01"
+                max="${Number(item.total || 0)}"
+                value="${Number(item.desconto || 0)}"
+                onchange="updateItem(${index},'desconto',this.value)">
+
+            <input
+                disabled
+                value="${Number(item.totalLiquido ?? ((item.total || 0) - (item.desconto || 0))).toLocaleString('pt-BR',{
                     minimumFractionDigits:2,
                     maximumFractionDigits:2
                 })}">
@@ -839,6 +962,18 @@ function selecionarServico(index,id){
         budget.itens[index].quantidade *
         budget.itens[index].valor;
 
+    budget.itens[index].desconto =
+        Number(budget.itens[index].desconto || 0);
+
+    if(budget.itens[index].desconto > budget.itens[index].total){
+        budget.itens[index].desconto =
+            budget.itens[index].total;
+    }
+
+    budget.itens[index].totalLiquido =
+        budget.itens[index].total -
+        budget.itens[index].desconto;
+
     renderItens();
 
 }
@@ -855,7 +990,9 @@ function addItem(){
         descricao:"",
         quantidade:1,
         valor:0,
-        total:0
+        total:0,
+        desconto:0,
+        totalLiquido:0
 
     });
 
@@ -879,9 +1016,31 @@ function updateItem(index, campo, valor){
         budget.itens[index].valor = Number(valor);
     }
 
+    if(campo == "desconto"){
+        budget.itens[index].desconto = Number(valor);
+    }
+
     budget.itens[index].total =
         Number(budget.itens[index].quantidade) *
         Number(budget.itens[index].valor);
+
+    budget.itens[index].desconto =
+        Number(budget.itens[index].desconto || 0);
+
+    if(budget.itens[index].desconto < 0){
+        budget.itens[index].desconto = 0;
+    }
+
+    if(budget.itens[index].desconto > budget.itens[index].total){
+        budget.itens[index].desconto =
+            budget.itens[index].total;
+
+        alert("O desconto não pode ser maior que o valor bruto do item.");
+    }
+
+    budget.itens[index].totalLiquido =
+        budget.itens[index].total -
+        budget.itens[index].desconto;
 
     renderItens();
 
@@ -889,20 +1048,63 @@ function updateItem(index, campo, valor){
 
 function atualizarTotal(){
 
+    let subtotal = 0;
+    let desconto = 0;
     let total = 0;
 
     (budget.itens || []).forEach(item=>{
 
         item.quantidade = Number(item.quantidade || 0);
         item.valor = Number(item.valor || 0);
+        item.desconto = Number(item.desconto || 0);
 
-        item.total = item.quantidade * item.valor;
+        item.total =
+            item.quantidade *
+            item.valor;
 
-        total += item.total;
+        if(item.desconto < 0){
+            item.desconto = 0;
+        }
+
+        if(item.desconto > item.total){
+            item.desconto = item.total;
+        }
+
+        item.totalLiquido =
+            item.total -
+            item.desconto;
+
+        subtotal += item.total;
+        desconto += item.desconto;
+        total += item.totalLiquido;
 
     });
 
+    budget.subtotal = subtotal;
+    budget.desconto = desconto;
     budget.total = total;
+
+    const subtotalEl =
+        document.getElementById("subtotal");
+
+    const descontoEl =
+        document.getElementById("descontoTotal");
+
+    if(subtotalEl){
+        subtotalEl.innerText =
+            subtotal.toLocaleString("pt-BR",{
+                style:"currency",
+                currency:"BRL"
+            });
+    }
+
+    if(descontoEl){
+        descontoEl.innerText =
+            desconto.toLocaleString("pt-BR",{
+                style:"currency",
+                currency:"BRL"
+            });
+    }
 
     document.getElementById("total").innerText =
         total.toLocaleString("pt-BR",{
@@ -913,13 +1115,11 @@ function atualizarTotal(){
     const totalModal = document.getElementById("totalModal");
 
     if(totalModal){
-
         totalModal.innerText =
             total.toLocaleString("pt-BR",{
                 style:"currency",
                 currency:"BRL"
             });
-
     }
 
 }
@@ -943,6 +1143,10 @@ body: JSON.stringify({
 
     itens: budget.itens,
 
+    subtotal: budget.subtotal,
+
+    desconto: budget.desconto,
+
     total: budget.total
 
 })
@@ -964,13 +1168,71 @@ function toggleMenu(){
 }
 
 function mensagemWhats(){
-    return encodeURIComponent(
+
+    const moeda = valor =>
+        Number(valor || 0).toLocaleString("pt-BR", {
+            style:"currency",
+            currency:"BRL"
+        });
+
+    let itensTexto = "";
+
+    let subtotalWhats = 0;
+    let descontoWhats = 0;
+    let totalWhats = 0;
+
+    (budget.itens || []).forEach(item => {
+
+        const quantidade =
+            Number(item.quantidade || 0);
+
+        const valor =
+            Number(item.valor || 0);
+
+        const totalBruto =
+            Number.isFinite(Number(item.total))
+                ? Number(item.total)
+                : quantidade * valor;
+
+        const descontoItem =
+            Number(item.desconto || 0);
+
+        const totalLiquido =
+            Math.max(
+                0,
+                totalBruto - descontoItem
+            );
+
+        subtotalWhats += totalBruto;
+        descontoWhats += descontoItem;
+        totalWhats += totalLiquido;
+
+        itensTexto += `
+• ${item.descricao || "Item"}
+  Qtd: ${quantidade || 1}
+  Valor: ${moeda(valor)}
+  Bruto: ${moeda(totalBruto)}
+  Desconto: ${moeda(descontoItem)}
+  Líquido: ${moeda(totalLiquido)}
+`;
+
+    });
+
+    const mensagem =
 `Olá ${budget.cliente}
 
 Segue orçamento Nº ${budget.numero}
 
-Obrigado!`
-    );
+*ITENS*
+${itensTexto}
+*RESUMO*
+Subtotal: ${moeda(subtotalWhats)}
+Descontos: ${moeda(descontoWhats)}
+*Total Líquido: ${moeda(totalWhats)}*
+
+Obrigado!`;
+
+    return encodeURIComponent(mensagem);
 }
 
 function numeroCliente(){

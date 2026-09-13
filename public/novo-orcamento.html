@@ -265,14 +265,16 @@ Selecione uma OS existente deste cliente ou deixe sem vínculo.
 <th>Descrição</th>
 <th>Qtd</th>
 <th>Valor</th>
-<th>Total</th>
+<th>Total Bruto</th>
+<th>Desconto</th>
+<th>Líquido</th>
 <th>Ação</th>
 </tr>
 </thead>
 
 <tbody id="listaItens">
 <tr>
-<td colspan="5" style="text-align:center;color:#777;">
+<td colspan="7" style="text-align:center;color:#777;">
 Nenhum item adicionado
 </td>
 </tr>
@@ -287,7 +289,13 @@ Nenhum item adicionado
 <div class="grid">
 
 <div>
-<h3>Total</h3>
+<h3>Subtotal</h3>
+<h2 id="subtotal">R$ 0,00</h2>
+
+<h3 style="margin-top:10px;">Descontos</h3>
+<h2 id="descontoTotal">R$ 0,00</h2>
+
+<h3 style="margin-top:10px;">Total Líquido</h3>
 <h2 id="total">R$ 0,00</h2>
 </div>
 
@@ -387,19 +395,76 @@ function atualizarChamadosCliente(){
 
     blocoChamado.style.display = "block";
 
-    const statusPermitidos = [
-        "aberto",
-        "andamento",
-        "reparo"
-    ];
 
-    const chamados = tickets.filter(t =>
-        String(t.clienteId || "") === String(clienteId) &&
-        statusPermitidos.includes(
-            String(t.status || "").toLowerCase()
-        ) &&
-        !t.budgetId
-    );
+    const clienteSelecionado =
+        clientes.find(
+            c => String(c._id) === String(clienteId)
+        );
+
+
+    const chamados = tickets.filter(t => {
+
+        const statusChamado =
+            String(t.status || "").toLowerCase();
+
+        if(statusChamado === "finalizado"){
+            return false;
+        }
+
+
+        if(t.budgetId){
+            return false;
+        }
+
+
+        const ticketClienteId =
+            String(t.clienteId || "");
+
+        if(ticketClienteId){
+
+            return (
+                ticketClienteId ===
+                String(clienteId)
+            );
+
+        }
+
+
+        const nomeChamado =
+            String(t.cliente || "")
+                .trim()
+                .toLowerCase();
+
+        const nomeCliente =
+            String(clienteSelecionado?.nome || "")
+                .trim()
+                .toLowerCase();
+
+
+        const telefoneChamado =
+            String(t.telefone || "")
+                .replace(/\D/g, "");
+
+        const telefoneCliente =
+            String(clienteSelecionado?.telefone || "")
+                .replace(/\D/g, "");
+
+
+        return (
+            (
+                telefoneChamado &&
+                telefoneCliente &&
+                telefoneChamado === telefoneCliente
+            ) ||
+            (
+                nomeChamado &&
+                nomeCliente &&
+                nomeChamado === nomeCliente
+            )
+        );
+
+    });
+
 
     chamados
         .sort(
@@ -424,19 +489,25 @@ function atualizarChamadosCliente(){
                     OS ${t.numeroOS}${equipamento}${status}
                 </option>
             `;
+
         });
+
 
     const info =
         document.getElementById("infoChamado");
 
     if(chamados.length === 0){
+
         info.innerText =
-            "Este cliente não possui chamado aberto disponível para vínculo.";
-    }
-    else{
+            "Este cliente não possui chamado disponível para vínculo.";
+
+    }else{
+
         info.innerText =
             `${chamados.length} chamado(s) disponível(is). Selecione uma OS ou deixe sem vínculo.`;
+
     }
+
 }
 
 clienteSelect.addEventListener(
@@ -472,12 +543,16 @@ function adicionarItem(){
     const servico = servicos.find(s=>s._id===id);
     if(!servico || !qtd) return;
 
+    const totalBruto = (servico.valor || 0) * qtd;
+
     itens.push({
         id:servico._id,
         descricao:servico.nome || servico.descricao,
         quantidade:qtd,
         valor:servico.valor||0,
-        total:(servico.valor||0)*qtd
+        total:totalBruto,
+        desconto:0,
+        totalLiquido:totalBruto
     });
 
     renderItens();
@@ -490,8 +565,8 @@ function renderItens(){
     if(itens.length===0){
         listaItens.innerHTML=`
         <tr>
-        <td colspan="5" style="text-align:center;color:#777;">
-        Nenhum item adicionado
+        <td colspan="7" style="text-align:center;color:#777;">
+Nenhum item adicionado
         </td>
         </tr>`;
         atualizarTotal();
@@ -503,8 +578,22 @@ function renderItens(){
         <tr>
         <td>${i.descricao}</td>
         <td>${i.quantidade}</td>
-        <td>R$ ${i.valor.toFixed(2)}</td>
-        <td>R$ ${i.total.toFixed(2)}</td>
+        <td>R$ ${Number(i.valor || 0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td>R$ ${Number(i.total || 0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td>
+            R$ <input
+                type="number"
+                min="0"
+                max="${Number(i.total || 0)}"
+                step="0.01"
+                value="${Number(i.desconto || 0)}"
+                onchange="atualizarDesconto(${index},this.value)"
+                style="width:95px;"
+            >
+        </td>
+        <td>
+            R$ ${Number(i.totalLiquido || 0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}
+        </td>
         <td><button onclick="removerItem(${index})">❌</button></td>
         </tr>`;
     });
@@ -512,10 +601,83 @@ function renderItens(){
     atualizarTotal();
 }
 
+function atualizarDesconto(index, valor){
+
+    const item = itens[index];
+
+    if(!item) return;
+
+    const bruto =
+        Number(item.quantidade || 0) *
+        Number(item.valor || 0);
+
+    let desconto = Number(valor || 0);
+
+    if(desconto < 0){
+        desconto = 0;
+    }
+
+    if(desconto > bruto){
+        desconto = bruto;
+        alert("O desconto não pode ser maior que o valor do item.");
+    }
+
+    item.total = bruto;
+    item.desconto = desconto;
+    item.totalLiquido = bruto - desconto;
+
+    renderItens();
+}
+
 function atualizarTotal(){
-    let total=0;
-    itens.forEach(i=>total+=i.total);
-    totalEl.innerText=`R$ ${total.toFixed(2)}`;
+
+    let subtotal = 0;
+    let desconto = 0;
+    let total = 0;
+
+    itens.forEach(i=>{
+
+        i.total =
+            Number(i.quantidade || 0) *
+            Number(i.valor || 0);
+
+        i.desconto = Number(i.desconto || 0);
+
+        if(i.desconto < 0){
+            i.desconto = 0;
+        }
+
+        if(i.desconto > i.total){
+            i.desconto = i.total;
+        }
+
+        i.totalLiquido =
+            i.total -
+            i.desconto;
+
+        subtotal += i.total;
+        desconto += i.desconto;
+        total += i.totalLiquido;
+    });
+
+    const subtotalEl =
+        document.getElementById("subtotal");
+
+    const descontoEl =
+        document.getElementById("descontoTotal");
+
+    if(subtotalEl){
+        subtotalEl.innerText =
+            `R$ ${subtotal.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    }
+
+    if(descontoEl){
+        descontoEl.innerText =
+            `R$ ${desconto.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    }
+
+    totalEl.innerText =
+        `R$ ${total.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
 }
 
 function removerItem(index){
@@ -535,8 +697,33 @@ async function salvarOrcamento(){
 
     const cliente = clientes.find(c => c._id === clienteId);
 
+    let subtotal = 0;
+    let desconto = 0;
     let total = 0;
-    itens.forEach(i => total += i.total);
+
+    itens.forEach(i => {
+
+        i.total =
+            Number(i.quantidade || 0) *
+            Number(i.valor || 0);
+
+        i.desconto =
+            Math.max(
+                0,
+                Math.min(
+                    Number(i.desconto || 0),
+                    i.total
+                )
+            );
+
+        i.totalLiquido =
+            i.total -
+            i.desconto;
+
+        subtotal += i.total;
+        desconto += i.desconto;
+        total += i.totalLiquido;
+    });
 
     const res = await fetch("/api/budgets",{
         method:"POST",
@@ -555,6 +742,8 @@ body: JSON.stringify({
     horaAgendamento: document.getElementById("horaAgendamento").value || null,
 
     itens,
+    subtotal,
+    desconto,
     total
 })
     });

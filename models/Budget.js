@@ -55,9 +55,27 @@ const BudgetSchema = new mongoose.Schema({
       quantidade: Number,
       valor: Number,
       total: Number,
+      desconto: {
+        type: Number,
+        default: 0
+      },
+      totalLiquido: {
+        type: Number,
+        default: 0
+      },
       serviceId: String
     }
   ],
+
+  subtotal: {
+    type: Number,
+    default: 0
+  },
+
+  desconto: {
+    type: Number,
+    default: 0
+  },
 
   total: Number,
 

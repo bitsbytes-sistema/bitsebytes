@@ -1539,6 +1539,39 @@ const observacoes =
 
   }
 
+  let cadastrarCliente = true;
+
+  if(!clienteSelecionado){
+
+    const clienteExistente = clientes.find(c => {
+
+      const cpfCliente =
+        String(c.cpfcnpj || "").trim();
+
+      const telefoneCliente =
+        String(c.telefone || "").trim();
+
+      return (
+        (cpfcnpj && cpfCliente === cpfcnpj) ||
+        (telefone && telefoneCliente === telefone)
+      );
+
+    });
+
+    if(clienteExistente){
+
+      clienteSelecionado = clienteExistente._id;
+
+    }else{
+
+      cadastrarCliente = confirm(
+        "Cliente não encontrado. Deseja cadastrá-lo?"
+      );
+
+    }
+
+  }
+
   await fetch("/api/tickets", {
 
     method:"POST",
@@ -1553,7 +1586,9 @@ body:JSON.stringify({
 
   clienteId: clienteSelecionado,
 
-  cliente,
+  cadastrarCliente,
+
+cliente,
   telefone,
   cpfcnpj,
   equipamento,
@@ -1570,6 +1605,8 @@ body:JSON.stringify({
   document.getElementById("equipamento").value="";
   document.getElementById("problema").value="";
   document.getElementById("observacoes").value="";
+
+  clienteSelecionado = null;
 
   load();
 

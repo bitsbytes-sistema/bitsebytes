@@ -1425,41 +1425,150 @@ app.post("/api/tickets", auth, async (req, res) => {
     ultimoTicket && ultimoTicket.numeroOS
       ? ultimoTicket.numeroOS + 1
       : 1;
-
-
   let dadosCliente = {};
 
+  let clienteDoChamado = null;
+
+  const companyId =
+    req.session.user.companyId;
+
+  const cpfcnpj =
+    String(req.body.cpfcnpj || "").trim();
+
+  const telefone =
+    String(req.body.telefone || "").trim();
+
+
+  /* ===================== CLIENTE JÁ SELECIONADO ===================== */
 
   if(req.body.clienteId){
 
-    const cliente = await Cliente.findOne({
+    try{
 
-      _id:req.body.clienteId,
+      clienteDoChamado = await Cliente.findOne({
 
-      companyId:req.session.user.companyId
+        _id: req.body.clienteId,
 
-    });
+        companyId
 
+      });
 
-    if(cliente){
+    }catch(err){
 
-      dadosCliente = {
-
-        endereco: cliente.endereco || "",
-
-        bairro: cliente.bairro || "",
-
-        cidade: cliente.cidade || "",
-
-        estado: cliente.estado || "",
-
-        cep: cliente.cep || ""
-
-      };
+      clienteDoChamado = null;
 
     }
 
   }
+
+
+  /* ===================== PROCURAR CLIENTE EXISTENTE ===================== */
+
+  if(!clienteDoChamado){
+
+    const filtrosCliente = [];
+
+    if(cpfcnpj){
+
+      filtrosCliente.push({
+        cpfcnpj
+      });
+
+    }
+
+    if(telefone){
+
+      filtrosCliente.push({
+        telefone
+      });
+
+    }
+
+
+    if(filtrosCliente.length){
+
+      clienteDoChamado = await Cliente.findOne({
+
+        companyId,
+
+        $or: filtrosCliente
+
+      });
+
+    }
+
+  }
+
+
+  /* ===================== CRIAR NOVO CLIENTE ===================== */
+
+  if(!clienteDoChamado && req.body.cadastrarCliente !== false){
+
+    const ultimoCliente = await Cliente.findOne({
+
+      companyId
+
+    }).sort({
+
+      codigo: -1
+
+    });
+
+
+    const codigoCliente =
+      ultimoCliente && ultimoCliente.codigo
+        ? ultimoCliente.codigo + 1
+        : 1;
+
+
+    clienteDoChamado = await Cliente.create({
+
+      companyId,
+
+      codigo: codigoCliente,
+
+      nome: req.body.cliente || "",
+
+      telefone,
+
+      cpfcnpj,
+
+      endereco: "",
+
+      bairro: "",
+
+      cidade: "",
+
+      estado: "",
+
+      cep: ""
+
+    });
+
+  }
+
+
+  /* ===================== DADOS DO CLIENTE ===================== */
+
+  if(clienteDoChamado){
+
+    dadosCliente = {
+
+      endereco: clienteDoChamado.endereco || "",
+
+      bairro: clienteDoChamado.bairro || "",
+
+      cidade: clienteDoChamado.cidade || "",
+
+      estado: clienteDoChamado.estado || "",
+
+      cep: clienteDoChamado.cep || ""
+
+    };
+
+  }
+
+
 
 
 
@@ -1470,7 +1579,7 @@ app.post("/api/tickets", auth, async (req, res) => {
     numeroOS,
 
 
-    clienteId: req.body.clienteId || null,
+    clienteId: clienteDoChamado ? clienteDoChamado._id : null,
 
 
     cliente: req.body.cliente,

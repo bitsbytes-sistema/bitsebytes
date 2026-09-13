@@ -319,7 +319,35 @@ app.use(
 );
 
 /* ===================== STATIC ===================== */
-app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  express.static(
+    path.join(__dirname, "public"),
+    {
+      setHeaders: (res, filePath) => {
+
+        if(filePath.toLowerCase().endsWith(".html")){
+
+          res.setHeader(
+            "Cache-Control",
+            "no-cache, no-store, must-revalidate"
+          );
+
+          res.setHeader(
+            "Pragma",
+            "no-cache"
+          );
+
+          res.setHeader(
+            "Expires",
+            "0"
+          );
+
+        }
+
+      }
+    }
+  )
+);
 
 /* ===================== MONGO ===================== */
 mongoose.connect(process.env.MONGO_URL)

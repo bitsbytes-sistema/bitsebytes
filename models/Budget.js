@@ -103,6 +103,17 @@ const BudgetSchema = new mongoose.Schema({
     default: "pendente"
   },
 
+  valorPermuta: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+
+  descricaoPermuta: {
+    type: String,
+    default: "",
+    trim: true
+  },
   dataPagamento: {
     type: Date,
     default: null

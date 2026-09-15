@@ -356,11 +356,24 @@ function render(){
   }
 
   orcamentos.forEach(o => {
-
     const pago = o.pagamento === "pago";
     const cortesia = o.pagamento === "cortesia";
     const permuta = o.pagamento === "permuta";
     const reprovado = o.status === "reprovado";
+
+    const valorPermuta =
+        Number(o.valorPermuta || 0);
+
+    const saldoRestante =
+        Math.max(
+            0,
+            Number(o.total || 0) - valorPermuta
+        );
+
+    const permutaParcial =
+        valorPermuta > 0 &&
+        saldoRestante > 0 &&
+        o.pagamento === "pendente";
 
 
     lista.innerHTML += `
@@ -413,6 +426,38 @@ function render(){
         border-radius:20px;
         font-size:12px;
     ">🔄 Permuta</span>`
+    : permutaParcial
+    ? `<div style="display:flex;flex-direction:column;gap:4px;">
+
+        <span style="
+            background:#0891b2;
+            color:white;
+            padding:5px 10px;
+            border-radius:20px;
+            font-size:12px;
+            width:max-content;
+        ">
+            🔄 Permuta: ${valorPermuta.toLocaleString("pt-BR", {
+                style:"currency",
+                currency:"BRL"
+            })}
+        </span>
+
+        <span style="
+            background:#dc2626;
+            color:white;
+            padding:5px 10px;
+            border-radius:20px;
+            font-size:12px;
+            width:max-content;
+        ">
+            💰 Saldo: ${saldoRestante.toLocaleString("pt-BR", {
+                style:"currency",
+                currency:"BRL"
+            })}
+        </span>
+
+    </div>`
     : `<span style="
         background:#dc2626;
         color:white;
@@ -464,7 +509,7 @@ function render(){
         <button
             style="background:#0891b2"
             onclick="permuta('${o._id}')">
-            🔄 Permuta
+            ${permutaParcial ? "🔄 Alterar Permuta" : "🔄 Permuta"}
         </button>
     `
     : `
@@ -617,26 +662,105 @@ async function cortesia(id){
 
 async function permuta(id){
 
-    if(!confirm("Marcar este orçamento como permuta?"))
+    const valorInformado = prompt(
+        "Informe o valor do equipamento recebido na troca:"
+    );
+
+    if(valorInformado === null)
         return;
+
+    const valorPermuta = Number(
+        String(valorInformado)
+            .replace(/\./g, "")
+            .replace(",", ".")
+    );
+
+    if(
+        !Number.isFinite(valorPermuta) ||
+        valorPermuta <= 0
+    ){
+        alert("Informe um valor válido para a troca.");
+        return;
+    }
+
+    const descricaoPermuta = prompt(
+        "Descreva o equipamento recebido na troca:"
+    );
+
+    if(descricaoPermuta === null)
+        return;
+
+    if(!String(descricaoPermuta).trim()){
+        alert("Informe qual equipamento foi recebido na troca.");
+        return;
+    }
+
+    if(!confirm(
+        "Confirmar permuta?\n\n" +
+        "Equipamento: " + String(descricaoPermuta).trim() + "\n" +
+        "Valor da troca: " +
+        valorPermuta.toLocaleString("pt-BR", {
+            style:"currency",
+            currency:"BRL"
+        })
+    )){
+        return;
+    }
 
     const res = await fetch(
         "/api/budgets/" + id + "/permuta",
         {
             method:"PUT",
-            credentials:"include"
+            credentials:"include",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                valorPermuta,
+                descricaoPermuta:
+                    String(descricaoPermuta).trim()
+            })
         }
     );
 
     const json = await res.json();
 
     if(json.ok){
+
+        const saldo =
+            Number(json.saldoRestante || 0);
+
+        if(saldo > 0){
+
+            alert(
+                "Permuta registrada com sucesso.\n\n" +
+                "Saldo restante a receber: " +
+                saldo.toLocaleString("pt-BR", {
+                    style:"currency",
+                    currency:"BRL"
+                })
+            );
+
+        }else{
+
+            alert(
+                "Permuta registrada com sucesso.\n\n" +
+                "O orçamento foi totalmente quitado pela troca."
+            );
+
+        }
+
         load();
+
     }else{
-        alert(json.error || "Erro ao marcar como permuta.");
+
+        alert(
+            json.error ||
+            "Erro ao registrar permuta."
+        );
+
     }
 }
-
 async function cancelarPagamento(id){
 
     if(!confirm("Cancelar pagamento deste orçamento?"))

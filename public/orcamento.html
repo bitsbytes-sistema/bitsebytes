@@ -187,6 +187,35 @@ button{
         <div style="margin-top:6px;">
             Total Líquido: <span id="total"></span>
         </div>
+
+        <div
+            id="resumoPermuta"
+            style="
+                display:none;
+                margin-top:10px;
+                padding-top:10px;
+                border-top:1px solid #ddd;
+            "
+        >
+            <div>
+                Permuta:
+                <span id="valorPermutaVisual"></span>
+            </div>
+
+            <div id="linhaDescricaoPermuta">
+                Equipamento recebido:
+                <span id="descricaoPermutaVisual"></span>
+            </div>
+
+            <div style="
+                margin-top:6px;
+                font-weight:bold;
+            ">
+                Saldo a Pagar:
+                <span id="saldoPermutaVisual"></span>
+            </div>
+        </div>
+
     </div>
 
     <div class="botoes">
@@ -313,6 +342,74 @@ async function carregarServicos(){
     console.log(servicos);
 }
 
+function atualizarResumoPermuta(totalAtual){
+
+    const resumo =
+        document.getElementById("resumoPermuta");
+
+    if(!resumo){
+        return;
+    }
+
+    const valorPermuta =
+        Number(budget?.valorPermuta || 0);
+
+    if(valorPermuta <= 0){
+
+        resumo.style.display = "none";
+        return;
+
+    }
+
+    const saldo =
+        Math.max(
+            0,
+            Number(totalAtual || 0) - valorPermuta
+        );
+
+    document.getElementById(
+        "valorPermutaVisual"
+    ).innerText =
+        valorPermuta.toLocaleString("pt-BR", {
+            style:"currency",
+            currency:"BRL"
+        });
+
+    document.getElementById(
+        "saldoPermutaVisual"
+    ).innerText =
+        saldo.toLocaleString("pt-BR", {
+            style:"currency",
+            currency:"BRL"
+        });
+
+    const descricao =
+        String(
+            budget?.descricaoPermuta || ""
+        ).trim();
+
+    const linhaDescricao =
+        document.getElementById(
+            "linhaDescricaoPermuta"
+        );
+
+    if(descricao){
+
+        document.getElementById(
+            "descricaoPermutaVisual"
+        ).innerText = descricao;
+
+        linhaDescricao.style.display = "block";
+
+    }else{
+
+        linhaDescricao.style.display = "none";
+
+    }
+
+    resumo.style.display = "block";
+}
+
 async function carregar(){
 
     const res = await fetch("/api/budgets/" + id,{
@@ -409,6 +506,8 @@ document.getElementById("total").innerText =
         style:"currency",
         currency:"BRL"
     });
+
+    atualizarResumoPermuta(Number(budget.total || 0));
 
 	const btnConverter =
     document.getElementById("btnConverter");
@@ -1112,6 +1211,8 @@ function atualizarTotal(){
             currency:"BRL"
         });
 
+    atualizarResumoPermuta(total);
+
     const totalModal = document.getElementById("totalModal");
 
     if(totalModal){
@@ -1217,6 +1318,29 @@ function mensagemWhats(){
 `;
 
     });
+    const valorPermutaWhats =
+        Number(budget.valorPermuta || 0);
+
+    const descricaoPermutaWhats =
+        String(
+            budget.descricaoPermuta || ""
+        ).trim();
+
+    const saldoPermutaWhats =
+        Math.max(
+            0,
+            totalWhats - valorPermutaWhats
+        );
+
+    const resumoPermutaWhats =
+        valorPermutaWhats > 0
+            ? `
+
+*PERMUTA*
+Permuta: ${moeda(valorPermutaWhats)}
+${descricaoPermutaWhats ? `Equipamento recebido: ${descricaoPermutaWhats}` : ""}
+Saldo a Pagar: ${moeda(saldoPermutaWhats)}`
+            : "";
 
     const mensagem =
 `Olá ${budget.cliente}
@@ -1228,7 +1352,7 @@ ${itensTexto}
 *RESUMO*
 Subtotal: ${moeda(subtotalWhats)}
 Descontos: ${moeda(descontoWhats)}
-*Total Líquido: ${moeda(totalWhats)}*
+*Total Líquido: ${moeda(totalWhats)}*${resumoPermutaWhats}
 
 Obrigado!`;
 

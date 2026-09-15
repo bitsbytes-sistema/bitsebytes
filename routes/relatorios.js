@@ -170,8 +170,23 @@ router.get(
 
             const totalOrcamentosPagos =
                 orcamentosPagos.reduce(
-                    (soma, orcamento) =>
-                        soma + numero(orcamento.total),
+                    (soma, orcamento) => {
+
+                        const valorTotal =
+                            numero(orcamento.total);
+
+                        const valorPermuta =
+                            numero(orcamento.valorPermuta);
+
+                        const valorRecebido =
+                            Math.max(
+                                0,
+                                valorTotal - valorPermuta
+                            );
+
+                        return soma + valorRecebido;
+
+                    },
                     0
                 );
 
@@ -189,8 +204,23 @@ router.get(
 
             let pendenteReceber =
                 budgetsPendentes.reduce(
-                    (total, budget) =>
-                        total + numero(budget.total),
+                    (total, budget) => {
+
+                        const valorTotal =
+                            numero(budget.total);
+
+                        const valorPermuta =
+                            numero(budget.valorPermuta);
+
+                        const saldo =
+                            Math.max(
+                                0,
+                                valorTotal - valorPermuta
+                            );
+
+                        return total + saldo;
+
+                    },
                     0
                 );
 

@@ -1127,6 +1127,60 @@ descontoPdf =
 totalPdf =
     Number(totalPdf.toFixed(2));
 
+const valorPermutaPdf =
+    Number(budget.valorPermuta || 0);
+
+const descricaoPermutaPdf =
+    String(
+        budget.descricaoPermuta || ""
+    ).trim();
+
+const saldoPermutaPdf =
+    Math.max(
+        0,
+        totalPdf - valorPermutaPdf
+    );
+
+const permutaResumoPdf =
+    valorPermutaPdf > 0
+        ? `
+        <div style="
+            margin-top:14px;
+            padding-top:12px;
+            border-top:1px solid rgba(255,255,255,.35);
+            font-size:13px;
+            line-height:1.55;
+        ">
+            <div>
+                PERMUTA:
+                R$ ${valorPermutaPdf
+                    .toFixed(2)
+                    .replace(".", ",")}
+            </div>
+
+            ${
+                descricaoPermutaPdf
+                    ? `<div>
+                        Equipamento recebido:
+                        ${descricaoPermutaPdf}
+                       </div>`
+                    : ""
+            }
+
+            <div style="
+                margin-top:6px;
+                font-weight:bold;
+                font-size:15px;
+            ">
+                SALDO A PAGAR:
+                R$ ${saldoPermutaPdf
+                    .toFixed(2)
+                    .replace(".", ",")}
+            </div>
+        </div>
+        `
+        : "";
+
 const logoPath = path.join(process.cwd(), "public", "logo.png");
 
 let logoHTML = "";
@@ -1264,6 +1318,11 @@ const qrCodeHTML = `
             totalPdf
             .toFixed(2)
             .replace(".",",")
+        )
+
+        .replaceAll(
+            "{{PERMUTA_RESUMO}}",
+            permutaResumoPdf
         )
 
         .replaceAll(
@@ -1564,7 +1623,7 @@ router.put("/:id/cortesia", auth, async (req, res) => {
 
 });
 
-/* ===================== MARCAR COMO PERMUTA ===================== */
+/* ===================== PERMUTA / TROCA ===================== */
 
 router.put("/:id/permuta", auth, async (req, res) => {
 
@@ -1577,23 +1636,84 @@ router.put("/:id/permuta", auth, async (req, res) => {
 
         if (!budget) {
             return res.status(404).json({
-                error: "Orçamento não encontrado"
-            });
-        }
-
-        if (budget.pagamento === "permuta") {
-            return res.json({
                 ok: false,
-                error: "Este orçamento já está marcado como permuta."
+                error: "Orçamento não encontrado."
             });
         }
 
-        budget.pagamento = "permuta";
-        budget.dataPagamento = new Date();
-        budget.usuarioPagamento = req.session.user.username;
+        if (budget.status === "reprovado") {
+            return res.status(400).json({
+                ok: false,
+                error: "Não é possível aplicar permuta em orçamento reprovado."
+            });
+        }
+
+        if (
+            budget.pagamento === "pago" ||
+            budget.pagamento === "cortesia"
+        ) {
+            return res.status(400).json({
+                ok: false,
+                error: "Este orçamento já está quitado."
+            });
+        }
+
+        const total = Number(budget.total || 0);
+
+        const valorPermuta =
+            Number(req.body.valorPermuta);
+
+        const descricaoPermuta =
+            String(
+                req.body.descricaoPermuta || ""
+            ).trim();
+
+        if (
+            !Number.isFinite(valorPermuta) ||
+            valorPermuta <= 0
+        ) {
+            return res.status(400).json({
+                ok: false,
+                error: "Informe um valor válido para a troca."
+            });
+        }
+
+        if (valorPermuta > total) {
+            return res.status(400).json({
+                ok: false,
+                error: "O valor da troca não pode ser maior que o total do orçamento."
+            });
+        }
+
+        budget.valorPermuta = valorPermuta;
+        budget.descricaoPermuta = descricaoPermuta;
+
+        const saldoRestante =
+            Math.max(
+                0,
+                total - valorPermuta
+            );
+
+        if (saldoRestante === 0) {
+
+            budget.pagamento = "permuta";
+            budget.dataPagamento = new Date();
+            budget.usuarioPagamento =
+                req.session.user.username;
+            budget.formaPagamento = "";
+
+        } else {
+
+            budget.pagamento = "pendente";
+            budget.dataPagamento = null;
+            budget.usuarioPagamento = null;
+            budget.formaPagamento = "";
+
+        }
 
         budget.historico.push({
-            acao: "Orçamento marcado como permuta",
+            acao:
+                `Permuta registrada - R$ ${valorPermuta.toFixed(2)} - Saldo restante R$ ${saldoRestante.toFixed(2)}`,
             usuario: req.session.user.username,
             data: new Date()
         });
@@ -1602,21 +1722,25 @@ router.put("/:id/permuta", auth, async (req, res) => {
 
         res.json({
             ok: true,
+            saldoRestante,
             budget
         });
 
     } catch (err) {
 
-        console.log(err);
+        console.log(
+            "ERRO AO REGISTRAR PERMUTA:",
+            err
+        );
 
         res.status(500).json({
-            error: true
+            ok: false,
+            error: "Erro ao registrar permuta."
         });
 
     }
 
 });
-
 /* ===================== CANCELAR PAGAMENTO ===================== */
 
 router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
@@ -1633,14 +1757,25 @@ router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
                 error: "Orçamento não encontrado"
             });
         }
+        const eraPermutaTotal =
+            budget.pagamento === "permuta";
 
         budget.pagamento = "pendente";
         budget.dataPagamento = null;
         budget.usuarioPagamento = null;
         budget.formaPagamento = "";
 
+        if (eraPermutaTotal) {
+
+            budget.valorPermuta = 0;
+            budget.descricaoPermuta = "";
+
+        }
+
         budget.historico.push({
-            acao: "Pagamento cancelado",
+            acao: eraPermutaTotal
+                ? "Permuta cancelada"
+                : "Pagamento cancelado",
             usuario: req.session.user.username,
             data: new Date()
         });

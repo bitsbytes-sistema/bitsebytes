@@ -296,7 +296,11 @@ router.get("/resumo", auth, async (req, res) => {
                     "Orçamentos",
 
                 valor:
-                    numero(budget.total),
+                    Math.max(
+                        0,
+                        numero(budget.total) -
+                        numero(budget.valorPermuta)
+                    ),
 
                 status:
                     "pago",
@@ -358,8 +362,23 @@ router.get("/resumo", auth, async (req, res) => {
 
         let pendenteReceber =
             budgetsPendentes.reduce(
-                (total, budget) =>
-                    total + numero(budget.total),
+                (total, budget) => {
+
+                    const valorTotal =
+                        numero(budget.total);
+
+                    const valorPermuta =
+                        numero(budget.valorPermuta);
+
+                    const saldo =
+                        Math.max(
+                            0,
+                            valorTotal - valorPermuta
+                        );
+
+                    return total + saldo;
+
+                },
                 0
             );
         let pendentePagar = 0;

@@ -1636,6 +1636,224 @@ app.post("/api/tickets", auth, async (req, res) => {
 });
 
   
+/* ===================== ALTERAR CLIENTE COM AUTORIZAÇÃO ADMINISTRATIVA ===================== */
+
+app.put("/api/tickets/:id/alterar-cliente", auth, async (req, res) => {
+
+  try {
+
+    const companyId =
+      String(req.session.user.companyId);
+
+    const novoClienteId =
+      String(req.body.novoClienteId || "").trim();
+
+    const adminUsername =
+      String(req.body.adminUsername || "").trim();
+
+    const adminPassword =
+      String(req.body.adminPassword || "");
+
+    if(
+      !novoClienteId ||
+      !adminUsername ||
+      !adminPassword
+    ){
+      return res.status(400).json({
+        ok: false,
+        error: "Informe o novo cliente e as credenciais do administrador."
+      });
+    }
+
+
+    /* ===================== VALIDAR ADMINISTRADOR ===================== */
+
+    const administrador = await User.findOne({
+      username: adminUsername
+    });
+
+    if(
+      administrador &&
+      String(administrador.companyId) !== companyId
+    ){
+      return res.status(403).json({
+        ok: false,
+        error: "O administrador informado pertence a outra empresa."
+      });
+    }
+
+    if(!administrador){
+return res.status(401).json({
+        ok: false,
+        error: "Administrador ou senha inválidos."
+      });
+    }
+
+    const perfilAdministrador =
+      String(administrador.role || "").toLowerCase();
+
+    if(
+      perfilAdministrador !== "admin" &&
+      perfilAdministrador !== "master"
+    ){
+      return res.status(403).json({
+        ok: false,
+        error: "O usuário informado não possui permissão administrativa."
+      });
+    }
+
+    const senhaCorreta =
+      await bcrypt.compare(
+        adminPassword,
+        administrador.password
+      );
+
+    if(!senhaCorreta){
+return res.status(401).json({
+        ok: false,
+        error: "Administrador ou senha inválidos."
+      });
+    }
+/* ===================== LOCALIZAR CHAMADO ===================== */
+
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId
+    });
+
+    if(!ticket){
+      return res.status(404).json({
+        ok: false,
+        error: "Chamado não encontrado."
+      });
+    }
+
+
+    /* ===================== LOCALIZAR NOVO CLIENTE ===================== */
+
+    const novoCliente = await Cliente.findOne({
+      _id: novoClienteId,
+      companyId
+    });
+
+    if(!novoCliente){
+      return res.status(404).json({
+        ok: false,
+        error: "Novo cliente não encontrado."
+      });
+    }
+
+    if(
+      ticket.clienteId &&
+      String(ticket.clienteId) === String(novoCliente._id)
+    ){
+      return res.status(400).json({
+        ok: false,
+        error: "Este cliente já está vinculado ao chamado."
+      });
+    }
+
+
+    /* ===================== TROCAR CLIENTE ===================== */
+
+    const clienteAnterior =
+      String(ticket.cliente || "").trim();
+
+    const clienteAnteriorId =
+      ticket.clienteId || null;
+
+    ticket.clienteId =
+      novoCliente._id;
+
+    ticket.cliente =
+      novoCliente.nome || "";
+
+    ticket.telefone =
+      novoCliente.telefone || "";
+
+    ticket.cpfcnpj =
+      novoCliente.cpfcnpj || "";
+
+    ticket.endereco =
+      novoCliente.endereco || "";
+
+    ticket.bairro =
+      novoCliente.bairro || "";
+
+    ticket.cidade =
+      novoCliente.cidade || "";
+
+    ticket.estado =
+      novoCliente.estado || "";
+
+    ticket.cep =
+      novoCliente.cep || "";
+
+
+    /* ===================== REGISTRAR AUDITORIA ===================== */
+
+    ticket.auditoria.push({
+
+      acao: "troca_cliente",
+
+      executadoPor:
+        req.session.user.username,
+
+      executadoPorId:
+        req.session.user._id || null,
+
+      autorizadoPor:
+        administrador.username,
+
+      autorizadoPorId:
+        administrador._id,
+
+      clienteAnterior,
+
+      clienteAnteriorId,
+
+      clienteNovo:
+        novoCliente.nome || "",
+
+      clienteNovoId:
+        novoCliente._id,
+
+      data:
+        new Date()
+
+    });
+
+
+    await ticket.save();
+
+
+    res.json({
+      ok: true,
+      ticket,
+      alteracao: {
+        clienteAnterior,
+        clienteNovo: novoCliente.nome || "",
+        realizadoPor: req.session.user.username,
+        autorizadoPor: administrador.username
+      }
+    });
+
+  } catch(err){
+
+    console.log(
+      "ERRO AO ALTERAR CLIENTE DO CHAMADO:",
+      err
+    );
+
+    res.status(500).json({
+      ok: false,
+      error: "Erro ao alterar cliente do chamado."
+    });
+
+  }
+
+});
+
 /* ===================== STATUS UPDATE ===================== */
 app.put("/api/tickets/:id", auth, async (req, res) => {
 

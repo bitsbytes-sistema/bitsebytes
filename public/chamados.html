@@ -1134,6 +1134,10 @@ Status
 🔍 Diagnóstico
 </button>
 
+<button onclick="trocarCliente('${c._id}')">
+👤 Trocar Cliente
+</button>
+
 
 ${
 c.assinaturaConfirmada && c.assinaturaCliente
@@ -1938,6 +1942,402 @@ function abrirAssinaturaCliente(id){
   modal.appendChild(data);
   modal.appendChild(excluirAssinatura);
   modal.appendChild(fechar);
+
+  overlay.appendChild(modal);
+
+  document.body.appendChild(overlay);
+
+}
+
+/* ===================== TROCAR CLIENTE ===================== */
+
+async function trocarCliente(id){
+
+  const ticket =
+    chamados.find(x => x._id === id);
+
+  if(!ticket){
+    alert("Chamado não encontrado.");
+    return;
+  }
+
+  if(!clientes.length){
+    await carregarClientes();
+  }
+
+  if(!clientes.length){
+    alert("Nenhum cliente cadastrado.");
+    return;
+  }
+
+
+  /* ===================== OVERLAY ===================== */
+
+  const overlay =
+    document.createElement("div");
+
+  overlay.style.position = "fixed";
+  overlay.style.inset = "0";
+  overlay.style.background = "rgba(15, 23, 42, 0.65)";
+  overlay.style.display = "flex";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.padding = "20px";
+  overlay.style.zIndex = "99999";
+
+
+  /* ===================== MODAL ===================== */
+
+  const modal =
+    document.createElement("div");
+
+  modal.style.background = "#ffffff";
+  modal.style.width = "100%";
+  modal.style.maxWidth = "520px";
+  modal.style.maxHeight = "90vh";
+  modal.style.overflowY = "auto";
+  modal.style.borderRadius = "12px";
+  modal.style.padding = "24px";
+  modal.style.boxShadow =
+    "0 20px 50px rgba(0,0,0,.25)";
+
+
+  const titulo =
+    document.createElement("h2");
+
+  titulo.textContent =
+    "👤 Trocar Cliente";
+
+  titulo.style.marginTop = "0";
+
+
+  const atual =
+    document.createElement("p");
+
+  atual.innerHTML =
+    "<strong>OS:</strong> " +
+    String(ticket.numeroOS || "-") +
+    "<br><strong>Cliente atual:</strong> " +
+    String(ticket.cliente || "-");
+
+
+  const aviso =
+    document.createElement("div");
+
+  aviso.textContent =
+    "Esta alteração exige autorização de um administrador.";
+
+  aviso.style.padding = "10px";
+  aviso.style.margin = "15px 0";
+  aviso.style.background = "#fef3c7";
+  aviso.style.borderRadius = "8px";
+  aviso.style.fontSize = "14px";
+
+
+  /* ===================== NOVO CLIENTE ===================== */
+
+  const labelCliente =
+    document.createElement("label");
+
+  labelCliente.textContent =
+    "Novo cliente";
+
+  labelCliente.style.display = "block";
+  labelCliente.style.fontWeight = "700";
+  labelCliente.style.marginBottom = "6px";
+
+
+  const selectCliente =
+    document.createElement("select");
+
+  selectCliente.style.width = "100%";
+  selectCliente.style.padding = "11px";
+  selectCliente.style.marginBottom = "15px";
+  selectCliente.style.border = "1px solid #cbd5e1";
+  selectCliente.style.borderRadius = "8px";
+
+  const opcaoInicial =
+    document.createElement("option");
+
+  opcaoInicial.value = "";
+  opcaoInicial.textContent =
+    "Selecione o novo cliente";
+
+  selectCliente.appendChild(opcaoInicial);
+
+
+  const clientesOrdenados =
+    [...clientes].sort((a,b) =>
+      String(a.nome || a.cliente || "")
+        .localeCompare(
+          String(b.nome || b.cliente || ""),
+          "pt-BR"
+        )
+    );
+
+
+  clientesOrdenados.forEach(c => {
+
+    if(
+      ticket.clienteId &&
+      String(c._id) === String(ticket.clienteId)
+    ){
+      return;
+    }
+
+    const option =
+      document.createElement("option");
+
+    option.value = c._id;
+
+    option.textContent =
+      (c.nome || c.cliente || "Sem nome") +
+      (
+        c.cpfcnpj
+          ? " — " + c.cpfcnpj
+          : ""
+      );
+
+    selectCliente.appendChild(option);
+
+  });
+
+
+  /* ===================== ADMINISTRADOR ===================== */
+
+  const labelUsuario =
+    document.createElement("label");
+
+  labelUsuario.textContent =
+    "Usuário do administrador";
+
+  labelUsuario.style.display = "block";
+  labelUsuario.style.fontWeight = "700";
+  labelUsuario.style.marginBottom = "6px";
+
+
+  const inputUsuario =
+    document.createElement("input");
+
+  inputUsuario.type = "text";
+  inputUsuario.autocomplete = "username";
+  inputUsuario.placeholder =
+    "Usuário do administrador";
+
+  inputUsuario.style.width = "100%";
+  inputUsuario.style.padding = "11px";
+  inputUsuario.style.marginBottom = "15px";
+  inputUsuario.style.border = "1px solid #cbd5e1";
+  inputUsuario.style.borderRadius = "8px";
+
+
+  const labelSenha =
+    document.createElement("label");
+
+  labelSenha.textContent =
+    "Senha do administrador";
+
+  labelSenha.style.display = "block";
+  labelSenha.style.fontWeight = "700";
+  labelSenha.style.marginBottom = "6px";
+
+
+  const inputSenha =
+    document.createElement("input");
+
+  inputSenha.type = "password";
+  inputSenha.autocomplete = "current-password";
+  inputSenha.placeholder =
+    "Senha do administrador";
+
+  inputSenha.style.width = "100%";
+  inputSenha.style.padding = "11px";
+  inputSenha.style.marginBottom = "20px";
+  inputSenha.style.border = "1px solid #cbd5e1";
+  inputSenha.style.borderRadius = "8px";
+
+
+  /* ===================== BOTÕES ===================== */
+
+  const botoes =
+    document.createElement("div");
+
+  botoes.style.display = "flex";
+  botoes.style.gap = "10px";
+  botoes.style.justifyContent = "flex-end";
+
+
+  const cancelar =
+    document.createElement("button");
+
+  cancelar.type = "button";
+  cancelar.textContent = "Cancelar";
+
+  cancelar.onclick = function(){
+    overlay.remove();
+  };
+
+
+  const confirmar =
+    document.createElement("button");
+
+  confirmar.type = "button";
+  confirmar.textContent =
+    "Autorizar e trocar";
+
+  confirmar.style.background = "#2563eb";
+  confirmar.style.color = "#ffffff";
+
+
+  confirmar.onclick = async function(){
+
+    const novoClienteId =
+      selectCliente.value;
+
+    const adminUsername =
+      inputUsuario.value.trim();
+
+    const adminPassword =
+      inputSenha.value;
+
+
+    if(!novoClienteId){
+      alert("Selecione o novo cliente.");
+      return;
+    }
+
+    if(!adminUsername || !adminPassword){
+      alert(
+        "Informe o usuário e a senha do administrador."
+      );
+      return;
+    }
+
+
+    const novoCliente =
+      clientes.find(
+        c => String(c._id) === String(novoClienteId)
+      );
+
+    const confirmou = confirm(
+      "Confirma a alteração da OS " +
+      String(ticket.numeroOS || "-") +
+      "?\n\n" +
+      "Cliente atual: " +
+      String(ticket.cliente || "-") +
+      "\nNovo cliente: " +
+      String(
+        novoCliente
+          ? (novoCliente.nome || novoCliente.cliente || "-")
+          : "-"
+      )
+    );
+
+    if(!confirmou){
+      return;
+    }
+
+
+    confirmar.disabled = true;
+    confirmar.textContent =
+      "Validando autorização...";
+
+
+    try{
+
+      const res = await fetch(
+        "/api/tickets/" +
+        encodeURIComponent(id) +
+        "/alterar-cliente",
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          credentials: "include",
+
+          body: JSON.stringify({
+            novoClienteId,
+            adminUsername,
+            adminPassword
+          })
+        }
+      );
+
+
+      const resultado =
+        await res.json();
+
+
+      if(!res.ok){
+
+        alert(
+          resultado.error ||
+          "Não foi possível alterar o cliente."
+        );
+
+        confirmar.disabled = false;
+        confirmar.textContent =
+          "Autorizar e trocar";
+
+        inputSenha.value = "";
+
+        return;
+      }
+
+
+      overlay.remove();
+
+      alert(
+        "Cliente alterado com sucesso.\n\n" +
+        "De: " +
+        resultado.alteracao.clienteAnterior +
+        "\nPara: " +
+        resultado.alteracao.clienteNovo +
+        "\nAutorizado por: " +
+        resultado.alteracao.autorizadoPor
+      );
+
+      await load();
+
+    }
+    catch(err){
+
+      console.error(
+        "Erro ao trocar cliente:",
+        err
+      );
+
+      alert(
+        "Erro de comunicação ao alterar o cliente."
+      );
+
+      confirmar.disabled = false;
+      confirmar.textContent =
+        "Autorizar e trocar";
+
+      inputSenha.value = "";
+
+    }
+
+  };
+
+
+  botoes.appendChild(cancelar);
+  botoes.appendChild(confirmar);
+
+  modal.appendChild(titulo);
+  modal.appendChild(atual);
+  modal.appendChild(aviso);
+  modal.appendChild(labelCliente);
+  modal.appendChild(selectCliente);
+  modal.appendChild(labelUsuario);
+  modal.appendChild(inputUsuario);
+  modal.appendChild(labelSenha);
+  modal.appendChild(inputSenha);
+  modal.appendChild(botoes);
 
   overlay.appendChild(modal);
 

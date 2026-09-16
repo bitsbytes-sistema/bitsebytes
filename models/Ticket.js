@@ -222,6 +222,67 @@ budgetId: {
   default: null
 },
 
+  /* ===================== AUDITORIA DE ALTERAÇÕES SENSÍVEIS ===================== */
+
+  auditoria: [
+    {
+
+      acao: {
+        type: String,
+        default: ""
+      },
+
+      executadoPor: {
+        type: String,
+        default: ""
+      },
+
+      executadoPorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+      },
+
+      autorizadoPor: {
+        type: String,
+        default: ""
+      },
+
+      autorizadoPorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+      },
+
+      clienteAnterior: {
+        type: String,
+        default: ""
+      },
+
+      clienteAnteriorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cliente",
+        default: null
+      },
+
+      clienteNovo: {
+        type: String,
+        default: ""
+      },
+
+      clienteNovoId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cliente",
+        default: null
+      },
+
+      data: {
+        type: Date,
+        default: Date.now
+      }
+
+    }
+  ],
   /* ===================== EMPRESA ===================== */
 
   companyId: {

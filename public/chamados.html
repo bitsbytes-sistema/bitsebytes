@@ -1134,9 +1134,17 @@ Status
 🔍 Diagnóstico
 </button>
 
+${
+c.status !== "finalizado"
+?
+`
 <button onclick="trocarCliente('${c._id}')">
 👤 Trocar Cliente
 </button>
+`
+:
+""
+}
 
 
 ${

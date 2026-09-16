@@ -1729,6 +1729,18 @@ return res.status(401).json({
     }
 
 
+    /* ===================== BLOQUEAR ALTERAÇÃO EM CHAMADO FINALIZADO ===================== */
+
+    if(
+      String(ticket.status || "").toLowerCase() === "finalizado"
+    ){
+      return res.status(403).json({
+        ok: false,
+        error: "Não é permitido trocar o cliente de um chamado finalizado."
+      });
+    }
+
+
     /* ===================== LOCALIZAR NOVO CLIENTE ===================== */
 
     const novoCliente = await Cliente.findOne({

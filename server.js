@@ -34,6 +34,7 @@ const Product = require("./models/Product");
 const StockMovement = require("./models/StockMovement");
 const PaymentMachine = require("./models/PaymentMachine");
 const BackupControl = require("./models/BackupControl");
+const AuditLog = require("./models/AuditLog");
 
 const serviceRoutes = require("./routes/services");
 const productRoutes = require("./routes/products");
@@ -3152,14 +3153,164 @@ Seu chamado foi aberto com sucesso e aguarda análise da nossa equipe técnica.`
 
 });
 
-/* ===================== DELETE ===================== */
-app.delete("/api/tickets/:id", auth, async (req, res) => {
-  await Ticket.findOneAndDelete({
-    _id: req.params.id,
-    companyId: req.session.user.companyId
-  });
+/* ===================== EXCLUIR CHAMADO COM AUTORIZAÇÃO ADMINISTRATIVA ===================== */
 
-  res.json({ ok: true });
+app.delete("/api/tickets/:id", auth, async (req, res) => {
+
+  try {
+
+    const companyId =
+      String(req.session.user.companyId);
+
+    const adminUsername =
+      String(req.body.adminUsername || "").trim();
+
+    const adminPassword =
+      String(req.body.adminPassword || "");
+
+    if(
+      !adminUsername ||
+      !adminPassword
+    ){
+      return res.status(400).json({
+        ok: false,
+        error: "Informe o usuário e a senha do administrador."
+      });
+    }
+
+
+    /* ===================== VALIDAR ADMINISTRADOR ===================== */
+
+    const administrador = await User.findOne({
+      username: adminUsername
+    });
+
+    if(
+      !administrador ||
+      String(administrador.companyId) !== companyId
+    ){
+      return res.status(401).json({
+        ok: false,
+        error: "Administrador ou senha inválidos."
+      });
+    }
+
+    const perfilAdministrador =
+      String(administrador.role || "").toLowerCase();
+
+    if(
+      perfilAdministrador !== "admin" &&
+      perfilAdministrador !== "master"
+    ){
+      return res.status(403).json({
+        ok: false,
+        error: "O usuário informado não possui permissão administrativa."
+      });
+    }
+
+    const senhaCorreta =
+      await bcrypt.compare(
+        adminPassword,
+        administrador.password
+      );
+
+    if(!senhaCorreta){
+      return res.status(401).json({
+        ok: false,
+        error: "Administrador ou senha inválidos."
+      });
+    }
+
+
+    /* ===================== LOCALIZAR CHAMADO ===================== */
+
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId
+    });
+
+    if(!ticket){
+      return res.status(404).json({
+        ok: false,
+        error: "Chamado não encontrado."
+      });
+    }
+
+
+    /* ===================== REGISTRAR AUDITORIA ===================== */
+
+    await AuditLog.create({
+
+      companyId,
+
+      acao: "excluir_chamado",
+
+      entidade: "Ticket",
+
+      entidadeId:
+        String(ticket._id),
+
+      descricao:
+        `Exclusão do chamado OS ${ticket.numeroOS || ""}`,
+
+      executadoPor:
+        String(req.session.user.username || ""),
+
+      executadoPorId:
+        req.session.user._id || null,
+
+      autorizadoPor:
+        String(administrador.username || ""),
+
+      autorizadoPorId:
+        administrador._id,
+
+      dados: {
+        numeroOS: ticket.numeroOS || null,
+        cliente: ticket.cliente || "",
+        clienteId: ticket.clienteId || null,
+        telefone: ticket.telefone || "",
+        cpfcnpj: ticket.cpfcnpj || "",
+        equipamento: ticket.equipamento || "",
+        problema: ticket.problema || "",
+        status: ticket.status || "",
+        origem: ticket.origem || "",
+        budgetId: ticket.budgetId || null
+      },
+
+      data: new Date()
+
+    });
+
+
+    /* ===================== EXCLUIR CHAMADO ===================== */
+
+    await Ticket.deleteOne({
+      _id: ticket._id,
+      companyId
+    });
+
+
+    res.json({
+      ok: true,
+      message: "Chamado excluído com autorização administrativa."
+    });
+
+  }
+  catch(err){
+
+    console.error(
+      "Erro ao excluir chamado:",
+      err
+    );
+
+    res.status(500).json({
+      ok: false,
+      error: "Erro ao excluir chamado."
+    });
+
+  }
+
 });
 
 /* ===================== BUSCAR CHAMADO ===================== */

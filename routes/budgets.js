@@ -15,6 +15,9 @@ const Budget = require("../models/Budget");
 const Cliente = require("../models/Cliente");
 const Company = require("../models/Company");
 const Ticket = require("../models/Ticket");
+const User = require("../models/User");
+const AuditLog = require("../models/AuditLog");
+const bcrypt = require("bcrypt");
 
 const path = require("path");
 const fs = require("fs");
@@ -1801,43 +1804,171 @@ router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
 
 /* ===================== CONVERTER ORÇAMENTO EM CHAMADO ===================== */
 
-/* ===================== EXCLUIR ORÇAMENTO ===================== */
+/* ===================== EXCLUIR ORÇAMENTO COM AUTORIZAÇÃO ADMINISTRATIVA ===================== */
 
 router.delete("/:id", auth, async (req, res) => {
 
     try {
 
-        const budget = await Budget.findOne({
-            _id: req.params.id,
-            companyId: req.session.user.companyId
+        const companyId =
+            String(req.session.user.companyId);
+
+        const adminUsername =
+            String(req.body.adminUsername || "").trim();
+
+        const adminPassword =
+            String(req.body.adminPassword || "");
+
+        if(
+            !adminUsername ||
+            !adminPassword
+        ){
+            return res.status(400).json({
+                ok: false,
+                error: "Informe o usuário e a senha do administrador."
+            });
+        }
+
+
+        /* ===================== VALIDAR ADMINISTRADOR ===================== */
+
+        const administrador = await User.findOne({
+            username: adminUsername
         });
 
-        if (!budget) {
+        if(
+            !administrador ||
+            String(administrador.companyId) !== companyId
+        ){
+            return res.status(401).json({
+                ok: false,
+                error: "Administrador ou senha inválidos."
+            });
+        }
+
+        const perfilAdministrador =
+            String(administrador.role || "").toLowerCase();
+
+        if(
+            perfilAdministrador !== "admin" &&
+            perfilAdministrador !== "master"
+        ){
+            return res.status(403).json({
+                ok: false,
+                error: "O usuário informado não possui permissão administrativa."
+            });
+        }
+
+        const senhaCorreta =
+            await bcrypt.compare(
+                adminPassword,
+                administrador.password
+            );
+
+        if(!senhaCorreta){
+            return res.status(401).json({
+                ok: false,
+                error: "Administrador ou senha inválidos."
+            });
+        }
+
+
+        /* ===================== LOCALIZAR ORÇAMENTO ===================== */
+
+        const budget = await Budget.findOne({
+            _id: req.params.id,
+            companyId
+        });
+
+        if(!budget){
             return res.status(404).json({
                 ok: false,
                 error: "Orçamento não encontrado."
             });
         }
 
-        if (budget.status === "convertido" || budget.ticketId) {
+
+        /* ===================== PRESERVAR REGRA DE OS ===================== */
+
+        if(
+            budget.status === "convertido" ||
+            budget.ticketId
+        ){
             return res.status(400).json({
                 ok: false,
                 error: "Este orçamento já foi convertido em Ordem de Serviço e não pode ser excluído."
             });
         }
 
+
+        /* ===================== REGISTRAR AUDITORIA ===================== */
+
+        await AuditLog.create({
+
+            companyId,
+
+            acao: "excluir_orcamento",
+
+            entidade: "Budget",
+
+            entidadeId:
+                String(budget._id),
+
+            descricao:
+                `Exclusão do orçamento ${budget.codigo || budget.numero || ""}`,
+
+            executadoPor:
+                String(req.session.user.username || ""),
+
+            executadoPorId:
+                req.session.user._id || null,
+
+            autorizadoPor:
+                String(administrador.username || ""),
+
+            autorizadoPorId:
+                administrador._id,
+
+            dados: {
+                codigo: budget.codigo || "",
+                numero: budget.numero || null,
+                cliente: budget.cliente || "",
+                clienteId: budget.clienteId || null,
+                status: budget.status || "",
+                pagamento: budget.pagamento || "",
+                subtotal: Number(budget.subtotal || 0),
+                desconto: Number(budget.desconto || 0),
+                total: Number(budget.total || 0),
+                valorPermuta: Number(budget.valorPermuta || 0),
+                descricaoPermuta: budget.descricaoPermuta || "",
+                ticketId: budget.ticketId || null
+            },
+
+            data: new Date()
+
+        });
+
+
+        /* ===================== EXCLUIR ORÇAMENTO ===================== */
+
         await Budget.deleteOne({
             _id: budget._id,
-            companyId: req.session.user.companyId
+            companyId
         });
+
 
         res.json({
-            ok: true
+            ok: true,
+            message: "Orçamento excluído com autorização administrativa."
         });
 
-    } catch (err) {
+    }
+    catch(err){
 
-        console.log(err);
+        console.error(
+            "Erro ao excluir orçamento:",
+            err
+        );
 
         res.status(500).json({
             ok: false,
@@ -1847,7 +1978,6 @@ router.delete("/:id", auth, async (req, res) => {
     }
 
 });
-
 /* ===================== VINCULAR ORÇAMENTO A CHAMADO EXISTENTE ===================== */
 
 router.put("/:id/vincular-chamado", auth, async (req, res) => {

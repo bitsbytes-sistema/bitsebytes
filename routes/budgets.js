@@ -1461,16 +1461,91 @@ router.put("/:id/reprovar", auth, async (req, res) => {
 
     try {
 
-        const budget = await Budget.findOne({
-            _id: req.params.id,
-            companyId: req.session.user.companyId
-        });
+        const companyId =
+            String(req.session.user.companyId);
 
-        if (!budget) {
-            return res.status(404).json({
-                error: "Orçamento não encontrado"
+        const adminUsername =
+            String(req.body.adminUsername || "").trim();
+
+        const adminPassword =
+            String(req.body.adminPassword || "");
+
+        if(
+            !adminUsername ||
+            !adminPassword
+        ){
+            return res.status(400).json({
+                ok: false,
+                error: "Informe o usuário e a senha do administrador."
             });
         }
+
+
+        /* ===================== VALIDAR ADMINISTRADOR ===================== */
+
+        const administrador = await User.findOne({
+            username: adminUsername
+        });
+
+        if(
+            !administrador ||
+            String(administrador.companyId) !== companyId
+        ){
+            return res.status(401).json({
+                ok: false,
+                error: "Administrador ou senha inválidos."
+            });
+        }
+
+        const perfilAdministrador =
+            String(administrador.role || "").toLowerCase();
+
+        if(
+            perfilAdministrador !== "admin" &&
+            perfilAdministrador !== "master"
+        ){
+            return res.status(403).json({
+                ok: false,
+                error: "O usuário informado não possui permissão administrativa."
+            });
+        }
+
+        const senhaCorreta =
+            await bcrypt.compare(
+                adminPassword,
+                administrador.password
+            );
+
+        if(!senhaCorreta){
+            return res.status(401).json({
+                ok: false,
+                error: "Administrador ou senha inválidos."
+            });
+        }
+
+
+        /* ===================== LOCALIZAR ORÇAMENTO ===================== */
+
+        const budget = await Budget.findOne({
+            _id: req.params.id,
+            companyId
+        });
+
+        if(!budget){
+            return res.status(404).json({
+                ok: false,
+                error: "Orçamento não encontrado."
+            });
+        }
+
+
+        /* ===================== REGISTRAR ESTADO ANTERIOR ===================== */
+
+        const statusAnterior =
+            String(budget.status || "");
+
+
+        /* ===================== REPROVAR ORÇAMENTO ===================== */
 
         budget.status = "reprovado";
 
@@ -1482,23 +1557,72 @@ router.put("/:id/reprovar", auth, async (req, res) => {
 
         await budget.save();
 
+
+        /* ===================== REGISTRAR AUDITORIA ===================== */
+
+        await AuditLog.create({
+
+            companyId,
+
+            acao: "reprovar_orcamento",
+
+            entidade: "Budget",
+
+            entidadeId:
+                String(budget._id),
+
+            descricao:
+                `Reprovação do orçamento ${budget.codigo || budget.numero || ""}`,
+
+            executadoPor:
+                String(req.session.user.username || ""),
+
+            executadoPorId:
+                req.session.user._id || null,
+
+            autorizadoPor:
+                String(administrador.username || ""),
+
+            autorizadoPorId:
+                administrador._id,
+
+            dados: {
+                codigo: budget.codigo || "",
+                numero: budget.numero || null,
+                cliente: budget.cliente || "",
+                clienteId: budget.clienteId || null,
+                statusAnterior,
+                statusNovo: "reprovado",
+                total: Number(budget.total || 0)
+            },
+
+            data: new Date()
+
+        });
+
+
         res.json({
             ok: true,
+            message: "Orçamento reprovado com autorização administrativa.",
             budget
         });
 
-    } catch (err) {
+    }
+    catch(err){
 
-        console.log(err);
+        console.error(
+            "Erro ao reprovar orçamento:",
+            err
+        );
 
         res.status(500).json({
-            error: true
+            ok: false,
+            error: "Erro ao reprovar orçamento."
         });
 
     }
 
 });
-
 /* ===================== MARCAR COMO PAGO ===================== */
 
 router.put("/:id/pagar", auth, async (req, res) => {

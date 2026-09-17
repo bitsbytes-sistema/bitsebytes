@@ -1412,33 +1412,236 @@ async function reprovarOrcamento(){
         return;
     }
 
-    const res = await fetch(
-        "/api/budgets/" + id + "/reprovar",
-        {
-            method:"PUT",
-            credentials:"include"
+
+    const overlay = document.createElement("div");
+
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.background = "rgba(0,0,0,.60)";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.zIndex = "99999";
+    overlay.style.padding = "20px";
+
+
+    const modal = document.createElement("div");
+
+    modal.style.background = "#fff";
+    modal.style.width = "100%";
+    modal.style.maxWidth = "430px";
+    modal.style.padding = "24px";
+    modal.style.borderRadius = "12px";
+    modal.style.boxShadow = "0 20px 50px rgba(0,0,0,.30)";
+
+
+    const titulo = document.createElement("h3");
+
+    titulo.textContent = "🔐 Autorização administrativa";
+    titulo.style.marginTop = "0";
+
+
+    const aviso = document.createElement("p");
+
+    aviso.textContent =
+        "Para reprovar este orçamento, informe as credenciais de um administrador.";
+
+    aviso.style.marginBottom = "18px";
+
+
+    const usuario = document.createElement("input");
+
+    usuario.type = "text";
+    usuario.placeholder = "Usuário do administrador";
+    usuario.autocomplete = "username";
+    usuario.style.width = "100%";
+    usuario.style.padding = "11px";
+    usuario.style.marginBottom = "12px";
+    usuario.style.boxSizing = "border-box";
+
+
+    const senha = document.createElement("input");
+
+    senha.type = "password";
+    senha.placeholder = "Senha do administrador";
+    senha.autocomplete = "current-password";
+    senha.style.width = "100%";
+    senha.style.padding = "11px";
+    senha.style.marginBottom = "18px";
+    senha.style.boxSizing = "border-box";
+
+
+    const botoes = document.createElement("div");
+
+    botoes.style.display = "flex";
+    botoes.style.gap = "10px";
+
+
+    const cancelar = document.createElement("button");
+
+    cancelar.type = "button";
+    cancelar.textContent = "Cancelar";
+    cancelar.style.flex = "1";
+    cancelar.style.padding = "11px";
+
+
+    const autorizar = document.createElement("button");
+
+    autorizar.type = "button";
+    autorizar.textContent = "Autorizar e reprovar";
+    autorizar.style.flex = "1";
+    autorizar.style.padding = "11px";
+    autorizar.style.background = "#dc2626";
+    autorizar.style.color = "#fff";
+    autorizar.style.border = "0";
+    autorizar.style.borderRadius = "6px";
+
+
+    cancelar.onclick = function(){
+
+        senha.value = "";
+        overlay.remove();
+
+    };
+
+
+    async function executarReprovacao(){
+
+        const adminUsername =
+            usuario.value.trim();
+
+        const adminPassword =
+            senha.value;
+
+
+        if(!adminUsername || !adminPassword){
+
+            alert(
+                "Informe o usuário e a senha do administrador."
+            );
+
+            return;
         }
-    );
 
-    const data = await res.json();
 
-    if(data.ok){
+        autorizar.disabled = true;
+        cancelar.disabled = true;
 
-        alert("Orçamento reprovado!");
+        autorizar.textContent =
+            "Autorizando...";
 
-        await carregar();
 
-    }else{
+        try{
 
-        alert(
-            data.error ||
-            "Erro ao reprovar orçamento."
-        );
+            const res = await fetch(
+                "/api/budgets/" + id + "/reprovar",
+                {
+                    method: "PUT",
+
+                    credentials: "include",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        adminUsername,
+                        adminPassword
+                    })
+                }
+            );
+
+
+            const data = await res.json();
+
+            senha.value = "";
+
+
+            if(!res.ok || !data.ok){
+
+                alert(
+                    data.error ||
+                    "Não foi possível reprovar o orçamento."
+                );
+
+                autorizar.disabled = false;
+                cancelar.disabled = false;
+
+                autorizar.textContent =
+                    "Autorizar e reprovar";
+
+                senha.focus();
+
+                return;
+            }
+
+
+            overlay.remove();
+
+            alert(
+                data.message ||
+                "Orçamento reprovado com sucesso."
+            );
+
+            await carregar();
+
+        }
+        catch(err){
+
+            senha.value = "";
+
+            console.error(
+                "Erro ao reprovar orçamento:",
+                err
+            );
+
+            alert(
+                "Erro ao reprovar orçamento."
+            );
+
+            autorizar.disabled = false;
+            cancelar.disabled = false;
+
+            autorizar.textContent =
+                "Autorizar e reprovar";
+
+        }
 
     }
 
-}
 
+    autorizar.onclick =
+        executarReprovacao;
+
+
+    senha.addEventListener(
+        "keydown",
+        function(event){
+
+            if(event.key === "Enter"){
+                executarReprovacao();
+            }
+
+        }
+    );
+
+
+    botoes.appendChild(cancelar);
+    botoes.appendChild(autorizar);
+
+    modal.appendChild(titulo);
+    modal.appendChild(aviso);
+    modal.appendChild(usuario);
+    modal.appendChild(senha);
+    modal.appendChild(botoes);
+
+    overlay.appendChild(modal);
+
+    document.body.appendChild(overlay);
+
+    usuario.focus();
+
+}
 async function aprovarOrcamento(){
 
     if(!confirm("Deseja aprovar este orçamento?")){

@@ -1874,25 +1874,116 @@ router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
 
     try {
 
-        const budget = await Budget.findOne({
-            _id: req.params.id,
-            companyId: req.session.user.companyId
-        });
+        const companyId =
+            String(req.session.user.companyId);
 
-        if (!budget) {
-            return res.status(404).json({
-                error: "Orçamento não encontrado"
+        const adminUsername =
+            String(req.body.adminUsername || "").trim();
+
+        const adminPassword =
+            String(req.body.adminPassword || "");
+
+        if(
+            !adminUsername ||
+            !adminPassword
+        ){
+            return res.status(400).json({
+                ok: false,
+                error: "Informe o usuário e a senha do administrador."
             });
         }
+
+
+        /* ===================== VALIDAR ADMINISTRADOR ===================== */
+
+        const administrador = await User.findOne({
+            username: adminUsername
+        });
+
+        if(
+            !administrador ||
+            String(administrador.companyId) !== companyId
+        ){
+            return res.status(401).json({
+                ok: false,
+                error: "Administrador ou senha inválidos."
+            });
+        }
+
+        const perfilAdministrador =
+            String(administrador.role || "").toLowerCase();
+
+        if(
+            perfilAdministrador !== "admin" &&
+            perfilAdministrador !== "master"
+        ){
+            return res.status(403).json({
+                ok: false,
+                error: "O usuário informado não possui permissão administrativa."
+            });
+        }
+
+        const senhaCorreta =
+            await bcrypt.compare(
+                adminPassword,
+                administrador.password
+            );
+
+        if(!senhaCorreta){
+            return res.status(401).json({
+                ok: false,
+                error: "Administrador ou senha inválidos."
+            });
+        }
+
+
+        /* ===================== LOCALIZAR ORÇAMENTO ===================== */
+
+        const budget = await Budget.findOne({
+            _id: req.params.id,
+            companyId
+        });
+
+        if(!budget){
+            return res.status(404).json({
+                ok: false,
+                error: "Orçamento não encontrado."
+            });
+        }
+
+
+        /* ===================== REGISTRAR ESTADO ANTERIOR ===================== */
+
+        const pagamentoAnterior =
+            String(budget.pagamento || "");
+
+        const formaPagamentoAnterior =
+            String(budget.formaPagamento || "");
+
+        const dataPagamentoAnterior =
+            budget.dataPagamento || null;
+
+        const usuarioPagamentoAnterior =
+            budget.usuarioPagamento || null;
+
+        const valorPermutaAnterior =
+            Number(budget.valorPermuta || 0);
+
+        const descricaoPermutaAnterior =
+            String(budget.descricaoPermuta || "");
+
         const eraPermutaTotal =
             budget.pagamento === "permuta";
+
+
+        /* ===================== CANCELAR PAGAMENTO ===================== */
 
         budget.pagamento = "pendente";
         budget.dataPagamento = null;
         budget.usuarioPagamento = null;
         budget.formaPagamento = "";
 
-        if (eraPermutaTotal) {
+        if(eraPermutaTotal){
 
             budget.valorPermuta = 0;
             budget.descricaoPermuta = "";
@@ -1909,23 +2000,83 @@ router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
 
         await budget.save();
 
+
+        /* ===================== REGISTRAR AUDITORIA ===================== */
+
+        await AuditLog.create({
+
+            companyId,
+
+            acao: eraPermutaTotal
+                ? "cancelar_permuta_orcamento"
+                : "cancelar_pagamento_orcamento",
+
+            entidade: "Budget",
+
+            entidadeId:
+                String(budget._id),
+
+            descricao: eraPermutaTotal
+                ? `Cancelamento da permuta do orçamento ${budget.codigo || budget.numero || ""}`
+                : `Cancelamento do pagamento do orçamento ${budget.codigo || budget.numero || ""}`,
+
+            executadoPor:
+                String(req.session.user.username || ""),
+
+            executadoPorId:
+                req.session.user._id || null,
+
+            autorizadoPor:
+                String(administrador.username || ""),
+
+            autorizadoPorId:
+                administrador._id,
+
+            dados: {
+                codigo: budget.codigo || "",
+                numero: budget.numero || null,
+                cliente: budget.cliente || "",
+                clienteId: budget.clienteId || null,
+                pagamentoAnterior,
+                pagamentoNovo: "pendente",
+                formaPagamentoAnterior,
+                dataPagamentoAnterior,
+                usuarioPagamentoAnterior,
+                eraPermutaTotal,
+                valorPermutaAnterior,
+                descricaoPermutaAnterior,
+                total: Number(budget.total || 0)
+            },
+
+            data: new Date()
+
+        });
+
+
         res.json({
             ok: true,
+            message: eraPermutaTotal
+                ? "Permuta cancelada com autorização administrativa."
+                : "Pagamento cancelado com autorização administrativa.",
             budget
         });
 
-    } catch (err) {
+    }
+    catch(err){
 
-        console.log(err);
+        console.error(
+            "Erro ao cancelar pagamento do orçamento:",
+            err
+        );
 
         res.status(500).json({
-            error: true
+            ok: false,
+            error: "Erro ao cancelar pagamento."
         });
 
     }
 
 });
-
 /* ===================== CONVERTER ORÇAMENTO EM CHAMADO ===================== */
 
 /* ===================== EXCLUIR ORÇAMENTO COM AUTORIZAÇÃO ADMINISTRATIVA ===================== */

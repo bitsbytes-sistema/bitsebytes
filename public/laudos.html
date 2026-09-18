@@ -305,7 +305,7 @@ async function carregarUsuario(){
   const data = await res.json();
 
   document.getElementById("nomeUsuario").innerText =
-    data.user?.username || "Usuário";
+    data.user?.nome || data.user?.username || "Usuário";
 
   document.getElementById("cargoUsuario").innerText =
     data.user?.role || "Usuário";

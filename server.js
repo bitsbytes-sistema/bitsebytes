@@ -580,6 +580,7 @@ app.post("/login", async (req, res) => {
 
       _id:String(user._id),
       username:user.username,
+      nome:user.nome || user.username,
       role:user.role,
       companyId:user.companyId
 

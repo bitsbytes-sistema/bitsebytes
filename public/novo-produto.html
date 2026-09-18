@@ -611,7 +611,7 @@ async function carregarUsuario(){
 
 
     document.getElementById("nomeUsuario").innerText =
-        data.user.username;
+        data.user.nome || data.user.username || "Usuário";
 
 
     document.getElementById("cargoUsuario").innerText =

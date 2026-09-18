@@ -894,9 +894,7 @@ async function carregarUsuario(){
         document.getElementById(
             "nomeUsuario"
         ).textContent =
-            usuario.username ||
-            usuario.nome ||
-            "Usuário";
+            usuario.nome || usuario.username || "Usuário";
 
         document.getElementById(
             "perfilUsuario"

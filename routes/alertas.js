@@ -262,6 +262,12 @@ router.post("/resetar", async (req,res)=>{
 
   try{
 
+    if (!req.session.user) {
+      return res.status(401).json({
+        erro: "Usu?rio n?o autenticado"
+      });
+    }
+
     const usuario = await User.findById(
       req.session.user._id
     );

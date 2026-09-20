@@ -319,6 +319,77 @@ app.use(
   })
 );
 
+/* ===================== PAGINAS PROTEGIDAS POR PERMISSAO ===================== */
+
+const PAGINAS_PERMISSOES = {
+  "/dashboard.html": "dashboard",
+
+  "/clientes.html": "clientes",
+
+  "/chamados.html": "chamados",
+  "/diagnostico.html": "chamados",
+
+  "/orcamentos.html": "orcamentos",
+  "/orcamento.html": "orcamentos",
+  "/novo-orcamento.html": "orcamentos",
+
+  "/services.html": "servicos",
+
+  "/laudos.html": "laudos",
+  "/laudo.html": "laudos",
+
+  "/estoque.html": "estoque",
+  "/produto.html": "estoque",
+  "/novo-produto.html": "estoque",
+
+  "/vendas.html": "vendas",
+  "/venda.html": "vendas",
+
+  "/financeiro.html": "financeiro",
+
+  "/lembretes.html": "lembretes",
+
+  "/relatorios.html": "relatorios",
+
+  "/configuracoes.html": "configuracoes"
+};
+
+
+for (
+  const [pagina, modulo]
+  of Object.entries(PAGINAS_PERMISSOES)
+) {
+
+  app.get(
+    pagina,
+    auth,
+    requirePermissao(modulo),
+    (req, res) => {
+
+      res.sendFile(
+        path.join(
+          __dirname,
+          "public",
+          pagina.substring(1)
+        )
+      );
+
+    }
+  );
+
+}
+
+
+/* ===================== PROTECAO PAINEL MASTER ===================== */
+app.get("/master.html", auth, masterOnly, (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "master.html"));
+});
+
+app.get("/admin.html", auth, masterOnly, (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
+
 /* ===================== STATIC ===================== */
 app.use(
   express.static(
@@ -509,6 +580,62 @@ function auth(req, res, next){
   next();
 }
 
+/* ===================== PERMISSAO DE MODULO ===================== */
+function requirePermissao(modulo) {
+
+  return async function(req, res, next) {
+
+    try {
+
+      if (!req.session.user) {
+        return res.status(401).json({
+          error: "not_logged"
+        });
+      }
+
+      const user = await User.findById(
+        req.session.user._id
+      );
+
+      if (!user) {
+        return res.status(401).json({
+          error: "user_not_found"
+        });
+      }
+
+      const permissoes =
+        permissoesCompletasUsuario(user);
+
+      if (permissoes[modulo] !== true) {
+        return res.status(403).json({
+          error: "permission_denied",
+          modulo
+        });
+      }
+
+      req.usuarioAtual = user;
+      req.permissoesUsuario = permissoes;
+
+      next();
+
+    } catch (err) {
+
+      console.error(
+        "ERRO AO VERIFICAR PERMISSAO:",
+        err
+      );
+
+      return res.status(500).json({
+        error: "permission_check_error"
+      });
+
+    }
+
+  };
+
+}
+
+
 /* ===================== MASTER ===================== */
 function masterOnly(req, res, next){
 
@@ -544,6 +671,14 @@ app.post("/login", async (req, res) => {
       });
     }
 
+    if (user.ativo === false) {
+
+      return res.status(403).json({
+        success: false,
+        error: "Usuário desativado. Entre em contato com o administrador."
+      });
+
+    }
 
     const ok = await bcrypt.compare(
       req.body.password,
@@ -614,20 +749,1846 @@ app.post("/login", async (req, res) => {
 });
 
 
+/* ===================== ADMINISTRACAO DA EMPRESA ===================== */
+function adminEmpresaOnly(req, res, next){
+
+  const role =
+    String(req.session.user?.role || "").toLowerCase();
+
+  if(
+    role !== "master" &&
+    role !== "admin"
+  ){
+    return res.status(403).json({
+      error: "Sem permissão para gerenciar usuários."
+    });
+  }
+
+  next();
+}
+
+
+/* ===================== USUARIOS DA EMPRESA ===================== */
+app.get(
+  "/api/usuarios",
+  auth,
+  adminEmpresaOnly,
+  async (req, res) => {
+
+    try {
+
+      const companyId =
+        String(req.session.user.companyId);
+
+      const usuariosBrutos =
+        await User.collection.find(
+          {},
+          {
+            projection: {
+              password: 0,
+              alertasIgnorados: 0
+            }
+          }
+        ).toArray();
+
+      const usuarios =
+        usuariosBrutos
+          .filter(usuario =>
+            String(usuario.companyId) === companyId
+          )
+          .sort((a, b) => {
+
+            const nomeA =
+              String(
+                a.nome ||
+                a.username ||
+                ""
+              ).toLocaleLowerCase("pt-BR");
+
+            const nomeB =
+              String(
+                b.nome ||
+                b.username ||
+                ""
+              ).toLocaleLowerCase("pt-BR");
+
+            return nomeA.localeCompare(
+              nomeB,
+              "pt-BR"
+            );
+
+          });
+
+      const company =
+        await Company.findById(
+          req.session.user.companyId
+        )
+        .select("name plan userLimit")
+        .lean();
+
+      if (!company) {
+
+        return res.status(404).json({
+          ok: false,
+          error: "Empresa não encontrada."
+        });
+
+      }
+
+      res.json({
+        ok: true,
+
+        empresa: {
+          _id: String(company._id),
+          nome: company.name || "",
+          plano: company.plan || "free",
+          limiteUsuarios:
+            Number(company.userLimit ?? 1)
+        },
+
+        total: usuarios.length,
+
+        usuarios: usuarios.map(usuario => ({
+          _id: String(usuario._id),
+          nome:
+            usuario.nome ||
+            usuario.username ||
+            "",
+          username:
+            usuario.username || "",
+          role:
+            usuario.role || "user",
+          criadoEm:
+            usuario.createdAt || null,
+          atualizadoEm:
+            usuario.updatedAt || null,
+          ativo:
+            usuario.ativo !== false,
+          usuarioAtual:
+            String(usuario._id) ===
+            String(req.session.user._id)
+        }))
+      });
+
+    } catch (err) {
+
+      console.log(
+        "ERRO AO LISTAR USUARIOS:",
+        err
+      );
+
+      res.status(500).json({
+        ok: false,
+        error: "Erro ao carregar usuários."
+      });
+
+    }
+
+  }
+);
+
+
+/* ===================== CRIAR USUARIO DA EMPRESA ===================== */
+app.post(
+  "/api/usuarios",
+  auth,
+  adminEmpresaOnly,
+  async (req, res) => {
+
+    try {
+
+      const nome =
+        String(req.body.nome || "").trim();
+
+      const username =
+        String(req.body.username || "")
+          .trim()
+          .toLowerCase();
+
+      const password =
+        String(req.body.password || "");
+
+      const role =
+        String(req.body.role || "")
+          .trim()
+          .toLowerCase();
+
+      const companyId =
+        String(req.session.user.companyId);
+
+      /* ===================== VALIDACOES ===================== */
+
+      if (!nome) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Informe o nome do usuário."
+        });
+
+      }
+
+      if (!username) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Informe o usuário de login."
+        });
+
+      }
+
+      if (username.length < 3) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "O usuário de login deve possuir pelo menos 3 caracteres."
+        });
+
+      }
+
+      if (!/^[a-z0-9._-]+$/.test(username)) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "O usuário de login pode conter apenas letras, números, ponto, hífen e underline."
+        });
+
+      }
+
+      if (password.length < 6) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "A senha deve possuir pelo menos 6 caracteres."
+        });
+
+      }
+
+      if (
+        role !== "admin" &&
+        role !== "tech"
+      ) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Perfil de usuário inválido."
+        });
+
+      }
+
+      /* ===================== EMPRESA ===================== */
+
+      const company =
+        await Company.findById(
+          req.session.user.companyId
+        );
+
+      if (!company) {
+
+        return res.status(404).json({
+          ok: false,
+          error: "Empresa não encontrada."
+        });
+
+      }
+
+      if (company.active === false) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "Empresa bloqueada."
+        });
+
+      }
+
+      /* ===================== USERNAME UNICO ===================== */
+
+      const usuarioExistente =
+        await User.findOne({
+          username
+        });
+
+      if (usuarioExistente) {
+
+        return res.status(409).json({
+          ok: false,
+          error: "Este usuário de login já está em uso."
+        });
+
+      }
+
+      /* ===================== LIMITE DO PLANO ===================== */
+
+      const usuariosBrutos =
+        await User.collection.find(
+          {},
+          {
+            projection: {
+              companyId: 1,
+              ativo: 1
+            }
+          }
+        ).toArray();
+
+      const totalUsuariosAtivos =
+        usuariosBrutos.filter(usuario =>
+          String(usuario.companyId) === companyId &&
+          usuario.ativo !== false
+        ).length;
+
+      const limiteUsuarios =
+        Number(company.userLimit ?? 1);
+
+      if (
+        limiteUsuarios !== -1 &&
+        totalUsuariosAtivos >= limiteUsuarios
+      ) {
+
+        return res.status(403).json({
+          ok: false,
+          error:
+            `Limite de usuários ativos do plano atingido (${limiteUsuarios}).`
+        });
+
+      }
+
+      /* ===================== CRIAR USUARIO ===================== */
+
+      const hash =
+        await bcrypt.hash(
+          password,
+          10
+        );
+
+      const novoUsuario =
+        await User.create({
+          nome,
+          username,
+          password: hash,
+          role,
+          companyId:
+            req.session.user.companyId
+        });
+
+      console.log(
+        "USUARIO CRIADO:",
+        username,
+        "EMPRESA:",
+        companyId,
+        "POR:",
+        req.session.user.username
+      );
+
+      res.status(201).json({
+        ok: true,
+        message: "Usuário criado com sucesso.",
+
+        usuario: {
+          _id:
+            String(novoUsuario._id),
+
+          nome:
+            novoUsuario.nome,
+
+          username:
+            novoUsuario.username,
+
+          role:
+            novoUsuario.role
+        }
+      });
+
+    } catch (err) {
+
+      console.log(
+        "ERRO AO CRIAR USUARIO:",
+        err
+      );
+
+      if (err && err.code === 11000) {
+
+        return res.status(409).json({
+          ok: false,
+          error: "Este usuário de login já está em uso."
+        });
+
+      }
+
+      res.status(500).json({
+        ok: false,
+        error: "Erro ao criar usuário."
+      });
+
+    }
+
+  }
+);
+
+
+/* ===================== EDITAR USUARIO DA EMPRESA ===================== */
+app.put(
+  "/api/usuarios/:id",
+  auth,
+  adminEmpresaOnly,
+  async (req, res) => {
+
+    try {
+
+      const usuarioId =
+        String(req.params.id || "").trim();
+
+      const nome =
+        String(req.body.nome || "").trim();
+
+      const username =
+        String(req.body.username || "")
+          .trim()
+          .toLowerCase();
+
+      const role =
+        String(req.body.role || "")
+          .trim()
+          .toLowerCase();
+
+      const companyId =
+        String(req.session.user.companyId);
+
+      /* ===================== VALIDACOES ===================== */
+
+      if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Usuário inválido."
+        });
+
+      }
+
+      if (!nome) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Informe o nome do usuário."
+        });
+
+      }
+
+      if (!username) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Informe o usuário de login."
+        });
+
+      }
+
+      if (username.length < 3) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "O usuário de login deve possuir pelo menos 3 caracteres."
+        });
+
+      }
+
+      if (!/^[a-z0-9._-]+$/.test(username)) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "O usuário de login pode conter apenas letras, números, ponto, hífen e underline."
+        });
+
+      }
+
+      /* ===================== LOCALIZAR USUARIO ===================== */
+
+      const usuario =
+        await User.findById(usuarioId);
+
+      if (!usuario) {
+
+        return res.status(404).json({
+          ok: false,
+          error: "Usuário não encontrado."
+        });
+
+      }
+
+      if (
+        String(usuario.companyId) !==
+        companyId
+      ) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "Usuário não pertence à sua empresa."
+        });
+
+      }
+
+      /* ===================== PROTEGER MASTER ===================== */
+
+      if (
+        String(usuario.role || "").toLowerCase() ===
+        "master"
+      ) {
+
+        if (
+          role &&
+          role !== "master"
+        ) {
+
+          return res.status(403).json({
+            ok: false,
+            error: "O perfil Master não pode ser alterado."
+          });
+
+        }
+
+      }
+      else {
+
+        if (
+          role !== "admin" &&
+          role !== "tech"
+        ) {
+
+          return res.status(400).json({
+            ok: false,
+            error: "Perfil de usuário inválido."
+          });
+
+        }
+
+      }
+
+      /* ===================== USERNAME UNICO ===================== */
+
+      const usuarioMesmoLogin =
+        await User.findOne({
+          username
+        });
+
+      if (
+        usuarioMesmoLogin &&
+        String(usuarioMesmoLogin._id) !==
+        String(usuario._id)
+      ) {
+
+        return res.status(409).json({
+          ok: false,
+          error: "Este usuário de login já está em uso."
+        });
+
+      }
+
+      /* ===================== ATUALIZAR ===================== */
+
+      const dadosAnteriores = {
+        nome:
+          usuario.nome || "",
+        username:
+          usuario.username || "",
+        role:
+          usuario.role || ""
+      };
+
+      usuario.nome = nome;
+      usuario.username = username;
+
+      if (
+        String(usuario.role || "").toLowerCase() !==
+        "master"
+      ) {
+        usuario.role = role;
+      }
+
+      await usuario.save();
+
+      /* Atualiza a sessao caso o administrador edite a si proprio */
+      if (
+        String(usuario._id) ===
+        String(req.session.user._id)
+      ) {
+
+        req.session.user.nome =
+          usuario.nome;
+
+        req.session.user.username =
+          usuario.username;
+
+        req.session.user.role =
+          usuario.role;
+
+      }
+
+      console.log(
+        "USUARIO EDITADO:",
+        usuario.username,
+        "EMPRESA:",
+        companyId,
+        "POR:",
+        req.session.user.username
+      );
+
+      res.json({
+        ok: true,
+        message: "Usuário atualizado com sucesso.",
+
+        usuario: {
+          _id:
+            String(usuario._id),
+
+          nome:
+            usuario.nome,
+
+          username:
+            usuario.username,
+
+          role:
+            usuario.role
+        },
+
+        anterior:
+          dadosAnteriores
+      });
+
+    } catch (err) {
+
+      console.log(
+        "ERRO AO EDITAR USUARIO:",
+        err
+      );
+
+      if (err && err.code === 11000) {
+
+        return res.status(409).json({
+          ok: false,
+          error: "Este usuário de login já está em uso."
+        });
+
+      }
+
+      res.status(500).json({
+        ok: false,
+        error: "Erro ao atualizar usuário."
+      });
+
+    }
+
+  }
+);
+
+
+/* ===================== ALTERAR SENHA DO USUARIO ===================== */
+app.put(
+  "/api/usuarios/:id/senha",
+  auth,
+  adminEmpresaOnly,
+  async (req, res) => {
+
+    try {
+
+      const usuarioId =
+        String(req.params.id || "").trim();
+
+      const novaSenha =
+        String(req.body.password || "");
+
+      const companyId =
+        String(req.session.user.companyId);
+
+      /* ===================== VALIDACOES ===================== */
+
+      if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Usuário inválido."
+        });
+
+      }
+
+      if (novaSenha.length < 6) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "A nova senha deve possuir pelo menos 6 caracteres."
+        });
+
+      }
+
+      /* ===================== LOCALIZAR USUARIO ===================== */
+
+      const usuario =
+        await User.findById(usuarioId);
+
+      if (!usuario) {
+
+        return res.status(404).json({
+          ok: false,
+          error: "Usuário não encontrado."
+        });
+
+      }
+
+      if (
+        String(usuario.companyId) !==
+        companyId
+      ) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "Usuário não pertence à sua empresa."
+        });
+
+      }
+
+      /* ===================== PROTEGER MASTER ===================== */
+
+      if (
+        String(usuario.role || "").toLowerCase() ===
+        "master" &&
+        String(usuario._id) !==
+        String(req.session.user._id)
+      ) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "A senha do usuário Master não pode ser alterada por outro usuário."
+        });
+
+      }
+
+      /* ===================== NOVA SENHA ===================== */
+
+      usuario.password =
+        await bcrypt.hash(
+          novaSenha,
+          10
+        );
+
+      await usuario.save();
+
+      console.log(
+        "SENHA DE USUARIO ALTERADA:",
+        usuario.username,
+        "EMPRESA:",
+        companyId,
+        "POR:",
+        req.session.user.username
+      );
+
+      res.json({
+        ok: true,
+        message: "Senha alterada com sucesso.",
+        usuario: {
+          _id:
+            String(usuario._id),
+          nome:
+            usuario.nome || usuario.username,
+          username:
+            usuario.username,
+          role:
+            usuario.role
+        }
+      });
+
+    } catch (err) {
+
+      console.log(
+        "ERRO AO ALTERAR SENHA DE USUARIO:",
+        err
+      );
+
+      res.status(500).json({
+        ok: false,
+        error: "Erro ao alterar senha do usuário."
+      });
+
+    }
+
+  }
+);
+
+
+/* ===================== ATIVAR OU DESATIVAR USUARIO ===================== */
+app.put(
+  "/api/usuarios/:id/status",
+  auth,
+  adminEmpresaOnly,
+  async (req, res) => {
+
+    try {
+
+      const usuarioId =
+        String(req.params.id || "").trim();
+
+      const companyId =
+        String(req.session.user.companyId);
+
+      const ativo =
+        req.body.ativo;
+
+      /* ===================== VALIDACOES ===================== */
+
+      if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Usuário inválido."
+        });
+
+      }
+
+      if (typeof ativo !== "boolean") {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Status do usuário inválido."
+        });
+
+      }
+
+      /* ===================== LOCALIZAR USUARIO ===================== */
+
+      const usuario =
+        await User.findById(usuarioId);
+
+      if (!usuario) {
+
+        return res.status(404).json({
+          ok: false,
+          error: "Usuário não encontrado."
+        });
+
+      }
+
+      if (
+        String(usuario.companyId) !==
+        companyId
+      ) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "Usuário não pertence à sua empresa."
+        });
+
+      }
+
+      /* ===================== PROTEGER MASTER ===================== */
+
+      if (
+        String(usuario.role || "").toLowerCase() ===
+        "master" &&
+        ativo === false
+      ) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "O usuário Master não pode ser desativado."
+        });
+
+      }
+
+      /* ===================== PROTEGER PROPRIA CONTA ===================== */
+
+      if (
+        String(usuario._id) ===
+        String(req.session.user._id) &&
+        ativo === false
+      ) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "Você não pode desativar sua própria conta."
+        });
+
+      }
+
+      /* ===================== REATIVACAO E LIMITE ===================== */
+
+      if (
+        ativo === true &&
+        usuario.ativo === false
+      ) {
+
+        const company =
+          await Company.findById(
+            req.session.user.companyId
+          );
+
+        if (!company) {
+
+          return res.status(404).json({
+            ok: false,
+            error: "Empresa não encontrada."
+          });
+
+        }
+
+        const limiteUsuarios =
+          Number(company.userLimit ?? 1);
+
+        if (limiteUsuarios !== -1) {
+
+          const usuariosBrutos =
+            await User.collection.find(
+              {},
+              {
+                projection: {
+                  companyId: 1,
+                  ativo: 1
+                }
+              }
+            ).toArray();
+
+          const totalAtivos =
+            usuariosBrutos.filter(item =>
+              String(item.companyId) === companyId &&
+              item.ativo !== false
+            ).length;
+
+          if (totalAtivos >= limiteUsuarios) {
+
+            return res.status(403).json({
+              ok: false,
+              error:
+                `Limite de usuários ativos do plano atingido (${limiteUsuarios}).`
+            });
+
+          }
+
+        }
+
+      }
+
+      /* ===================== ALTERAR STATUS ===================== */
+
+      usuario.ativo = ativo;
+
+      await usuario.save();
+
+      console.log(
+        ativo
+          ? "USUARIO ATIVADO:"
+          : "USUARIO DESATIVADO:",
+        usuario.username,
+        "EMPRESA:",
+        companyId,
+        "POR:",
+        req.session.user.username
+      );
+
+      res.json({
+        ok: true,
+        message:
+          ativo
+            ? "Usuário ativado com sucesso."
+            : "Usuário desativado com sucesso.",
+
+        usuario: {
+          _id:
+            String(usuario._id),
+
+          nome:
+            usuario.nome ||
+            usuario.username,
+
+          username:
+            usuario.username,
+
+          role:
+            usuario.role,
+
+          ativo:
+            usuario.ativo !== false
+        }
+      });
+
+    } catch (err) {
+
+      console.log(
+        "ERRO AO ALTERAR STATUS DO USUARIO:",
+        err
+      );
+
+      res.status(500).json({
+        ok: false,
+        error: "Erro ao alterar status do usuário."
+      });
+
+    }
+
+  }
+);
+
+
+/* ===================== PERMISSOES DE USUARIO ===================== */
+
+const MODULOS_PERMISSOES = [
+  "dashboard",
+  "clientes",
+  "chamados",
+  "orcamentos",
+  "servicos",
+  "laudos",
+  "estoque",
+  "vendas",
+  "financeiro",
+  "lembretes",
+  "relatorios",
+  "configuracoes"
+];
+
+function permissoesCompletasUsuario(usuario) {
+
+  const resultado = {};
+
+  const ehMaster =
+    String(usuario?.role || "").toLowerCase() === "master";
+
+  for (const modulo of MODULOS_PERMISSOES) {
+
+    if (ehMaster) {
+      resultado[modulo] = true;
+      continue;
+    }
+
+    const valor =
+      usuario?.permissoes?.[modulo];
+
+    resultado[modulo] =
+      valor === undefined
+        ? true
+        : valor !== false;
+  }
+
+  return resultado;
+}
+
+
+/* ===================== CONSULTAR PERMISSOES ===================== */
+
+app.get(
+  "/api/usuarios/:id/permissoes",
+  auth,
+  adminEmpresaOnly,
+  async (req, res) => {
+
+    try {
+
+      const usuarioId =
+        String(req.params.id || "").trim();
+
+      const companyId =
+        String(req.session.user.companyId);
+
+      if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Usuário inválido."
+        });
+
+      }
+
+      const usuario =
+        await User.findById(usuarioId);
+
+      if (!usuario) {
+
+        return res.status(404).json({
+          ok: false,
+          error: "Usuário não encontrado."
+        });
+
+      }
+
+      if (String(usuario.companyId) !== companyId) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "Usuário não pertence à sua empresa."
+        });
+
+      }
+
+      return res.json({
+        ok: true,
+
+        usuario: {
+          _id: String(usuario._id),
+          nome: usuario.nome || usuario.username,
+          username: usuario.username,
+          role: usuario.role
+        },
+
+        permissoes:
+          permissoesCompletasUsuario(usuario)
+      });
+
+    } catch (err) {
+
+      console.log(
+        "ERRO AO CONSULTAR PERMISSOES DO USUARIO:",
+        err
+      );
+
+      return res.status(500).json({
+        ok: false,
+        error: "Erro ao consultar permissões do usuário."
+      });
+
+    }
+
+  }
+);
+
+
+/* ===================== SALVAR PERMISSOES ===================== */
+
+app.put(
+  "/api/usuarios/:id/permissoes",
+  auth,
+  adminEmpresaOnly,
+  async (req, res) => {
+
+    try {
+
+      const usuarioId =
+        String(req.params.id || "").trim();
+
+      const companyId =
+        String(req.session.user.companyId);
+
+      if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Usuário inválido."
+        });
+
+      }
+
+      const usuario =
+        await User.findById(usuarioId);
+
+      if (!usuario) {
+
+        return res.status(404).json({
+          ok: false,
+          error: "Usuário não encontrado."
+        });
+
+      }
+
+      if (String(usuario.companyId) !== companyId) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "Usuário não pertence à sua empresa."
+        });
+
+      }
+
+      /* MASTER SEMPRE TEM ACESSO TOTAL */
+
+      if (
+        String(usuario.role || "").toLowerCase() ===
+        "master"
+      ) {
+
+        return res.status(403).json({
+          ok: false,
+          error:
+            "As permissões do usuário Master são permanentes e não podem ser alteradas."
+        });
+
+      }
+
+      const permissoesRecebidas =
+        req.body?.permissoes;
+
+      if (
+        !permissoesRecebidas ||
+        typeof permissoesRecebidas !== "object" ||
+        Array.isArray(permissoesRecebidas)
+      ) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Permissões inválidas."
+        });
+
+      }
+
+      const permissoesNovas = {};
+
+      for (const modulo of MODULOS_PERMISSOES) {
+
+        if (
+          typeof permissoesRecebidas[modulo] !==
+          "boolean"
+        ) {
+
+          return res.status(400).json({
+            ok: false,
+            error:
+              `Permissão inválida para o módulo ${modulo}.`
+          });
+
+        }
+
+        permissoesNovas[modulo] =
+          permissoesRecebidas[modulo];
+
+      }
+
+      usuario.permissoes =
+        permissoesNovas;
+
+      usuario.markModified("permissoes");
+
+      await usuario.save();
+
+      console.log(
+        "PERMISSOES DE USUARIO ALTERADAS:",
+        usuario.username,
+        "EMPRESA:",
+        companyId,
+        "POR:",
+        req.session.user.username
+      );
+
+      return res.json({
+        ok: true,
+        message: "Permissões salvas com sucesso.",
+
+        usuario: {
+          _id: String(usuario._id),
+          nome: usuario.nome || usuario.username,
+          username: usuario.username,
+          role: usuario.role
+        },
+
+        permissoes:
+          permissoesCompletasUsuario(usuario)
+      });
+
+    } catch (err) {
+
+      console.log(
+        "ERRO AO SALVAR PERMISSOES DO USUARIO:",
+        err
+      );
+
+      return res.status(500).json({
+        ok: false,
+        error: "Erro ao salvar permissões do usuário."
+      });
+
+    }
+
+  }
+);
+
 /* ===================== ME ===================== */
 app.get("/me", auth, async (req, res) => {
   try {
-    const company = await Company.findById(req.session.user.companyId);
-    res.json({ user: req.session.user, company });
 
-  } catch(err){
+    const user = await User.findById(
+      req.session.user._id
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        error: true,
+        message: "Usuario nao encontrado."
+      });
+    }
+
+    const company = await Company.findById(
+      req.session.user.companyId
+    );
+
+    const userAtual = {
+      _id: String(user._id),
+      username: user.username,
+      nome: user.nome || user.username,
+      role: user.role,
+      companyId: user.companyId,
+      permissoes: permissoesCompletasUsuario(user)
+    };
+
+    res.json({
+      user: userAtual,
+      company
+    });
+
+  } catch (err) {
+
     console.log(err);
-    res.status(500).json({ error: true });
+
+    res.status(500).json({
+      error: true
+    });
+
   }
 });
 
+
+app.get(
+  "/api/configuracoes/os",
+  auth,
+  requirePermissao("configuracoes"),
+  async (req, res) => {
+
+    try {
+
+      const company =
+        await Company.findById(
+          req.session.user.companyId
+        );
+
+      if (!company) {
+
+        return res.status(404).json({
+          error: "Empresa não encontrada."
+        });
+
+      }
+
+      res.json({
+        ok: true,
+        configuracao:
+          company.ordemServicoConfig || {}
+      });
+
+    } catch (err) {
+
+      console.log(
+        "ERRO CONFIGURAÇÕES OS:",
+        err
+      );
+
+      res.status(500).json({
+        error:
+          "Erro ao carregar configurações da Ordem de Serviço."
+      });
+
+    }
+
+  }
+);
+
+
+app.put(
+  "/api/configuracoes/os",
+  auth,
+  requirePermissao("configuracoes"),
+  async (req, res) => {
+
+    try {
+
+      const company =
+        await Company.findById(
+          req.session.user.companyId
+        );
+
+      if (!company) {
+
+        return res.status(404).json({
+          error: "Empresa não encontrada."
+        });
+
+      }
+
+
+      const texto = (valor, padrao = "") =>
+        String(
+          valor ?? padrao
+        ).trim();
+
+
+      const booleano = (valor, padrao = false) => {
+
+        if (valor === undefined) {
+          return padrao;
+        }
+
+        return valor === true;
+
+      };
+
+
+      const numero = (
+        valor,
+        padrao,
+        minimo,
+        maximo
+      ) => {
+
+        const convertido =
+          Number(valor);
+
+        if (!Number.isFinite(convertido)) {
+          return padrao;
+        }
+
+        if (convertido < minimo) {
+          return minimo;
+        }
+
+        if (convertido > maximo) {
+          return maximo;
+        }
+
+        return convertido;
+
+      };
+
+
+      const valorPermitido = (
+        valor,
+        permitidos,
+        padrao
+      ) => {
+
+        return permitidos.includes(valor)
+          ? valor
+          : padrao;
+
+      };
+
+
+      company.ordemServicoConfig = {
+
+        titulo:
+          texto(
+            req.body.titulo,
+            "ORDEM DE SERVIÇO - ENTRADA"
+          ) ||
+          "ORDEM DE SERVIÇO - ENTRADA",
+
+        subtitulo:
+          texto(req.body.subtitulo),
+
+        mostrarLogo:
+          booleano(
+            req.body.mostrarLogo,
+            true
+          ),
+
+        posicaoLogo:
+          valorPermitido(
+            req.body.posicaoLogo,
+            [
+              "esquerda",
+              "centro",
+              "direita"
+            ],
+            "esquerda"
+          ),
+
+        mostrarDadosEmpresa:
+          booleano(
+            req.body.mostrarDadosEmpresa,
+            true
+          ),
+
+        layoutCabecalho:
+          valorPermitido(
+            req.body.layoutCabecalho,
+            [
+              "padrao",
+              "compacto",
+              "centralizado"
+            ],
+            "padrao"
+          ),
+
+        mostrarNomeCliente:
+          booleano(
+            req.body.mostrarNomeCliente,
+            true
+          ),
+
+        mostrarDocumentoCliente:
+          booleano(
+            req.body.mostrarDocumentoCliente,
+            true
+          ),
+
+        mostrarTelefoneCliente:
+          booleano(
+            req.body.mostrarTelefoneCliente,
+            true
+          ),
+
+        mostrarEmailCliente:
+          booleano(
+            req.body.mostrarEmailCliente,
+            true
+          ),
+
+        mostrarEnderecoCliente:
+          booleano(
+            req.body.mostrarEnderecoCliente,
+            true
+          ),
+
+        mostrarLocalizacaoCliente:
+          booleano(
+            req.body.mostrarLocalizacaoCliente,
+            true
+          ),
+
+        mostrarObservacoesCliente:
+          booleano(
+            req.body.mostrarObservacoesCliente,
+            true
+          ),
+
+        mostrarEquipamento:
+          booleano(
+            req.body.mostrarEquipamento,
+            true
+          ),
+
+        mostrarMarcaModelo:
+          booleano(
+            req.body.mostrarMarcaModelo,
+            true
+          ),
+
+        mostrarNumeroSerie:
+          booleano(
+            req.body.mostrarNumeroSerie,
+            true
+          ),
+
+        mostrarEstadoEquipamento:
+          booleano(
+            req.body.mostrarEstadoEquipamento,
+            true
+          ),
+
+        mostrarAcessorios:
+          booleano(
+            req.body.mostrarAcessorios,
+            true
+          ),
+
+        mostrarSenhaEquipamento:
+          booleano(
+            req.body.mostrarSenhaEquipamento,
+            false
+          ),
+
+        mostrarDefeitoRelatado:
+          booleano(
+            req.body.mostrarDefeitoRelatado,
+            true
+          ),
+
+        observacaoPadrao:
+          texto(req.body.observacaoPadrao),
+
+        observacaoInterna:
+          texto(req.body.observacaoInterna),
+
+        termosCondicoes:
+          texto(req.body.termosCondicoes),
+
+        garantiaPadrao:
+          numero(
+            req.body.garantiaPadrao,
+            90,
+            0,
+            3650
+          ),
+
+        mostrarDiagnostico:
+          booleano(
+            req.body.mostrarDiagnostico,
+            true
+          ),
+
+        mostrarServicos:
+          booleano(
+            req.body.mostrarServicos,
+            true
+          ),
+
+        mostrarPecas:
+          booleano(
+            req.body.mostrarPecas,
+            true
+          ),
+
+        mostrarValores:
+          booleano(
+            req.body.mostrarValores,
+            true
+          ),
+
+        mostrarDesconto:
+          booleano(
+            req.body.mostrarDesconto,
+            true
+          ),
+
+        mostrarFormaPagamento:
+          booleano(
+            req.body.mostrarFormaPagamento,
+            true
+          ),
+
+        mostrarDataConclusao:
+          booleano(
+            req.body.mostrarDataConclusao,
+            true
+          ),
+
+        mostrarObservacoesFinais:
+          booleano(
+            req.body.mostrarObservacoesFinais,
+            true
+          ),
+
+        mostrarRetirada:
+          booleano(
+            req.body.mostrarRetirada,
+            true
+          ),
+
+        responsavelRetirada:
+          valorPermitido(
+            req.body.responsavelRetirada,
+            [
+              "cliente",
+              "responsavel",
+              "ambos"
+            ],
+            "cliente"
+          ),
+
+        documentoRetirada:
+          booleano(
+            req.body.documentoRetirada,
+            false
+          ),
+
+        mostrarRodape:
+          booleano(
+            req.body.mostrarRodape,
+            true
+          ),
+
+        textoRodape:
+          texto(req.body.textoRodape),
+
+        mostrarQrCode:
+          booleano(
+            req.body.mostrarQrCode,
+            false
+          ),
+
+        textoQrCode:
+          texto(req.body.textoQrCode),
+
+        tamanhoDocumento:
+          valorPermitido(
+            req.body.tamanhoDocumento,
+            [
+              "a4",
+              "a5"
+            ],
+            "a4"
+          ),
+
+        fonteTitulo:
+          valorPermitido(
+            req.body.fonteTitulo,
+            [
+              "arial",
+              "verdana",
+              "tahoma"
+            ],
+            "arial"
+          ),
+
+        orientacao:
+          valorPermitido(
+            req.body.orientacao,
+            [
+              "retrato",
+              "paisagem"
+            ],
+            "retrato"
+          ),
+
+        tamanhoFonte:
+          valorPermitido(
+            req.body.tamanhoFonte,
+            [
+              "pequena",
+              "media",
+              "grande"
+            ],
+            "media"
+          ),
+
+        esquemaCores:
+          valorPermitido(
+            req.body.esquemaCores,
+            [
+              "empresa",
+              "preto-branco"
+            ],
+            "empresa"
+          ),
+
+        espacamento:
+          valorPermitido(
+            req.body.espacamento,
+            [
+              "compacto",
+              "normal",
+              "amplo"
+            ],
+            "normal"
+          ),
+
+        estiloTabela:
+          valorPermitido(
+            req.body.estiloTabela,
+            [
+              "simples",
+              "linhas",
+              "sem-bordas"
+            ],
+            "simples"
+          ),
+
+        quantidadeVias:
+          valorPermitido(
+            Number(req.body.quantidadeVias),
+            [
+              1,
+              2,
+              3
+            ],
+            1
+          ),
+
+        viaPadrao:
+          valorPermitido(
+            req.body.viaPadrao,
+            [
+              "cliente",
+              "empresa"
+            ],
+            "cliente"
+          ),
+
+        imprimirObservacaoInterna:
+          booleano(
+            req.body.imprimirObservacaoInterna,
+            false
+          ),
+
+        formatoNumero:
+          valorPermitido(
+            req.body.formatoNumero,
+            [
+              "sequencial",
+              "ano-sequencial"
+            ],
+            "sequencial"
+          ),
+
+        prefixo:
+          texto(
+            req.body.prefixo,
+            "OS"
+          ).substring(
+            0,
+            10
+          ),
+
+        digitosNumero:
+          valorPermitido(
+            Number(req.body.digitosNumero),
+            [
+              4,
+              5,
+              6
+            ],
+            6
+          ),
+
+        reiniciarNumeroAno:
+          booleano(
+            req.body.reiniciarNumeroAno,
+            false
+          ),
+
+        assinaturaCliente:
+          booleano(
+            req.body.assinaturaCliente,
+            true
+          ),
+
+        assinaturaTecnico:
+          booleano(
+            req.body.assinaturaTecnico,
+            true
+          ),
+
+        assinaturaData:
+          booleano(
+            req.body.assinaturaData,
+            true
+          )
+
+      };
+
+
+      await company.save();
+
+
+      res.json({
+
+        ok: true,
+
+        mensagem:
+          "Configurações da Ordem de Serviço salvas com sucesso.",
+
+        configuracao:
+          company.ordemServicoConfig
+
+      });
+
+
+    } catch (err) {
+
+      console.log(
+        "ERRO AO SALVAR CONFIGURAÇÕES OS:",
+        err
+      );
+
+      res.status(500).json({
+        error:
+          "Erro ao salvar configurações da Ordem de Serviço."
+      });
+
+    }
+
+  }
+);
 /* ===================== DASHBOARD ===================== */
-app.get("/dashboard", (req, res) => {
+app.get("/dashboard", auth, requirePermissao("dashboard"), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
@@ -1100,7 +3061,7 @@ app.get("/api/clientes", auth, async (req, res) => {
 
 /* ===================== NOVO CLIENTE ===================== */
 
-app.post("/api/clientes", auth, async (req, res) => {
+app.post("/api/clientes", auth, requirePermissao("clientes"), async (req, res) => {
 
   try {
 
@@ -1204,7 +3165,7 @@ app.get("/api/clientes/list", auth, async (req, res) => {
 
 /* ===================== HISTÓRICO CLIENTE ===================== */
 
-app.get("/api/clientes/historico/:id", auth, async (req, res) => {
+app.get("/api/clientes/historico/:id", auth, requirePermissao("clientes"), async (req, res) => {
 
   try {
 
@@ -1323,7 +3284,7 @@ app.get("/api/clientes/historico/:id", auth, async (req, res) => {
 
 /* ===================== EDITAR CLIENTE ===================== */
 
-app.put("/api/clientes/editar", auth, async (req, res) => {
+app.put("/api/clientes/editar", auth, requirePermissao("clientes"), async (req, res) => {
 
   try {
 
@@ -1442,7 +3403,7 @@ res.json(tickets);
 
 });
 
-app.post("/api/tickets", auth, async (req, res) => {
+app.post("/api/tickets", auth, requirePermissao("chamados"), async (req, res) => {
 
   const ultimoTicket = await Ticket.findOne({
     companyId: req.session.user.companyId
@@ -1640,7 +3601,7 @@ app.post("/api/tickets", auth, async (req, res) => {
   
 /* ===================== ALTERAR CLIENTE COM AUTORIZAÇÃO ADMINISTRATIVA ===================== */
 
-app.put("/api/tickets/:id/alterar-cliente", auth, async (req, res) => {
+app.put("/api/tickets/:id/alterar-cliente", auth, requirePermissao("chamados"), async (req, res) => {
 
   try {
 
@@ -1869,7 +3830,7 @@ return res.status(401).json({
 });
 
 /* ===================== STATUS UPDATE ===================== */
-app.put("/api/tickets/:id", auth, async (req, res) => {
+app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res) => {
 
   try {
 
@@ -2064,7 +4025,7 @@ ${textoStatus}`
 
 /* ===================== EXCLUIR ASSINATURA DO CLIENTE ===================== */
 
-app.delete("/api/tickets/:id/assinatura", auth, async (req, res) => {
+app.delete("/api/tickets/:id/assinatura", auth, requirePermissao("chamados"), async (req, res) => {
 
   try {
 
@@ -2137,7 +4098,7 @@ app.delete("/api/tickets/:id/assinatura", auth, async (req, res) => {
 
 /* ===================== BUSCAR DIAGNÓSTICO ===================== */
 
-app.get("/api/tickets/:id/diagnostico", auth, async (req, res) => {
+app.get("/api/tickets/:id/diagnostico", auth, requirePermissao("chamados"), async (req, res) => {
 
   try {
 
@@ -2174,7 +4135,7 @@ app.get("/api/tickets/:id/diagnostico", auth, async (req, res) => {
 
 /* ===================== SALVAR DIAGNÓSTICO ===================== */
 
-app.put("/api/tickets/:id/diagnostico", auth, async (req, res) => {
+app.put("/api/tickets/:id/diagnostico", auth, requirePermissao("chamados"), async (req, res) => {
 
   try {
 
@@ -2323,7 +4284,7 @@ if (situacaoDiagnostico === "aprovado") {
 
 /* ===================== PDF DIAGNÓSTICO ===================== */
 
-app.get("/api/tickets/:id/diagnostico/pdf", auth, async (req, res) => {
+app.get("/api/tickets/:id/diagnostico/pdf", auth, requirePermissao("chamados"), async (req, res) => {
 
   let browser = null;
 
@@ -2791,7 +4752,7 @@ body{
 
 
 /* ===================== LAUDO ===================== */
-app.get("/api/tickets/:id/laudo", auth, async (req, res) => {
+app.get("/api/tickets/:id/laudo", auth, requirePermissao("laudos"), async (req, res) => {
 
   try {
 
@@ -2821,7 +4782,7 @@ app.get("/api/tickets/:id/laudo", auth, async (req, res) => {
 });
 
 /* ===================== SALVAR LAUDO ===================== */
-app.put("/api/tickets/:id/laudo", auth, async (req, res) => {
+app.put("/api/tickets/:id/laudo", auth, requirePermissao("laudos"), async (req, res) => {
 
   try {
 
@@ -2873,7 +4834,7 @@ app.put("/api/tickets/:id/laudo", auth, async (req, res) => {
 });
 
 /* ===================== LISTAR LAUDOS ===================== */
-app.get("/api/laudos", auth, async (req, res) => {
+app.get("/api/laudos", auth, requirePermissao("laudos"), async (req, res) => {
 
   try {
 
@@ -3156,7 +5117,7 @@ Seu chamado foi aberto com sucesso e aguarda análise da nossa equipe técnica.`
 
 /* ===================== EXCLUIR CHAMADO COM AUTORIZAÇÃO ADMINISTRATIVA ===================== */
 
-app.delete("/api/tickets/:id", auth, async (req, res) => {
+app.delete("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res) => {
 
   try {
 
@@ -3316,7 +5277,7 @@ app.delete("/api/tickets/:id", auth, async (req, res) => {
 
 /* ===================== BUSCAR CHAMADO ===================== */
 
-app.get("/api/tickets/:id", auth, async (req, res) => {
+app.get("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res) => {
 
   try {
 
@@ -3352,7 +5313,7 @@ app.get("/api/tickets/:id", auth, async (req, res) => {
 
 /* ===================== GERAR OS PDF PROFISSIONAL ===================== */
 
-app.get("/api/tickets/:id/pdf", auth, async (req,res)=>{
+app.get("/api/tickets/:id/pdf", auth, requirePermissao("chamados"), async (req,res)=>{
 
 try{
 
@@ -4009,20 +5970,28 @@ app.use("/api/services", serviceRoutes);
 
 app.use("/api/budgets", budgetRoutes);
 
-app.use("/api/financeiro", financeiroRoutes);
-app.use("/api/relatorios", relatoriosRoutes);
+app.use("/api/financeiro", requirePermissao("financeiro"), financeiroRoutes);
+app.use("/api/relatorios", requirePermissao("relatorios"), relatoriosRoutes);
 
 app.use("/api/products", productRoutes);
 
 app.use("/api/notifications", auth, notificationRoutes);
 
-app.use("/api/lembretes", lembreteRoutes);
+app.use("/api/lembretes", requirePermissao("lembretes"), lembreteRoutes);
 
 app.use("/api/alertas", require("./routes/alertas"));
 
-app.use("/api/stock-movements", stockMovementRoutes);
+app.use(
+  "/api/stock-movements",
+  requirePermissao("estoque"),
+  stockMovementRoutes
+);
 
-app.use("/api/sales", saleRoutes);
+app.use(
+  "/api/sales",
+  requirePermissao("vendas"),
+  saleRoutes
+);
 
 app.use(
   "/api/payment-machines",

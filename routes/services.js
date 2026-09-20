@@ -3,6 +3,58 @@ const Service = require("../models/Service");
 
 const router = express.Router();
 
+async function requirePermissaoServicos(req, res, next) {
+
+  try {
+
+    const userId = req.session?.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "not_logged"
+      });
+    }
+
+    const User = require("../models/User");
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(401).json({
+        error: "user_not_found"
+      });
+    }
+
+    if (user.role === "master") {
+      return next();
+    }
+
+    if (
+      user.permissoes &&
+      user.permissoes.servicos === false
+    ) {
+      return res.status(403).json({
+        error: "permission_denied",
+        modulo: "servicos"
+      });
+    }
+
+    next();
+
+  } catch (err) {
+
+    console.error(
+      "ERRO AO VERIFICAR PERMISSAO DE SERVICOS:",
+      err
+    );
+
+    return res.status(500).json({
+      error: "permission_check_error"
+    });
+
+  }
+
+}
+
 function converterValor(valor) {
 
   if (valor === undefined || valor === null || valor === "") {
@@ -54,7 +106,7 @@ router.get("/", async (req, res) => {
 });
 
 /* ===================== BUSCAR POR ID ===================== */
-router.get("/:id", async (req, res) => {
+router.get("/:id", requirePermissaoServicos, async (req, res) => {
 
   try {
 
@@ -86,7 +138,7 @@ router.get("/:id", async (req, res) => {
 });
 
 /* ===================== CRIAR ===================== */
-router.post("/", async (req, res) => {
+router.post("/", requirePermissaoServicos, async (req, res) => {
 
   try {
 
@@ -147,7 +199,7 @@ router.post("/", async (req, res) => {
 });
 
 /* ===================== EDITAR ===================== */
-router.put("/:id", async (req, res) => {
+router.put("/:id", requirePermissaoServicos, async (req, res) => {
 
   try {
 
@@ -201,7 +253,7 @@ router.put("/:id", async (req, res) => {
 });
 
 /* ===================== EXCLUIR ===================== */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requirePermissaoServicos, async (req, res) => {
 
   try {
 

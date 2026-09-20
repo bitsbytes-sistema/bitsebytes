@@ -8,7 +8,117 @@ const PaymentMachine = require("../models/PaymentMachine");
    LISTAR MÁQUINAS
 ===================================================== */
 
-router.get("/", async (req, res) => {
+async function carregarUsuarioPermissoes(req) {
+
+    const User = require("../models/User");
+
+    return await User.findById(
+        req.session.user._id
+    );
+
+}
+
+
+async function requirePermissaoMaquininhas(req, res, next) {
+
+    try {
+
+        const user =
+            await carregarUsuarioPermissoes(req);
+
+        if (!user) {
+            return res.status(401).json({
+                error: "user_not_found"
+            });
+        }
+
+        if (user.role === "master") {
+            return next();
+        }
+
+        const permissoes =
+            user.permissoes || {};
+
+        const podeVendas =
+            permissoes.vendas !== false;
+
+        const podeConfiguracoes =
+            permissoes.configuracoes !== false;
+
+        if (
+            !podeVendas &&
+            !podeConfiguracoes
+        ) {
+            return res.status(403).json({
+                error: "permission_denied",
+                modulo: "payment-machines"
+            });
+        }
+
+        next();
+
+    } catch (err) {
+
+        console.error(
+            "ERRO AO VERIFICAR PERMISSAO DE MAQUININHAS:",
+            err
+        );
+
+        return res.status(500).json({
+            error: "permission_check_error"
+        });
+
+    }
+
+}
+
+
+async function requireConfiguracoesMaquininhas(req, res, next) {
+
+    try {
+
+        const user =
+            await carregarUsuarioPermissoes(req);
+
+        if (!user) {
+            return res.status(401).json({
+                error: "user_not_found"
+            });
+        }
+
+        if (user.role === "master") {
+            return next();
+        }
+
+        if (
+            user.permissoes &&
+            user.permissoes.configuracoes === false
+        ) {
+            return res.status(403).json({
+                error: "permission_denied",
+                modulo: "configuracoes"
+            });
+        }
+
+        next();
+
+    } catch (err) {
+
+        console.error(
+            "ERRO AO VERIFICAR PERMISSAO DE CONFIGURACOES:",
+            err
+        );
+
+        return res.status(500).json({
+            error: "permission_check_error"
+        });
+
+    }
+
+}
+
+
+router.get("/", requirePermissaoMaquininhas, async (req, res) => {
 
     try {
 
@@ -53,7 +163,7 @@ router.get("/", async (req, res) => {
    BUSCAR MÁQUINA POR ID
 ===================================================== */
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireConfiguracoesMaquininhas, async (req, res) => {
 
     try {
 
@@ -110,7 +220,7 @@ router.get("/:id", async (req, res) => {
    CRIAR MÁQUINA
 ===================================================== */
 
-router.post("/", async (req, res) => {
+router.post("/", requireConfiguracoesMaquininhas, async (req, res) => {
 
     try {
 
@@ -380,7 +490,7 @@ router.post("/", async (req, res) => {
    EDITAR MÁQUINA
 ===================================================== */
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireConfiguracoesMaquininhas, async (req, res) => {
 
     try {
 
@@ -671,7 +781,7 @@ router.put("/:id", async (req, res) => {
    ALTERAR STATUS
 ===================================================== */
 
-router.patch("/:id/status", async (req, res) => {
+router.patch("/:id/status", requireConfiguracoesMaquininhas, async (req, res) => {
 
     try {
 
@@ -742,7 +852,7 @@ router.patch("/:id/status", async (req, res) => {
    EXCLUIR MÁQUINA
 ===================================================== */
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireConfiguracoesMaquininhas, async (req, res) => {
 
     try {
 

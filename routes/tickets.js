@@ -385,24 +385,68 @@ router.put("/:id", async (req, res) => {
       return res.status(401).json({ error: "Sessão inválida" });
     }
 
+    const atualizacao = {
+      status: req.body.status
+    };
+
+    /* ===================== ASSINATURA DO CLIENTE ===================== */
+
+    if (
+      req.body.status === "finalizado" &&
+      typeof req.body.assinaturaCliente === "string" &&
+      req.body.assinaturaCliente.trim()
+    ) {
+
+      atualizacao.assinaturaCliente =
+        req.body.assinaturaCliente.trim();
+
+      atualizacao.nomeAssinante =
+        String(req.body.nomeAssinante || "").trim();
+
+      atualizacao.documentoAssinante =
+        String(req.body.documentoAssinante || "").trim();
+
+      atualizacao.dataAssinaturaCliente =
+        new Date();
+
+      atualizacao.assinaturaConfirmada =
+        true;
+    }
+
     const ticket = await Ticket.findOneAndUpdate(
-      { _id: req.params.id, companyId },
-      { $set: { status: req.body.status } },
-      { new: true }
+      {
+        _id: req.params.id,
+        companyId
+      },
+      {
+        $set: atualizacao
+      },
+      {
+        new: true,
+        runValidators: true
+      }
     );
 
     if (!ticket) {
-      return res.status(404).json({ error: "Ticket não encontrado" });
+      return res.status(404).json({
+        error: "Ticket não encontrado"
+      });
     }
 
     res.json(ticket);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao atualizar chamado" });
+
+    console.error(
+      "Erro ao atualizar chamado:",
+      err
+    );
+
+    res.status(500).json({
+      error: "Erro ao atualizar chamado"
+    });
   }
 });
-
 /* ===================== DELETE ===================== */
 router.delete("/:id", async (req, res) => {
   try {

@@ -694,6 +694,77 @@ th.subcoluna{
 
 }
 
+
+/* =====================================================
+   FERRAMENTAS DO SISTEMA
+===================================================== */
+
+.ferramentas-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(240px,1fr));
+    gap:16px;
+    margin-top:20px;
+}
+
+.ferramenta-card{
+    display:flex;
+    gap:15px;
+    align-items:flex-start;
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    padding:18px;
+    min-height:135px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.ferramenta-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 5px 16px rgba(15,23,42,.10);
+    border-color:#94a3b8;
+}
+
+.ferramenta-icone{
+    width:48px;
+    height:48px;
+    min-width:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f1f5f9;
+    border-radius:10px;
+    font-size:24px;
+}
+
+.ferramenta-card h3{
+    margin:0 0 7px 0;
+    color:#0f172a;
+    font-size:16px;
+}
+
+.ferramenta-card p{
+    margin:0;
+    color:#64748b;
+    font-size:13px;
+    line-height:1.45;
+}
+
+@media(max-width:1200px){
+
+    .ferramentas-grid{
+        grid-template-columns:repeat(2,minmax(220px,1fr));
+    }
+
+}
+
+@media(max-width:800px){
+
+    .ferramentas-grid{
+        grid-template-columns:1fr;
+    }
+
+}
 </style>
 
 </head>
@@ -1232,23 +1303,116 @@ th.subcoluna{
         ================================================= -->
 
         <div
-            id="secao-usuarios"
-            class="secao"
-        >
+    id="secao-usuarios"
+    class="secao"
+>
+    <div class="secao-header">
 
-            <h2>
-                👤 Usuários
-            </h2>
+        <div>
+            <h2>👤 Usuários</h2>
 
             <p>
-                Gerenciamento de usuários e permissões.
+                Gerencie os usuários que possuem acesso ao sistema.
             </p>
-
-            <p style="color:#64748b;">
-                Os recursos existentes de usuários continuam funcionando normalmente.
-            </p>
-
         </div>
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            id="btnNovoUsuario"
+            onclick="abrirModalNovoUsuario()"
+        >
+            + Novo Usuário
+        </button>
+
+    </div>
+
+    <div
+        id="usuariosResumo"
+        style="
+            display:flex;
+            flex-wrap:wrap;
+            gap:12px;
+            margin-bottom:20px;
+        "
+    >
+        <div
+            style="
+                background:#f8fafc;
+                border:1px solid #e2e8f0;
+                border-radius:10px;
+                padding:12px 16px;
+            "
+        >
+            <strong>Plano:</strong>
+            <span id="usuariosPlano">—</span>
+        </div>
+
+        <div
+            style="
+                background:#f8fafc;
+                border:1px solid #e2e8f0;
+                border-radius:10px;
+                padding:12px 16px;
+            "
+        >
+            <strong>Usuários:</strong>
+            <span id="usuariosQuantidade">—</span>
+        </div>
+    </div>
+
+    <div
+        id="usuariosMensagem"
+        style="
+            display:none;
+            margin-bottom:15px;
+            padding:12px;
+            border-radius:8px;
+        "
+    ></div>
+
+    <div
+        style="
+            overflow-x:auto;
+            border:1px solid #e2e8f0;
+            border-radius:10px;
+        "
+    >
+        <table
+            style="
+                width:100%;
+                border-collapse:collapse;
+                min-width:760px;
+            "
+        >
+            <thead>
+                <tr style="background:#f8fafc;">
+                    <th style="padding:12px;text-align:left;">Nome</th>
+                    <th style="padding:12px;text-align:left;">Usuário</th>
+                    <th style="padding:12px;text-align:left;">Perfil</th>
+                    <th style="padding:12px;text-align:left;">Status</th>
+                    <th style="padding:12px;text-align:right;">Ações</th>
+                </tr>
+            </thead>
+
+            <tbody id="usuariosTabela">
+                <tr>
+                    <td
+                        colspan="5"
+                        style="
+                            padding:20px;
+                            text-align:center;
+                            color:#64748b;
+                        "
+                    >
+                        Clique em Usuários para carregar os dados.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
 
 
         <!-- =================================================
@@ -1532,17 +1696,1954 @@ th.subcoluna{
             class="secao"
         >
 
+            <div class="secao-header">
+
+                <div>
+
+                    <h2>
+                        ⚙️ Ferramentas do Sistema
+                    </h2>
+
+                    <p>
+                        Central de configurações, preferências e ferramentas administrativas.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <style>
+
+/* =========================================================
+   CONFIGURAÇÃO COMPLETA DA ORDEM DE SERVIÇO
+========================================================= */
+
+.os-config-painel{
+    display:none;
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:22px;
+    margin-top:20px;
+}
+
+.os-config-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    margin-bottom:18px;
+}
+
+.os-config-header h2{
+    margin:0 0 6px 0;
+    color:#0f172a;
+}
+
+.os-config-header p{
+    margin:0;
+    color:#64748b;
+}
+
+.os-config-tabs{
+    display:flex;
+    gap:4px;
+    overflow-x:auto;
+    border-bottom:1px solid #e2e8f0;
+    margin-bottom:20px;
+    padding-bottom:1px;
+}
+
+.os-config-tab{
+    border:0;
+    background:#f8fafc;
+    color:#334155;
+    padding:11px 16px;
+    border-radius:8px 8px 0 0;
+    cursor:pointer;
+    white-space:nowrap;
+    font-weight:600;
+}
+
+.os-config-tab:hover{
+    background:#e2e8f0;
+}
+
+.os-config-tab.active{
+    background:#0f3b73;
+    color:#ffffff;
+}
+
+.os-config-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(260px,1fr));
+    gap:15px;
+}
+
+.os-config-card{
+    border:1px solid #dbe3ed;
+    border-radius:10px;
+    padding:17px;
+    background:#ffffff;
+}
+
+.os-config-card.os-span-2{
+    grid-column:span 2;
+}
+
+.os-config-card.os-span-3{
+    grid-column:span 3;
+}
+
+.os-config-card h3{
+    margin:0 0 16px 0;
+    font-size:16px;
+    color:#0f172a;
+}
+
+.os-config-field{
+    margin-bottom:14px;
+}
+
+.os-config-field:last-child{
+    margin-bottom:0;
+}
+
+.os-config-field label{
+    display:block;
+    margin-bottom:6px;
+    font-size:13px;
+    font-weight:600;
+    color:#334155;
+}
+
+.os-config-field input[type="text"],
+.os-config-field input[type="number"],
+.os-config-field textarea,
+.os-config-field select{
+    width:100%;
+    border:1px solid #cbd5e1;
+    border-radius:7px;
+    padding:9px 10px;
+    background:#ffffff;
+    color:#0f172a;
+    outline:none;
+}
+
+.os-config-field textarea{
+    resize:vertical;
+}
+
+.os-config-field input:focus,
+.os-config-field textarea:focus,
+.os-config-field select:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 2px rgba(37,99,235,.10);
+}
+
+.os-switch-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    min-height:35px;
+    border-bottom:1px solid #f1f5f9;
+}
+
+.os-switch-row:last-child{
+    border-bottom:0;
+}
+
+.os-switch-row span{
+    font-size:13px;
+    color:#334155;
+}
+
+.os-switch{
+    position:relative;
+    display:inline-block;
+    width:42px;
+    height:23px;
+    flex:none;
+}
+
+.os-switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.os-slider{
+    position:absolute;
+    inset:0;
+    background:#cbd5e1;
+    border-radius:30px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.os-slider:before{
+    content:"";
+    position:absolute;
+    height:17px;
+    width:17px;
+    left:3px;
+    top:3px;
+    background:white;
+    border-radius:50%;
+    transition:.2s;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+
+.os-switch input:checked + .os-slider{
+    background:#2563eb;
+}
+
+.os-switch input:checked + .os-slider:before{
+    transform:translateX(19px);
+}
+
+.os-check-row{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-height:31px;
+    font-size:13px;
+    color:#334155;
+}
+
+.os-check-row input{
+    width:16px;
+    height:16px;
+}
+
+.os-config-two{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.os-preview-box{
+    border:1px solid #dbe3ed;
+    background:#f8fafc;
+    border-radius:8px;
+    min-height:235px;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+}
+
+.os-preview-paper{
+    width:165px;
+    min-height:205px;
+    background:white;
+    border:1px solid #cbd5e1;
+    box-shadow:0 3px 12px rgba(15,23,42,.12);
+    padding:12px;
+}
+
+.os-preview-logo{
+    font-weight:700;
+    font-size:12px;
+    color:#0f3b73;
+    margin-bottom:10px;
+}
+
+.os-preview-title{
+    font-size:9px;
+    font-weight:700;
+    border-bottom:1px solid #cbd5e1;
+    padding-bottom:6px;
+    margin-bottom:8px;
+}
+
+.os-preview-line{
+    height:5px;
+    background:#e2e8f0;
+    margin:6px 0;
+    border-radius:3px;
+}
+
+.os-config-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:20px;
+    border-top:1px solid #e2e8f0;
+    padding-top:18px;
+}
+
+.os-help{
+    color:#64748b;
+    font-size:11px;
+    margin-top:5px;
+}
+
+@media(max-width:1200px){
+
+    .os-config-grid{
+        grid-template-columns:repeat(2,minmax(250px,1fr));
+    }
+
+    .os-config-card.os-span-3{
+        grid-column:span 2;
+    }
+
+}
+
+@media(max-width:780px){
+
+    .os-config-grid{
+        grid-template-columns:1fr;
+    }
+
+    .os-config-card.os-span-2,
+    .os-config-card.os-span-3{
+        grid-column:span 1;
+    }
+
+    .os-config-header{
+        flex-direction:column;
+    }
+
+    .os-config-two{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+
+<style>
+
+/* =========================================================
+   CONFIGURAÇÃO COMPLETA DA ORDEM DE SERVIÇO
+========================================================= */
+
+.os-config-painel{
+    display:none;
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:22px;
+    margin-top:20px;
+}
+
+.os-config-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    margin-bottom:18px;
+}
+
+.os-config-header h2{
+    margin:0 0 6px 0;
+    color:#0f172a;
+}
+
+.os-config-header p{
+    margin:0;
+    color:#64748b;
+}
+
+.os-config-tabs{
+    display:flex;
+    gap:4px;
+    overflow-x:auto;
+    border-bottom:1px solid #e2e8f0;
+    margin-bottom:20px;
+    padding-bottom:1px;
+}
+
+.os-config-tab{
+    border:0;
+    background:#f8fafc;
+    color:#334155;
+    padding:11px 16px;
+    border-radius:8px 8px 0 0;
+    cursor:pointer;
+    white-space:nowrap;
+    font-weight:600;
+}
+
+.os-config-tab:hover{
+    background:#e2e8f0;
+}
+
+.os-config-tab.active{
+    background:#0f3b73;
+    color:#ffffff;
+}
+
+.os-config-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(260px,1fr));
+    gap:15px;
+}
+
+.os-config-card{
+    border:1px solid #dbe3ed;
+    border-radius:10px;
+    padding:17px;
+    background:#ffffff;
+}
+
+.os-config-card.os-span-2{
+    grid-column:span 2;
+}
+
+.os-config-card.os-span-3{
+    grid-column:span 3;
+}
+
+.os-config-card h3{
+    margin:0 0 16px 0;
+    font-size:16px;
+    color:#0f172a;
+}
+
+.os-config-field{
+    margin-bottom:14px;
+}
+
+.os-config-field:last-child{
+    margin-bottom:0;
+}
+
+.os-config-field label{
+    display:block;
+    margin-bottom:6px;
+    font-size:13px;
+    font-weight:600;
+    color:#334155;
+}
+
+.os-config-field input[type="text"],
+.os-config-field input[type="number"],
+.os-config-field textarea,
+.os-config-field select{
+    width:100%;
+    border:1px solid #cbd5e1;
+    border-radius:7px;
+    padding:9px 10px;
+    background:#ffffff;
+    color:#0f172a;
+    outline:none;
+}
+
+.os-config-field textarea{
+    resize:vertical;
+}
+
+.os-config-field input:focus,
+.os-config-field textarea:focus,
+.os-config-field select:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 2px rgba(37,99,235,.10);
+}
+
+.os-switch-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    min-height:35px;
+    border-bottom:1px solid #f1f5f9;
+}
+
+.os-switch-row:last-child{
+    border-bottom:0;
+}
+
+.os-switch-row span{
+    font-size:13px;
+    color:#334155;
+}
+
+.os-switch{
+    position:relative;
+    display:inline-block;
+    width:42px;
+    height:23px;
+    flex:none;
+}
+
+.os-switch input{
+    opacity:0;
+    width:0;
+    height:0;
+}
+
+.os-slider{
+    position:absolute;
+    inset:0;
+    background:#cbd5e1;
+    border-radius:30px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.os-slider:before{
+    content:"";
+    position:absolute;
+    height:17px;
+    width:17px;
+    left:3px;
+    top:3px;
+    background:white;
+    border-radius:50%;
+    transition:.2s;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+
+.os-switch input:checked + .os-slider{
+    background:#2563eb;
+}
+
+.os-switch input:checked + .os-slider:before{
+    transform:translateX(19px);
+}
+
+.os-check-row{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-height:31px;
+    font-size:13px;
+    color:#334155;
+}
+
+.os-check-row input{
+    width:16px;
+    height:16px;
+}
+
+.os-config-two{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.os-preview-box{
+    border:1px solid #dbe3ed;
+    background:#f8fafc;
+    border-radius:8px;
+    min-height:235px;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+}
+
+.os-preview-paper{
+    width:165px;
+    min-height:205px;
+    background:white;
+    border:1px solid #cbd5e1;
+    box-shadow:0 3px 12px rgba(15,23,42,.12);
+    padding:12px;
+}
+
+.os-preview-logo{
+    font-weight:700;
+    font-size:12px;
+    color:#0f3b73;
+    margin-bottom:10px;
+}
+
+.os-preview-title{
+    font-size:9px;
+    font-weight:700;
+    border-bottom:1px solid #cbd5e1;
+    padding-bottom:6px;
+    margin-bottom:8px;
+}
+
+.os-preview-line{
+    height:5px;
+    background:#e2e8f0;
+    margin:6px 0;
+    border-radius:3px;
+}
+
+.os-config-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:20px;
+    border-top:1px solid #e2e8f0;
+    padding-top:18px;
+}
+
+.os-help{
+    color:#64748b;
+    font-size:11px;
+    margin-top:5px;
+}
+
+@media(max-width:1200px){
+
+    .os-config-grid{
+        grid-template-columns:repeat(2,minmax(250px,1fr));
+    }
+
+    .os-config-card.os-span-3{
+        grid-column:span 2;
+    }
+
+}
+
+@media(max-width:780px){
+
+    .os-config-grid{
+        grid-template-columns:1fr;
+    }
+
+    .os-config-card.os-span-2,
+    .os-config-card.os-span-3{
+        grid-column:span 1;
+    }
+
+    .os-config-header{
+        flex-direction:column;
+    }
+
+    .os-config-two{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+
+<div
+    id="painel-config-os"
+    class="os-config-painel"
+>
+
+    <div class="os-config-header">
+
+        <div>
+
             <h2>
-                ⚙️ Sistema
+                📋 Configuração da Ordem de Serviço
             </h2>
 
             <p>
-                Preferências gerais do sistema.
+                Personalize como a Ordem de Serviço será gerada, quais informações serão exibidas e o layout da impressão.
             </p>
 
-            <p style="color:#64748b;">
-                Novas configurações poderão ser adicionadas aqui futuramente.
-            </p>
+        </div>
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="voltarFerramentasSistema()"
+        >
+            ← Voltar
+        </button>
+
+    </div>
+
+
+    <div class="os-config-tabs">
+
+        <button type="button" class="os-config-tab active">
+            📋 Geral
+        </button>
+
+        <button type="button" class="os-config-tab">
+            👤 Cliente
+        </button>
+
+        <button type="button" class="os-config-tab">
+            💻 Equipamento
+        </button>
+
+        <button type="button" class="os-config-tab">
+            🧰 Serviços e Valores
+        </button>
+
+        <button type="button" class="os-config-tab">
+            📝 Termos e Observações
+        </button>
+
+        <button type="button" class="os-config-tab">
+            ✍️ Assinaturas
+        </button>
+
+        <button type="button" class="os-config-tab">
+            🖨️ Impressão
+        </button>
+
+        <button type="button" class="os-config-tab">
+            🔢 Numeração
+        </button>
+
+    </div>
+
+
+    <div class="os-config-grid">
+
+
+        <!-- =====================================================
+             1 - CABEÇALHO
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                1. Cabeçalho da Ordem de Serviço
+            </h3>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Título da OS
+                </label>
+
+                <input
+                    type="text"
+                    id="osTitulo"
+                    maxlength="100"
+                    placeholder="ORDEM DE SERVIÇO - ENTRADA"
+                >
+
+            </div>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Subtítulo
+                </label>
+
+                <input
+                    type="text"
+                    id="osSubtitulo"
+                    maxlength="120"
+                    placeholder="Assistência Técnica Especializada"
+                >
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>
+                    Mostrar logo da empresa
+                </span>
+
+                <label class="os-switch">
+
+                    <input
+                        type="checkbox"
+                        id="osMostrarLogo"
+                        checked
+                    >
+
+                    <span class="os-slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Posição da logo
+                </label>
+
+                <select id="osPosicaoLogo">
+
+                    <option value="esquerda">
+                        Esquerda
+                    </option>
+
+                    <option value="centro">
+                        Centralizada
+                    </option>
+
+                    <option value="direita">
+                        Direita
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>
+                    Mostrar dados da empresa
+                </span>
+
+                <label class="os-switch">
+
+                    <input
+                        type="checkbox"
+                        id="osMostrarDadosEmpresa"
+                        checked
+                    >
+
+                    <span class="os-slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Layout do cabeçalho
+                </label>
+
+                <select id="osLayoutCabecalho">
+
+                    <option value="padrao">
+                        Padrão
+                    </option>
+
+                    <option value="compacto">
+                        Compacto
+                    </option>
+
+                    <option value="centralizado">
+                        Centralizado
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             2 - CLIENTE
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                2. Informações do Cliente
+            </h3>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar nome do cliente</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarNomeCliente" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar CPF / CNPJ</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarDocumento" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar telefone</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarTelefoneCliente" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar e-mail</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarEmailCliente" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar endereço completo</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarEndereco" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar bairro / cidade / estado / CEP</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarLocalizacaoCliente" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar observações do cliente</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarObservacoesCliente" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             3 - EQUIPAMENTO
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                3. Informações do Equipamento
+            </h3>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar equipamento</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarEquipamento" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar marca / modelo</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarMarcaModelo" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar nº de série</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarNumeroSerie" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar estado do equipamento</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarEstadoEquipamento" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar acessórios</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarAcessorios" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar senha, se cadastrada</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarSenhaEquipamento">
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar defeitos relatados</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarDefeitoRelatado" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             4 - TEXTOS
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                4. Texto Padrão e Observações
+            </h3>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Observação padrão
+                </label>
+
+                <textarea
+                    id="osObservacaoPadrao"
+                    rows="5"
+                    placeholder="Texto padrão que poderá aparecer nas observações da Ordem de Serviço."
+                ></textarea>
+
+                <div class="os-help">
+                    Este texto poderá ser exibido automaticamente nas Ordens de Serviço.
+                </div>
+
+            </div>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Observação interna padrão
+                </label>
+
+                <textarea
+                    id="osObservacaoInterna"
+                    rows="4"
+                    placeholder="Informação interna que não será exibida ao cliente."
+                ></textarea>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             5 - TERMOS
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                5. Termos e Condições
+            </h3>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Termos e condições
+                </label>
+
+                <textarea
+                    id="osTermosCondicoes"
+                    rows="7"
+                    placeholder="Informe os termos e condições apresentados na Ordem de Serviço."
+                ></textarea>
+
+            </div>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Garantia padrão em dias
+                </label>
+
+                <input
+                    type="number"
+                    id="osGarantiaPadrao"
+                    min="0"
+                    max="3650"
+                    value="90"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             6 - IMPRESSÃO
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                6. O que Mostrar na Impressão
+            </h3>
+
+
+            <label class="os-check-row">
+                <input type="checkbox" id="osMostrarDiagnostico" checked>
+                Mostrar diagnóstico
+            </label>
+
+            <label class="os-check-row">
+                <input type="checkbox" id="osMostrarServicos" checked>
+                Mostrar serviços executados
+            </label>
+
+            <label class="os-check-row">
+                <input type="checkbox" id="osMostrarPecas" checked>
+                Mostrar peças e materiais
+            </label>
+
+            <label class="os-check-row">
+                <input type="checkbox" id="osMostrarValores" checked>
+                Mostrar valores
+            </label>
+
+            <label class="os-check-row">
+                <input type="checkbox" id="osMostrarDesconto" checked>
+                Mostrar desconto
+            </label>
+
+            <label class="os-check-row">
+                <input type="checkbox" id="osMostrarFormaPagamento" checked>
+                Mostrar forma de pagamento
+            </label>
+
+            <label class="os-check-row">
+                <input type="checkbox" id="osMostrarDataConclusao" checked>
+                Mostrar data de conclusão
+            </label>
+
+            <label class="os-check-row">
+                <input type="checkbox" id="osMostrarObservacoesFinais" checked>
+                Mostrar observações finais
+            </label>
+
+
+            <div
+                style="
+                    margin-top:16px;
+                    border-top:1px solid #e2e8f0;
+                    padding-top:14px;
+                "
+            >
+
+                <strong
+                    style="
+                        display:block;
+                        margin-bottom:10px;
+                        color:#0f172a;
+                        font-size:13px;
+                    "
+                >
+                    Campo de Retirada
+                </strong>
+
+
+                <div class="os-switch-row">
+
+                    <span>Exibir campo de retirada</span>
+
+                    <label class="os-switch">
+                        <input type="checkbox" id="osMostrarRetirada" checked>
+                        <span class="os-slider"></span>
+                    </label>
+
+                </div>
+
+
+                <div class="os-config-field">
+
+                    <label>
+                        Responsável pela retirada
+                    </label>
+
+                    <select id="osResponsavelRetirada">
+
+                        <option value="cliente">
+                            Cliente
+                        </option>
+
+                        <option value="responsavel">
+                            Responsável autorizado
+                        </option>
+
+                        <option value="ambos">
+                            Cliente ou responsável
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="os-switch-row">
+
+                    <span>Documento obrigatório na retirada</span>
+
+                    <label class="os-switch">
+                        <input type="checkbox" id="osDocumentoRetirada">
+                        <span class="os-slider"></span>
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             7 - RODAPÉ
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                7. Rodapé da OS
+            </h3>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar rodapé personalizado</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarRodape" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Texto do rodapé
+                </label>
+
+                <textarea
+                    id="osTextoRodape"
+                    rows="4"
+                    placeholder="Agradecemos a preferência!"
+                ></textarea>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Mostrar QR Code</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osMostrarQrCode">
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Texto abaixo do QR Code
+                </label>
+
+                <input
+                    type="text"
+                    id="osTextoQrCode"
+                    maxlength="150"
+                    placeholder="Escaneie para acompanhar sua OS"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             8 - APARÊNCIA
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                8. Aparência da Impressão
+            </h3>
+
+
+            <div class="os-config-two">
+
+                <div class="os-config-field">
+
+                    <label>
+                        Tamanho do documento
+                    </label>
+
+                    <select id="osTamanhoDocumento">
+
+                        <option value="a4">
+                            A4
+                        </option>
+
+                        <option value="a5">
+                            A5
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="os-config-field">
+
+                    <label>
+                        Fonte do título
+                    </label>
+
+                    <select id="osFonteTitulo">
+
+                        <option value="arial">
+                            Arial
+                        </option>
+
+                        <option value="verdana">
+                            Verdana
+                        </option>
+
+                        <option value="tahoma">
+                            Tahoma
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="os-config-field">
+
+                    <label>
+                        Orientação
+                    </label>
+
+                    <select id="osOrientacao">
+
+                        <option value="retrato">
+                            Retrato
+                        </option>
+
+                        <option value="paisagem">
+                            Paisagem
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="os-config-field">
+
+                    <label>
+                        Tamanho da fonte
+                    </label>
+
+                    <select id="osTamanhoFonte">
+
+                        <option value="pequena">
+                            Pequena
+                        </option>
+
+                        <option value="media" selected>
+                            Média
+                        </option>
+
+                        <option value="grande">
+                            Grande
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="os-config-field">
+
+                    <label>
+                        Cores
+                    </label>
+
+                    <select id="osEsquemaCores">
+
+                        <option value="empresa">
+                            Cores da empresa
+                        </option>
+
+                        <option value="preto-branco">
+                            Preto e branco
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="os-config-field">
+
+                    <label>
+                        Espaçamento
+                    </label>
+
+                    <select id="osEspacamento">
+
+                        <option value="compacto">
+                            Compacto
+                        </option>
+
+                        <option value="normal" selected>
+                            Normal
+                        </option>
+
+                        <option value="amplo">
+                            Amplo
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="os-config-field">
+
+                    <label>
+                        Estilo das tabelas
+                    </label>
+
+                    <select id="osEstiloTabela">
+
+                        <option value="simples">
+                            Bordas simples
+                        </option>
+
+                        <option value="linhas">
+                            Apenas linhas
+                        </option>
+
+                        <option value="sem-bordas">
+                            Sem bordas
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             9 - VIAS E PREVIEW
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                9. Vias / Cópias
+            </h3>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Quantidade de vias
+                </label>
+
+                <select id="osQuantidadeVias">
+
+                    <option value="1">
+                        1 via
+                    </option>
+
+                    <option value="2">
+                        2 vias
+                    </option>
+
+                    <option value="3">
+                        3 vias
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="os-config-field">
+
+                <label>
+                    Via padrão
+                </label>
+
+                <select id="osViaPadrao">
+
+                    <option value="cliente">
+                        Cliente
+                    </option>
+
+                    <option value="empresa">
+                        Empresa
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Imprimir observações internas</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osImprimirObservacaoInterna">
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div
+                style="
+                    margin-top:18px;
+                    font-weight:600;
+                    font-size:13px;
+                    color:#334155;
+                "
+            >
+                Pré-visualização
+            </div>
+
+
+            <div class="os-preview-box">
+
+                <div class="os-preview-paper">
+
+                    <div class="os-preview-logo">
+                        BITS & BYTES TECNOLOGY
+                    </div>
+
+                    <div class="os-preview-title">
+                        ORDEM DE SERVIÇO
+                    </div>
+
+                    <div class="os-preview-line"></div>
+                    <div class="os-preview-line"></div>
+                    <div class="os-preview-line"></div>
+                    <div class="os-preview-line"></div>
+                    <div class="os-preview-line"></div>
+                    <div class="os-preview-line"></div>
+                    <div class="os-preview-line"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             NUMERAÇÃO
+        ====================================================== -->
+
+        <div class="os-config-card os-span-2">
+
+            <h3>
+                10. Numeração da Ordem de Serviço
+            </h3>
+
+
+            <div class="os-config-two">
+
+                <div class="os-config-field">
+
+                    <label>
+                        Formato da numeração
+                    </label>
+
+                    <select id="osFormatoNumero">
+
+                        <option value="sequencial">
+                            Sequencial
+                        </option>
+
+                        <option value="ano-sequencial">
+                            Ano + Sequencial
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="os-config-field">
+
+                    <label>
+                        Prefixo
+                    </label>
+
+                    <input
+                        type="text"
+                        id="osPrefixo"
+                        maxlength="10"
+                        placeholder="OS"
+                    >
+
+                </div>
+
+
+                <div class="os-config-field">
+
+                    <label>
+                        Quantidade mínima de dígitos
+                    </label>
+
+                    <select id="osDigitosNumero">
+
+                        <option value="4">
+                            4 dígitos
+                        </option>
+
+                        <option value="5">
+                            5 dígitos
+                        </option>
+
+                        <option value="6" selected>
+                            6 dígitos
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="os-switch-row">
+
+                    <span>
+                        Reiniciar sequência a cada ano
+                    </span>
+
+                    <label class="os-switch">
+                        <input type="checkbox" id="osReiniciarNumeroAno">
+                        <span class="os-slider"></span>
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             ASSINATURAS
+        ====================================================== -->
+
+        <div class="os-config-card">
+
+            <h3>
+                11. Assinaturas
+            </h3>
+
+
+            <div class="os-switch-row">
+
+                <span>Assinatura do cliente</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osAssinaturaCliente" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Assinatura do técnico</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osAssinaturaTecnico" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+
+            <div class="os-switch-row">
+
+                <span>Data de recebimento</span>
+
+                <label class="os-switch">
+                    <input type="checkbox" id="osAssinaturaData" checked>
+                    <span class="os-slider"></span>
+                </label>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <div class="os-config-actions">
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="voltarFerramentasSistema()"
+        >
+            Cancelar
+        </button>
+
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="carregarConfiguracaoOS()"
+        >
+            ↻ Restaurar
+        </button>
+
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            onclick="salvarConfiguracaoOS()"
+        >
+            💾 Salvar Configurações
+        </button>
+
+    </div>
+
+</div>
+<div class="ferramentas-grid">
+
+                <div
+                    class="ferramenta-card"
+                    onclick="abrirConfiguracaoOS()"
+                >
+                    <div class="ferramenta-icone">📋</div>
+                    <div>
+                        <h3>Ordem de Serviço</h3>
+                        <p>Configurações gerais da OS, impressão e comportamento do atendimento.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">💰</div>
+                    <div>
+                        <h3>Orçamentos</h3>
+                        <p>Validade padrão, aprovação, documentos e preferências.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">🧾</div>
+                    <div>
+                        <h3>Recibos e Comprovantes</h3>
+                        <p>Configuração de recibos, comprovantes e impressão.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">⚙️</div>
+                    <div>
+                        <h3>Configuração Padrão</h3>
+                        <p>Preferências gerais de funcionamento do sistema.</p>
+                    </div>
+                </div>
+
+                <div
+                    class="ferramenta-card"
+                    onclick="abrirSecaoSistema('maquininhas')"
+                >
+                    <div class="ferramenta-icone">💳</div>
+                    <div>
+                        <h3>Formas de Pagamento</h3>
+                        <p>Maquininhas, taxas, débito, crédito e parcelamento.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">🔄</div>
+                    <div>
+                        <h3>Status da Ordem de Serviço</h3>
+                        <p>Situações e etapas utilizadas nas ordens de serviço.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">🖨️</div>
+                    <div>
+                        <h3>Impressão e Documentos</h3>
+                        <p>Cabeçalhos, rodapés, impressão e documentos.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">🛡️</div>
+                    <div>
+                        <h3>Garantia dos Serviços</h3>
+                        <p>Textos e condições padrão de garantia.</p>
+                    </div>
+                </div>
+
+                <div
+                    class="ferramenta-card"
+                    onclick="abrirSecaoSistema('usuarios')"
+                >
+                    <div class="ferramenta-icone">👤</div>
+                    <div>
+                        <h3>Usuários e Permissões</h3>
+                        <p>Usuários, níveis de acesso e permissões.</p>
+                    </div>
+                </div>
+
+                <div
+                    class="ferramenta-card"
+                    onclick="abrirSecaoSistema('seguranca')"
+                >
+                    <div class="ferramenta-icone">🔐</div>
+                    <div>
+                        <h3>Segurança e Acesso</h3>
+                        <p>Senha, segurança e controle de acesso.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">🏢</div>
+                    <div>
+                        <h3>Dados da Empresa</h3>
+                        <p>Dados cadastrais utilizados pelo sistema.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">🎨</div>
+                    <div>
+                        <h3>Personalização Visual</h3>
+                        <p>Logo, cores e identidade visual.</p>
+                    </div>
+                </div>
+
+                <div
+                    class="ferramenta-card"
+                    onclick="abrirSecaoSistema('notificacoes')"
+                >
+                    <div class="ferramenta-icone">🔔</div>
+                    <div>
+                        <h3>Notificações</h3>
+                        <p>Preferências e recursos de notificações.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">🔢</div>
+                    <div>
+                        <h3>Numerações</h3>
+                        <p>Sequências de OS, orçamento, vendas e documentos.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">🛒</div>
+                    <div>
+                        <h3>Preferências de Vendas</h3>
+                        <p>Configurações gerais do módulo de vendas.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">📦</div>
+                    <div>
+                        <h3>Preferências de Estoque</h3>
+                        <p>Estoque, movimentações e alertas.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">💵</div>
+                    <div>
+                        <h3>Preferências Financeiras</h3>
+                        <p>Categorias e padrões utilizados no Financeiro.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">🗄️</div>
+                    <div>
+                        <h3>Manutenção do Banco de Dados</h3>
+                        <p>Verificação e manutenção administrativa dos dados.</p>
+                    </div>
+                </div>
+
+                <div class="ferramenta-card">
+                    <div class="ferramenta-icone">ℹ️</div>
+                    <div>
+                        <h3>Informações do Sistema</h3>
+                        <p>Versão e informações técnicas da aplicação.</p>
+                    </div>
+                </div>
+
+            </div>
 
         </div>
 
@@ -1734,9 +3835,561 @@ th.subcoluna{
 
 
 <!-- =====================================================
+     USUÁRIOS - NOVO USUÁRIO
+===================================================== -->
+
+<div
+    id="modalUsuario"
+    class="modal"
+>
+    <div
+        class="modal-caixa"
+        style="max-width:560px;"
+    >
+
+        <div class="modal-header">
+
+            <h2>
+                👤 Novo Usuário
+            </h2>
+
+            <button
+                type="button"
+                class="fechar"
+                onclick="fecharModalUsuario()"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div
+            id="mensagemModalUsuario"
+            style="
+                display:none;
+                margin-bottom:16px;
+                padding:12px;
+                border-radius:8px;
+            "
+        ></div>
+
+        <div class="form-group">
+
+            <label for="usuarioNome">
+                Nome completo
+            </label>
+
+            <input
+                type="text"
+                id="usuarioNome"
+                maxlength="120"
+                autocomplete="name"
+                placeholder="Ex.: João da Silva"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="usuarioLogin">
+                Usuário de login
+            </label>
+
+            <input
+                type="text"
+                id="usuarioLogin"
+                maxlength="60"
+                autocomplete="off"
+                placeholder="Ex.: joaosilva"
+            >
+
+            <small style="color:#64748b;">
+                Use letras minúsculas, números, ponto, hífen ou underline.
+            </small>
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="usuarioSenha">
+                Senha
+            </label>
+
+            <input
+                type="password"
+                id="usuarioSenha"
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Mínimo de 6 caracteres"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="usuarioConfirmarSenha">
+                Confirmar senha
+            </label>
+
+            <input
+                type="password"
+                id="usuarioConfirmarSenha"
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Digite novamente a senha"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="usuarioPerfil">
+                Perfil
+            </label>
+
+            <select
+                id="usuarioPerfil"
+                style="
+                    width:100%;
+                    padding:11px;
+                    border:1px solid #cbd5e1;
+                    border-radius:8px;
+                    background:white;
+                    outline:none;
+                "
+            >
+                <option value="tech">
+                    Técnico
+                </option>
+
+                <option value="admin">
+                    Administrador
+                </option>
+            </select>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="fecharModalUsuario()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                id="btnSalvarUsuario"
+                onclick="salvarNovoUsuario()"
+            >
+                Salvar Usuário
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- =====================================================
+     USUÁRIOS - EDITAR USUÁRIO
+===================================================== -->
+
+<div
+    id="modalEditarUsuario"
+    class="modal"
+>
+    <div
+        class="modal-caixa"
+        style="max-width:560px;"
+    >
+
+        <div class="modal-header">
+
+            <h2>
+                ✏️ Editar Usuário
+            </h2>
+
+            <button
+                type="button"
+                class="fechar"
+                onclick="fecharEdicaoUsuario()"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <input
+            type="hidden"
+            id="editarUsuarioId"
+        >
+
+        <input
+            type="hidden"
+            id="editarUsuarioRoleOriginal"
+        >
+
+        <div
+            id="mensagemEditarUsuario"
+            style="
+                display:none;
+                margin-bottom:16px;
+                padding:12px;
+                border-radius:8px;
+            "
+        ></div>
+
+        <div class="form-group">
+
+            <label for="editarUsuarioNome">
+                Nome completo
+            </label>
+
+            <input
+                type="text"
+                id="editarUsuarioNome"
+                maxlength="120"
+                autocomplete="name"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="editarUsuarioLogin">
+                Usuário de login
+            </label>
+
+            <input
+                type="text"
+                id="editarUsuarioLogin"
+                maxlength="60"
+                autocomplete="off"
+            >
+
+            <small style="color:#64748b;">
+                Use letras minúsculas, números, ponto, hífen ou underline.
+            </small>
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="editarUsuarioPerfil">
+                Perfil
+            </label>
+
+            <select
+                id="editarUsuarioPerfil"
+                style="
+                    width:100%;
+                    padding:11px;
+                    border:1px solid #cbd5e1;
+                    border-radius:8px;
+                    background:white;
+                    outline:none;
+                "
+            >
+                <option value="tech">
+                    Técnico
+                </option>
+
+                <option value="admin">
+                    Administrador
+                </option>
+
+                <option value="master">
+                    Master
+                </option>
+            </select>
+
+            <small
+                id="editarUsuarioAvisoMaster"
+                style="
+                    display:none;
+                    margin-top:6px;
+                    color:#64748b;
+                "
+            >
+                O perfil Master é protegido e não pode ser alterado.
+            </small>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="fecharEdicaoUsuario()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                id="btnSalvarEdicaoUsuario"
+                onclick="salvarEdicaoUsuario()"
+            >
+                Salvar Alterações
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- =====================================================
      MENSAGEM
 ===================================================== -->
 
+<!-- =====================================================
+     ALTERAR SENHA DO USUARIO
+===================================================== -->
+
+<div
+    id="modalSenhaUsuario"
+    class="modal"
+>
+    <div
+        class="modal-caixa"
+        style="max-width:520px;"
+    >
+
+        <div class="modal-header">
+
+            <h2>
+                🔑 Alterar Senha
+            </h2>
+
+            <button
+                type="button"
+                class="fechar"
+                onclick="fecharModalSenhaUsuario()"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <input
+            type="hidden"
+            id="senhaUsuarioId"
+        >
+
+        <div
+            style="
+                margin-bottom:16px;
+                padding:10px 12px;
+                background:#f8fafc;
+                border:1px solid #e2e8f0;
+                border-radius:8px;
+            "
+        >
+            Usuário:
+            <strong id="senhaUsuarioNome">—</strong>
+        </div>
+
+        <div
+            id="mensagemSenhaUsuario"
+            style="
+                display:none;
+                margin-bottom:16px;
+                padding:12px;
+                border-radius:8px;
+            "
+        ></div>
+
+        <div class="form-group">
+
+            <label for="senhaUsuarioNova">
+                Nova senha
+            </label>
+
+            <input
+                type="password"
+                id="senhaUsuarioNova"
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Mínimo de 6 caracteres"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label for="senhaUsuarioConfirmar">
+                Confirmar nova senha
+            </label>
+
+            <input
+                type="password"
+                id="senhaUsuarioConfirmar"
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Digite novamente a nova senha"
+            >
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="fecharModalSenhaUsuario()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                id="btnSalvarSenhaUsuario"
+                onclick="salvarSenhaUsuario()"
+            >
+                Alterar Senha
+            </button>
+
+        </div>
+
+    </div>
+</div>
+<!-- =====================================================
+     PERMISSOES DO USUARIO
+===================================================== -->
+
+<div
+    id="modalPermissoesUsuario"
+    class="modal"
+>
+    <div
+        class="modal-caixa"
+        style="max-width:720px;"
+    >
+
+        <div class="modal-header">
+
+            <h2>Permissões do Usuário</h2>
+
+            <button
+                type="button"
+                class="fechar"
+                onclick="fecharModalPermissoesUsuario()"
+            >
+                &times;
+            </button>
+
+        </div>
+
+        <input
+            type="hidden"
+            id="permissoesUsuarioId"
+        >
+
+        <div
+            style="
+                margin-bottom:16px;
+                padding:12px;
+                background:#f8fafc;
+                border:1px solid #e2e8f0;
+                border-radius:8px;
+            "
+        >
+            Usuário:
+            <strong id="permissoesUsuarioNome">-</strong>
+
+            <div
+                id="permissoesUsuarioPerfil"
+                style="
+                    margin-top:4px;
+                    color:#64748b;
+                    font-size:13px;
+                "
+            ></div>
+        </div>
+
+        <div
+            id="mensagemPermissoesUsuario"
+            style="
+                display:none;
+                margin-bottom:16px;
+                padding:12px;
+                border-radius:8px;
+            "
+        ></div>
+
+        <div
+            id="avisoPermissoesMaster"
+            style="
+                display:none;
+                margin-bottom:16px;
+                padding:12px;
+                background:#eff6ff;
+                border:1px solid #bfdbfe;
+                color:#1e40af;
+                border-radius:8px;
+                font-size:13px;
+            "
+        >
+            O usuário Master possui acesso total permanente.
+            Suas permissões não podem ser desativadas.
+        </div>
+
+        <div
+            id="listaPermissoesUsuario"
+            style="
+                display:grid;
+                grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+                gap:10px;
+            "
+        >
+
+            <label><input type="checkbox" data-permissao="dashboard"> Dashboard</label>
+            <label><input type="checkbox" data-permissao="clientes"> Clientes</label>
+            <label><input type="checkbox" data-permissao="chamados"> Chamados</label>
+            <label><input type="checkbox" data-permissao="orcamentos"> Orçamentos</label>
+            <label><input type="checkbox" data-permissao="servicos"> Peças e Serviços</label>
+            <label><input type="checkbox" data-permissao="laudos"> Laudos Técnicos</label>
+            <label><input type="checkbox" data-permissao="estoque"> Estoque</label>
+            <label><input type="checkbox" data-permissao="vendas"> Vendas</label>
+            <label><input type="checkbox" data-permissao="financeiro"> Financeiro</label>
+            <label><input type="checkbox" data-permissao="lembretes"> Lembretes</label>
+            <label><input type="checkbox" data-permissao="relatorios"> Relatórios</label>
+            <label><input type="checkbox" data-permissao="configuracoes"> Configurações</label>
+
+        </div>
+
+        <div
+            class="modal-footer"
+            style="margin-top:20px;"
+        >
+
+            <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="fecharModalPermissoesUsuario()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                id="btnSalvarPermissoesUsuario"
+                onclick="salvarPermissoesUsuario()"
+            >
+                Salvar Permissões
+            </button>
+
+        </div>
+
+    </div>
+</div>
 <div
     id="mensagem"
     class="mensagem"
@@ -1780,8 +4433,7 @@ async function carregarUsuario(){
         document.getElementById(
             "nomeUsuario"
         ).innerText =
-            data.user?.nome || data.user?.username ||
-            "Usuário";
+            data.user?.nome || data.user?.username || "Usuário";
 
 
         document.getElementById(
@@ -1818,6 +4470,1043 @@ if (
 /* =========================================================
    NAVEGAÇÃO DAS CONFIGURAÇÕES
 ========================================================= */
+
+
+
+/* =========================================================
+   CONFIGURAÇÃO DA ORDEM DE SERVIÇO
+========================================================= */
+
+async function carregarConfiguracaoOS(){
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/configuracoes/os",
+                {
+                    credentials:"include"
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Erro ao carregar configurações da Ordem de Serviço."
+            );
+
+        }
+
+
+        const config =
+            data.configuracao || {};
+
+
+        const definirValor = (
+            id,
+            valor,
+            padrao = ""
+        ) => {
+
+            const elemento =
+                document.getElementById(id);
+
+            if(elemento){
+
+                elemento.value =
+                    valor ??
+                    padrao;
+
+            }
+
+        };
+
+
+        const definirCheckbox = (
+            id,
+            valor,
+            padrao = true
+        ) => {
+
+            const elemento =
+                document.getElementById(id);
+
+            if(elemento){
+
+                elemento.checked =
+                    typeof valor === "boolean"
+                        ? valor
+                        : padrao;
+
+            }
+
+        };
+
+
+        definirValor(
+            "osTitulo",
+            config.titulo,
+            "ORDEM DE SERVIÇO - ENTRADA"
+        );
+
+        definirValor(
+            "osSubtitulo",
+            config.subtitulo,
+            ""
+        );
+
+        definirCheckbox(
+            "osMostrarLogo",
+            config.mostrarLogo,
+            true
+        );
+
+        definirValor(
+            "osPosicaoLogo",
+            config.posicaoLogo,
+            "esquerda"
+        );
+
+        definirCheckbox(
+            "osMostrarDadosEmpresa",
+            config.mostrarDadosEmpresa,
+            true
+        );
+
+        definirValor(
+            "osLayoutCabecalho",
+            config.layoutCabecalho,
+            "padrao"
+        );
+
+
+        definirCheckbox(
+            "osMostrarNomeCliente",
+            config.mostrarNomeCliente,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarDocumento",
+            config.mostrarDocumentoCliente,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarTelefoneCliente",
+            config.mostrarTelefoneCliente,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarEmailCliente",
+            config.mostrarEmailCliente,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarEndereco",
+            config.mostrarEnderecoCliente,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarLocalizacaoCliente",
+            config.mostrarLocalizacaoCliente,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarObservacoesCliente",
+            config.mostrarObservacoesCliente,
+            true
+        );
+
+
+        definirCheckbox(
+            "osMostrarEquipamento",
+            config.mostrarEquipamento,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarMarcaModelo",
+            config.mostrarMarcaModelo,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarNumeroSerie",
+            config.mostrarNumeroSerie,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarEstadoEquipamento",
+            config.mostrarEstadoEquipamento,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarAcessorios",
+            config.mostrarAcessorios,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarSenhaEquipamento",
+            config.mostrarSenhaEquipamento,
+            false
+        );
+
+        definirCheckbox(
+            "osMostrarDefeitoRelatado",
+            config.mostrarDefeitoRelatado,
+            true
+        );
+
+
+        definirValor(
+            "osObservacaoPadrao",
+            config.observacaoPadrao,
+            ""
+        );
+
+        definirValor(
+            "osObservacaoInterna",
+            config.observacaoInterna,
+            ""
+        );
+
+        definirValor(
+            "osTermosCondicoes",
+            config.termosCondicoes,
+            ""
+        );
+
+        definirValor(
+            "osGarantiaPadrao",
+            config.garantiaPadrao,
+            90
+        );
+
+
+        definirCheckbox(
+            "osMostrarDiagnostico",
+            config.mostrarDiagnostico,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarServicos",
+            config.mostrarServicos,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarPecas",
+            config.mostrarPecas,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarValores",
+            config.mostrarValores,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarDesconto",
+            config.mostrarDesconto,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarFormaPagamento",
+            config.mostrarFormaPagamento,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarDataConclusao",
+            config.mostrarDataConclusao,
+            true
+        );
+
+        definirCheckbox(
+            "osMostrarObservacoesFinais",
+            config.mostrarObservacoesFinais,
+            true
+        );
+
+
+        definirCheckbox(
+            "osMostrarRetirada",
+            config.mostrarRetirada,
+            true
+        );
+
+        definirValor(
+            "osResponsavelRetirada",
+            config.responsavelRetirada,
+            "cliente"
+        );
+
+        definirCheckbox(
+            "osDocumentoRetirada",
+            config.documentoRetirada,
+            false
+        );
+
+
+        definirCheckbox(
+            "osMostrarRodape",
+            config.mostrarRodape,
+            true
+        );
+
+        definirValor(
+            "osTextoRodape",
+            config.textoRodape,
+            ""
+        );
+
+        definirCheckbox(
+            "osMostrarQrCode",
+            config.mostrarQrCode,
+            false
+        );
+
+        definirValor(
+            "osTextoQrCode",
+            config.textoQrCode,
+            ""
+        );
+
+
+        definirValor(
+            "osTamanhoDocumento",
+            config.tamanhoDocumento,
+            "a4"
+        );
+
+        definirValor(
+            "osFonteTitulo",
+            config.fonteTitulo,
+            "arial"
+        );
+
+        definirValor(
+            "osOrientacao",
+            config.orientacao,
+            "retrato"
+        );
+
+        definirValor(
+            "osTamanhoFonte",
+            config.tamanhoFonte,
+            "media"
+        );
+
+        definirValor(
+            "osEsquemaCores",
+            config.esquemaCores,
+            "empresa"
+        );
+
+        definirValor(
+            "osEspacamento",
+            config.espacamento,
+            "normal"
+        );
+
+        definirValor(
+            "osEstiloTabela",
+            config.estiloTabela,
+            "simples"
+        );
+
+
+        definirValor(
+            "osQuantidadeVias",
+            config.quantidadeVias,
+            1
+        );
+
+        definirValor(
+            "osViaPadrao",
+            config.viaPadrao,
+            "cliente"
+        );
+
+        definirCheckbox(
+            "osImprimirObservacaoInterna",
+            config.imprimirObservacaoInterna,
+            false
+        );
+
+
+        definirValor(
+            "osFormatoNumero",
+            config.formatoNumero,
+            "sequencial"
+        );
+
+        definirValor(
+            "osPrefixo",
+            config.prefixo,
+            "OS"
+        );
+
+        definirValor(
+            "osDigitosNumero",
+            config.digitosNumero,
+            6
+        );
+
+        definirCheckbox(
+            "osReiniciarNumeroAno",
+            config.reiniciarNumeroAno,
+            false
+        );
+
+
+        definirCheckbox(
+            "osAssinaturaCliente",
+            config.assinaturaCliente,
+            true
+        );
+
+        definirCheckbox(
+            "osAssinaturaTecnico",
+            config.assinaturaTecnico,
+            true
+        );
+
+        definirCheckbox(
+            "osAssinaturaData",
+            config.assinaturaData,
+            true
+        );
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao carregar configuração da OS:",
+            err
+        );
+
+
+        mostrarMensagem(
+            err.message ||
+            "Erro ao carregar configuração da Ordem de Serviço.",
+            "erro"
+        );
+
+    }
+
+}
+
+
+async function abrirConfiguracaoOS(){
+
+    const painel =
+        document.getElementById(
+            "painel-config-os"
+        );
+
+
+    const grid =
+        document.querySelector(
+            "#secao-sistema .ferramentas-grid"
+        );
+
+
+    if(grid){
+
+        grid.style.display =
+            "none";
+
+    }
+
+
+    if(painel){
+
+        painel.style.display =
+            "block";
+
+    }
+
+
+    await carregarConfiguracaoOS();
+
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+function voltarFerramentasSistema(){
+
+    const painel =
+        document.getElementById(
+            "painel-config-os"
+        );
+
+
+    const grid =
+        document.querySelector(
+            "#secao-sistema .ferramentas-grid"
+        );
+
+
+    if(painel){
+
+        painel.style.display =
+            "none";
+
+    }
+
+
+    if(grid){
+
+        grid.style.display =
+            "grid";
+
+    }
+
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+async function salvarConfiguracaoOS(){
+
+    const valor = (
+        id,
+        padrao = ""
+    ) => {
+
+        const elemento =
+            document.getElementById(id);
+
+        if(!elemento){
+            return padrao;
+        }
+
+        return elemento.value;
+
+    };
+
+
+    const texto = (
+        id,
+        padrao = ""
+    ) => {
+
+        return String(
+            valor(
+                id,
+                padrao
+            )
+        ).trim();
+
+    };
+
+
+    const marcado = (
+        id,
+        padrao = false
+    ) => {
+
+        const elemento =
+            document.getElementById(id);
+
+        if(!elemento){
+            return padrao;
+        }
+
+        return elemento.checked;
+
+    };
+
+
+    const configuracao = {
+
+        titulo:
+            texto(
+                "osTitulo",
+                "ORDEM DE SERVIÇO - ENTRADA"
+            ),
+
+        subtitulo:
+            texto("osSubtitulo"),
+
+        mostrarLogo:
+            marcado(
+                "osMostrarLogo",
+                true
+            ),
+
+        posicaoLogo:
+            valor(
+                "osPosicaoLogo",
+                "esquerda"
+            ),
+
+        mostrarDadosEmpresa:
+            marcado(
+                "osMostrarDadosEmpresa",
+                true
+            ),
+
+        layoutCabecalho:
+            valor(
+                "osLayoutCabecalho",
+                "padrao"
+            ),
+
+
+        mostrarNomeCliente:
+            marcado(
+                "osMostrarNomeCliente",
+                true
+            ),
+
+        mostrarDocumentoCliente:
+            marcado(
+                "osMostrarDocumento",
+                true
+            ),
+
+        mostrarTelefoneCliente:
+            marcado(
+                "osMostrarTelefoneCliente",
+                true
+            ),
+
+        mostrarEmailCliente:
+            marcado(
+                "osMostrarEmailCliente",
+                true
+            ),
+
+        mostrarEnderecoCliente:
+            marcado(
+                "osMostrarEndereco",
+                true
+            ),
+
+        mostrarLocalizacaoCliente:
+            marcado(
+                "osMostrarLocalizacaoCliente",
+                true
+            ),
+
+        mostrarObservacoesCliente:
+            marcado(
+                "osMostrarObservacoesCliente",
+                true
+            ),
+
+
+        mostrarEquipamento:
+            marcado(
+                "osMostrarEquipamento",
+                true
+            ),
+
+        mostrarMarcaModelo:
+            marcado(
+                "osMostrarMarcaModelo",
+                true
+            ),
+
+        mostrarNumeroSerie:
+            marcado(
+                "osMostrarNumeroSerie",
+                true
+            ),
+
+        mostrarEstadoEquipamento:
+            marcado(
+                "osMostrarEstadoEquipamento",
+                true
+            ),
+
+        mostrarAcessorios:
+            marcado(
+                "osMostrarAcessorios",
+                true
+            ),
+
+        mostrarSenhaEquipamento:
+            marcado(
+                "osMostrarSenhaEquipamento",
+                false
+            ),
+
+        mostrarDefeitoRelatado:
+            marcado(
+                "osMostrarDefeitoRelatado",
+                true
+            ),
+
+
+        observacaoPadrao:
+            texto(
+                "osObservacaoPadrao"
+            ),
+
+        observacaoInterna:
+            texto(
+                "osObservacaoInterna"
+            ),
+
+        termosCondicoes:
+            texto(
+                "osTermosCondicoes"
+            ),
+
+        garantiaPadrao:
+            Number(
+                valor(
+                    "osGarantiaPadrao",
+                    90
+                )
+            ),
+
+
+        mostrarDiagnostico:
+            marcado(
+                "osMostrarDiagnostico",
+                true
+            ),
+
+        mostrarServicos:
+            marcado(
+                "osMostrarServicos",
+                true
+            ),
+
+        mostrarPecas:
+            marcado(
+                "osMostrarPecas",
+                true
+            ),
+
+        mostrarValores:
+            marcado(
+                "osMostrarValores",
+                true
+            ),
+
+        mostrarDesconto:
+            marcado(
+                "osMostrarDesconto",
+                true
+            ),
+
+        mostrarFormaPagamento:
+            marcado(
+                "osMostrarFormaPagamento",
+                true
+            ),
+
+        mostrarDataConclusao:
+            marcado(
+                "osMostrarDataConclusao",
+                true
+            ),
+
+        mostrarObservacoesFinais:
+            marcado(
+                "osMostrarObservacoesFinais",
+                true
+            ),
+
+
+        mostrarRetirada:
+            marcado(
+                "osMostrarRetirada",
+                true
+            ),
+
+        responsavelRetirada:
+            valor(
+                "osResponsavelRetirada",
+                "cliente"
+            ),
+
+        documentoRetirada:
+            marcado(
+                "osDocumentoRetirada",
+                false
+            ),
+
+
+        mostrarRodape:
+            marcado(
+                "osMostrarRodape",
+                true
+            ),
+
+        textoRodape:
+            texto(
+                "osTextoRodape"
+            ),
+
+        mostrarQrCode:
+            marcado(
+                "osMostrarQrCode",
+                false
+            ),
+
+        textoQrCode:
+            texto(
+                "osTextoQrCode"
+            ),
+
+
+        tamanhoDocumento:
+            valor(
+                "osTamanhoDocumento",
+                "a4"
+            ),
+
+        fonteTitulo:
+            valor(
+                "osFonteTitulo",
+                "arial"
+            ),
+
+        orientacao:
+            valor(
+                "osOrientacao",
+                "retrato"
+            ),
+
+        tamanhoFonte:
+            valor(
+                "osTamanhoFonte",
+                "media"
+            ),
+
+        esquemaCores:
+            valor(
+                "osEsquemaCores",
+                "empresa"
+            ),
+
+        espacamento:
+            valor(
+                "osEspacamento",
+                "normal"
+            ),
+
+        estiloTabela:
+            valor(
+                "osEstiloTabela",
+                "simples"
+            ),
+
+
+        quantidadeVias:
+            Number(
+                valor(
+                    "osQuantidadeVias",
+                    1
+                )
+            ),
+
+        viaPadrao:
+            valor(
+                "osViaPadrao",
+                "cliente"
+            ),
+
+        imprimirObservacaoInterna:
+            marcado(
+                "osImprimirObservacaoInterna",
+                false
+            ),
+
+
+        formatoNumero:
+            valor(
+                "osFormatoNumero",
+                "sequencial"
+            ),
+
+        prefixo:
+            texto(
+                "osPrefixo",
+                "OS"
+            ),
+
+        digitosNumero:
+            Number(
+                valor(
+                    "osDigitosNumero",
+                    6
+                )
+            ),
+
+        reiniciarNumeroAno:
+            marcado(
+                "osReiniciarNumeroAno",
+                false
+            ),
+
+
+        assinaturaCliente:
+            marcado(
+                "osAssinaturaCliente",
+                true
+            ),
+
+        assinaturaTecnico:
+            marcado(
+                "osAssinaturaTecnico",
+                true
+            ),
+
+        assinaturaData:
+            marcado(
+                "osAssinaturaData",
+                true
+            )
+
+    };
+
+
+    if(!configuracao.titulo){
+
+        configuracao.titulo =
+            "ORDEM DE SERVIÇO - ENTRADA";
+
+    }
+
+
+    if(!configuracao.prefixo){
+
+        configuracao.prefixo =
+            "OS";
+
+    }
+
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/configuracoes/os",
+                {
+
+                    method:"PUT",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    credentials:"include",
+
+                    body:
+                        JSON.stringify(
+                            configuracao
+                        )
+
+                }
+            );
+
+
+        const data =
+            await res.json();
+
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Erro ao salvar configurações da Ordem de Serviço."
+            );
+
+        }
+
+
+        mostrarMensagem(
+            data.mensagem ||
+            "Configurações da Ordem de Serviço salvas com sucesso.",
+            "sucesso"
+        );
+
+
+        await carregarConfiguracaoOS();
+
+
+    }catch(err){
+
+        console.error(
+            "Erro ao salvar configuração da OS:",
+            err
+        );
+
+
+        mostrarMensagem(
+            err.message ||
+            "Erro ao salvar configurações da Ordem de Serviço.",
+            "erro"
+        );
+
+    }
+
+}
+
+function abrirSecaoSistema(nome){
+
+    const cards =
+        Array.from(
+            document.querySelectorAll(".config-card")
+        );
+
+    const card =
+        cards.find(
+            item => {
+
+                const acao =
+                    item.getAttribute("onclick") || "";
+
+                return acao.includes(
+                    "abrirSecao('" + nome + "'"
+                );
+            }
+        );
+
+    abrirSecao(
+        nome,
+        card || null
+    );
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
 
 function abrirSecao(nome, elemento){
 
@@ -1858,8 +5547,1824 @@ function abrirSecao(nome, elemento){
 
     }
 
+    if(nome === "usuarios"){
+
+        carregarUsuarios();
+
+    }
+
+
+
 }
 
+
+/* =========================================================
+   USUÁRIOS
+========================================================= */
+
+let usuariosCarregados = [];
+
+function escaparHtmlUsuarios(valor){
+
+    return String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function limparMensagemModalUsuario(){
+
+    const mensagem =
+        document.getElementById(
+            "mensagemModalUsuario"
+        );
+
+    if(!mensagem){
+        return;
+    }
+
+    mensagem.style.display = "none";
+    mensagem.textContent = "";
+
+}
+
+
+function abrirModalNovoUsuario(){
+
+    const modal =
+        document.getElementById(
+            "modalUsuario"
+        );
+
+    if(!modal){
+        return;
+    }
+
+    document.getElementById(
+        "usuarioNome"
+    ).value = "";
+
+    document.getElementById(
+        "usuarioLogin"
+    ).value = "";
+
+    document.getElementById(
+        "usuarioSenha"
+    ).value = "";
+
+    document.getElementById(
+        "usuarioConfirmarSenha"
+    ).value = "";
+
+    document.getElementById(
+        "usuarioPerfil"
+    ).value = "tech";
+
+    limparMensagemModalUsuario();
+
+    modal.classList.add("ativo");
+
+    setTimeout(() => {
+
+        document.getElementById(
+            "usuarioNome"
+        )?.focus();
+
+    }, 50);
+
+}
+
+
+function fecharModalUsuario(){
+
+    const modal =
+        document.getElementById(
+            "modalUsuario"
+        );
+
+    if(modal){
+
+        modal.classList.remove(
+            "ativo"
+        );
+
+    }
+
+    limparMensagemModalUsuario();
+
+}
+
+
+async function salvarNovoUsuario(){
+
+    const nome =
+        document.getElementById(
+            "usuarioNome"
+        ).value.trim();
+
+    const username =
+        document.getElementById(
+            "usuarioLogin"
+        ).value.trim().toLowerCase();
+
+    const password =
+        document.getElementById(
+            "usuarioSenha"
+        ).value;
+
+    const confirmarSenha =
+        document.getElementById(
+            "usuarioConfirmarSenha"
+        ).value;
+
+    const role =
+        document.getElementById(
+            "usuarioPerfil"
+        ).value;
+
+    const mensagem =
+        document.getElementById(
+            "mensagemModalUsuario"
+        );
+
+    const botao =
+        document.getElementById(
+            "btnSalvarUsuario"
+        );
+
+    function mostrarErro(texto){
+
+        mensagem.textContent = texto;
+        mensagem.style.display = "block";
+        mensagem.style.background = "#fee2e2";
+        mensagem.style.color = "#991b1b";
+        mensagem.style.border = "1px solid #fecaca";
+
+    }
+
+    limparMensagemModalUsuario();
+
+    if(!nome){
+
+        mostrarErro(
+            "Informe o nome completo."
+        );
+
+        return;
+    }
+
+    if(username.length < 3){
+
+        mostrarErro(
+            "O usuário de login deve possuir pelo menos 3 caracteres."
+        );
+
+        return;
+    }
+
+    if(
+        !/^[a-z0-9._-]+$/.test(
+            username
+        )
+    ){
+
+        mostrarErro(
+            "O usuário de login pode conter apenas letras minúsculas, números, ponto, hífen ou underline."
+        );
+
+        return;
+    }
+
+    if(password.length < 6){
+
+        mostrarErro(
+            "A senha deve possuir pelo menos 6 caracteres."
+        );
+
+        return;
+    }
+
+    if(password !== confirmarSenha){
+
+        mostrarErro(
+            "As senhas não conferem."
+        );
+
+        return;
+    }
+
+    if(
+        role !== "admin" &&
+        role !== "tech"
+    ){
+
+        mostrarErro(
+            "Selecione um perfil válido."
+        );
+
+        return;
+    }
+
+    const textoOriginal =
+        botao.textContent;
+
+    botao.disabled = true;
+    botao.textContent = "Salvando...";
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/usuarios",
+                {
+                    method:"POST",
+                    credentials:"include",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        nome,
+                        username,
+                        password,
+                        role
+                    })
+                }
+            );
+
+        const data =
+            await res.json();
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Erro ao cadastrar usuário."
+            );
+
+        }
+
+        fecharModalUsuario();
+
+        await carregarUsuarios();
+
+        const mensagemSecao =
+            document.getElementById(
+                "usuariosMensagem"
+            );
+
+        if(mensagemSecao){
+
+            mensagemSecao.textContent =
+                data.message ||
+                "Usuário cadastrado com sucesso.";
+
+            mensagemSecao.style.display =
+                "block";
+
+            mensagemSecao.style.background =
+                "#dcfce7";
+
+            mensagemSecao.style.color =
+                "#166534";
+
+            mensagemSecao.style.border =
+                "1px solid #bbf7d0";
+
+            setTimeout(() => {
+
+                mensagemSecao.style.display =
+                    "none";
+
+            }, 4000);
+
+        }
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        mostrarErro(
+            err.message ||
+            "Erro ao cadastrar usuário."
+        );
+
+    }
+    finally{
+
+        botao.disabled = false;
+        botao.textContent =
+            textoOriginal;
+
+    }
+
+}
+
+function limparMensagemEditarUsuario(){
+
+    const mensagem =
+        document.getElementById(
+            "mensagemEditarUsuario"
+        );
+
+    if(!mensagem){
+        return;
+    }
+
+    mensagem.style.display = "none";
+    mensagem.textContent = "";
+
+}
+
+
+function limparMensagemSenhaUsuario(){
+
+    const mensagem =
+        document.getElementById(
+            "mensagemSenhaUsuario"
+        );
+
+    if(!mensagem) return;
+
+    mensagem.textContent = "";
+    mensagem.style.display = "none";
+
+}
+
+
+function abrirModalSenhaUsuario(id){
+
+    const usuario =
+        usuariosCarregados.find(
+            item =>
+                String(item._id) ===
+                String(id)
+        );
+
+    if(!usuario){
+
+        alert(
+            "Usuário não encontrado."
+        );
+
+        return;
+    }
+
+    document.getElementById(
+        "senhaUsuarioId"
+    ).value = usuario._id;
+
+    document.getElementById(
+        "senhaUsuarioNome"
+    ).textContent =
+        usuario.nome ||
+        usuario.username;
+
+    document.getElementById(
+        "senhaUsuarioNova"
+    ).value = "";
+
+    document.getElementById(
+        "senhaUsuarioConfirmar"
+    ).value = "";
+
+    limparMensagemSenhaUsuario();
+
+    const modal =
+        document.getElementById(
+            "modalSenhaUsuario"
+        );
+
+    if(modal){
+
+        modal.style.display =
+            "flex";
+
+    }
+
+    setTimeout(() => {
+
+        document.getElementById(
+            "senhaUsuarioNova"
+        )?.focus();
+
+    }, 50);
+
+}
+
+
+
+async function abrirModalPermissoesUsuario(id){
+
+    const usuario =
+        usuariosCarregados.find(
+            item =>
+                String(item._id) ===
+                String(id)
+        );
+
+    if(!usuario){
+
+        alert(
+            "Usuário não encontrado. Atualize a página e tente novamente."
+        );
+
+        return;
+    }
+
+    const modal =
+        document.getElementById(
+            "modalPermissoesUsuario"
+        );
+
+    const campoId =
+        document.getElementById(
+            "permissoesUsuarioId"
+        );
+
+    const campoNome =
+        document.getElementById(
+            "permissoesUsuarioNome"
+        );
+
+    const campoPerfil =
+        document.getElementById(
+            "permissoesUsuarioPerfil"
+        );
+
+    const mensagem =
+        document.getElementById(
+            "mensagemPermissoesUsuario"
+        );
+
+    const avisoMaster =
+        document.getElementById(
+            "avisoPermissoesMaster"
+        );
+
+    const botaoSalvar =
+        document.getElementById(
+            "btnSalvarPermissoesUsuario"
+        );
+
+    if(
+        !modal ||
+        !campoId ||
+        !campoNome ||
+        !campoPerfil
+    ){
+        alert(
+            "Não foi possível abrir as permissões do usuário."
+        );
+        return;
+    }
+
+    campoId.value =
+        usuario._id;
+
+    campoNome.textContent =
+        usuario.nome ||
+        usuario.username ||
+        "Usuário";
+
+    const perfis = {
+        master: "Master",
+        admin: "Administrador",
+        tech: "Técnico"
+    };
+
+    const role =
+        String(
+            usuario.role || ""
+        ).toLowerCase();
+
+    campoPerfil.textContent =
+        `Perfil: ${perfis[role] || usuario.role || "-"}`;
+
+    if(mensagem){
+
+        mensagem.textContent = "";
+        mensagem.style.display =
+            "none";
+
+    }
+
+    const checkboxes =
+        modal.querySelectorAll(
+            '[data-permissao]'
+        );
+
+    checkboxes.forEach(
+        checkbox => {
+
+            checkbox.checked =
+                false;
+
+            checkbox.disabled =
+                true;
+
+        }
+    );
+
+    if(avisoMaster){
+
+        avisoMaster.style.display =
+            role === "master"
+                ? "block"
+                : "none";
+
+    }
+
+    if(botaoSalvar){
+
+        botaoSalvar.style.display =
+            role === "master"
+                ? "none"
+                : "";
+
+    }
+
+    modal.style.display =
+        "flex";
+
+    try{
+
+        const res =
+            await fetch(
+                `/api/usuarios/${encodeURIComponent(id)}/permissoes`,
+                {
+                    credentials:"include"
+                }
+            );
+
+        const data =
+            await res.json()
+                .catch(() => ({}));
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Erro ao carregar permissões."
+            );
+
+        }
+
+        const permissoes =
+            data.permissoes || {};
+
+        checkboxes.forEach(
+            checkbox => {
+
+                const modulo =
+                    checkbox.dataset.permissao;
+
+                checkbox.checked =
+                    permissoes[modulo] === true;
+
+                checkbox.disabled =
+                    role === "master";
+
+            }
+        );
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        if(mensagem){
+
+            mensagem.textContent =
+                err.message ||
+                "Erro ao carregar permissões.";
+
+            mensagem.style.display =
+                "block";
+
+            mensagem.style.background =
+                "#fef2f2";
+
+            mensagem.style.color =
+                "#991b1b";
+
+            mensagem.style.border =
+                "1px solid #fecaca";
+
+        }
+
+    }
+
+}
+
+
+function fecharModalPermissoesUsuario(){
+
+    const modal =
+        document.getElementById(
+            "modalPermissoesUsuario"
+        );
+
+    if(modal){
+
+        modal.style.display =
+            "none";
+
+    }
+
+    const campoId =
+        document.getElementById(
+            "permissoesUsuarioId"
+        );
+
+    if(campoId){
+
+        campoId.value = "";
+
+    }
+
+}
+
+
+async function salvarPermissoesUsuario(){
+
+    const campoId =
+        document.getElementById(
+            "permissoesUsuarioId"
+        );
+
+    const modal =
+        document.getElementById(
+            "modalPermissoesUsuario"
+        );
+
+    const mensagem =
+        document.getElementById(
+            "mensagemPermissoesUsuario"
+        );
+
+    const botao =
+        document.getElementById(
+            "btnSalvarPermissoesUsuario"
+        );
+
+    const id =
+        campoId?.value?.trim();
+
+    if(!id || !modal){
+
+        alert("Usuário inválido.");
+        return;
+
+    }
+
+    const checkboxes =
+        modal.querySelectorAll(
+            "[data-permissao]"
+        );
+
+    const permissoes = {};
+
+    checkboxes.forEach(
+        checkbox => {
+
+            const modulo =
+                checkbox.dataset.permissao;
+
+            permissoes[modulo] =
+                checkbox.checked === true;
+
+        }
+    );
+
+    if(mensagem){
+
+        mensagem.style.display = "none";
+        mensagem.textContent = "";
+
+    }
+
+    if(botao){
+
+        botao.disabled = true;
+        botao.textContent = "Salvando...";
+
+    }
+
+    try{
+
+        const res =
+            await fetch(
+                `/api/usuarios/${encodeURIComponent(id)}/permissoes`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    credentials: "include",
+
+                    body: JSON.stringify({
+                        permissoes
+                    })
+                }
+            );
+
+        const data =
+            await res.json()
+                .catch(() => ({}));
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Erro ao salvar permissões."
+            );
+
+        }
+
+        if(mensagem){
+
+            mensagem.textContent =
+                data.message ||
+                "Permissões salvas com sucesso.";
+
+            mensagem.style.display = "block";
+            mensagem.style.background = "#f0fdf4";
+            mensagem.style.color = "#166534";
+            mensagem.style.border = "1px solid #bbf7d0";
+
+        }
+
+        setTimeout(
+            () => {
+
+                fecharModalPermissoesUsuario();
+
+            },
+            800
+        );
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        if(mensagem){
+
+            mensagem.textContent =
+                err.message ||
+                "Erro ao salvar permissões.";
+
+            mensagem.style.display = "block";
+            mensagem.style.background = "#fef2f2";
+            mensagem.style.color = "#991b1b";
+            mensagem.style.border = "1px solid #fecaca";
+
+        }
+
+    }
+    finally{
+
+        if(botao){
+
+            botao.disabled = false;
+            botao.textContent = "Salvar Permissões";
+
+        }
+
+    }
+
+}
+
+
+function fecharModalSenhaUsuario(){
+
+    const modal =
+        document.getElementById(
+            "modalSenhaUsuario"
+        );
+
+    if(modal){
+
+        modal.style.display =
+            "none";
+
+    }
+
+    document.getElementById(
+        "senhaUsuarioId"
+    ).value = "";
+
+    document.getElementById(
+        "senhaUsuarioNova"
+    ).value = "";
+
+    document.getElementById(
+        "senhaUsuarioConfirmar"
+    ).value = "";
+
+    limparMensagemSenhaUsuario();
+
+}
+
+async function salvarSenhaUsuario(){
+
+    const id =
+        document.getElementById(
+            "senhaUsuarioId"
+        ).value;
+
+    const password =
+        document.getElementById(
+            "senhaUsuarioNova"
+        ).value;
+
+    const confirmarSenha =
+        document.getElementById(
+            "senhaUsuarioConfirmar"
+        ).value;
+
+    const mensagem =
+        document.getElementById(
+            "mensagemSenhaUsuario"
+        );
+
+    const botao =
+        document.getElementById(
+            "btnSalvarSenhaUsuario"
+        );
+
+    function mostrarErro(texto){
+
+        mensagem.textContent = texto;
+        mensagem.style.display = "block";
+        mensagem.style.background = "#fee2e2";
+        mensagem.style.color = "#991b1b";
+        mensagem.style.border = "1px solid #fecaca";
+
+    }
+
+    limparMensagemSenhaUsuario();
+
+    if(!id){
+
+        mostrarErro(
+            "Usuário inválido."
+        );
+
+        return;
+    }
+
+    if(password.length < 6){
+
+        mostrarErro(
+            "A nova senha deve possuir pelo menos 6 caracteres."
+        );
+
+        return;
+    }
+
+    if(password !== confirmarSenha){
+
+        mostrarErro(
+            "As senhas não conferem."
+        );
+
+        return;
+    }
+
+    const textoOriginal =
+        botao.textContent;
+
+    botao.disabled = true;
+    botao.textContent = "Alterando...";
+
+    try{
+
+        const res =
+            await fetch(
+                `/api/usuarios/${encodeURIComponent(id)}/senha`,
+                {
+                    method:"PUT",
+                    credentials:"include",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        password
+                    })
+                }
+            );
+
+        const data =
+            await res.json();
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Erro ao alterar senha."
+            );
+
+        }
+
+        fecharModalSenhaUsuario();
+
+        const mensagemSecao =
+            document.getElementById(
+                "usuariosMensagem"
+            );
+
+        if(mensagemSecao){
+
+            mensagemSecao.textContent =
+                data.message ||
+                "Senha alterada com sucesso.";
+
+            mensagemSecao.style.display =
+                "block";
+
+            mensagemSecao.style.background =
+                "#dcfce7";
+
+            mensagemSecao.style.color =
+                "#166534";
+
+            mensagemSecao.style.border =
+                "1px solid #bbf7d0";
+
+            setTimeout(() => {
+
+                mensagemSecao.style.display =
+                    "none";
+
+            }, 4000);
+
+        }
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        mostrarErro(
+            err.message ||
+            "Erro ao alterar senha."
+        );
+
+    }
+    finally{
+
+        botao.disabled = false;
+        botao.textContent =
+            textoOriginal;
+
+    }
+
+}
+
+async function alterarStatusUsuario(id, novoStatus){
+
+    const usuario =
+        usuariosCarregados.find(
+            item =>
+                String(item._id) ===
+                String(id)
+        );
+
+    if(!usuario){
+
+        alert(
+            "Usuário não encontrado. Atualize a página e tente novamente."
+        );
+
+        return;
+    }
+
+    const nome =
+        usuario.nome ||
+        usuario.username ||
+        "Usuário";
+
+    const acao =
+        novoStatus
+            ? "ativar"
+            : "desativar";
+
+    const confirmado =
+        confirm(
+            `Deseja realmente ${acao} o usuário "${nome}"?`
+        );
+
+    if(!confirmado){
+        return;
+    }
+
+    try{
+
+        const res =
+            await fetch(
+                `/api/usuarios/${encodeURIComponent(id)}/status`,
+                {
+                    method:"PUT",
+                    credentials:"include",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        ativo:
+                            Boolean(novoStatus)
+                    })
+                }
+            );
+
+        const data =
+            await res.json();
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                `Erro ao ${acao} usuário.`
+            );
+        }
+
+        await carregarUsuarios();
+
+        const mensagem =
+            document.getElementById(
+                "usuariosMensagem"
+            );
+
+        if(mensagem){
+
+            mensagem.textContent =
+                data.message ||
+                (
+                    novoStatus
+                        ? "Usuário ativado com sucesso."
+                        : "Usuário desativado com sucesso."
+                );
+
+            mensagem.style.display =
+                "block";
+
+            mensagem.style.background =
+                "#dcfce7";
+
+            mensagem.style.color =
+                "#166534";
+
+            mensagem.style.border =
+                "1px solid #bbf7d0";
+
+            setTimeout(() => {
+
+                mensagem.style.display =
+                    "none";
+
+            }, 4000);
+        }
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        const mensagem =
+            document.getElementById(
+                "usuariosMensagem"
+            );
+
+        if(mensagem){
+
+            mensagem.textContent =
+                err.message ||
+                "Erro ao alterar status do usuário.";
+
+            mensagem.style.display =
+                "block";
+
+            mensagem.style.background =
+                "#fee2e2";
+
+            mensagem.style.color =
+                "#991b1b";
+
+            mensagem.style.border =
+                "1px solid #fecaca";
+
+        }
+        else{
+
+            alert(
+                err.message ||
+                "Erro ao alterar status do usuário."
+            );
+        }
+
+    }
+
+}
+
+function abrirEdicaoUsuario(id){
+
+    const usuario =
+        usuariosCarregados.find(
+            item =>
+                String(item._id) ===
+                String(id)
+        );
+
+    if(!usuario){
+
+        alert(
+            "Usuário não encontrado. Atualize a página e tente novamente."
+        );
+
+        return;
+    }
+
+    const modal =
+        document.getElementById(
+            "modalEditarUsuario"
+        );
+
+    const campoId =
+        document.getElementById(
+            "editarUsuarioId"
+        );
+
+    const campoNome =
+        document.getElementById(
+            "editarUsuarioNome"
+        );
+
+    const campoLogin =
+        document.getElementById(
+            "editarUsuarioLogin"
+        );
+
+    const campoPerfil =
+        document.getElementById(
+            "editarUsuarioPerfil"
+        );
+
+    const roleOriginal =
+        document.getElementById(
+            "editarUsuarioRoleOriginal"
+        );
+
+    const avisoMaster =
+        document.getElementById(
+            "editarUsuarioAvisoMaster"
+        );
+
+    if(
+        !modal ||
+        !campoId ||
+        !campoNome ||
+        !campoLogin ||
+        !campoPerfil ||
+        !roleOriginal
+    ){
+        return;
+    }
+
+    limparMensagemEditarUsuario();
+
+    campoId.value =
+        usuario._id || "";
+
+    campoNome.value =
+        usuario.nome ||
+        usuario.username ||
+        "";
+
+    campoLogin.value =
+        usuario.username || "";
+
+    roleOriginal.value =
+        usuario.role || "";
+
+    const ehMaster =
+        String(
+            usuario.role || ""
+        ).toLowerCase() === "master";
+
+    if(ehMaster){
+
+        campoPerfil.value = "master";
+        campoPerfil.disabled = true;
+
+        if(avisoMaster){
+            avisoMaster.style.display = "block";
+        }
+
+    }
+    else{
+
+        campoPerfil.disabled = false;
+
+        campoPerfil.value =
+            usuario.role === "admin"
+                ? "admin"
+                : "tech";
+
+        if(avisoMaster){
+            avisoMaster.style.display = "none";
+        }
+
+    }
+
+    modal.classList.add(
+        "ativo"
+    );
+
+    setTimeout(() => {
+
+        campoNome.focus();
+
+    }, 50);
+
+}
+
+
+function fecharEdicaoUsuario(){
+
+    const modal =
+        document.getElementById(
+            "modalEditarUsuario"
+        );
+
+    if(modal){
+
+        modal.classList.remove(
+            "ativo"
+        );
+
+    }
+
+    limparMensagemEditarUsuario();
+
+}
+
+async function salvarEdicaoUsuario(){
+
+    const id =
+        document.getElementById(
+            "editarUsuarioId"
+        ).value;
+
+    const nome =
+        document.getElementById(
+            "editarUsuarioNome"
+        ).value.trim();
+
+    const username =
+        document.getElementById(
+            "editarUsuarioLogin"
+        ).value.trim().toLowerCase();
+
+    const campoPerfil =
+        document.getElementById(
+            "editarUsuarioPerfil"
+        );
+
+    const roleOriginal =
+        document.getElementById(
+            "editarUsuarioRoleOriginal"
+        ).value;
+
+    const mensagem =
+        document.getElementById(
+            "mensagemEditarUsuario"
+        );
+
+    const botao =
+        document.getElementById(
+            "btnSalvarEdicaoUsuario"
+        );
+
+    function mostrarErro(texto){
+
+        mensagem.textContent = texto;
+        mensagem.style.display = "block";
+        mensagem.style.background = "#fee2e2";
+        mensagem.style.color = "#991b1b";
+        mensagem.style.border = "1px solid #fecaca";
+
+    }
+
+    limparMensagemEditarUsuario();
+
+    if(!id){
+
+        mostrarErro(
+            "Usuário inválido."
+        );
+
+        return;
+    }
+
+    if(!nome){
+
+        mostrarErro(
+            "Informe o nome completo."
+        );
+
+        return;
+    }
+
+    if(username.length < 3){
+
+        mostrarErro(
+            "O usuário de login deve possuir pelo menos 3 caracteres."
+        );
+
+        return;
+    }
+
+    if(
+        !/^[a-z0-9._-]+$/.test(
+            username
+        )
+    ){
+
+        mostrarErro(
+            "O usuário de login pode conter apenas letras minúsculas, números, ponto, hífen ou underline."
+        );
+
+        return;
+    }
+
+    let role;
+
+    if(
+        String(roleOriginal).toLowerCase() ===
+        "master"
+    ){
+
+        role = "master";
+
+    }
+    else{
+
+        role = campoPerfil.value;
+
+        if(
+            role !== "admin" &&
+            role !== "tech"
+        ){
+
+            mostrarErro(
+                "Selecione um perfil válido."
+            );
+
+            return;
+        }
+
+    }
+
+    const textoOriginal =
+        botao.textContent;
+
+    botao.disabled = true;
+    botao.textContent = "Salvando...";
+
+    try{
+
+        const res =
+            await fetch(
+                `/api/usuarios/${encodeURIComponent(id)}`,
+                {
+                    method:"PUT",
+                    credentials:"include",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        nome,
+                        username,
+                        role
+                    })
+                }
+            );
+
+        const data =
+            await res.json();
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Erro ao atualizar usuário."
+            );
+
+        }
+
+        fecharEdicaoUsuario();
+
+        await carregarUsuarios();
+
+        const mensagemSecao =
+            document.getElementById(
+                "usuariosMensagem"
+            );
+
+        if(mensagemSecao){
+
+            mensagemSecao.textContent =
+                data.message ||
+                "Usuário atualizado com sucesso.";
+
+            mensagemSecao.style.display =
+                "block";
+
+            mensagemSecao.style.background =
+                "#dcfce7";
+
+            mensagemSecao.style.color =
+                "#166534";
+
+            mensagemSecao.style.border =
+                "1px solid #bbf7d0";
+
+            setTimeout(() => {
+
+                mensagemSecao.style.display =
+                    "none";
+
+            }, 4000);
+
+        }
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        mostrarErro(
+            err.message ||
+            "Erro ao atualizar usuário."
+        );
+
+    }
+    finally{
+
+        botao.disabled = false;
+        botao.textContent =
+            textoOriginal;
+
+    }
+
+}
+
+async function carregarUsuarios(){
+
+    const tabela =
+        document.getElementById(
+            "usuariosTabela"
+        );
+
+    const plano =
+        document.getElementById(
+            "usuariosPlano"
+        );
+
+    const quantidade =
+        document.getElementById(
+            "usuariosQuantidade"
+        );
+
+    if(
+        !tabela ||
+        !plano ||
+        !quantidade
+    ){
+        return;
+    }
+
+    tabela.innerHTML = `
+        <tr>
+            <td
+                colspan="5"
+                style="
+                    padding:20px;
+                    text-align:center;
+                    color:#64748b;
+                "
+            >
+                Carregando usuários...
+            </td>
+        </tr>
+    `;
+
+    try{
+
+        const res =
+            await fetch(
+                "/api/usuarios",
+                {
+                    credentials:"include"
+                }
+            );
+
+        const data =
+            await res.json();
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Erro ao carregar usuários."
+            );
+
+        }
+
+        const nomePlano =
+            String(
+                data.empresa?.plano ||
+                ""
+            ).toLowerCase();
+
+        const nomesPlanos = {
+            free:"Free",
+            basic:"Basic",
+            pro:"Pro"
+        };
+
+        plano.textContent =
+            nomesPlanos[nomePlano] ||
+            nomePlano ||
+            "—";
+
+        if(data.empresa?.limiteUsuarios === -1){
+
+            quantidade.textContent =
+                `${data.total} / Ilimitado`;
+
+        }
+        else{
+
+            quantidade.textContent =
+                `${data.total} / ${data.empresa?.limiteUsuarios ?? "—"}`;
+
+        }
+
+        const usuarios =
+            Array.isArray(data.usuarios)
+                ? data.usuarios
+                : [];
+
+            usuariosCarregados = usuarios;
+
+        if(usuarios.length === 0){
+
+            tabela.innerHTML = `
+                <tr>
+                    <td
+                        colspan="5"
+                        style="
+                            padding:20px;
+                            text-align:center;
+                            color:#64748b;
+                        "
+                    >
+                        Nenhum usuário cadastrado.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        tabela.innerHTML =
+            usuarios.map(usuario => {
+
+                const role =
+                    String(
+                        usuario.role ||
+                        ""
+                    ).toLowerCase();
+
+                const nomesPerfis = {
+                    master:"Master",
+                    admin:"Administrador",
+                    tech:"Técnico"
+                };
+
+                const perfil =
+                    nomesPerfis[role] ||
+                    usuario.role ||
+                    "—";
+
+                const ativo =
+                    usuario.ativo !== false;
+
+                const statusHtml =
+                    ativo
+                        ? `
+                            <span
+                                style="
+                                    display:inline-block;
+                                    padding:5px 9px;
+                                    border-radius:999px;
+                                    background:#dcfce7;
+                                    color:#166534;
+                                    font-weight:600;
+                                    font-size:12px;
+                                "
+                            >
+                                Ativo
+                            </span>
+                        `
+                        : `
+                            <span
+                                style="
+                                    display:inline-block;
+                                    padding:5px 9px;
+                                    border-radius:999px;
+                                    background:#fee2e2;
+                                    color:#991b1b;
+                                    font-weight:600;
+                                    font-size:12px;
+                                "
+                            >
+                                Desativado
+                            </span>
+                        `;
+
+                const atualHtml =
+                    usuario.usuarioAtual
+                        ? `
+                            <span
+                                style="
+                                    display:inline-block;
+                                    margin-left:6px;
+                                    color:#2563eb;
+                                    font-size:11px;
+                                    font-weight:600;
+                                "
+                            >
+                                Você
+                            </span>
+                        `
+                        : "";
+
+                return `
+                    <tr
+                        style="
+                            border-top:1px solid #e2e8f0;
+                        "
+                    >
+                        <td style="padding:12px;">
+                            <strong>
+                                ${escaparHtmlUsuarios(
+                                    usuario.nome ||
+                                    usuario.username
+                                )}
+                            </strong>
+                            ${atualHtml}
+                        </td>
+
+                        <td style="padding:12px;">
+                            ${escaparHtmlUsuarios(
+                                usuario.username
+                            )}
+                        </td>
+
+                        <td style="padding:12px;">
+                            ${escaparHtmlUsuarios(
+                                perfil
+                            )}
+                        </td>
+
+                        <td style="padding:12px;">
+                            ${statusHtml}
+                        </td>
+
+                        <td
+                            style="
+                                padding:12px;
+                                text-align:right;
+                            "
+                        >
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                onclick="abrirEdicaoUsuario('${escaparHtmlUsuarios(usuario._id)}')"
+                                style="
+                                    padding:6px 10px;
+                                    font-size:12px;
+                                "
+                            >
+                                ✏️ Editar
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                onclick="abrirModalSenhaUsuario('${escaparHtmlUsuarios(usuario._id)}')"
+                                style="
+                                    padding:6px 10px;
+                                    font-size:12px;
+                                    margin-left:5px;
+                                "
+                            >
+                                🔑 Senha
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                onclick="abrirModalPermissoesUsuario('${escaparHtmlUsuarios(usuario._id)}')"
+                                style="
+                                    padding:6px 10px;
+                                    font-size:12px;
+                                    margin-left:5px;
+                                "
+                            >
+                                🔐 Permissões
+                            </button>
+
+                            ${
+                                (
+                                    String(usuario.role || "").toLowerCase() !== "master" &&
+                                    (
+                                        usuario.ativo === false ||
+                                        !usuario.usuarioAtual
+                                    )
+                                )
+                                    ? `
+                                        <button
+                                            type="button"
+                                            class="btn btn-secondary"
+                                            onclick="alterarStatusUsuario('${escaparHtmlUsuarios(usuario._id)}', ${usuario.ativo === false ? "true" : "false"})"
+                                            style="
+                                                padding:6px 10px;
+                                                font-size:12px;
+                                                margin-left:5px;
+                                                ${
+                                                    usuario.ativo === false
+                                                        ? "color:#166534;"
+                                                        : "color:#991b1b;"
+                                                }
+                                            "
+                                        >
+                                            ${
+                                                usuario.ativo === false
+                                                    ? "✅ Ativar"
+                                                    : "⛔ Desativar"
+                                            }
+                                        </button>
+                                    `
+                                    : ""
+                            }
+                        </td>
+                    </tr>
+                `;
+
+            }).join("");
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        plano.textContent = "—";
+        quantidade.textContent = "—";
+
+        tabela.innerHTML = `
+            <tr>
+                <td
+                    colspan="5"
+                    style="
+                        padding:20px;
+                        text-align:center;
+                        color:#dc2626;
+                    "
+                >
+                    ${escaparHtmlUsuarios(
+                        err.message ||
+                        "Erro ao carregar usuários."
+                    )}
+                </td>
+            </tr>
+        `;
+
+    }
+
+
+}
 
 /* =========================================================
    GERAR CAMPOS DE CRÉDITO
@@ -3255,6 +8760,7 @@ carregarMaquininhas();
 </script>
 
 
+<script src="/permissoes.js"></script>
 </body>
 
 </html>

@@ -423,6 +423,59 @@ function auth(req,res,next){
 }
 
 
+
+async function requirePermissaoOrcamentos(req, res, next){
+
+    try {
+
+        const user = await User.findById(
+            req.session.user._id
+        );
+
+        if (!user) {
+            return res.status(401).json({
+                error: "user_not_found"
+            });
+        }
+
+        if (user.role === "master") {
+            return next();
+        }
+
+        if (
+            user.permissoes &&
+            user.permissoes.orcamentos === false
+        ) {
+            return res.status(403).json({
+                error: "permission_denied",
+                modulo: "orcamentos"
+            });
+        }
+
+        next();
+
+    } catch (err) {
+
+        console.error(
+            "ERRO AO VERIFICAR PERMISSAO DE ORCAMENTOS:",
+            err
+        );
+
+        return res.status(500).json({
+            error: "permission_check_error"
+        });
+
+    }
+
+}
+
+
+router.use(
+    auth,
+    requirePermissaoOrcamentos
+);
+
+
 /* ===================== LISTAR ===================== */
 
 router.get("/", auth, async (req,res)=>{

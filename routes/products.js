@@ -1,6 +1,42 @@
 const express = require("express");
 const router = express.Router();
 
+async function requirePermissaoEstoque(req, res, next) {
+    try {
+        const userId = req.session?.user?._id;
+
+        if (!userId) {
+            return res.status(401).json({ error: "not_logged" });
+        }
+
+        const User = require("../models/User");
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(401).json({ error: "user_not_found" });
+        }
+
+        if (user.role === "master") {
+            return next();
+        }
+
+        if (user.permissoes && user.permissoes.estoque === false) {
+            return res.status(403).json({
+                error: "permission_denied",
+                modulo: "estoque"
+            });
+        }
+
+        next();
+    } catch (err) {
+        console.error("ERRO AO VERIFICAR PERMISSAO DE ESTOQUE:", err);
+
+        return res.status(500).json({
+            error: "permission_check_error"
+        });
+    }
+}
+
 const Product = require("../models/Product");
 const auth = require("../middleware/auth");
 
@@ -32,7 +68,7 @@ router.get("/", auth, async (req, res) => {
 
 /* ===================== BUSCAR ===================== */
 
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", auth, requirePermissaoEstoque, async (req, res) => {
 
     try {
 
@@ -65,7 +101,7 @@ router.get("/:id", auth, async (req, res) => {
 
 /* ===================== CRIAR ===================== */
 
-router.post("/", auth, async (req, res) => {
+router.post("/", auth, requirePermissaoEstoque, async (req, res) => {
 
     try {
 
@@ -118,7 +154,7 @@ router.post("/", auth, async (req, res) => {
 
 /* ===================== EDITAR ===================== */
 
-router.put("/:id", auth, async (req, res) => {
+router.put("/:id", auth, requirePermissaoEstoque, async (req, res) => {
 
     try {
 
@@ -169,7 +205,7 @@ router.put("/:id", auth, async (req, res) => {
 
 /* ===================== EXCLUIR ===================== */
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", auth, requirePermissaoEstoque, async (req, res) => {
 
     try {
 

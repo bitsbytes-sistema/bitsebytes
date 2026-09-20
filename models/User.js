@@ -33,6 +33,62 @@ const userSchema = new mongoose.Schema({
 
 
   // 🔔 ALERTAS IGNORADOS PELO USUÁRIO
+  ativo: {
+    type: Boolean,
+    default: true,
+  },
+
+  permissoes: {
+    dashboard: {
+      type: Boolean,
+      default: true
+    },
+    clientes: {
+      type: Boolean,
+      default: true
+    },
+    chamados: {
+      type: Boolean,
+      default: true
+    },
+    orcamentos: {
+      type: Boolean,
+      default: true
+    },
+    servicos: {
+      type: Boolean,
+      default: true
+    },
+    laudos: {
+      type: Boolean,
+      default: true
+    },
+    estoque: {
+      type: Boolean,
+      default: true
+    },
+    vendas: {
+      type: Boolean,
+      default: true
+    },
+    financeiro: {
+      type: Boolean,
+      default: true
+    },
+    lembretes: {
+      type: Boolean,
+      default: true
+    },
+    relatorios: {
+      type: Boolean,
+      default: true
+    },
+    configuracoes: {
+      type: Boolean,
+      default: true
+    }
+  },
+
   alertasIgnorados: [
     {
       tipo: String,

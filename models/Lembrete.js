@@ -46,6 +46,42 @@ const lembreteSchema = new mongoose.Schema({
     default: ""
   },
 
+  categoria: {
+    type: String,
+    enum: [
+      "lembrete",
+      "agendamento"
+    ],
+    default: "lembrete"
+  },
+
+  assuntoServico: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  observacaoAgendamento: {
+    type: String,
+    default: ""
+  },
+
+  dataHoraAgendamento: {
+    type: Date,
+    default: null,
+    index: true
+  },
+
+  avisoNoHorario: {
+    type: Boolean,
+    default: true
+  },
+
+  avisoUmDiaAntes: {
+    type: Boolean,
+    default: false
+  },
+
   tipo: {
     type: String,
     enum: [
@@ -63,6 +99,8 @@ const lembreteSchema = new mongoose.Schema({
     type: String,
     enum: [
       "pendente",
+      "agendado",
+      "confirmado",
       "concluido",
       "cancelado"
     ],

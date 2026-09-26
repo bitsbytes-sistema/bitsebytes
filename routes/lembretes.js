@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const Lembrete = require("../models/Lembrete");
+const Cliente = require("../models/Cliente");
 
 
 function auth(req, res, next){
@@ -55,6 +56,45 @@ router.post("/", auth, async(req,res)=>{
 
   try{
 
+    let clienteAgendamento = null;
+
+    if(req.body.categoria === "agendamento"){
+
+      if(!req.body.clienteId){
+
+        return res.status(400).json({
+          error:"cliente_obrigatorio",
+          message:"Selecione um cliente cadastrado para o agendamento."
+        });
+
+      }
+
+      if(!Cliente.db.base.Types.ObjectId.isValid(req.body.clienteId)){
+
+        return res.status(400).json({
+          error:"cliente_invalido",
+          message:"Cliente invalido."
+        });
+
+      }
+
+      clienteAgendamento = await Cliente.findOne({
+        _id:req.body.clienteId,
+        companyId:req.session.user.companyId
+      });
+
+      if(!clienteAgendamento){
+
+        return res.status(404).json({
+          error:"cliente_nao_encontrado",
+          message:"Cliente nao encontrado para esta empresa."
+        });
+
+      }
+
+    }
+
+
     const lembrete = await Lembrete.create({
 
       companyId:req.session.user.companyId,
@@ -65,13 +105,35 @@ router.post("/", auth, async(req,res)=>{
 
       clienteId:req.body.clienteId || null,
 
-      cliente:req.body.cliente || "",
+      cliente:clienteAgendamento ? clienteAgendamento.nome : (req.body.cliente || ""),
 
-      telefone:req.body.telefone || "",
+      telefone:clienteAgendamento ? clienteAgendamento.telefone : (req.body.telefone || ""),
 
       data:req.body.data,
 
       hora:req.body.hora || "",
+
+      dataHoraAgendamento:req.body.categoria === "agendamento"
+        ? (req.body.dataHoraAgendamento || null)
+        : null,
+
+      avisoNoHorario:req.body.categoria === "agendamento"
+        ? req.body.avisoNoHorario !== false
+        : true,
+
+      avisoUmDiaAntes:req.body.categoria === "agendamento"
+        ? req.body.avisoUmDiaAntes === true
+        : false,
+
+      categoria:req.body.categoria || "lembrete",
+
+      assuntoServico:req.body.assuntoServico || "",
+
+      observacaoAgendamento:req.body.observacaoAgendamento || "",
+
+      status:req.body.categoria === "agendamento"
+        ? "agendado"
+        : "pendente",
 
       tipo:req.body.tipo || "outros",
 

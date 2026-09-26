@@ -5,3 +5,9 @@ client_secret_*.json
 google-token.json
 google-auth.js
 backups/
+
+# Backups locais
+backup-*/
+*.bak
+*.bak-*
+*.corrompido

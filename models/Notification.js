@@ -14,7 +14,8 @@ const NotificationSchema = new mongoose.Schema({
             "novo_chamado",
             "orcamento_aprovado",
             "orcamento_pago",
-            "sistema"
+            "sistema",
+            "agendamento"
         ],
         required: true
     },
@@ -39,6 +40,17 @@ const NotificationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Budget",
         default: null
+    },
+
+    lembreteId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Lembrete",
+        default: null
+    },
+
+    momentoAgendamento: {
+        type: String,
+        default: ""
     },
 
     lida: {

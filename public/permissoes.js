@@ -144,3 +144,23 @@
   }
 
 })();
+
+
+/* ===================== NOTIFICACOES GLOBAIS ===================== */
+
+(function carregarNotificacoesGlobais(){
+
+  if(document.querySelector('script[data-bitsbytes-notificacoes]')){
+    return;
+  }
+
+  const script = document.createElement("script");
+
+  script.src = "/notificacoes.js";
+  script.defer = true;
+  script.dataset.bitsbytesNotificacoes = "true";
+
+  document.head.appendChild(script);
+
+})();
+

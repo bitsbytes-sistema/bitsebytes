@@ -45,6 +45,7 @@ const financeiroRoutes = require("./routes/financeiro");
 const relatoriosRoutes = require("./routes/relatorios");
 const notificationRoutes = require("./routes/notifications");
 const lembreteRoutes = require("./routes/lembretes");
+const mensagensProgramadasRoutes = require("./routes/mensagensProgramadas");
 const OneSignal = require("onesignal-node");
 
 const paymentMachineRoutes =
@@ -1985,6 +1986,112 @@ app.put(
       return res.status(500).json({
         ok: false,
         error: "Erro ao salvar permissões do usuário."
+      });
+
+    }
+
+  }
+);
+
+
+/* ===================== EXCLUIR USUARIO ===================== */
+app.delete(
+  "/api/usuarios/:id",
+  auth,
+  adminEmpresaOnly,
+  async (req, res) => {
+
+    try {
+
+      const usuarioId =
+        String(req.params.id || "").trim();
+
+      const usuarioAtualId =
+        String(req.session.user._id || "");
+
+      const companyId =
+        String(req.session.user.companyId);
+
+      if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
+
+        return res.status(400).json({
+          ok: false,
+          error: "Usuário inválido."
+        });
+
+      }
+
+      if (usuarioId === usuarioAtualId) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "Você não pode excluir a própria conta."
+        });
+
+      }
+
+      const usuario =
+        await User.findById(usuarioId);
+
+      if (!usuario) {
+
+        return res.status(404).json({
+          ok: false,
+          error: "Usuário não encontrado."
+        });
+
+      }
+
+      if (String(usuario.companyId) !== companyId) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "Usuário não pertence à sua empresa."
+        });
+
+      }
+
+      if (
+        String(usuario.role || "").toLowerCase() ===
+        "master"
+      ) {
+
+        return res.status(403).json({
+          ok: false,
+          error: "O usuário Master não pode ser excluído."
+        });
+
+      }
+
+      await User.deleteOne({
+        _id: usuario._id,
+        companyId: usuario.companyId
+      });
+
+      console.log(
+        "USUARIO EXCLUIDO:",
+        usuario.username,
+        "EMPRESA:",
+        companyId,
+        "POR:",
+        req.session.user.username
+      );
+
+      return res.json({
+        ok: true,
+        message: "Usuário excluído com sucesso."
+      });
+
+    } catch (err) {
+
+      console.log(
+        "ERRO AO EXCLUIR USUARIO:",
+        err
+      );
+
+      return res.status(500).json({
+        ok: false,
+        error: "Erro ao excluir usuário."
       });
 
     }
@@ -5978,6 +6085,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/notifications", auth, notificationRoutes);
 
 app.use("/api/lembretes", requirePermissao("lembretes"), lembreteRoutes);
+app.use("/api/mensagens-programadas", requirePermissao("lembretes"), mensagensProgramadasRoutes);
 
 app.use("/api/alertas", require("./routes/alertas"));
 

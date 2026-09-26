@@ -6344,6 +6344,77 @@ async function salvarPermissoesUsuario(){
 }
 
 
+async function excluirUsuario(id, nome){
+
+    const usuarioId =
+        String(id || "").trim();
+
+    const usuarioNome =
+        String(nome || "este usuário").trim();
+
+    if(!usuarioId){
+
+        alert("Usuário inválido.");
+        return;
+
+    }
+
+    const confirmou =
+        confirm(
+            `Tem certeza que deseja excluir o usuário "${usuarioNome}"?
+
+Esta ação não poderá ser desfeita.`
+        );
+
+    if(!confirmou){
+        return;
+    }
+
+    try{
+
+        const res =
+            await fetch(
+                `/api/usuarios/${encodeURIComponent(usuarioId)}`,
+                {
+                    method: "DELETE",
+                    credentials: "include"
+                }
+            );
+
+        const data =
+            await res.json()
+                .catch(() => ({}));
+
+        if(!res.ok){
+
+            throw new Error(
+                data.error ||
+                "Erro ao excluir usuário."
+            );
+
+        }
+
+        alert(
+            data.message ||
+            "Usuário excluído com sucesso."
+        );
+
+        await carregarUsuarios();
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        alert(
+            err.message ||
+            "Erro ao excluir usuário."
+        );
+
+    }
+
+}
+
 function fecharModalSenhaUsuario(){
 
     const modal =
@@ -7325,6 +7396,29 @@ async function carregarUsuarios(){
                                                     ? "✅ Ativar"
                                                     : "⛔ Desativar"
                                             }
+                                        </button>
+                                    `
+                                    : ""
+                            }
+
+                            ${
+                                (
+                                    String(usuario.role || "").toLowerCase() !== "master" &&
+                                    !usuario.usuarioAtual
+                                )
+                                    ? `
+                                        <button
+                                            type="button"
+                                            class="btn btn-secondary"
+                                            onclick="excluirUsuario('${escaparHtmlUsuarios(usuario._id)}', '${escaparHtmlUsuarios(usuario.nome || usuario.username)}')"
+                                            style="
+                                                padding:6px 10px;
+                                                font-size:12px;
+                                                margin-left:5px;
+                                                color:#991b1b;
+                                            "
+                                        >
+                                            🗑 Excluir
                                         </button>
                                     `
                                     : ""

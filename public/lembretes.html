@@ -197,6 +197,164 @@ Salvar Lembrete
 <div class="card">
 
 
+<h3>📅 Agendamentos de Clientes</h3>
+
+<p>Agende atendimentos, retornos, revisões e outros serviços para clientes cadastrados.</p>
+
+
+<label>Cliente</label>
+
+<select id="clienteAgendamento">
+
+<option value="">Selecione um cliente cadastrado</option>
+
+</select>
+
+
+<label>Data</label>
+
+<input type="date" id="dataAgendamento">
+
+
+<label>Hora</label>
+
+<input type="time" id="horaAgendamento">
+
+
+<label>Assunto / Serviço</label>
+
+<input
+  id="assuntoAgendamento"
+  placeholder="Ex.: Manutenção preventiva"
+>
+
+
+<label>Observação</label>
+
+<textarea
+  id="observacaoAgendamento"
+  placeholder="Informações adicionais sobre o agendamento"
+></textarea>
+
+
+
+<div style="margin:16px 0 20px 0;">
+
+  <div style="font-weight:600;margin-bottom:10px;">
+    Avisos do agendamento
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+    <input
+      type="checkbox"
+      id="avisoNoHorario"
+      checked
+      style="width:16px !important;height:16px;margin:0 !important;padding:0 !important;"
+    >
+    <label
+      for="avisoNoHorario"
+      style="margin:0;cursor:pointer;font-weight:400;"
+    >
+      Avisar no horário do agendamento
+    </label>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;">
+    <input
+      type="checkbox"
+      id="avisoUmDiaAntes"
+      style="width:16px !important;height:16px;margin:0 !important;padding:0 !important;"
+    >
+    <label
+      for="avisoUmDiaAntes"
+      style="margin:0;cursor:pointer;font-weight:400;"
+    >
+      Avisar 1 dia antes
+    </label>
+  </div>
+
+</div>
+
+
+<button onclick="salvarAgendamento()">
+
+Salvar Agendamento
+
+</button>
+
+
+<div style="margin-top:25px;border-top:1px solid #e5e7eb;padding-top:20px;">
+
+<h3>Agendamentos cadastrados</h3>
+
+<div id="listaAgendamentos"></div>
+
+</div>
+
+
+</div>
+
+
+
+<div class="card">
+
+<h3>Mensagens Programadas</h3>
+
+<p>Programe mensagens de confirmacao, lembrete, retorno ou manutencao para os clientes agendados.</p>
+
+<label>Agendamento</label>
+
+<select id="agendamentoMensagem">
+<option value="">Selecione um agendamento</option>
+</select>
+
+<label>Tipo da mensagem</label>
+
+<select id="tipoMensagemProgramada">
+<option value="confirmacao">Confirmacao</option>
+<option value="lembrete">Lembrete</option>
+<option value="retorno">Retorno</option>
+<option value="manutencao">Manutencao</option>
+</select>
+
+<label>Data</label>
+
+<input type="date" id="dataMensagemProgramada">
+
+<label>Hora</label>
+
+<input type="time" id="horaMensagemProgramada">
+
+<label>Mensagem</label>
+
+<textarea
+  id="textoMensagemProgramada"
+  placeholder="Ex.: Ola {cliente}, seu atendimento esta agendado para {data} as {hora}."
+></textarea>
+
+<p style="font-size:13px;color:#6b7280;margin-top:-5px;">
+Voce pode usar: {cliente}, {data} e {hora}
+</p>
+
+<button onclick="salvarMensagemProgramada()">
+Programar Mensagem
+</button>
+
+<div style="margin-top:25px;border-top:1px solid #e5e7eb;padding-top:20px;">
+
+<h3>Mensagens programadas</h3>
+
+<div id="listaMensagensProgramadas"></div>
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+
 <h3>Meus Lembretes</h3>
 
 
@@ -213,33 +371,80 @@ Salvar Lembrete
 <script>
 
 
-async function carregar(){
+async function carregarClientesAgendamento(){
 
+  try{
 
-const res = await fetch("/api/lembretes");
+    const res = await fetch("/api/clientes");
 
-const dados = await res.json();
+    if(!res.ok){
+      throw new Error("Erro ao carregar clientes");
+    }
 
+    const clientes = await res.json();
 
-const lista = document.getElementById("lista");
+    const select = document.getElementById("clienteAgendamento");
 
+    select.innerHTML = '<option value="">Selecione um cliente cadastrado</option>';
 
-lista.innerHTML="";
+    clientes
+      .sort((a,b) => String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR"))
+      .forEach(c => {
 
+        const option = document.createElement("option");
 
-if(dados.length===0){
+        option.value = c._id;
+        option.textContent = c.nome + (c.telefone ? " - " + c.telefone : "");
 
-lista.innerHTML="<p>Nenhum lembrete cadastrado.</p>";
+        select.appendChild(option);
 
-return;
+      });
+
+  }catch(err){
+
+    console.error("Erro ao carregar clientes do agendamento:", err);
+
+  }
 
 }
 
 
-dados.forEach(l=>{
+
+async function carregar(){
+
+  const res = await fetch("/api/lembretes");
+
+  const dados = await res.json();
 
 
-lista.innerHTML += `
+  const lista = document.getElementById("lista");
+
+  const listaAgendamentos =
+    document.getElementById("listaAgendamentos");
+
+
+  lista.innerHTML = "";
+
+  listaAgendamentos.innerHTML = "";
+
+
+  const lembretes =
+    dados.filter(l => l.categoria !== "agendamento");
+
+  const agendamentos =
+    dados.filter(l => l.categoria === "agendamento");
+
+
+  if(lembretes.length === 0){
+
+    lista.innerHTML =
+      "<p>Nenhum lembrete cadastrado.</p>";
+
+  }else{
+
+    lembretes.forEach(l => {
+
+      lista.innerHTML += `
 
 <div class="item">
 
@@ -256,19 +461,224 @@ lista.innerHTML += `
 ${l.hora || ""}
 </p>
 
-
 <p class="status ${l.status}">
 Status: ${l.status}
 </p>
-
 
 </div>
 
 `;
 
+    });
 
-});
+  }
 
+
+  if(agendamentos.length === 0){
+
+    listaAgendamentos.innerHTML =
+      "<p>Nenhum agendamento cadastrado.</p>";
+
+  }else{
+
+    agendamentos.forEach(a => {
+
+      let nomeStatus = a.status;
+
+      if(a.status === "agendado"){
+        nomeStatus = "Agendado";
+      }
+
+      if(a.status === "confirmado"){
+        nomeStatus = "Confirmado";
+      }
+
+      if(a.status === "concluido"){
+        nomeStatus = "Concluído";
+      }
+
+      if(a.status === "cancelado"){
+        nomeStatus = "Cancelado";
+      }
+
+
+      listaAgendamentos.innerHTML += `
+
+<div class="item">
+
+<h3>${a.assuntoServico || a.titulo}</h3>
+
+<p>
+<strong>Cliente:</strong>
+${a.cliente || ""}
+</p>
+
+${a.telefone
+  ? `<p><strong>Telefone:</strong> ${a.telefone}</p>`
+  : ""
+}
+
+<p>
+<strong>Data:</strong>
+${new Date(a.data).toLocaleDateString("pt-BR")}
+&nbsp;
+<strong>Hora:</strong>
+${a.hora || "--:--"}
+</p>
+
+${a.observacaoAgendamento
+  ? `<p><strong>Observação:</strong> ${a.observacaoAgendamento}</p>`
+  : ""
+}
+
+<p class="status ${a.status}">
+Status: ${nomeStatus}
+</p>
+
+</div>
+
+`;
+
+    });
+
+  }
+
+}
+
+
+
+async function salvarAgendamento(){
+
+  const clienteId =
+    document.getElementById("clienteAgendamento").value;
+
+  const data =
+    document.getElementById("dataAgendamento").value;
+
+  const hora =
+    document.getElementById("horaAgendamento").value;
+
+  const assuntoServico =
+    document.getElementById("assuntoAgendamento").value.trim();
+
+  const observacaoAgendamento =
+    document.getElementById("observacaoAgendamento").value.trim();
+
+
+  if(!clienteId){
+
+    alert("Selecione um cliente cadastrado.");
+    return;
+
+  }
+
+  if(!data){
+
+    alert("Informe a data do agendamento.");
+    return;
+
+  }
+
+  if(!hora){
+
+    alert("Informe a hora do agendamento.");
+    return;
+
+  }
+
+  if(!assuntoServico){
+
+    alert("Informe o assunto ou servico do agendamento.");
+    return;
+
+  }
+
+
+  const dataHoraLocal = new Date(data + "T" + hora);
+
+  if(Number.isNaN(dataHoraLocal.getTime())){
+
+    alert("Data ou hora do agendamento invalida.");
+    return;
+
+  }
+
+
+  const dados = {
+
+    categoria:"agendamento",
+
+    clienteId,
+
+    titulo:assuntoServico,
+
+    assuntoServico,
+
+    observacaoAgendamento,
+
+    descricao:observacaoAgendamento,
+
+    data,
+
+    hora,
+
+    dataHoraAgendamento: dataHoraLocal.toISOString(),
+
+    avisoNoHorario: document.getElementById("avisoNoHorario").checked,
+
+    avisoUmDiaAntes: document.getElementById("avisoUmDiaAntes").checked,
+
+    tipo:"outros"
+
+  };
+
+
+  try{
+
+    const res = await fetch("/api/lembretes",{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify(dados)
+
+    });
+
+
+    const resposta = await res.json();
+
+
+    if(!res.ok){
+
+      alert(resposta.message || "Erro ao criar agendamento.");
+      return;
+
+    }
+
+
+    alert("Agendamento criado com sucesso!");
+
+
+    document.getElementById("clienteAgendamento").value="";
+    document.getElementById("dataAgendamento").value="";
+    document.getElementById("horaAgendamento").value="";
+    document.getElementById("assuntoAgendamento").value="";
+    document.getElementById("observacaoAgendamento").value="";
+
+
+    carregar();
+
+
+  }catch(err){
+
+    console.error("Erro ao salvar agendamento:",err);
+
+    alert("Erro ao criar agendamento.");
+
+  }
 
 }
 
@@ -341,6 +751,8 @@ alert("Erro ao criar lembrete");
 }
 
 
+
+carregarClientesAgendamento();
 
 carregar();
 

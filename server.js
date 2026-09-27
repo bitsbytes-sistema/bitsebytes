@@ -6,6 +6,13 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const bcrypt = require("bcrypt");
+const multer = require("multer");
+const {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand
+} = require("@aws-sdk/client-s3");
 
 const fs = require("fs");
 const path = require("path");
@@ -101,7 +108,7 @@ async function atualizarTagsOneSignal(user){
 
 
     console.log(
-      "✅ Tags OneSignal atualizadas"
+      "? Tags OneSignal atualizadas"
     );
 
 
@@ -297,6 +304,44 @@ async function verificarBackupAutomatico() {
 
 /* ===================== TRUST PROXY ===================== */
 app.set("trust proxy", 1);
+
+/* ===================== FOTOS DOS CHAMADOS - R2 ===================== */
+
+const r2 = new S3Client({
+  region: "auto",
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY
+  }
+});
+
+const uploadFotoChamado = multer({
+  storage: multer.memoryStorage(),
+
+  limits: {
+    fileSize: 8 * 1024 * 1024,
+    files: 10
+  },
+
+  fileFilter: (req, file, cb) => {
+    const tiposPermitidos = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif"
+    ];
+
+    if (!tiposPermitidos.includes(file.mimetype)) {
+      return cb(
+        new Error("Formato de imagem não permitido.")
+      );
+    }
+
+    cb(null, true);
+  }
+});
 
 /* ===================== MIDDLEWARE ===================== */
 app.use(express.json({ limit: "2mb" }));
@@ -3670,6 +3715,137 @@ app.post("/api/tickets", auth, requirePermissao("chamados"), async (req, res) =>
 
 
 
+  /* ===================== CHECKLIST DE ENTRADA ===================== */
+
+  const valoresChecklistPermitidos = [
+    "ok",
+    "defeito",
+    "nao_testado",
+    "nao_aplica"
+  ];
+
+  const checklistRecebido =
+    req.body.checklistEntrada &&
+    typeof req.body.checklistEntrada === "object"
+      ? req.body.checklistEntrada
+      : {};
+
+  const normalizarChecklist = (valor) => {
+    return valoresChecklistPermitidos.includes(valor)
+      ? valor
+      : "";
+  };
+
+  const checklistEntrada = {
+    liga: normalizarChecklist(checklistRecebido.liga),
+    tela: normalizarChecklist(checklistRecebido.tela),
+    teclado: normalizarChecklist(checklistRecebido.teclado),
+    touchpadMouse: normalizarChecklist(checklistRecebido.touchpadMouse),
+    usbConectores: normalizarChecklist(checklistRecebido.usbConectores),
+    carregadorFonte: normalizarChecklist(checklistRecebido.carregadorFonte),
+    bateria: normalizarChecklist(checklistRecebido.bateria),
+    wifi: normalizarChecklist(checklistRecebido.wifi),
+    bluetooth: normalizarChecklist(checklistRecebido.bluetooth),
+    camera: normalizarChecklist(checklistRecebido.camera),
+    audio: normalizarChecklist(checklistRecebido.audio),
+    microfone: normalizarChecklist(checklistRecebido.microfone),
+    estadoFisico: normalizarChecklist(checklistRecebido.estadoFisico),
+
+    acessorios: String(checklistRecebido.acessorios || "").trim(),
+    observacoes: String(checklistRecebido.observacoes || "").trim(),
+
+    dataVerificacao: new Date()
+  };
+
+  /* ===================== DESENHO / AVARIAS DO EQUIPAMENTO ===================== */
+
+  const tiposEquipamentoDesenhoPermitidos = [
+    "notebook",
+    "desktop",
+    "impressora",
+    "celular",
+    "playstation",
+    "xbox",
+    "monitor",
+    "tablet",
+    "tv",
+    "roteador"
+  ];
+
+  const tiposAvariaPermitidos = [
+    "trinca",
+    "arranhao",
+    "amassado",
+    "quebrado",
+    "outro"
+  ];
+
+  const desenhoEquipamentoRecebido =
+    req.body.desenhoEquipamento &&
+    typeof req.body.desenhoEquipamento === "object"
+      ? req.body.desenhoEquipamento
+      : {};
+
+  const tipoDesenhoRecebido =
+    String(desenhoEquipamentoRecebido.tipo || "").trim();
+
+  const marcacoesRecebidas =
+    Array.isArray(desenhoEquipamentoRecebido.marcacoes)
+      ? desenhoEquipamentoRecebido.marcacoes
+      : [];
+
+  const marcacoesDesenhoEquipamento =
+    marcacoesRecebidas
+      .filter(marcacao => {
+
+        if (!marcacao || typeof marcacao !== "object") {
+          return false;
+        }
+
+        const tipo =
+          String(marcacao.tipo || "").trim();
+
+        const vista =
+          String(marcacao.vista || "").trim();
+
+        const x = Number(marcacao.x);
+        const y = Number(marcacao.y);
+
+        return (
+          tiposAvariaPermitidos.includes(tipo) &&
+          vista.length > 0 &&
+          Number.isFinite(x) &&
+          Number.isFinite(y) &&
+          x >= 0 &&
+          x <= 100 &&
+          y >= 0 &&
+          y <= 100
+        );
+
+      })
+      .map(marcacao => ({
+        vista: String(marcacao.vista || "").trim(),
+        tipo: String(marcacao.tipo || "").trim(),
+        x: Number(marcacao.x),
+        y: Number(marcacao.y)
+      }));
+
+  const desenhoEquipamento = {
+    tipo: tiposEquipamentoDesenhoPermitidos.includes(
+      tipoDesenhoRecebido
+    )
+      ? tipoDesenhoRecebido
+      : "",
+
+    observacoes:
+      String(
+        desenhoEquipamentoRecebido.observacoes || ""
+      ).trim(),
+
+    marcacoes:
+      marcacoesDesenhoEquipamento
+  };
+
   const ticket = await Ticket.create({
 
     companyId: req.session.user.companyId,
@@ -3696,6 +3872,9 @@ app.post("/api/tickets", auth, requirePermissao("chamados"), async (req, res) =>
 
     observacoes: req.body.observacoes || "",
 
+    checklistEntrada,
+    desenhoEquipamento,
+
     status:"aberto"
 
   });
@@ -3707,6 +3886,301 @@ app.post("/api/tickets", auth, requirePermissao("chamados"), async (req, res) =>
 
   
 /* ===================== ALTERAR CLIENTE COM AUTORIZAÇÃO ADMINISTRATIVA ===================== */
+
+/* ===================== FOTOS DOS CHAMADOS ===================== */
+
+app.post("/api/tickets/:id/fotos", auth, requirePermissao("chamados"), (req, res) => {
+
+  uploadFotoChamado.array("fotos", 10)(req, res, async (erroUpload) => {
+
+    try {
+
+      if (erroUpload) {
+
+        if (erroUpload instanceof multer.MulterError) {
+
+          if (erroUpload.code === "LIMIT_FILE_SIZE") {
+            return res.status(400).json({
+              ok: false,
+              error: "Cada foto pode ter no máximo 8 MB."
+            });
+          }
+
+          return res.status(400).json({
+            ok: false,
+            error: erroUpload.message
+          });
+        }
+
+        return res.status(400).json({
+          ok: false,
+          error: erroUpload.message || "Erro ao receber as fotos."
+        });
+      }
+
+      const ticketId = String(req.params.id || "").trim();
+      const companyId = String(req.session.user.companyId);
+
+      if (!mongoose.Types.ObjectId.isValid(ticketId)) {
+        return res.status(400).json({
+          ok: false,
+          error: "Chamado inválido."
+        });
+      }
+
+      const ticket = await Ticket.findOne({
+        _id: ticketId,
+        companyId
+      });
+
+      if (!ticket) {
+        return res.status(404).json({
+          ok: false,
+          error: "Chamado não encontrado."
+        });
+      }
+
+      const arquivos = req.files || [];
+
+      if (!arquivos.length) {
+        return res.status(400).json({
+          ok: false,
+          error: "Selecione pelo menos uma foto."
+        });
+      }
+
+      const fotosSalvas = [];
+
+      for (const arquivoFoto of arquivos) {
+
+        const extensao =
+          path.extname(arquivoFoto.originalname || "").toLowerCase() || ".jpg";
+
+        const nomeSeguro =
+          `${Date.now()}-${new mongoose.Types.ObjectId().toString()}${extensao}`;
+
+        const chave =
+          `chamados/${companyId}/OS-${ticket.numeroOS}/${nomeSeguro}`;
+
+        await r2.send(new PutObjectCommand({
+          Bucket: process.env.R2_BUCKET,
+          Key: chave,
+          Body: arquivoFoto.buffer,
+          ContentType: arquivoFoto.mimetype
+        }));
+
+        const foto = {
+          chave,
+          nomeOriginal: arquivoFoto.originalname || "",
+          tipo: arquivoFoto.mimetype || "",
+          tamanho: arquivoFoto.size || 0,
+          observacao: ""
+        };
+
+        ticket.fotos.push(foto);
+        fotosSalvas.push(foto);
+      }
+
+      await ticket.save();
+
+      return res.json({
+        ok: true,
+        message: "Fotos adicionadas com sucesso.",
+        fotos: ticket.fotos
+      });
+
+    } catch (err) {
+
+      console.log("ERRO AO ENVIAR FOTOS DO CHAMADO:", err);
+
+      return res.status(500).json({
+        ok: false,
+        error: "Erro ao enviar fotos do chamado."
+      });
+    }
+
+  });
+
+});
+
+
+/* ===================== VISUALIZAR FOTO DO CHAMADO ===================== */
+
+app.get("/api/tickets/:id/fotos/:fotoId/arquivo", auth, requirePermissao("chamados"), async (req, res) => {
+
+  try {
+
+    const ticketId = String(req.params.id || "").trim();
+    const fotoId = String(req.params.fotoId || "").trim();
+    const companyId = String(req.session.user.companyId);
+
+    if (
+      !mongoose.Types.ObjectId.isValid(ticketId) ||
+      !mongoose.Types.ObjectId.isValid(fotoId)
+    ) {
+      return res.status(400).json({
+        ok: false,
+        error: "Foto ou chamado inválido."
+      });
+    }
+
+    const ticket = await Ticket.findOne({
+      _id: ticketId,
+      companyId
+    });
+
+    if (!ticket) {
+      return res.status(404).json({
+        ok: false,
+        error: "Chamado não encontrado."
+      });
+    }
+
+    const foto = ticket.fotos.id(fotoId);
+
+    if (!foto) {
+      return res.status(404).json({
+        ok: false,
+        error: "Foto não encontrada."
+      });
+    }
+
+    const objeto = await r2.send(
+      new GetObjectCommand({
+        Bucket: process.env.R2_BUCKET,
+        Key: foto.chave
+      })
+    );
+
+    if (!objeto.Body) {
+      return res.status(404).json({
+        ok: false,
+        error: "Arquivo da foto não encontrado."
+      });
+    }
+
+    res.setHeader(
+      "Content-Type",
+      objeto.ContentType || foto.tipo || "application/octet-stream"
+    );
+
+    res.setHeader(
+      "Cache-Control",
+      "private, max-age=300"
+    );
+
+    if (objeto.ContentLength) {
+      res.setHeader(
+        "Content-Length",
+        String(objeto.ContentLength)
+      );
+    }
+
+    objeto.Body.on("error", (err) => {
+      console.log("ERRO AO TRANSMITIR FOTO DO CHAMADO:", err);
+
+      if (!res.headersSent) {
+        res.status(500).json({
+          ok: false,
+          error: "Erro ao carregar foto do chamado."
+        });
+      } else {
+        res.destroy(err);
+      }
+    });
+
+    objeto.Body.pipe(res);
+
+  } catch (err) {
+
+    console.log("ERRO AO VISUALIZAR FOTO DO CHAMADO:", err);
+
+    if (!res.headersSent) {
+      return res.status(500).json({
+        ok: false,
+        error: "Erro ao carregar foto do chamado."
+      });
+    }
+
+    res.destroy(err);
+  }
+
+});
+/* ===================== EXCLUIR FOTO DO CHAMADO ===================== */
+
+app.delete("/api/tickets/:id/fotos/:fotoId", auth, requirePermissao("chamados"), async (req, res) => {
+
+  try {
+
+    const ticketId = String(req.params.id || "").trim();
+    const fotoId = String(req.params.fotoId || "").trim();
+    const companyId = String(req.session.user.companyId);
+
+    if (
+      !mongoose.Types.ObjectId.isValid(ticketId) ||
+      !mongoose.Types.ObjectId.isValid(fotoId)
+    ) {
+      return res.status(400).json({
+        ok: false,
+        error: "Foto ou chamado inválido."
+      });
+    }
+
+    const ticket = await Ticket.findOne({
+      _id: ticketId,
+      companyId
+    });
+
+    if (!ticket) {
+      return res.status(404).json({
+        ok: false,
+        error: "Chamado não encontrado."
+      });
+    }
+
+    const foto = ticket.fotos.id(fotoId);
+
+    if (!foto) {
+      return res.status(404).json({
+        ok: false,
+        error: "Foto não encontrada."
+      });
+    }
+
+    const chaveFoto = foto.chave;
+
+    await r2.send(
+      new DeleteObjectCommand({
+        Bucket: process.env.R2_BUCKET,
+        Key: chaveFoto
+      })
+    );
+
+    ticket.fotos.pull({
+      _id: fotoId
+    });
+
+    await ticket.save();
+
+    return res.json({
+      ok: true,
+      message: "Foto excluída com sucesso.",
+      fotos: ticket.fotos
+    });
+
+  } catch (err) {
+
+    console.log("ERRO AO EXCLUIR FOTO DO CHAMADO:", err);
+
+    return res.status(500).json({
+      ok: false,
+      error: "Erro ao excluir foto do chamado."
+    });
+
+  }
+
+});
+
 
 app.put("/api/tickets/:id/alterar-cliente", auth, requirePermissao("chamados"), async (req, res) => {
 
@@ -4739,7 +5213,7 @@ body{
   <h3>Observações</h3>
 
   <div class="texto">
-    ${ticket.observacoesDiagnostico || "Nenhuma observação"}
+${ticket.observacoesDiagnostico || "Nenhuma observação"}
   </div>
 
 </div>
@@ -5126,7 +5600,7 @@ const response = await oneSignalClient.createNotification({
     included_segments: ["All"],
 
     headings:{
-      en:"🔧 Novo chamado recebido"
+      en:"?? Novo chamado recebido"
     },
 
     contents:{
@@ -5478,6 +5952,126 @@ if(fs.existsSync(logoPath)){
 }
 
 
+
+/* ===================== FOTOS DA OS ===================== */
+
+let fotosOSHTML = "";
+
+if (Array.isArray(ticket.fotos) && ticket.fotos.length) {
+
+  const fotosCarregadas = [];
+
+  for (const foto of ticket.fotos) {
+
+    try {
+
+      if (!foto || !foto.chave) {
+        continue;
+      }
+
+      const objeto = await r2.send(
+        new GetObjectCommand({
+          Bucket: process.env.R2_BUCKET,
+          Key: foto.chave
+        })
+      );
+
+      const chunks = [];
+
+      for await (const chunk of objeto.Body) {
+        chunks.push(chunk);
+      }
+
+      const bufferFoto = Buffer.concat(chunks);
+
+      const tipoFoto =
+        foto.tipo ||
+        objeto.ContentType ||
+        "image/jpeg";
+
+      const base64Foto =
+        bufferFoto.toString("base64");
+
+      fotosCarregadas.push(`
+        <div
+          style="
+            width:48%;
+            display:inline-block;
+            vertical-align:top;
+            margin:0 1% 15px 0;
+            text-align:center;
+            page-break-inside:avoid;
+          "
+        >
+          <img
+            src="data:${tipoFoto};base64,${base64Foto}"
+            style="
+              max-width:100%;
+              max-height:260px;
+              object-fit:contain;
+              border:1px solid #ddd;
+              border-radius:4px;
+            "
+          >
+
+          ${
+            foto.nomeOriginal
+              ? `<div style="font-size:10px;color:#666;margin-top:4px;">
+                   ${foto.nomeOriginal}
+                 </div>`
+              : ""
+          }
+
+        </div>
+      `);
+
+    } catch (erroFoto) {
+
+      console.error(
+        "Erro ao carregar foto da OS:",
+        foto?.chave,
+        erroFoto
+      );
+
+    }
+
+  }
+
+  if (fotosCarregadas.length) {
+
+    fotosOSHTML = `
+      <div
+        class="box"
+        style="
+          margin-top:15px;
+          page-break-inside:auto;
+        "
+      >
+
+        <h3>
+          Fotos do Equipamento
+        </h3>
+
+        <div
+          style="
+            margin-top:12px;
+            width:100%;
+          "
+        >
+
+          ${fotosCarregadas.join("")}
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* ===================== ASSINATURA ===================== */
 
 const assinaturaOSHTML =
   ticket.assinaturaConfirmada &&
@@ -5927,6 +6521,8 @@ ${ticket.observacoes || "Nenhuma observação"}
 
 </div>
 
+
+${fotosOSHTML}
 
 ${assinaturaOSHTML}
 <br><br>

@@ -839,6 +839,769 @@ font-family:Arial;
 </textarea>
 
 
+<!-- ===================== CHECKLIST DE ENTRADA ===================== -->
+
+<details id="areaChecklistEntrada" style="
+  margin-top:20px;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  background:#f8fafc;
+">
+
+  <summary style="
+    padding:14px 16px;
+    cursor:pointer;
+    font-weight:700;
+    color:#1e293b;
+    user-select:none;
+  ">
+    📋 Checklist de Entrada
+  </summary>
+
+  <div style="padding:0 16px 16px 16px;">
+
+    <div style="
+      font-size:13px;
+      color:#64748b;
+      margin-bottom:15px;
+    ">
+      Registre as condições do equipamento no momento da entrada.
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+      gap:12px;
+    ">
+
+      <label>
+        Liga
+        <div id="checkLiga" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkLiga" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkLiga" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkLiga" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkLiga" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Tela / Display
+        <div id="checkTela" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTela" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTela" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTela" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTela" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Teclado
+        <div id="checkTeclado" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTeclado" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTeclado" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTeclado" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTeclado" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Touchpad / Mouse
+        <div id="checkTouchpadMouse" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTouchpadMouse" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTouchpadMouse" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTouchpadMouse" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkTouchpadMouse" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        USB / Conectores
+        <div id="checkUsbConectores" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkUsbConectores" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkUsbConectores" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkUsbConectores" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkUsbConectores" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Carregador / Fonte
+        <div id="checkCarregadorFonte" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkCarregadorFonte" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkCarregadorFonte" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkCarregadorFonte" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkCarregadorFonte" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Bateria
+        <div id="checkBateria" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkBateria" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkBateria" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkBateria" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkBateria" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Wi-Fi
+        <div id="checkWifi" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkWifi" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkWifi" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkWifi" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkWifi" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Bluetooth
+        <div id="checkBluetooth" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkBluetooth" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkBluetooth" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkBluetooth" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkBluetooth" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Câmera
+        <div id="checkCamera" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkCamera" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkCamera" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkCamera" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkCamera" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Áudio
+        <div id="checkAudio" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkAudio" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkAudio" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkAudio" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkAudio" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Microfone
+        <div id="checkMicrofone" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkMicrofone" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkMicrofone" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkMicrofone" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkMicrofone" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+      <label>
+        Estado físico / Carcaça
+        <div id="checkEstadoFisico" style="
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:7px;
+  font-weight:normal;
+">
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkEstadoFisico" value="ok">
+    ✅ OK
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkEstadoFisico" value="defeito">
+    ❌ Com defeito
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkEstadoFisico" value="nao_testado">
+    ⚪ Não testado
+  </label>
+
+  <label style="cursor:pointer;">
+    <input type="radio" name="checkEstadoFisico" value="nao_aplica">
+    ➖ Não se aplica
+  </label>
+
+</div>
+      </label>
+
+    </div>
+
+    <label style="display:block;margin-top:16px;font-weight:600;">
+      Acessórios entregues
+    </label>
+
+    <input
+      id="checkAcessorios"
+      type="text"
+      placeholder="Ex.: carregador, fonte, cabo, bolsa, mouse..."
+      style="width:100%;margin-top:6px;"
+    >
+
+    <label style="display:block;margin-top:16px;font-weight:600;">
+      Observações do checklist
+    </label>
+
+    <textarea
+      id="checkObservacoes"
+      placeholder="Ex.: carcaça riscada, dobradiça danificada, tela trincada..."
+      style="
+        width:100%;
+        min-height:75px;
+        margin-top:6px;
+        padding:12px;
+        border:1px solid #cbd5e1;
+        resize:vertical;
+        font-family:Arial;
+        box-sizing:border-box;
+      "
+    ></textarea>
+
+  </div>
+
+</details>
+
+
+<div id="areaDesenhoEquipamento" style="
+  margin-top:20px;
+  margin-bottom:20px;
+  border:1px solid #dbe3ec;
+  border-radius:12px;
+  background:#f8fafc;
+  padding:14px;
+">
+
+  <div style="
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:15px;
+    margin-bottom:12px;
+  ">
+    <div>
+      <div style="font-size:16px;font-weight:700;">
+        🖥 Desenho do Equipamento
+      </div>
+
+      <div style="
+        font-size:12px;
+        color:#475569;
+        margin-top:3px;
+      ">
+        Selecione o tipo de equipamento e marque os pontos com avarias/defeitos
+        para registrar como o equipamento chegou.
+      </div>
+    </div>
+
+    <button
+      type="button"
+      id="btnLimparDesenhoEquipamento"
+      style="
+        background:#fff;
+        color:#111827;
+        border:1px solid #cbd5e1;
+        padding:8px 12px;
+      "
+    >
+      🗑 Limpar marcações
+    </button>
+  </div>
+
+  <div id="tiposDesenhoEquipamento" style="
+    display:grid;
+    grid-template-columns:repeat(10,minmax(80px,1fr));
+    gap:8px;
+    margin-bottom:12px;
+  ">
+
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="notebook">💻<br>Notebook</button>
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="desktop">🖥<br>Desktop</button>
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="impressora">🖨<br>Impressora</button>
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="celular">📱<br>Celular</button>
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="playstation">🎮<br>PlayStation</button>
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="xbox">🎮<br>Xbox</button>
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="monitor">🖥<br>Monitor</button>
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="tablet">📱<br>Tablet</button>
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="tv">📺<br>TV</button>
+    <button type="button" class="tipo-desenho-equipamento" data-tipo="roteador">📡<br>Roteador</button>
+
+  </div>
+
+  <div
+    id="editorDesenhoEquipamento"
+    style="display:none;"
+  >
+
+    <div style="
+      display:grid;
+      grid-template-columns:150px minmax(0,1fr) 210px;
+      gap:10px;
+      align-items:start;
+    ">
+
+      <div style="
+        background:#fff;
+        border:1px solid #dbe3ec;
+        border-radius:10px;
+        padding:10px;
+      ">
+        <strong>Vistas</strong>
+
+        <div id="vistasDesenhoEquipamento" style="
+          display:flex;
+          flex-direction:column;
+          gap:7px;
+          margin-top:10px;
+        "></div>
+      </div>
+
+      <div style="
+        background:#fff;
+        border:1px solid #dbe3ec;
+        border-radius:10px;
+        overflow:hidden;
+      ">
+
+        <div
+          id="tituloVistaNotebook"
+          style="
+            padding:10px 12px;
+            font-weight:700;
+            border-bottom:1px solid #dbe3ec;
+          "
+        >
+          Equipamento
+        </div>
+
+        <div
+          id="desenhoNotebook"
+          style="
+            position:relative;
+            min-height:330px;
+            background:#fff;
+            overflow:hidden;
+          "
+        ></div>
+
+        <div style="
+          border-top:1px solid #dbe3ec;
+          padding:10px 12px;
+        ">
+          <strong>Ferramentas de marcação</strong>
+
+          <div style="
+            display:flex;
+            flex-wrap:wrap;
+            gap:7px;
+            margin-top:8px;
+          ">
+            <button type="button" data-avaria="trinca">🔴 Trinca</button>
+            <button type="button" data-avaria="arranhao">🟨 Arranhão</button>
+            <button type="button" data-avaria="amassado">🔺 Amassado</button>
+            <button type="button" data-avaria="quebrado">❌ Quebrado</button>
+            <button type="button" data-avaria="outro">🔷 Outro</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div>
+
+        <div style="
+          background:#fff;
+          border:1px solid #dbe3ec;
+          border-radius:10px;
+          padding:10px;
+          margin-bottom:10px;
+        ">
+          <strong>Marcações (<span id="quantidadeMarcacoesEquipamento">0</span>)</strong>
+
+          <div
+            id="listaMarcacoesEquipamento"
+            style="
+              margin-top:10px;
+              min-height:60px;
+              color:#64748b;
+              font-size:12px;
+            "
+          >
+            Nenhuma marcação.
+          </div>
+        </div>
+
+        <div style="
+          background:#fff;
+          border:1px solid #dbe3ec;
+          border-radius:10px;
+          padding:10px;
+        ">
+          <strong>Observações das marcações</strong>
+
+          <textarea
+            id="observacoesDesenhoEquipamento"
+            placeholder="Descreva detalhes das avarias encontradas..."
+            style="
+              width:100%;
+              min-height:100px;
+              margin-top:8px;
+              padding:8px;
+              border:1px solid #cbd5e1;
+              border-radius:6px;
+              resize:vertical;
+              box-sizing:border-box;
+              font-family:Arial;
+            "
+          ></textarea>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div style="
+      margin-top:10px;
+      padding:10px 12px;
+      background:#eff6ff;
+      border:1px solid #bfdbfe;
+      border-radius:8px;
+      color:#1e40af;
+      font-size:12px;
+    ">
+      ℹ As marcações feitas aqui serão salvas junto com o chamado e poderão
+      ser utilizadas posteriormente na OS, no Laudo e nos relatórios.
+    </div>
+
+  </div>
+
+</div>
+<div id="areaFotosChamado" style="margin-top:20px;">
+
+  <label style="display:block;font-weight:600;margin-bottom:8px;">
+    Fotos do equipamento
+  </label>
+
+  <input
+    type="file"
+    id="fotosChamado"
+    accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+    multiple
+  >
+
+  <div style="margin-top:10px;">
+    <label
+      for="cameraChamado"
+      style="
+        display:inline-block;
+        background:#16a34a;
+        color:white;
+        padding:8px 14px;
+        border-radius:4px;
+        cursor:pointer;
+        font-size:13px;
+        font-weight:600;
+      "
+    >
+      📷 Tirar foto
+    </label>
+
+    <input
+      type="file"
+      id="cameraChamado"
+      accept="image/*"
+      capture="environment"
+      style="display:none;"
+    >
+  </div>
+
+  <div style="font-size:12px;color:#64748b;margin-top:6px;">
+    Até 10 fotos. Máximo de 8 MB por foto.
+  </div>
+
+  <div
+    id="previewFotosChamado"
+    style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;"
+  ></div>
+
+</div>
+
 <br><br>
 
 
@@ -1125,7 +1888,6 @@ ${dataAbertura}
 Status
 </button>
 
-
 <button onclick="imprimirOS('${c._id}')">
 🖨 OS
 </button>
@@ -1134,11 +1896,60 @@ Status
 🔍 Diagnóstico
 </button>
 
+<div class="menu-acoes-chamado" style="position:relative; display:inline-block;">
+
+<button
+type="button"
+onclick="alternarMenuAcoesChamado(event, '${c._id}')"
+title="Mais ações"
+style="min-width:40px; font-size:18px; font-weight:bold;"
+>
+☰
+</button>
+
+<div
+id="menuAcoes-${c._id}"
+class="menu-acoes-popup"
+style="
+display:none;
+position:absolute;
+right:0;
+top:calc(100% + 5px);
+min-width:190px;
+padding:7px;
+background:white;
+border:1px solid #ddd;
+border-radius:8px;
+box-shadow:0 8px 24px rgba(0,0,0,.18);
+z-index:9999;
+"
+>
+
+<button
+type="button"
+onclick="fecharMenusAcoesChamado(); abrirFotosChamado('${c._id}')"
+style="display:block; width:100%; text-align:left; margin-bottom:5px;"
+>
+📷 Fotos${Array.isArray(c.fotos) && c.fotos.length ? ` (${c.fotos.length})` : ""}
+</button>
+
+<button
+type="button"
+onclick="fecharMenusAcoesChamado(); abrirChecklistChamado('${c._id}')"
+style="display:block; width:100%; text-align:left; margin-bottom:5px;"
+>
+📋 Checklist
+</button>
+
 ${
 c.status !== "finalizado"
 ?
 `
-<button onclick="trocarCliente('${c._id}')">
+<button
+type="button"
+onclick="fecharMenusAcoesChamado(); trocarCliente('${c._id}')"
+style="display:block; width:100%; text-align:left; margin-bottom:5px;"
+>
 👤 Trocar Cliente
 </button>
 `
@@ -1146,12 +1957,15 @@ c.status !== "finalizado"
 ""
 }
 
-
 ${
 c.assinaturaConfirmada && c.assinaturaCliente
 ?
 `
-<button onclick="abrirAssinaturaCliente('${c._id}')">
+<button
+type="button"
+onclick="fecharMenusAcoesChamado(); abrirAssinaturaCliente('${c._id}')"
+style="display:block; width:100%; text-align:left; margin-bottom:5px;"
+>
 ✍ Assinatura
 </button>
 `
@@ -1163,18 +1977,33 @@ ${
 c.status === "finalizado"
 ?
 `
-<button onclick="abrirLaudo('${c._id}')">
-Laudo
+<button
+type="button"
+onclick="fecharMenusAcoesChamado(); abrirLaudo('${c._id}')"
+style="display:block; width:100%; text-align:left; margin-bottom:5px;"
+>
+📄 Laudo
 </button>
 `
 :
 ""
 }
 
-
-<button onclick="del('${c._id}')">
-Excluir
+<button
+type="button"
+onclick="fecharMenusAcoesChamado(); del('${c._id}')"
+style="
+display:block;
+width:100%;
+text-align:left;
+color:#dc2626;
+"
+>
+🗑 Excluir
 </button>
+
+</div>
+</div>
 
 </td>
 
@@ -1544,6 +2373,56 @@ async function criar(){
 const observacoes =
   document.getElementById("observacoes").value.trim();
 
+  const valorChecklist = (nome) => {
+    const marcado =
+      document.querySelector(`input[name="${nome}"]:checked`);
+
+    return marcado ? marcado.value : "";
+  };
+
+  const checklistEntrada = {
+    liga: valorChecklist("checkLiga"),
+    tela: valorChecklist("checkTela"),
+    teclado: valorChecklist("checkTeclado"),
+    touchpadMouse: valorChecklist("checkTouchpadMouse"),
+    usbConectores: valorChecklist("checkUsbConectores"),
+    carregadorFonte: valorChecklist("checkCarregadorFonte"),
+    bateria: valorChecklist("checkBateria"),
+    wifi: valorChecklist("checkWifi"),
+    bluetooth: valorChecklist("checkBluetooth"),
+    camera: valorChecklist("checkCamera"),
+    audio: valorChecklist("checkAudio"),
+    microfone: valorChecklist("checkMicrofone"),
+    estadoFisico: valorChecklist("checkEstadoFisico"),
+
+    acessorios:
+      document.getElementById("checkAcessorios").value.trim(),
+
+    observacoes:
+      document.getElementById("checkObservacoes").value.trim()
+  };
+
+  const desenhoEquipamento = {
+
+    tipo:
+      tipoDesenhoEquipamentoSelecionado || "",
+
+    observacoes:
+      (
+        document.getElementById(
+          "observacoesDesenhoEquipamento"
+        )?.value || ""
+      ).trim(),
+
+    marcacoes:
+      marcacoesDesenhoEquipamento.map(marcacao => ({
+        vista: marcacao.vista,
+        tipo: marcacao.tipo,
+        x: marcacao.x,
+        y: marcacao.y
+      }))
+  };
+
   if(!cliente || !telefone || !equipamento || !problema){
 
     alert("Preencha todos os campos");
@@ -1584,7 +2463,7 @@ const observacoes =
 
   }
 
-  await fetch("/api/tickets", {
+  const respostaChamado = await fetch("/api/tickets", {
 
     method:"POST",
 
@@ -1594,22 +2473,130 @@ const observacoes =
 
     credentials:"include",
 
-body:JSON.stringify({
+    body:JSON.stringify({
 
-  clienteId: clienteSelecionado,
+      clienteId: clienteSelecionado,
 
-  cadastrarCliente,
+      cadastrarCliente,
 
-cliente,
-  telefone,
-  cpfcnpj,
-  equipamento,
-  problema,
-  observacoes
+      cliente,
+      telefone,
+      cpfcnpj,
+      equipamento,
+      problema,
+      observacoes,
+      checklistEntrada,
+      desenhoEquipamento
 
-})
+    })
 
   });
+
+  const ticketCriado = await respostaChamado.json();
+
+  if(!respostaChamado.ok){
+
+    alert(
+      ticketCriado.error ||
+      "Não foi possível criar o chamado."
+    );
+
+    return;
+  }
+
+  if(fotosSelecionadasChamado.length > 0){
+
+    const dadosFotos = new FormData();
+
+    fotosSelecionadasChamado.forEach(foto => {
+      dadosFotos.append("fotos", foto);
+    });
+
+    const respostaFotos = await fetch(
+      `/api/tickets/${encodeURIComponent(ticketCriado._id)}/fotos`,
+      {
+        method:"POST",
+        credentials:"include",
+        body:dadosFotos
+      }
+    );
+
+    const resultadoFotos = await respostaFotos.json();
+
+    if(!respostaFotos.ok){
+
+      alert(
+        "O chamado foi criado, mas ocorreu um erro ao enviar as fotos: " +
+        (resultadoFotos.error || "Erro desconhecido.")
+      );
+
+      return;
+    }
+
+  }
+
+  document
+    .querySelectorAll('input[name^="check"]:checked')
+    .forEach(radio => {
+      radio.checked = false;
+    });
+
+  document.getElementById("checkAcessorios").value = "";
+  document.getElementById("checkObservacoes").value = "";
+  /* LIMPAR DESENHO DO EQUIPAMENTO APÓS CRIAR */
+
+  tipoDesenhoEquipamentoSelecionado = "";
+  vistaDesenhoEquipamentoSelecionada = "";
+  ferramentaAvariaSelecionada = "";
+  marcacoesDesenhoEquipamento = [];
+
+  const observacoesDesenho =
+    document.getElementById("observacoesDesenhoEquipamento");
+
+  if (observacoesDesenho) {
+    observacoesDesenho.value = "";
+  }
+
+  const editorDesenho =
+    document.getElementById("editorDesenhoEquipamento");
+
+  if (editorDesenho) {
+    editorDesenho.style.display = "none";
+  }
+
+  document
+    .querySelectorAll("[data-tipo]")
+    .forEach(botao => {
+      botao.style.outline = "";
+      botao.style.boxShadow = "";
+    });
+
+  document
+    .querySelectorAll("[data-avaria]")
+    .forEach(botao => {
+      botao.style.outline = "";
+      botao.style.boxShadow = "";
+    });
+
+  const quantidadeMarcacoes =
+    document.getElementById("quantidadeMarcacoesEquipamento");
+
+  if (quantidadeMarcacoes) {
+    quantidadeMarcacoes.textContent = "0";
+  }
+
+  const listaMarcacoes =
+    document.getElementById("listaMarcacoesEquipamento");
+
+  if (listaMarcacoes) {
+    listaMarcacoes.innerHTML = "Nenhuma marcação.";
+  }
+
+  fotosSelecionadasChamado = [];
+  renderizarPreviewFotosChamado();
+
+  document.getElementById("fotosChamado").value = "";
+  document.getElementById("cameraChamado").value = "";
 
   document.getElementById("cliente").value="";
   document.getElementById("telefone").value="";
@@ -2450,6 +3437,46 @@ async function status(id){
 
 }
 
+function fecharMenusAcoesChamado(){
+
+  document
+    .querySelectorAll(".menu-acoes-popup")
+    .forEach(menu => {
+      menu.style.display = "none";
+    });
+
+}
+
+function alternarMenuAcoesChamado(event, id){
+
+  event.stopPropagation();
+
+  const menu =
+    document.getElementById("menuAcoes-" + id);
+
+  if(!menu){
+    return;
+  }
+
+  const estavaAberto =
+    menu.style.display === "block";
+
+  fecharMenusAcoesChamado();
+
+  if(!estavaAberto){
+    menu.style.display = "block";
+  }
+
+}
+
+document.addEventListener("click", function(event){
+
+  if(!event.target.closest(".menu-acoes-chamado")){
+    fecharMenusAcoesChamado();
+  }
+
+});
+
 function abrirDiagnostico(id){
   window.location.href =
     "/diagnostico.html?id=" +
@@ -2457,6 +3484,419 @@ function abrirDiagnostico(id){
 }
 
 
+
+function abrirFotosChamado(id){
+
+  const ticket = chamados.find(
+    c => String(c._id) === String(id)
+  );
+
+  if(!ticket){
+    alert("Chamado não encontrado.");
+    return;
+  }
+
+  if(!Array.isArray(ticket.fotos) || ticket.fotos.length === 0){
+    alert("Este chamado ainda não possui fotos.");
+    return;
+  }
+
+  const modal =
+    document.getElementById("modalFotosChamado");
+
+  const galeria =
+    document.getElementById("galeriaFotosChamado");
+
+  const os =
+    document.getElementById("fotosChamadoOS");
+
+  if(!modal || !galeria || !os){
+    alert("Não foi possível abrir a galeria de fotos.");
+    return;
+  }
+
+  os.textContent =
+    "OS " +
+    (ticket.numeroOS || "-") +
+    " • " +
+    ticket.fotos.length +
+    (ticket.fotos.length === 1 ? " foto" : " fotos");
+
+  galeria.innerHTML = "";
+
+  ticket.fotos.forEach((foto, indice) => {
+
+    const url =
+      "/api/tickets/" +
+      encodeURIComponent(ticket._id) +
+      "/fotos/" +
+      encodeURIComponent(foto._id) +
+      "/arquivo";
+
+    const card =
+      document.createElement("div");
+
+    card.style.cssText =
+      "border:1px solid #e2e8f0;" +
+      "border-radius:12px;" +
+      "overflow:hidden;" +
+      "background:#f8fafc;" +
+      "cursor:pointer;";
+
+    const img =
+      document.createElement("img");
+
+    img.src = url;
+    img.alt = foto.nomeOriginal || ("Foto " + (indice + 1));
+
+    img.style.cssText =
+      "display:block;" +
+      "width:100%;" +
+      "height:160px;" +
+      "object-fit:cover;";
+
+    img.onclick = function(){
+      window.open(url, "_blank");
+    };
+
+    const legenda =
+      document.createElement("div");
+
+    legenda.textContent =
+      foto.nomeOriginal || ("Foto " + (indice + 1));
+
+    legenda.style.cssText =
+      "padding:10px;" +
+      "font-size:13px;" +
+      "color:#334155;" +
+      "white-space:nowrap;" +
+      "overflow:hidden;" +
+      "text-overflow:ellipsis;";
+
+    const botaoExcluir =
+      document.createElement("button");
+
+    botaoExcluir.type = "button";
+    botaoExcluir.textContent = "🗑 Excluir";
+
+    botaoExcluir.style.cssText =
+      "display:block;" +
+      "width:calc(100% - 20px);" +
+      "margin:0 10px 10px;" +
+      "padding:8px;" +
+      "border:0;" +
+      "border-radius:8px;" +
+      "background:#fee2e2;" +
+      "color:#b91c1c;" +
+      "font-weight:bold;" +
+      "cursor:pointer;";
+
+    botaoExcluir.onclick = function(event){
+
+      event.stopPropagation();
+
+      excluirFotoChamado(
+        ticket._id,
+        foto._id,
+        foto.nomeOriginal || ("Foto " + (indice + 1))
+      );
+
+    };
+
+    card.appendChild(img);
+    card.appendChild(legenda);
+    card.appendChild(botaoExcluir);
+    galeria.appendChild(card);
+
+  });
+
+  modal.style.display = "flex";
+}
+
+
+async function excluirFotoChamado(ticketId, fotoId, nomeFoto){
+
+  const confirmou = confirm(
+    'Deseja realmente excluir a foto "' +
+    nomeFoto +
+    '"?\n\nEsta ação não poderá ser desfeita.'
+  );
+
+  if(!confirmou){
+    return;
+  }
+
+  try{
+
+    const res = await fetch(
+      "/api/tickets/" +
+      encodeURIComponent(ticketId) +
+      "/fotos/" +
+      encodeURIComponent(fotoId),
+      {
+        method:"DELETE",
+        credentials:"include"
+      }
+    );
+
+    const data = await res.json();
+
+    if(!res.ok){
+
+      alert(
+        data.error ||
+        "Erro ao excluir a foto."
+      );
+
+      return;
+    }
+
+    const ticket = chamados.find(
+      c => String(c._id) === String(ticketId)
+    );
+
+    if(ticket){
+      ticket.fotos =
+        Array.isArray(data.fotos)
+          ? data.fotos
+          : [];
+    }
+
+    renderChamados(chamados);
+
+    if(ticket && ticket.fotos.length > 0){
+      abrirFotosChamado(ticketId);
+    }
+    else{
+      fecharFotosChamado();
+      alert("Foto excluída com sucesso.");
+    }
+
+  }
+  catch(err){
+
+    console.error(
+      "Erro ao excluir foto:",
+      err
+    );
+
+    alert(
+      "Erro de comunicação ao excluir a foto."
+    );
+
+  }
+
+}
+
+
+function fecharFotosChamado(){
+
+  const modal =
+    document.getElementById("modalFotosChamado");
+
+  if(modal){
+    modal.style.display = "none";
+  }
+
+}
+
+/* ===================== CHECKLIST DO CHAMADO ===================== */
+
+function fecharChecklistChamado(){
+
+  const modal =
+    document.getElementById("modalChecklistChamado");
+
+  if(modal){
+    modal.style.display = "none";
+  }
+
+}
+
+
+function abrirChecklistChamado(id){
+
+  const chamado =
+    chamados.find(c => String(c._id) === String(id));
+
+  if(!chamado){
+    alert("Chamado não encontrado.");
+    return;
+  }
+
+  const checklist = chamado.checklistEntrada || {};
+
+  const modal =
+    document.getElementById("modalChecklistChamado");
+
+  const os =
+    document.getElementById("checklistChamadoOS");
+
+  const conteudo =
+    document.getElementById("conteudoChecklistChamado");
+
+  if(!modal || !os || !conteudo){
+    alert("Não foi possível abrir o checklist.");
+    return;
+  }
+
+  const statusChecklist = {
+    ok: {
+      texto: "OK",
+      icone: "✅"
+    },
+    defeito: {
+      texto: "Com defeito",
+      icone: "❌"
+    },
+    nao_testado: {
+      texto: "Não testado",
+      icone: "⚪"
+    },
+    nao_aplica: {
+      texto: "Não se aplica",
+      icone: "➖"
+    }
+  };
+
+  const itens = [
+    ["Liga", "liga"],
+    ["Tela / Display", "tela"],
+    ["Teclado", "teclado"],
+    ["Touchpad / Mouse", "touchpadMouse"],
+    ["USB / Conectores", "usbConectores"],
+    ["Carregador / Fonte", "carregadorFonte"],
+    ["Bateria", "bateria"],
+    ["Wi-Fi", "wifi"],
+    ["Bluetooth", "bluetooth"],
+    ["Câmera", "camera"],
+    ["Áudio", "audio"],
+    ["Microfone", "microfone"],
+    ["Estado físico", "estadoFisico"]
+  ];
+
+  const cards = itens.map(([titulo, campo]) => {
+
+    const status =
+      statusChecklist[checklist[campo]] || {
+        texto: "Não informado",
+        icone: "—"
+      };
+
+    return `
+      <div style="
+        border:1px solid #e2e8f0;
+        border-radius:12px;
+        padding:14px;
+        background:#f8fafc;
+      ">
+        <div style="
+          font-size:13px;
+          color:#64748b;
+          margin-bottom:7px;
+        ">
+          ${titulo}
+        </div>
+
+        <div style="
+          font-size:15px;
+          font-weight:700;
+          color:#0f172a;
+        ">
+          ${status.icone} ${status.texto}
+        </div>
+      </div>
+    `;
+
+  }).join("");
+
+  let dataVerificacao = "Não informada";
+
+  if(checklist.dataVerificacao){
+
+    const data = new Date(checklist.dataVerificacao);
+
+    if(!Number.isNaN(data.getTime())){
+      dataVerificacao =
+        data.toLocaleString("pt-BR");
+    }
+
+  }
+
+  os.textContent =
+    `OS ${chamado.numeroOS || "-"} • ${chamado.equipamento || "Equipamento"}`;
+
+  conteudo.innerHTML = `
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+      gap:12px;
+    ">
+      ${cards}
+    </div>
+
+    <div style="
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:12px;
+    ">
+
+      <div style="
+        border:1px solid #e2e8f0;
+        border-radius:12px;
+        padding:14px;
+      ">
+        <strong>Acessórios entregues</strong>
+        <div style="
+          margin-top:8px;
+          white-space:pre-wrap;
+          color:#334155;
+        "></div>
+      </div>
+
+      <div style="
+        border:1px solid #e2e8f0;
+        border-radius:12px;
+        padding:14px;
+      ">
+        <strong>Observações do checklist</strong>
+        <div style="
+          margin-top:8px;
+          white-space:pre-wrap;
+          color:#334155;
+        "></div>
+      </div>
+
+    </div>
+
+    <div style="
+      margin-top:15px;
+      font-size:13px;
+      color:#64748b;
+    ">
+      Verificação: ${dataVerificacao}
+    </div>
+  `;
+
+  const blocos =
+    conteudo.querySelectorAll(
+      'div[style*="white-space:pre-wrap"]'
+    );
+
+  if(blocos[0]){
+    blocos[0].textContent =
+      checklist.acessorios || "Nenhum informado.";
+  }
+
+  if(blocos[1]){
+    blocos[1].textContent =
+      checklist.observacoes || "Nenhuma observação.";
+  }
+
+  modal.style.display = "flex";
+
+}
 
 /* ===================== ASSINATURA DO CLIENTE ===================== */
 
@@ -3332,6 +4772,851 @@ setInterval(() => {
 
 }, 10000);
 
+
+/* ===================== DESENHO DO EQUIPAMENTO ===================== */
+/* Novo editor de avarias - lógica será adicionada abaixo */
+let tipoDesenhoEquipamentoSelecionado = "";
+let vistaDesenhoEquipamentoSelecionada = "";
+let ferramentaAvariaSelecionada = "";
+let marcacoesDesenhoEquipamento = [];
+
+function adicionarMarcacaoDesenhoEquipamento(evento) {
+
+  if (!ferramentaAvariaSelecionada) {
+    return;
+  }
+
+  if (!tipoDesenhoEquipamentoSelecionado) {
+    return;
+  }
+
+  if (!vistaDesenhoEquipamentoSelecionada) {
+    return;
+  }
+
+  const areaClique = evento.currentTarget;
+  const rect = areaClique.getBoundingClientRect();
+
+  if (!rect.width || !rect.height) {
+    return;
+  }
+
+  const x =
+    ((evento.clientX - rect.left) / rect.width) * 100;
+
+  const y =
+    ((evento.clientY - rect.top) / rect.height) * 100;
+
+  marcacoesDesenhoEquipamento.push({
+    id:
+      Date.now().toString() +
+      Math.random().toString(16).slice(2),
+
+    equipamento:
+      tipoDesenhoEquipamentoSelecionado,
+
+    vista:
+      vistaDesenhoEquipamentoSelecionada,
+
+    tipo:
+      ferramentaAvariaSelecionada,
+
+    x: Number(x.toFixed(4)),
+    y: Number(y.toFixed(4))
+  });
+
+  renderizarMarcacoesDesenhoEquipamento();
+}
+
+
+function atualizarListaMarcacoesEquipamento() {
+
+  const contador =
+    document.getElementById("quantidadeMarcacoesEquipamento");
+
+  const lista =
+    document.getElementById("listaMarcacoesEquipamento");
+
+  if (!contador || !lista) {
+    return;
+  }
+
+  contador.textContent =
+    marcacoesDesenhoEquipamento.length;
+
+  if (marcacoesDesenhoEquipamento.length === 0) {
+    lista.innerHTML = "Nenhuma marcação.";
+    return;
+  }
+
+  lista.innerHTML = "";
+
+  marcacoesDesenhoEquipamento.forEach((marcacao, indice) => {
+
+    const ferramenta =
+      configuracaoFerramentasAvaria[marcacao.tipo];
+
+    const configEquipamento =
+      configuracaoDesenhoEquipamentos[marcacao.equipamento];
+
+    const configVista =
+      configEquipamento?.vistas?.find(
+        item => item.id === marcacao.vista
+      );
+
+    const item = document.createElement("div");
+
+    item.style.display = "flex";
+    item.style.alignItems = "center";
+    item.style.justifyContent = "space-between";
+    item.style.gap = "8px";
+    item.style.padding = "7px 0";
+    item.style.borderBottom = "1px solid #e5e7eb";
+
+    const descricao = document.createElement("div");
+
+    descricao.style.display = "flex";
+    descricao.style.alignItems = "center";
+    descricao.style.gap = "6px";
+    descricao.style.minWidth = "0";
+
+    const simbolo = document.createElement("span");
+
+    simbolo.textContent =
+      ferramenta?.simbolo || "●";
+
+    simbolo.style.color =
+      ferramenta?.cor || "#64748b";
+
+    simbolo.style.fontWeight = "900";
+    simbolo.style.fontSize = "16px";
+
+    const textoItem = document.createElement("span");
+
+    textoItem.textContent =
+      (ferramenta?.nome || marcacao.tipo) +
+      " — " +
+      (configVista?.nome || marcacao.vista);
+
+    descricao.appendChild(simbolo);
+    descricao.appendChild(textoItem);
+
+    const excluir = document.createElement("button");
+
+    excluir.type = "button";
+    excluir.textContent = "🗑️";
+    excluir.title = "Excluir marcação";
+
+    excluir.style.padding = "3px 6px";
+    excluir.style.minWidth = "auto";
+    excluir.style.background = "#fff";
+    excluir.style.border = "1px solid #fecaca";
+    excluir.style.borderRadius = "5px";
+    excluir.style.cursor = "pointer";
+
+    excluir.addEventListener("click", function(evento) {
+
+      evento.preventDefault();
+      evento.stopPropagation();
+
+      excluirMarcacaoDesenhoEquipamento(
+        marcacao.id
+      );
+
+    });
+
+    item.appendChild(descricao);
+    item.appendChild(excluir);
+
+    lista.appendChild(item);
+
+  });
+}
+
+
+function limparMarcacoesDesenhoEquipamento() {
+
+  if (marcacoesDesenhoEquipamento.length === 0) {
+    alert("Não há marcações para limpar.");
+    return;
+  }
+
+  const confirmar = confirm(
+    "Deseja realmente apagar todas as marcações do equipamento?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  marcacoesDesenhoEquipamento = [];
+
+  renderizarMarcacoesDesenhoEquipamento();
+  atualizarListaMarcacoesEquipamento();
+}
+function excluirMarcacaoDesenhoEquipamento(id) {
+
+  marcacoesDesenhoEquipamento =
+    marcacoesDesenhoEquipamento.filter(
+      item => item.id !== id
+    );
+
+  renderizarMarcacoesDesenhoEquipamento();
+  atualizarListaMarcacoesEquipamento();
+}
+
+function renderizarMarcacoesDesenhoEquipamento() {
+
+  const camada =
+    document.getElementById("camadaMarcacoesEquipamento");
+
+  if (!camada) {
+    return;
+  }
+
+  camada.innerHTML = "";
+  atualizarListaMarcacoesEquipamento();
+
+  const marcacoesDaVista =
+    marcacoesDesenhoEquipamento.filter(item =>
+      item.equipamento === tipoDesenhoEquipamentoSelecionado &&
+      item.vista === vistaDesenhoEquipamentoSelecionada
+    );
+
+  marcacoesDaVista.forEach(marcacao => {
+
+    const ferramenta =
+      configuracaoFerramentasAvaria[marcacao.tipo];
+
+    if (!ferramenta) {
+      return;
+    }
+
+    const marcador = document.createElement("div");
+
+    marcador.title = ferramenta.nome;
+
+    marcador.textContent = ferramenta.simbolo;
+
+    marcador.style.position = "absolute";
+    marcador.style.left = marcacao.x + "%";
+    marcador.style.top = marcacao.y + "%";
+    marcador.style.transform = "translate(-50%, -50%)";
+    marcador.style.color = ferramenta.cor;
+    marcador.style.fontSize = "27px";
+    marcador.style.fontWeight = "900";
+    marcador.style.lineHeight = "1";
+    marcador.style.textShadow =
+      "0 0 2px #fff, 0 0 3px #fff";
+    marcador.style.pointerEvents = "none";
+    marcador.style.zIndex = "5";
+
+    camada.appendChild(marcador);
+
+  });
+}
+
+
+const configuracaoFerramentasAvaria = {
+  trinca: {
+    nome: "Trinca",
+    cor: "#ef4444",
+    simbolo: "●"
+  },
+  arranhao: {
+    nome: "Arranhão",
+    cor: "#eab308",
+    simbolo: "■"
+  },
+  amassado: {
+    nome: "Amassado",
+    cor: "#3b82f6",
+    simbolo: "▲"
+  },
+  quebrado: {
+    nome: "Quebrado",
+    cor: "#22c55e",
+    simbolo: "✕"
+  },
+  outro: {
+    nome: "Outro",
+    cor: "#a855f7",
+    simbolo: "◆"
+  }
+};
+
+function selecionarFerramentaAvaria(tipo) {
+
+  if (!configuracaoFerramentasAvaria[tipo]) {
+    return;
+  }
+
+  ferramentaAvariaSelecionada = tipo;
+
+  document
+    .querySelectorAll("[data-avaria]")
+    .forEach(botao => {
+
+      const selecionado =
+        botao.dataset.avaria === tipo;
+
+      botao.style.outline =
+        selecionado ? "3px solid #1d4ed8" : "";
+
+      botao.style.outlineOffset =
+        selecionado ? "2px" : "";
+
+      botao.style.transform =
+        selecionado ? "translateY(-1px)" : "";
+
+    });
+
+}
+
+
+const configuracaoDesenhoEquipamentos = {
+
+  notebook: {
+    nome: "Notebook",
+    icone: "💻",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"],
+      ["inferior", "Parte Inferior"],
+      ["teclado", "Teclado"]
+    ]
+  },
+
+  desktop: {
+    nome: "Desktop",
+    icone: "🖥",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"]
+    ]
+  },
+
+  impressora: {
+    nome: "Impressora",
+    icone: "🖨",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"],
+      ["superior", "Parte Superior"]
+    ]
+  },
+
+  celular: {
+    nome: "Celular",
+    icone: "📱",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"]
+    ]
+  },
+
+  playstation: {
+    nome: "PlayStation",
+    icone: "🎮",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"],
+      ["superior", "Parte Superior"]
+    ]
+  },
+
+  xbox: {
+    nome: "Xbox",
+    icone: "🎮",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"],
+      ["superior", "Parte Superior"]
+    ]
+  },
+
+  monitor: {
+    nome: "Monitor",
+    icone: "🖥",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"]
+    ]
+  },
+
+  tablet: {
+    nome: "Tablet",
+    icone: "📱",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"]
+    ]
+  },
+
+  tv: {
+    nome: "TV",
+    icone: "📺",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"]
+    ]
+  },
+
+  roteador: {
+    nome: "Roteador",
+    icone: "📡",
+    vistas: [
+      ["frente", "Frente"],
+      ["traseira", "Traseira"],
+      ["lado_esquerdo", "Lado Esquerdo"],
+      ["lado_direito", "Lado Direito"],
+      ["superior", "Parte Superior"]
+    ]
+  }
+
+};
+
+function selecionarTipoDesenhoEquipamento(tipo) {
+
+  const config = configuracaoDesenhoEquipamentos[tipo];
+
+  if (!config) {
+    return;
+  }
+
+  tipoDesenhoEquipamentoSelecionado = tipo;
+  vistaDesenhoEquipamentoSelecionada = config.vistas[0][0];
+
+  const editor =
+    document.getElementById("editorDesenhoEquipamento");
+
+  const areaVistas =
+    document.getElementById("vistasDesenhoEquipamento");
+
+  if (!editor || !areaVistas) {
+    return;
+  }
+
+  document
+    .querySelectorAll(".tipo-desenho-equipamento")
+    .forEach(botao => {
+
+      const selecionado =
+        botao.dataset.tipo === tipo;
+
+      botao.style.outline =
+        selecionado ? "2px solid #2563eb" : "";
+
+      botao.style.outlineOffset =
+        selecionado ? "2px" : "";
+
+    });
+
+  editor.style.display = "block";
+
+  areaVistas.innerHTML = config.vistas.map(vista => {
+
+    const codigoVista = vista[0];
+    const nomeVista = vista[1];
+
+    return `
+      <button
+        type="button"
+        class="vista-desenho-equipamento"
+        data-vista="${codigoVista}"
+        onclick="mostrarVistaDesenhoEquipamento('${codigoVista}')"
+        style="
+          width:100%;
+          text-align:left;
+          padding:9px;
+          background:#fff;
+          border:1px solid #cbd5e1;
+          border-radius:7px;
+          cursor:pointer;
+        "
+      >
+        ${nomeVista}
+      </button>
+    `;
+
+  }).join("");
+
+  mostrarVistaDesenhoEquipamento(
+    vistaDesenhoEquipamentoSelecionada
+  );
+}
+
+function mostrarVistaDesenhoEquipamento(vista) {
+
+  const config =
+    configuracaoDesenhoEquipamentos[
+      tipoDesenhoEquipamentoSelecionado
+    ];
+
+  if (!config) {
+    return;
+  }
+
+  vistaDesenhoEquipamentoSelecionada = vista;
+
+  const titulo =
+    document.getElementById("tituloVistaNotebook");
+
+  const area =
+    document.getElementById("desenhoNotebook");
+
+  if (!titulo || !area) {
+    return;
+  }
+
+  const vistaEncontrada =
+    config.vistas.find(item => item[0] === vista);
+
+  const nomeVista =
+    vistaEncontrada ? vistaEncontrada[1] : vista;
+
+  titulo.textContent =
+    config.icone + " " +
+    config.nome +
+    " - " +
+    nomeVista;
+
+  document
+    .querySelectorAll(".vista-desenho-equipamento")
+    .forEach(botao => {
+
+      const ativo =
+        botao.dataset.vista === vista;
+
+      botao.style.background =
+        ativo ? "#eff6ff" : "#fff";
+
+      botao.style.borderColor =
+        ativo ? "#2563eb" : "#cbd5e1";
+
+      botao.style.color =
+        ativo ? "#1d4ed8" : "#111827";
+
+      botao.style.fontWeight =
+        ativo ? "700" : "400";
+
+    });
+
+  if (
+    tipoDesenhoEquipamentoSelecionado === "notebook" ||
+    tipoDesenhoEquipamentoSelecionado === "monitor" ||
+    tipoDesenhoEquipamentoSelecionado === "desktop" ||
+    tipoDesenhoEquipamentoSelecionado === "impressora" ||
+    tipoDesenhoEquipamentoSelecionado === "celular"
+  ) {
+
+    const imagensEquipamento = {
+
+      notebook: {
+        frente: "/images/equipamentos/notebook/frente.webp",
+        traseira: "/images/equipamentos/notebook/traseira.webp",
+        lado_esquerdo: "/images/equipamentos/notebook/lado-esquerdo.webp",
+        lado_direito: "/images/equipamentos/notebook/lado-direito.webp",
+        inferior: "/images/equipamentos/notebook/inferior.webp",
+        teclado: "/images/equipamentos/notebook/teclado.webp"
+      },
+
+      monitor: {
+        frente: "/images/equipamentos/monitor/frente.webp",
+        traseira: "/images/equipamentos/monitor/traseira.webp",
+        lado_esquerdo: "/images/equipamentos/monitor/lado-esquerdo.webp",
+        lado_direito: "/images/equipamentos/monitor/lado-direito.webp"
+      },
+
+      desktop: {
+        frente: "/images/equipamentos/desktop/frente.webp",
+        traseira: "/images/equipamentos/desktop/traseira.webp",
+        lado_esquerdo: "/images/equipamentos/desktop/lado-esquerdo.webp",
+        lado_direito: "/images/equipamentos/desktop/lado-direito.webp"
+      },
+
+      impressora: {
+        frente: "/images/equipamentos/impressora/frente.webp",
+        traseira: "/images/equipamentos/impressora/traseira.webp",
+        lado_esquerdo: "/images/equipamentos/impressora/lado-esquerdo.webp",
+        lado_direito: "/images/equipamentos/impressora/lado-direito.webp",
+        superior: "/images/equipamentos/impressora/superior.webp"
+      },
+
+      celular: {
+        frente: "/images/equipamentos/celular/frente.webp",
+        traseira: "/images/equipamentos/celular/traseira.webp",
+        lado_esquerdo: "/images/equipamentos/celular/lado-esquerdo.webp",
+        lado_direito: "/images/equipamentos/celular/lado-direito.webp"
+      }
+
+    };
+
+    const imagem =
+      imagensEquipamento[tipoDesenhoEquipamentoSelecionado]?.[vista];
+
+    area.innerHTML = `
+      <div style="
+        min-height:330px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:18px;
+        box-sizing:border-box;
+        background:#fff;
+      ">
+
+        <div
+          id="areaClicavelEquipamento"
+          onclick="adicionarMarcacaoDesenhoEquipamento(event)"
+          style="
+            position:relative;
+            display:inline-block;
+            line-height:0;
+            cursor:crosshair;
+            max-width:100%;
+          "
+        >
+
+          <img
+            src="${imagem}"
+            alt="${config.nome} - ${nomeVista}"
+            draggable="false"
+            style="
+              display:block;
+              width:auto;
+              height:auto;
+              max-width:100%;
+              max-height:390px;
+              object-fit:contain;
+              user-select:none;
+            "
+          >
+
+          <div
+            id="camadaMarcacoesEquipamento"
+            style="
+              position:absolute;
+              inset:0;
+              pointer-events:none;
+              overflow:hidden;
+            "
+          ></div>
+
+        </div>
+
+      </div>
+    `;
+
+
+    renderizarMarcacoesDesenhoEquipamento();
+  }
+  else {
+
+    area.innerHTML = `
+      <div style="
+        min-height:330px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        padding:25px;
+        box-sizing:border-box;
+        color:#64748b;
+        text-align:center;
+      ">
+        <div style="font-size:70px;line-height:1;">
+          ${config.icone}
+        </div>
+
+        <div style="
+          margin-top:15px;
+          font-size:18px;
+          font-weight:700;
+          color:#334155;
+        ">
+          ${config.nome} - ${nomeVista}
+        </div>
+
+        <div style="
+          margin-top:7px;
+          font-size:12px;
+        ">
+          A imagem desta vista será adicionada posteriormente.
+        </div>
+      </div>
+    `;
+
+  }
+}
+
+const btnLimparDesenhoEquipamento =
+  document.getElementById("btnLimparDesenhoEquipamento");
+
+if (btnLimparDesenhoEquipamento) {
+
+  btnLimparDesenhoEquipamento.addEventListener(
+    "click",
+    limparMarcacoesDesenhoEquipamento
+  );
+
+}
+
+document
+  .querySelectorAll("[data-avaria]")
+  .forEach(botao => {
+
+    botao.addEventListener("click", function() {
+
+      selecionarFerramentaAvaria(
+        this.dataset.avaria
+      );
+
+    });
+
+  });
+
+document
+  .querySelectorAll(".tipo-desenho-equipamento")
+  .forEach(botao => {
+
+    botao.addEventListener("click", function() {
+
+      selecionarTipoDesenhoEquipamento(
+        this.dataset.tipo
+      );
+
+    });
+
+  });
+
+
+/* ===================== FOTOS DO CHAMADO ===================== */
+
+let fotosSelecionadasChamado = [];
+
+function adicionarFotosChamado(arquivos){
+
+  const novosArquivos = Array.from(arquivos || []);
+
+  for(const arquivo of novosArquivos){
+
+    if(fotosSelecionadasChamado.length >= 10){
+      alert("O limite é de 10 fotos por chamado.");
+      break;
+    }
+
+    if(arquivo.size > 8 * 1024 * 1024){
+      alert(`A foto "${arquivo.name}" ultrapassa o limite de 8 MB.`);
+      continue;
+    }
+
+    fotosSelecionadasChamado.push(arquivo);
+  }
+
+  renderizarPreviewFotosChamado();
+}
+
+function renderizarPreviewFotosChamado(){
+
+  const area = document.getElementById("previewFotosChamado");
+
+  if(!area) return;
+
+  area.innerHTML = "";
+
+  fotosSelecionadasChamado.forEach((arquivo, indice) => {
+
+    const card = document.createElement("div");
+
+    card.style.position = "relative";
+    card.style.width = "90px";
+    card.style.height = "90px";
+    card.style.border = "1px solid #cbd5e1";
+    card.style.borderRadius = "6px";
+    card.style.overflow = "hidden";
+    card.style.background = "#f8fafc";
+
+    const imagem = document.createElement("img");
+
+    imagem.src = URL.createObjectURL(arquivo);
+    imagem.style.width = "100%";
+    imagem.style.height = "100%";
+    imagem.style.objectFit = "cover";
+
+    imagem.onload = () => {
+      URL.revokeObjectURL(imagem.src);
+    };
+
+    const remover = document.createElement("button");
+
+    remover.type = "button";
+    remover.textContent = "×";
+    remover.title = "Remover foto";
+
+    remover.style.position = "absolute";
+    remover.style.top = "3px";
+    remover.style.right = "3px";
+    remover.style.width = "24px";
+    remover.style.height = "24px";
+    remover.style.padding = "0";
+    remover.style.border = "none";
+    remover.style.borderRadius = "50%";
+    remover.style.background = "#dc2626";
+    remover.style.color = "#fff";
+    remover.style.cursor = "pointer";
+    remover.style.fontSize = "18px";
+    remover.style.lineHeight = "24px";
+
+    remover.onclick = () => {
+
+      fotosSelecionadasChamado.splice(indice, 1);
+
+      renderizarPreviewFotosChamado();
+
+    };
+
+    card.appendChild(imagem);
+    card.appendChild(remover);
+
+    area.appendChild(card);
+  });
+}
+
+document.getElementById("fotosChamado")?.addEventListener("change", function(){
+
+  adicionarFotosChamado(this.files);
+
+  this.value = "";
+
+});
+
+document.getElementById("cameraChamado")?.addEventListener("change", function(){
+
+  adicionarFotosChamado(this.files);
+
+  this.value = "";
+
+});
+
 </script>
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -3609,6 +5894,134 @@ setInterval(() => {
 
 </style>
 
+
+<div id="modalFotosChamado" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  z-index:10000;
+  padding:20px;
+  align-items:center;
+  justify-content:center;
+">
+
+  <div style="
+    background:#fff;
+    width:min(900px, 100%);
+    max-height:90vh;
+    overflow:auto;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+  ">
+
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      margin-bottom:18px;
+    ">
+      <div>
+        <h2 style="margin:0;">📷 Fotos do Equipamento</h2>
+        <div id="fotosChamadoOS" style="
+          margin-top:5px;
+          color:#64748b;
+          font-size:14px;
+        "></div>
+      </div>
+
+      <button
+        type="button"
+        onclick="fecharFotosChamado()"
+        style="
+          border:0;
+          background:#ef4444;
+          color:#fff;
+          width:38px;
+          height:38px;
+          border-radius:10px;
+          cursor:pointer;
+          font-size:20px;
+          font-weight:bold;
+        "
+      >×</button>
+    </div>
+
+    <div id="galeriaFotosChamado" style="
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:15px;
+    "></div>
+
+  </div>
+
+</div>
+
+
+<div id="modalChecklistChamado" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  z-index:10000;
+  padding:20px;
+  align-items:center;
+  justify-content:center;
+">
+
+  <div style="
+    background:#fff;
+    width:min(900px, 100%);
+    max-height:90vh;
+    overflow:auto;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+  ">
+
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      margin-bottom:18px;
+    ">
+
+      <div>
+        <h2 style="margin:0;">📋 Checklist de Entrada</h2>
+
+        <div id="checklistChamadoOS" style="
+          margin-top:5px;
+          color:#64748b;
+          font-size:14px;
+        "></div>
+      </div>
+
+      <button
+        type="button"
+        onclick="fecharChecklistChamado()"
+        style="
+          border:0;
+          background:#ef4444;
+          color:#fff;
+          width:38px;
+          height:38px;
+          border-radius:10px;
+          cursor:pointer;
+          font-size:20px;
+          font-weight:bold;
+        "
+      >×</button>
+
+    </div>
+
+    <div id="conteudoChecklistChamado"></div>
+
+  </div>
+
+</div>
 
 <div id="modalAssinaturaCliente">
 

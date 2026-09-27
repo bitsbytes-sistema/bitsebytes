@@ -54,6 +54,204 @@ bairro: {
     default: ""
   },
 
+  /* ===================== CHECKLIST DE ENTRADA ===================== */
+
+  checklistEntrada: {
+    liga: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    tela: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    teclado: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    touchpadMouse: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    usbConectores: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    carregadorFonte: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    bateria: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    wifi: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    bluetooth: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    camera: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    audio: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    microfone: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    estadoFisico: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    acessorios: {
+      type: String,
+      default: "",
+      trim: true
+    },
+
+    observacoes: {
+      type: String,
+      default: "",
+      trim: true
+    },
+
+    dataVerificacao: {
+      type: Date,
+      default: null
+    }
+  },
+  /* ===================== DESENHO / AVARIAS DO EQUIPAMENTO ===================== */
+
+  desenhoEquipamento: {
+    tipo: {
+      type: String,
+      enum: [
+        "",
+        "notebook",
+        "desktop",
+        "impressora",
+        "celular",
+        "playstation",
+        "xbox",
+        "monitor",
+        "tablet",
+        "tv",
+        "roteador"
+      ],
+      default: ""
+    },
+
+    observacoes: {
+      type: String,
+      default: "",
+      trim: true
+    },
+
+    marcacoes: [
+      {
+        vista: {
+          type: String,
+          default: "",
+          trim: true
+        },
+
+        tipo: {
+          type: String,
+          enum: [
+            "trinca",
+            "arranhao",
+            "amassado",
+            "quebrado",
+            "outro"
+          ],
+          required: true
+        },
+
+        x: {
+          type: Number,
+          min: 0,
+          max: 100,
+          required: true
+        },
+
+        y: {
+          type: Number,
+          min: 0,
+          max: 100,
+          required: true
+        }
+      }
+    ]
+  },
+  /* ===================== FOTOS DO EQUIPAMENTO ===================== */
+
+  fotos: [
+    {
+      chave: {
+        type: String,
+        required: true
+      },
+
+      nomeOriginal: {
+        type: String,
+        default: ""
+      },
+
+      tipo: {
+        type: String,
+        default: ""
+      },
+
+      tamanho: {
+        type: Number,
+        default: 0
+      },
+
+      observacao: {
+        type: String,
+        default: "",
+        trim: true
+      },
+
+      dataEnvio: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ],
+
   problema: {
     type: String,
     required: true,
@@ -68,7 +266,7 @@ bairro: {
     trim: true
   },
 
-  /* ===================== DIAGNÓSTICO PRÉ-SERVIÇO ===================== */
+  /* ===================== DIAGNÃ“STICO PRÃ‰-SERVIÃ‡O ===================== */
 
   diagnosticoPreServico: {
     type: String,
@@ -222,7 +420,7 @@ budgetId: {
   default: null
 },
 
-  /* ===================== AUDITORIA DE ALTERAÇÕES SENSÍVEIS ===================== */
+  /* ===================== AUDITORIA DE ALTERAÃ‡Ã•ES SENSÃVEIS ===================== */
 
   auditoria: [
     {

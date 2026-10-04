@@ -3386,13 +3386,20 @@ async function status(id){
       return;
     }
 
-    abrirModalAssinatura(t);
+    if(!t.assinaturaConfirmada || !t.assinaturaCliente){
 
-    return;
+
+      abrirModalAssinatura(t);
+
+
+      return;
+
+
+    }
   }
 
 
-  let novo = "aberto";
+  let novo = t.status === "reparo" ? "finalizado" : "aberto";
 
 
   if(t.status === "aberto")

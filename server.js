@@ -4632,7 +4632,7 @@ app.get("/api/assinatura-remota/:token", async (req, res) => {
 
     const ticket = await Ticket.findOne({
       assinaturaRemotaToken: token
-    }).populate("cliente");
+    });
 
     if (!ticket) {
       return res.status(404).json({
@@ -4656,15 +4656,12 @@ app.get("/api/assinatura-remota/:token", async (req, res) => {
         error: "Este link de assinatura expirou."
       });
     }
-
-    const cliente = ticket.cliente || {};
-
     return res.json({
       ok: true,
       chamado: {
         numeroOS: ticket.numeroOS || "",
         cliente: {
-          nome: cliente.nome || cliente.razaoSocial || ""
+          nome: ticket.cliente || ""
         },
         equipamento: ticket.equipamento || "",
         problema: ticket.problema || "",
@@ -4845,9 +4842,11 @@ app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res)
 
     /* ===================== VALIDAÇÃO DO CHECKLIST DE ENTREGA ===================== */
 
+    let ticketAtual = null;
+
     if(req.body.status === "finalizado"){
 
-      const ticketAtual = await Ticket.findOne({
+      ticketAtual = await Ticket.findOne({
         _id: req.params.id,
         companyId: req.session.user.companyId
       });
@@ -4876,45 +4875,53 @@ app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res)
       const assinaturaCliente =
         String(req.body.assinaturaCliente || "").trim();
 
-      if(!assinaturaCliente){
+      const assinaturaJaRegistrada =
+        ticketAtual &&
+        ticketAtual.assinaturaConfirmada === true &&
+        String(ticketAtual.assinaturaCliente || "").trim();
+
+      if(!assinaturaCliente && !assinaturaJaRegistrada){
         return res.status(400).json({
           error: "assinatura_obrigatoria",
           message: "A assinatura do cliente é obrigatória para finalizar o chamado."
         });
       }
 
-      if(!assinaturaCliente.startsWith("data:image/png;base64,")){
-        return res.status(400).json({
-          error: "assinatura_invalida",
-          message: "Formato de assinatura inválido."
-        });
+      if(assinaturaCliente){
+
+        if(!assinaturaCliente.startsWith("data:image/png;base64,")){
+          return res.status(400).json({
+            error: "assinatura_invalida",
+            message: "Formato de assinatura inválido."
+          });
+        }
+
+        if(assinaturaCliente.length > 1500000){
+          return res.status(400).json({
+            error: "assinatura_muito_grande",
+            message: "A assinatura excede o tamanho permitido."
+          });
+        }
+
+        atualizacao.assinaturaCliente =
+          assinaturaCliente;
+
+        atualizacao.nomeAssinante =
+          String(req.body.nomeAssinante || "")
+            .trim()
+            .slice(0, 150);
+
+        atualizacao.documentoAssinante =
+          String(req.body.documentoAssinante || "")
+            .trim()
+            .slice(0, 50);
+
+        atualizacao.dataAssinaturaCliente =
+          new Date();
+
+        atualizacao.assinaturaConfirmada =
+          true;
       }
-
-      if(assinaturaCliente.length > 1500000){
-        return res.status(400).json({
-          error: "assinatura_muito_grande",
-          message: "A assinatura excede o tamanho permitido."
-        });
-      }
-
-      atualizacao.assinaturaCliente =
-        assinaturaCliente;
-
-      atualizacao.nomeAssinante =
-        String(req.body.nomeAssinante || "")
-          .trim()
-          .slice(0, 150);
-
-      atualizacao.documentoAssinante =
-        String(req.body.documentoAssinante || "")
-          .trim()
-          .slice(0, 50);
-
-      atualizacao.dataAssinaturaCliente =
-        new Date();
-
-      atualizacao.assinaturaConfirmada =
-        true;
     }
 
 

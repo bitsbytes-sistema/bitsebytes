@@ -2959,6 +2959,21 @@ function abrirAssinaturaCliente(id){
   modal.appendChild(nome);
   modal.appendChild(documento);
   modal.appendChild(data);
+
+  if(ticket.assinaturaOrigem === "remota"){
+    const origemAssinatura = document.createElement("div");
+
+    origemAssinatura.style.textAlign = "center";
+    origemAssinatura.style.marginTop = "8px";
+    origemAssinatura.style.fontWeight = "700";
+    origemAssinatura.style.color = "#2563eb";
+
+    origemAssinatura.textContent =
+      "Assinado eletronicamente pelo cliente — Assinatura remota.";
+
+    modal.appendChild(origemAssinatura);
+  }
+
   modal.appendChild(excluirAssinatura);
   modal.appendChild(fechar);
 

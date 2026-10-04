@@ -152,6 +152,115 @@ bairro: {
       default: null
     }
   },
+  /* ===================== CHECKLIST DE ENTREGA ===================== */
+
+  checklistEntrega: {
+    liga: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    tela: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    teclado: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    touchpadMouse: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    usbConectores: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    carregadorFonte: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    bateria: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    wifi: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    bluetooth: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    camera: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    audio: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    microfone: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    estadoFisico: {
+      type: String,
+      enum: ["", "ok", "defeito", "nao_testado", "nao_aplica"],
+      default: ""
+    },
+
+    acessorios: {
+      type: String,
+      default: "",
+      trim: true
+    },
+
+    observacoes: {
+      type: String,
+      default: "",
+      trim: true
+    },
+
+    dataVerificacao: {
+      type: Date,
+      default: null
+    },
+
+    realizadoPor: {
+      type: String,
+      default: "",
+      trim: true
+    },
+
+    concluido: {
+      type: Boolean,
+      default: false
+    }
+  },
   /* ===================== DESENHO / AVARIAS DO EQUIPAMENTO ===================== */
 
   desenhoEquipamento: {
@@ -382,6 +491,36 @@ bairro: {
     type: Boolean,
     default: false
   },
+
+  /* ===================== ASSINATURA REMOTA ===================== */
+
+  assinaturaOrigem: {
+    type: String,
+    enum: ["presencial", "remota"],
+    default: "presencial"
+  },
+
+  assinaturaRemotaToken: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  assinaturaRemotaExpiraEm: {
+    type: Date,
+    default: null
+  },
+
+  assinaturaRemotaUtilizada: {
+    type: Boolean,
+    default: false
+  },
+
+  assinaturaRemotaUtilizadaEm: {
+    type: Date,
+    default: null
+  },
+
   garantia: {
     type: String,
     default: ""

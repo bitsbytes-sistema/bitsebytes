@@ -1940,6 +1940,30 @@ style="display:block; width:100%; text-align:left; margin-bottom:5px;"
 >
 📋 Checklist
 </button>
+<button
+type="button"
+onclick="fecharMenusAcoesChamado(); abrirChecklistEntrega('${c._id}')"
+style="display:block; width:100%; text-align:left; margin-bottom:5px;"
+>
+📦 Checklist de Entrega${c.checklistEntrega?.concluido ? " ✓" : ""}
+</button>
+
+${
+c.status !== "finalizado" && !c.assinaturaConfirmada
+?
+`
+<button
+type="button"
+onclick="fecharMenusAcoesChamado(); gerarAssinaturaRemota('${c._id}')"
+style="display:block; width:100%; text-align:left; margin-bottom:5px;"
+>
+📱 Assinatura Remota
+</button>
+`
+:
+""
+}
+
 
 ${
 c.status !== "finalizado"
@@ -3355,6 +3379,13 @@ async function status(id){
 
   if(t.status === "reparo"){
 
+    if(!t.checklistEntrega || t.checklistEntrega.concluido !== true){
+
+      abrirChecklistEntrega(t._id);
+
+      return;
+    }
+
     abrirModalAssinatura(t);
 
     return;
@@ -3435,6 +3466,280 @@ async function status(id){
 
   }
 
+}
+
+/* ===================== ASSINATURA REMOTA ===================== */
+
+async function gerarAssinaturaRemota(id){
+
+  const ticket =
+    chamados.find(
+      x => String(x._id) === String(id)
+    );
+
+  if(!ticket){
+    alert("Chamado não encontrado.");
+    return;
+  }
+
+  if(ticket.assinaturaConfirmada){
+    alert("Este chamado já possui assinatura registrada.");
+    return;
+  }
+
+  try{
+
+    const resposta = await fetch(
+      "/api/tickets/" +
+      encodeURIComponent(id) +
+      "/assinatura-remota/link",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const dados = await resposta.json();
+
+    if(!resposta.ok || !dados.ok){
+
+      alert(
+        dados.error ||
+        dados.message ||
+        "Não foi possível gerar o link de assinatura."
+      );
+
+      return;
+    }
+
+    const link =
+      String(dados.url || "").trim();
+
+    if(!link){
+      alert("O servidor não retornou o link de assinatura.");
+      return;
+    }
+
+    const numeroOS =
+      ticket.numeroOS || "-";
+
+    const cliente =
+      typeof ticket.cliente === "string"
+        ? ticket.cliente
+        : (
+            ticket.cliente?.nome ||
+            ticket.cliente?.razaoSocial ||
+            "cliente"
+          );
+
+    const mensagemWhatsApp =
+      "Olá, " + cliente + ".\n\n" +
+      "Segue o link para assinatura da Ordem de Serviço " +
+      numeroOS + ":\n\n" +
+      link + "\n\n" +
+      "O link é individual e possui prazo de validade.";
+
+    const overlay =
+      document.createElement("div");
+
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.background = "rgba(15,23,42,.65)";
+    overlay.style.zIndex = "100000";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.padding = "18px";
+
+    const modal =
+      document.createElement("div");
+
+    modal.style.width = "100%";
+    modal.style.maxWidth = "560px";
+    modal.style.background = "#ffffff";
+    modal.style.borderRadius = "14px";
+    modal.style.padding = "22px";
+    modal.style.boxShadow =
+      "0 20px 50px rgba(0,0,0,.25)";
+
+    const titulo =
+      document.createElement("h2");
+
+    titulo.textContent =
+      "📱 Assinatura Remota";
+
+    titulo.style.margin = "0 0 8px";
+    titulo.style.color = "#0f172a";
+
+    const descricao =
+      document.createElement("p");
+
+    descricao.textContent =
+      "Envie este link ao cliente para que ele assine pelo celular.";
+
+    descricao.style.color = "#64748b";
+    descricao.style.margin = "0 0 16px";
+    descricao.style.lineHeight = "1.4";
+
+    const campo =
+      document.createElement("textarea");
+
+    campo.value = link;
+    campo.readOnly = true;
+    campo.rows = 4;
+    campo.style.width = "100%";
+    campo.style.resize = "none";
+    campo.style.padding = "11px";
+    campo.style.border = "1px solid #cbd5e1";
+    campo.style.borderRadius = "8px";
+    campo.style.fontSize = "14px";
+    campo.style.marginBottom = "12px";
+
+    const validade =
+      document.createElement("div");
+
+    validade.style.fontSize = "13px";
+    validade.style.color = "#64748b";
+    validade.style.marginBottom = "16px";
+
+    if(dados.expiraEm){
+
+      validade.textContent =
+        "Válido até: " +
+        new Date(
+          dados.expiraEm
+        ).toLocaleString(
+          "pt-BR",
+          {
+            timeZone: "America/Cuiaba"
+          }
+        );
+
+    }else{
+
+      validade.textContent =
+        "Este link possui prazo de validade.";
+    }
+
+    const copiar =
+      document.createElement("button");
+
+    copiar.type = "button";
+    copiar.textContent = "📋 Copiar Link";
+    copiar.style.width = "100%";
+    copiar.style.padding = "11px";
+    copiar.style.marginBottom = "9px";
+    copiar.style.border = "0";
+    copiar.style.borderRadius = "8px";
+    copiar.style.cursor = "pointer";
+    copiar.style.fontWeight = "700";
+    copiar.style.background = "#2563eb";
+    copiar.style.color = "#ffffff";
+
+    copiar.onclick = async function(){
+
+      try{
+
+        await navigator.clipboard.writeText(link);
+
+        copiar.textContent =
+          "✓ Link copiado";
+
+        setTimeout(() => {
+          copiar.textContent =
+            "📋 Copiar Link";
+        }, 1800);
+
+      }catch(erro){
+
+        campo.focus();
+        campo.select();
+
+        alert(
+          "Selecione e copie o link exibido."
+        );
+      }
+    };
+
+    const whatsapp =
+      document.createElement("button");
+
+    whatsapp.type = "button";
+    whatsapp.textContent =
+      "💬 Enviar pelo WhatsApp";
+
+    whatsapp.style.width = "100%";
+    whatsapp.style.padding = "11px";
+    whatsapp.style.marginBottom = "9px";
+    whatsapp.style.border = "0";
+    whatsapp.style.borderRadius = "8px";
+    whatsapp.style.cursor = "pointer";
+    whatsapp.style.fontWeight = "700";
+    whatsapp.style.background = "#16a34a";
+    whatsapp.style.color = "#ffffff";
+
+    whatsapp.onclick = function(){
+
+      window.open(
+        "https://wa.me/?text=" +
+        encodeURIComponent(
+          mensagemWhatsApp
+        ),
+        "_blank",
+        "noopener,noreferrer"
+      );
+    };
+
+    const fechar =
+      document.createElement("button");
+
+    fechar.type = "button";
+    fechar.textContent = "Fechar";
+    fechar.style.width = "100%";
+    fechar.style.padding = "11px";
+    fechar.style.border = "1px solid #cbd5e1";
+    fechar.style.borderRadius = "8px";
+    fechar.style.cursor = "pointer";
+    fechar.style.fontWeight = "700";
+    fechar.style.background = "#f8fafc";
+    fechar.style.color = "#334155";
+
+    fechar.onclick = function(){
+      overlay.remove();
+    };
+
+    overlay.onclick = function(evento){
+
+      if(evento.target === overlay){
+        overlay.remove();
+      }
+    };
+
+    modal.appendChild(titulo);
+    modal.appendChild(descricao);
+    modal.appendChild(campo);
+    modal.appendChild(validade);
+    modal.appendChild(copiar);
+    modal.appendChild(whatsapp);
+    modal.appendChild(fechar);
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+  }catch(erro){
+
+    console.error(
+      "Erro ao gerar assinatura remota:",
+      erro
+    );
+
+    alert(
+      "Erro de comunicação ao gerar o link de assinatura."
+    );
+  }
 }
 
 function fecharMenusAcoesChamado(){
@@ -3701,6 +4006,259 @@ function fecharFotosChamado(){
 }
 
 /* ===================== CHECKLIST DO CHAMADO ===================== */
+
+let chamadoChecklistEntregaId = null;
+
+function fecharChecklistEntrega(){
+
+  const modal =
+    document.getElementById("modalChecklistEntrega");
+
+  if(modal){
+    modal.style.display = "none";
+  }
+}
+
+
+function abrirChecklistEntrega(id){
+
+  const chamado =
+    chamados.find(c => String(c._id) === String(id));
+
+  if(!chamado){
+    alert("Chamado não encontrado.");
+    return;
+  }
+
+  chamadoChecklistEntregaId = String(id);
+
+  const checklist =
+    chamado.checklistEntrega || {};
+
+  const modal =
+    document.getElementById("modalChecklistEntrega");
+
+  const os =
+    document.getElementById("checklistEntregaOS");
+
+  const area =
+    document.getElementById("itensChecklistEntrega");
+
+  const acessorios =
+    document.getElementById("checklistEntregaAcessorios");
+
+  const observacoes =
+    document.getElementById("checklistEntregaObservacoes");
+
+  if(!modal || !os || !area || !acessorios || !observacoes){
+    alert("Não foi possível abrir o Checklist de Entrega.");
+    return;
+  }
+
+  const itens = [
+    ["Liga", "liga"],
+    ["Tela / Display", "tela"],
+    ["Teclado", "teclado"],
+    ["Touchpad / Mouse", "touchpadMouse"],
+    ["USB / Conectores", "usbConectores"],
+    ["Carregador / Fonte", "carregadorFonte"],
+    ["Bateria", "bateria"],
+    ["Wi-Fi", "wifi"],
+    ["Bluetooth", "bluetooth"],
+    ["Câmera", "camera"],
+    ["Áudio", "audio"],
+    ["Microfone", "microfone"],
+    ["Estado físico", "estadoFisico"]
+  ];
+
+  const opcoes = [
+    ["ok", "✅ OK"],
+    ["defeito", "❌ Com defeito"],
+    ["nao_testado", "⚪ Não testado"],
+    ["nao_aplica", "➖ Não se aplica"]
+  ];
+
+  area.innerHTML = itens.map(([titulo, campo]) => {
+
+    const radios = opcoes.map(([valor, texto]) => {
+
+      const marcado =
+        checklist[campo] === valor ? "checked" : "";
+
+      return `
+        <label style="cursor:pointer;">
+          <input
+            type="radio"
+            name="checkEntrega_${campo}"
+            value="${valor}"
+            ${marcado}
+          >
+          ${texto}
+        </label>
+      `;
+
+    }).join("");
+
+    return `
+      <div style="
+        border:1px solid #e2e8f0;
+        border-radius:12px;
+        padding:14px;
+        background:#f8fafc;
+      ">
+        <div style="
+          font-weight:700;
+          color:#0f172a;
+          margin-bottom:9px;
+        ">
+          ${titulo}
+        </div>
+
+        <div style="
+          display:flex;
+          flex-wrap:wrap;
+          gap:12px;
+          font-size:14px;
+        ">
+          ${radios}
+        </div>
+      </div>
+    `;
+
+  }).join("");
+
+  os.textContent =
+    `OS ${chamado.numeroOS || "-"} • ${chamado.equipamento || "Equipamento"}`;
+
+  acessorios.value =
+    checklist.acessorios || "";
+
+  observacoes.value =
+    checklist.observacoes || "";
+
+  modal.style.display = "flex";
+}
+
+async function salvarChecklistEntrega(){
+
+  if(!chamadoChecklistEntregaId){
+    alert("Chamado não selecionado.");
+    return;
+  }
+
+  const campos = [
+    "liga",
+    "tela",
+    "teclado",
+    "touchpadMouse",
+    "usbConectores",
+    "carregadorFonte",
+    "bateria",
+    "wifi",
+    "bluetooth",
+    "camera",
+    "audio",
+    "microfone",
+    "estadoFisico"
+  ];
+
+  const checklistEntrega = {};
+
+  for(const campo of campos){
+
+    const selecionado =
+      document.querySelector(
+        `input[name="checkEntrega_${campo}"]:checked`
+      );
+
+    if(!selecionado){
+      alert("Preencha todos os itens do Checklist de Entrega.");
+      return;
+    }
+
+    checklistEntrega[campo] =
+      selecionado.value;
+  }
+
+  checklistEntrega.acessorios =
+    (
+      document.getElementById("checklistEntregaAcessorios")?.value ||
+      ""
+    ).trim();
+
+  checklistEntrega.observacoes =
+    (
+      document.getElementById("checklistEntregaObservacoes")?.value ||
+      ""
+    ).trim();
+
+  const botao =
+    document.getElementById("btnSalvarChecklistEntrega");
+
+  if(botao){
+    botao.disabled = true;
+    botao.textContent = "Salvando...";
+  }
+
+  try{
+
+    const resposta = await fetch(
+      `/api/tickets/${chamadoChecklistEntregaId}/checklist-entrega`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(checklistEntrega)
+      }
+    );
+
+    const dados = await resposta.json();
+
+    if(!resposta.ok){
+      alert(
+        dados.message ||
+        dados.error ||
+        "Não foi possível salvar o Checklist de Entrega."
+      );
+      return;
+    }
+
+    const chamado =
+      chamados.find(
+        c => String(c._id) === String(chamadoChecklistEntregaId)
+      );
+
+    if(chamado){
+      chamado.checklistEntrega =
+        dados.checklistEntrega;
+    }
+
+    alert("Checklist de Entrega salvo com sucesso.");
+
+    fecharChecklistEntrega();
+
+  }catch(erro){
+
+    console.error(
+      "Erro ao salvar Checklist de Entrega:",
+      erro
+    );
+
+    alert(
+      "Erro de comunicação ao salvar o Checklist de Entrega."
+    );
+
+  }finally{
+
+    if(botao){
+      botao.disabled = false;
+      botao.textContent =
+        "💾 Salvar Checklist de Entrega";
+    }
+  }
+}
 
 function fecharChecklistChamado(){
 
@@ -6018,6 +6576,172 @@ document.getElementById("cameraChamado")?.addEventListener("change", function(){
     </div>
 
     <div id="conteudoChecklistChamado"></div>
+
+  </div>
+
+</div>
+
+<!-- ===================== CHECKLIST DE ENTREGA ===================== -->
+
+<div id="modalChecklistEntrega" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  z-index:10001;
+  padding:20px;
+  align-items:center;
+  justify-content:center;
+">
+
+  <div style="
+    background:#fff;
+    width:min(1000px, 100%);
+    max-height:90vh;
+    overflow:auto;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+  ">
+
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      margin-bottom:18px;
+    ">
+
+      <div>
+        <h2 style="margin:0;">📦 Checklist de Entrega</h2>
+
+        <div id="checklistEntregaOS" style="
+          margin-top:5px;
+          color:#64748b;
+          font-size:14px;
+        "></div>
+      </div>
+
+      <button
+        type="button"
+        onclick="fecharChecklistEntrega()"
+        style="
+          border:0;
+          background:#ef4444;
+          color:#fff;
+          width:38px;
+          height:38px;
+          border-radius:10px;
+          cursor:pointer;
+          font-size:20px;
+          font-weight:bold;
+        "
+      >×</button>
+
+    </div>
+
+    <div style="
+      font-size:13px;
+      color:#64748b;
+      margin-bottom:18px;
+    ">
+      Confira as condições do equipamento antes da entrega ao cliente.
+      Todos os itens devem ser preenchidos.
+    </div>
+
+    <div
+      id="itensChecklistEntrega"
+      style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+        gap:12px;
+      "
+    ></div>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:12px;
+      margin-top:18px;
+    ">
+
+      <label>
+        Acessórios entregues
+        <textarea
+          id="checklistEntregaAcessorios"
+          rows="3"
+          maxlength="1000"
+          style="
+            width:100%;
+            box-sizing:border-box;
+            margin-top:7px;
+            padding:10px;
+            border:1px solid #cbd5e1;
+            border-radius:8px;
+            resize:vertical;
+          "
+        ></textarea>
+      </label>
+
+      <label>
+        Observações do checklist
+        <textarea
+          id="checklistEntregaObservacoes"
+          rows="3"
+          maxlength="3000"
+          style="
+            width:100%;
+            box-sizing:border-box;
+            margin-top:7px;
+            padding:10px;
+            border:1px solid #cbd5e1;
+            border-radius:8px;
+            resize:vertical;
+          "
+        ></textarea>
+      </label>
+
+    </div>
+
+    <div style="
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:20px;
+    ">
+
+      <button
+        type="button"
+        onclick="fecharChecklistEntrega()"
+        style="
+          padding:10px 18px;
+          border:1px solid #cbd5e1;
+          border-radius:8px;
+          background:#fff;
+          cursor:pointer;
+        "
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        id="btnSalvarChecklistEntrega"
+        onclick="salvarChecklistEntrega()"
+        style="
+          padding:10px 18px;
+          border:0;
+          border-radius:8px;
+          background:#2563eb;
+          color:#fff;
+          font-weight:700;
+          cursor:pointer;
+        "
+      >
+        💾 Salvar Checklist de Entrega
+      </button>
+
+    </div>
 
   </div>
 

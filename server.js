@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const multer = require("multer");
 const {
   S3Client,
@@ -4410,6 +4411,414 @@ return res.status(401).json({
 
 });
 
+/* ===================== CHECKLIST DE ENTREGA ===================== */
+
+app.put("/api/tickets/:id/checklist-entrega", auth, requirePermissao("chamados"), async (req, res) => {
+
+  try {
+
+    const ticketId = String(req.params.id || "").trim();
+    const companyId = String(req.session.user.companyId);
+
+    if (!mongoose.Types.ObjectId.isValid(ticketId)) {
+      return res.status(400).json({
+        ok: false,
+        error: "Chamado inválido."
+      });
+    }
+
+    const ticket = await Ticket.findOne({
+      _id: ticketId,
+      companyId
+    });
+
+    if (!ticket) {
+      return res.status(404).json({
+        ok: false,
+        error: "Chamado não encontrado."
+      });
+    }
+
+    const valoresPermitidos = [
+      "ok",
+      "defeito",
+      "nao_testado",
+      "nao_aplica"
+    ];
+
+    const recebido =
+      req.body &&
+      typeof req.body === "object"
+        ? req.body
+        : {};
+
+    const normalizar = (valor) => {
+      return valoresPermitidos.includes(valor)
+        ? valor
+        : "";
+    };
+
+    const camposObrigatorios = [
+      "liga",
+      "tela",
+      "teclado",
+      "touchpadMouse",
+      "usbConectores",
+      "carregadorFonte",
+      "bateria",
+      "wifi",
+      "bluetooth",
+      "camera",
+      "audio",
+      "microfone",
+      "estadoFisico"
+    ];
+
+    const possuiCampoPendente =
+      camposObrigatorios.some(campo => !normalizar(recebido[campo]));
+
+    if (possuiCampoPendente) {
+      return res.status(400).json({
+        ok: false,
+        error: "checklist_entrega_incompleto",
+        message: "Preencha todos os itens do Checklist de Entrega."
+      });
+    }
+
+    ticket.checklistEntrega = {
+      liga: normalizar(recebido.liga),
+      tela: normalizar(recebido.tela),
+      teclado: normalizar(recebido.teclado),
+      touchpadMouse: normalizar(recebido.touchpadMouse),
+      usbConectores: normalizar(recebido.usbConectores),
+      carregadorFonte: normalizar(recebido.carregadorFonte),
+      bateria: normalizar(recebido.bateria),
+      wifi: normalizar(recebido.wifi),
+      bluetooth: normalizar(recebido.bluetooth),
+      camera: normalizar(recebido.camera),
+      audio: normalizar(recebido.audio),
+      microfone: normalizar(recebido.microfone),
+      estadoFisico: normalizar(recebido.estadoFisico),
+
+      acessorios: String(recebido.acessorios || "")
+        .trim()
+        .slice(0, 1000),
+
+      observacoes: String(recebido.observacoes || "")
+        .trim()
+        .slice(0, 3000),
+
+      dataVerificacao: new Date(),
+
+      realizadoPor: String(
+        req.session.user.username ||
+        req.session.user.nome ||
+        ""
+      )
+        .trim()
+        .slice(0, 150),
+
+      concluido: true
+    };
+
+    ticket.updatedAt = new Date();
+
+    await ticket.save();
+
+    return res.json({
+      ok: true,
+      checklistEntrega: ticket.checklistEntrega
+    });
+
+  } catch (err) {
+
+    console.log(
+      "ERRO AO SALVAR CHECKLIST DE ENTREGA:",
+      err
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error: "Erro ao salvar Checklist de Entrega."
+    });
+  }
+});
+
+/* ===================== GERAR LINK DE ASSINATURA REMOTA ===================== */
+app.post("/api/tickets/:id/assinatura-remota/link", auth, requirePermissao("chamados"), async (req, res) => {
+
+  try {
+
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId: req.session.user.companyId
+    });
+
+    if (!ticket) {
+      return res.status(404).json({
+        ok: false,
+        error: "Chamado não encontrado."
+      });
+    }
+
+    if (ticket.assinaturaConfirmada) {
+      return res.status(400).json({
+        ok: false,
+        error: "Este chamado já possui assinatura registrada."
+      });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+
+    const expiraEm = new Date(
+      Date.now() + (24 * 60 * 60 * 1000)
+    );
+
+    ticket.assinaturaRemotaToken = token;
+    ticket.assinaturaRemotaExpiraEm = expiraEm;
+    ticket.assinaturaRemotaUtilizada = false;
+    ticket.assinaturaRemotaUtilizadaEm = null;
+
+    await ticket.save();
+
+    const appUrl = String(process.env.APP_URL || "")
+      .trim()
+      .replace(/\/+$/, "");
+
+    if (!appUrl) {
+      return res.status(500).json({
+        ok: false,
+        error: "APP_URL não configurada."
+      });
+    }
+
+    const url =
+      `${appUrl}/assinatura-remota.html?token=${encodeURIComponent(token)}`;
+
+    return res.json({
+      ok: true,
+      url,
+      expiraEm
+    });
+
+  } catch (err) {
+
+    console.error(
+      "Erro ao gerar link de assinatura remota:",
+      err
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error: "Erro ao gerar link de assinatura remota."
+    });
+  }
+});
+
+
+/* ===================== CONSULTAR ASSINATURA REMOTA ===================== */
+app.get("/api/assinatura-remota/:token", async (req, res) => {
+
+  try {
+
+    const token = String(req.params.token || "").trim();
+
+    if (!/^[a-f0-9]{64}$/i.test(token)) {
+      return res.status(400).json({
+        ok: false,
+        error: "Link de assinatura inválido."
+      });
+    }
+
+    const ticket = await Ticket.findOne({
+      assinaturaRemotaToken: token
+    }).populate("cliente");
+
+    if (!ticket) {
+      return res.status(404).json({
+        ok: false,
+        error: "Link de assinatura inválido ou não encontrado."
+      });
+    }
+
+    if (ticket.assinaturaRemotaUtilizada) {
+      return res.status(410).json({
+        ok: false,
+        error: "Este link de assinatura já foi utilizado."
+      });
+    }
+
+    if (!ticket.assinaturaRemotaExpiraEm ||
+        new Date(ticket.assinaturaRemotaExpiraEm).getTime() < Date.now()) {
+
+      return res.status(410).json({
+        ok: false,
+        error: "Este link de assinatura expirou."
+      });
+    }
+
+    const cliente = ticket.cliente || {};
+
+    return res.json({
+      ok: true,
+      chamado: {
+        numeroOS: ticket.numeroOS || "",
+        cliente: {
+          nome: cliente.nome || cliente.razaoSocial || ""
+        },
+        equipamento: ticket.equipamento || "",
+        problema: ticket.problema || "",
+        servico: ticket.servico || "",
+        status: ticket.status || "",
+        checklistEntrega: ticket.checklistEntrega || {}
+      },
+      expiraEm: ticket.assinaturaRemotaExpiraEm
+    });
+
+  } catch (err) {
+
+    console.error(
+      "Erro ao consultar assinatura remota:",
+      err
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error: "Erro ao consultar assinatura remota."
+    });
+  }
+});
+
+
+/* ===================== SALVAR ASSINATURA REMOTA ===================== */
+app.post("/api/assinatura-remota/:token", async (req, res) => {
+
+  try {
+
+    const token = String(req.params.token || "").trim();
+
+    if (!/^[a-f0-9]{64}$/i.test(token)) {
+      return res.status(400).json({
+        ok: false,
+        error: "Link de assinatura inválido."
+      });
+    }
+
+    const assinaturaCliente =
+      String(req.body.assinaturaCliente || "").trim();
+
+    const nomeAssinante =
+      String(req.body.nomeAssinante || "")
+        .trim()
+        .slice(0, 150);
+
+    const documentoAssinante =
+      String(req.body.documentoAssinante || "")
+        .trim()
+        .slice(0, 50);
+
+    if (!nomeAssinante) {
+      return res.status(400).json({
+        ok: false,
+        error: "Informe o nome do assinante."
+      });
+    }
+
+    if (!assinaturaCliente) {
+      return res.status(400).json({
+        ok: false,
+        error: "A assinatura é obrigatória."
+      });
+    }
+
+    if (!assinaturaCliente.startsWith("data:image/png;base64,")) {
+      return res.status(400).json({
+        ok: false,
+        error: "Formato de assinatura inválido."
+      });
+    }
+
+    if (assinaturaCliente.length > 1500000) {
+      return res.status(400).json({
+        ok: false,
+        error: "A assinatura excede o tamanho permitido."
+      });
+    }
+
+    const agora = new Date();
+
+    const ticket = await Ticket.findOneAndUpdate(
+      {
+        assinaturaRemotaToken: token,
+        assinaturaRemotaUtilizada: false,
+        assinaturaConfirmada: false,
+        assinaturaRemotaExpiraEm: { $gte: agora }
+      },
+      {
+        $set: {
+          assinaturaCliente,
+          nomeAssinante,
+          documentoAssinante,
+          dataAssinaturaCliente: agora,
+          assinaturaConfirmada: true,
+          assinaturaOrigem: "remota",
+          assinaturaRemotaUtilizada: true,
+          assinaturaRemotaUtilizadaEm: agora
+        }
+      },
+      { new: true }
+    );
+
+    if (!ticket) {
+
+      const existente = await Ticket.findOne({
+        assinaturaRemotaToken: token
+      }).select(
+        "assinaturaRemotaUtilizada assinaturaConfirmada assinaturaRemotaExpiraEm"
+      );
+
+      if (!existente) {
+        return res.status(404).json({
+          ok: false,
+          error: "Link de assinatura inválido ou não encontrado."
+        });
+      }
+
+      if (existente.assinaturaRemotaUtilizada ||
+          existente.assinaturaConfirmada) {
+        return res.status(410).json({
+          ok: false,
+          error: "Este link de assinatura já foi utilizado."
+        });
+      }
+
+      return res.status(410).json({
+        ok: false,
+        error: "Este link de assinatura expirou."
+      });
+    }
+
+    return res.json({
+      ok: true,
+      message: "Assinatura registrada com sucesso.",
+      dataAssinatura: agora
+    });
+
+  } catch (err) {
+
+    console.error(
+      "Erro ao salvar assinatura remota:",
+      err
+    );
+
+    return res.status(500).json({
+      ok: false,
+      error: "Erro ao salvar assinatura remota."
+    });
+  }
+});
+
+
 /* ===================== STATUS UPDATE ===================== */
 app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res) => {
 
@@ -4433,6 +4842,32 @@ app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res)
       updatedAt: new Date()
     };
 
+
+    /* ===================== VALIDAÇÃO DO CHECKLIST DE ENTREGA ===================== */
+
+    if(req.body.status === "finalizado"){
+
+      const ticketAtual = await Ticket.findOne({
+        _id: req.params.id,
+        companyId: req.session.user.companyId
+      });
+
+      if(!ticketAtual){
+        return res.status(404).json({
+          error: "chamado_nao_encontrado"
+        });
+      }
+
+      if(
+        !ticketAtual.checklistEntrega ||
+        ticketAtual.checklistEntrega.concluido !== true
+      ){
+        return res.status(400).json({
+          error: "checklist_entrega_obrigatorio",
+          message: "Conclua o Checklist de Entrega antes de finalizar o chamado."
+        });
+      }
+    }
 
     /* ===================== ASSINATURA DO CLIENTE ===================== */
 

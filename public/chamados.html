@@ -509,7 +509,7 @@ h3{
 
 /* ================= RESPONSIVIDADE GERAL - TABLET E CELULAR ================= */
 
-@media (max-width:900px){
+@media (max-width:1100px){
 
   body{
     overflow-x:hidden;
@@ -613,7 +613,7 @@ h3{
   }
 
   #tabelaChamados{
-    min-width:900px;
+    min-width:0;
   }
 
   .card:has(#tabelaChamados){
@@ -720,6 +720,10 @@ h3{
 
 <a href="/relatorios.html">
 📊 Relatórios
+</a>
+
+<a href="/auditoria.html">
+🛡️ Auditoria
 </a>
 
 <a href="/configuracoes.html">
@@ -1387,7 +1391,7 @@ font-family:Arial;
 
   <div id="tiposDesenhoEquipamento" style="
     display:grid;
-    grid-template-columns:repeat(10,minmax(80px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(80px,1fr));
     gap:8px;
     margin-bottom:12px;
   ">
@@ -2862,6 +2866,21 @@ function abrirAssinaturaCliente(id){
     if(!confirmou)
       return;
 
+    const adminUsername = prompt("Usuario do administrador:");
+
+    if(adminUsername === null)
+      return;
+
+    const adminPassword = prompt("Senha do administrador:");
+
+    if(adminPassword === null)
+      return;
+
+    if(!adminUsername.trim() || !adminPassword){
+      alert("Informe o usuario e a senha do administrador.");
+      return;
+    }
+
     excluirAssinatura.disabled = true;
     excluirAssinatura.textContent =
       "Excluindo...";
@@ -2874,7 +2893,14 @@ function abrirAssinaturaCliente(id){
         "/assinatura",
         {
           method: "DELETE",
-          credentials: "include"
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            adminUsername: adminUsername.trim(),
+            adminPassword
+          })
         }
       );
 
@@ -3946,75 +3972,120 @@ async function excluirFotoChamado(ticketId, fotoId, nomeFoto){
   const confirmou = confirm(
     'Deseja realmente excluir a foto "' +
     nomeFoto +
-    '"?\n\nEsta ação não poderá ser desfeita.'
+    '"?\n\nEsta a\u00e7\u00e3o n\u00e3o poder\u00e1 ser desfeita.'
   );
 
   if(!confirmou){
     return;
   }
 
-  try{
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;";
 
-    const res = await fetch(
-      "/api/tickets/" +
-      encodeURIComponent(ticketId) +
-      "/fotos/" +
-      encodeURIComponent(fotoId),
-      {
-        method:"DELETE",
-        credentials:"include"
-      }
-    );
+  const caixa = document.createElement("div");
+  caixa.style.cssText = "background:#fff;width:100%;max-width:430px;border-radius:12px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.30);";
 
-    const data = await res.json();
+  caixa.innerHTML =
+    '<h3 style="margin:0 0 10px;">Autorizar exclus\u00e3o</h3>' +
+    '<p style="margin:0 0 18px;line-height:1.5;">Para excluir esta foto, informe as credenciais de um administrador.</p>' +
+    '<input id="adminUsuarioExcluirFoto" type="text" autocomplete="username" placeholder="Usu\u00e1rio do administrador" style="width:100%;box-sizing:border-box;padding:11px;margin-bottom:10px;border:1px solid #ccc;border-radius:7px;">' +
+    '<input id="adminSenhaExcluirFoto" type="password" autocomplete="current-password" placeholder="Senha do administrador" style="width:100%;box-sizing:border-box;padding:11px;margin-bottom:18px;border:1px solid #ccc;border-radius:7px;">' +
+    '<div style="display:flex;justify-content:flex-end;gap:10px;">' +
+    '<button type="button" id="cancelarExcluirFoto" style="padding:10px 16px;border:0;border-radius:7px;cursor:pointer;">Cancelar</button>' +
+    '<button type="button" id="autorizarExcluirFoto" style="padding:10px 16px;border:0;border-radius:7px;cursor:pointer;background:#dc3545;color:#fff;">Autorizar e excluir</button>' +
+    '</div>';
 
-    if(!res.ok){
+  overlay.appendChild(caixa);
+  document.body.appendChild(overlay);
 
-      alert(
-        data.error ||
-        "Erro ao excluir a foto."
-      );
+  const campoUsuario = caixa.querySelector("#adminUsuarioExcluirFoto");
+  const campoSenha = caixa.querySelector("#adminSenhaExcluirFoto");
+  const btnCancelar = caixa.querySelector("#cancelarExcluirFoto");
+  const btnAutorizar = caixa.querySelector("#autorizarExcluirFoto");
 
+  const fechar = () => overlay.remove();
+
+  btnCancelar.onclick = fechar;
+
+  overlay.addEventListener("click", e => {
+    if(e.target === overlay) fechar();
+  });
+
+  campoUsuario.focus();
+
+  btnAutorizar.onclick = async () => {
+
+    const adminUsername = campoUsuario.value.trim();
+    const adminPassword = campoSenha.value;
+
+    if(!adminUsername || !adminPassword){
+      alert("Informe o usu\u00e1rio e a senha do administrador.");
       return;
     }
 
-    const ticket = chamados.find(
-      c => String(c._id) === String(ticketId)
-    );
+    btnAutorizar.disabled = true;
+    btnCancelar.disabled = true;
 
-    if(ticket){
-      ticket.fotos =
-        Array.isArray(data.fotos)
-          ? data.fotos
-          : [];
+    try{
+      const res = await fetch(
+        "/api/tickets/" +
+        encodeURIComponent(ticketId) +
+        "/fotos/" +
+        encodeURIComponent(fotoId),
+        {
+          method:"DELETE",
+          credentials:"include",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            adminUsername,
+            adminPassword
+          })
+        }
+      );
+
+      const data = await res.json().catch(() => ({}));
+
+      if(!res.ok){
+        throw new Error(data.error || "Erro ao excluir a foto.");
+      }
+
+      campoSenha.value = "";
+      fechar();
+
+      const ticket = chamados.find(
+        c => String(c._id) === String(ticketId)
+      );
+
+      if(ticket){
+        ticket.fotos = Array.isArray(data.fotos) ? data.fotos : [];
+      }
+
+      renderChamados(chamados);
+
+      if(ticket && ticket.fotos.length > 0){
+        abrirFotosChamado(ticketId);
+      }
+      else{
+        fecharFotosChamado();
+        alert("Foto exclu\u00edda com sucesso.");
+      }
+
+    }catch(err){
+      console.error("Erro ao excluir foto:", err);
+      campoSenha.value = "";
+      alert(err.message || "Erro de comunica\u00e7\u00e3o ao excluir a foto.");
+      btnAutorizar.disabled = false;
+      btnCancelar.disabled = false;
+      campoSenha.focus();
     }
+  };
 
-    renderChamados(chamados);
-
-    if(ticket && ticket.fotos.length > 0){
-      abrirFotosChamado(ticketId);
-    }
-    else{
-      fecharFotosChamado();
-      alert("Foto excluída com sucesso.");
-    }
-
-  }
-  catch(err){
-
-    console.error(
-      "Erro ao excluir foto:",
-      err
-    );
-
-    alert(
-      "Erro de comunicação ao excluir a foto."
-    );
-
-  }
-
+  campoSenha.addEventListener("keydown", e => {
+    if(e.key === "Enter") btnAutorizar.click();
+  });
 }
-
 
 function fecharFotosChamado(){
 
@@ -6740,6 +6811,7 @@ document.getElementById("cameraChamado")?.addEventListener("change", function(){
           border:1px solid #cbd5e1;
           border-radius:8px;
           background:#fff;
+          color:#111827;
           cursor:pointer;
         "
       >

@@ -205,6 +205,87 @@ button:hover{
   opacity:.9;
 }
 
+
+/* RESPONSIVIDADE */
+@media (max-width:1300px){
+
+  body{
+    overflow-x:hidden;
+  }
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    min-height:auto;
+    height:auto;
+    display:flex;
+    align-items:center;
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    scrollbar-width:thin;
+  }
+
+  .logo{
+    flex:0 0 auto;
+    min-width:190px;
+    border-bottom:none;
+    border-right:1px solid rgba(255,255,255,.1);
+  }
+
+  .sidebar a{
+    flex:0 0 auto;
+    padding:18px 14px;
+  }
+
+  .usuario{
+    position:relative;
+    left:auto;
+    bottom:auto;
+    flex:0 0 auto;
+    padding:10px 20px;
+    min-width:170px;
+  }
+
+  .main{
+    margin-left:0;
+    width:100%;
+    min-height:100vh;
+  }
+
+  .card{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  table{
+    width:100%;
+    min-width:0;
+  }
+
+  th,
+  td{
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+
+  th:nth-child(1),
+  td:nth-child(1),
+  th:nth-child(2),
+  td:nth-child(2),
+  th:nth-child(3),
+  td:nth-child(3),
+  th:nth-child(4),
+  td:nth-child(4),
+  th:nth-child(5),
+  td:nth-child(5),
+  th:nth-child(6),
+  td:nth-child(6){
+    width:auto;
+  }
+
+}
+
 </style>
 
 </head>
@@ -237,6 +318,7 @@ button:hover{
 <a href="/financeiro.html">💵 Financeiro</a>
 <a href="/lembretes.html">🔔 Lembretes</a>
 <a href="/relatorios.html">📊 Relatórios</a>
+<a href="/auditoria.html">🛡️ Auditoria</a>
 <a href="/configuracoes.html">⚙️ Configurações</a>
 
 <div class="usuario">

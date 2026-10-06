@@ -17,6 +17,8 @@ body{
   width:250px;
   background:#0f172a;
   min-height:100vh;
+  height:100vh;
+  overflow-y:auto;
   color:white;
   position:fixed;
   left:0;
@@ -43,16 +45,20 @@ body{
 }
 
 .usuario{
-  position:absolute;
-  bottom:20px;
-  left:20px;
+  position:relative;
+  bottom:auto;
+  left:auto;
+  padding:20px;
+  margin-top:10px;
 }
 
 /* MAIN */
 .main{
   margin-left:250px;
   width:100%;
-  background:#f2f2f2;
+  background:
+    linear-gradient(rgba(242,242,242,.45), rgba(242,242,242,.45)),
+    url("/images/dashboard-background.png") center center / cover fixed no-repeat;
   min-height:100vh;
 }
 
@@ -359,6 +365,83 @@ opacity:1;
 
 }
 
+
+/* ================= RESPONSIVIDADE ================= */
+
+@media (max-width:1100px){
+
+  body{
+    display:block;
+    overflow-x:hidden;
+  }
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    min-height:auto;
+    height:auto;
+    display:flex;
+    align-items:center;
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    scrollbar-width:thin;
+  }
+
+  .logo{
+    flex:0 0 auto;
+    min-width:190px;
+    border-bottom:none;
+    border-right:1px solid rgba(255,255,255,.1);
+  }
+
+  .sidebar a{
+    flex:0 0 auto;
+    padding:18px 14px;
+  }
+
+  .usuario{
+    position:relative;
+    left:auto;
+    bottom:auto;
+    flex:0 0 auto;
+    padding:10px 20px;
+    min-width:170px;
+  }
+
+  .main{
+    margin-left:0;
+    width:100%;
+    min-height:100vh;
+  }
+
+  .stats-grid{
+    grid-template-columns:repeat(2, minmax(0,1fr));
+  }
+
+}
+
+@media (max-width:600px){
+
+  .topbar{
+    padding:0 15px;
+  }
+
+  .container{
+    padding:12px;
+  }
+
+  .stats-grid{
+    grid-template-columns:1fr;
+  }
+
+  .rodape-alerta{
+    flex-wrap:wrap;
+    white-space:normal;
+  }
+
+}
+
 </style>
 </head>
 
@@ -386,6 +469,7 @@ opacity:1;
 <a href="/financeiro.html">💵 Financeiro</a>
 <a href="/lembretes.html">🔔 Lembretes</a>
 <a href="/relatorios.html">📊 Relatórios</a>
+<a href="/auditoria.html">🛡️ Auditoria</a>
 <a href="/configuracoes.html">⚙️ Configurações</a>
 
   <div class="usuario">

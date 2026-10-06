@@ -841,6 +841,10 @@ th.subcoluna{
         📊 Relatórios
     </a>
 
+    <a href="/auditoria.html">
+        🛡️ Auditoria
+    </a>
+
     <a
         href="/configuracoes.html"
         class="ativo"
@@ -6344,6 +6348,7 @@ async function salvarPermissoesUsuario(){
 }
 
 
+
 async function excluirUsuario(id, nome){
 
     const usuarioId =
@@ -6353,66 +6358,143 @@ async function excluirUsuario(id, nome){
         String(nome || "este usuário").trim();
 
     if(!usuarioId){
-
         alert("Usuário inválido.");
         return;
-
     }
 
-    const confirmou =
-        confirm(
-            `Tem certeza que deseja excluir o usuário "${usuarioNome}"?
+    const overlay =
+        document.createElement("div");
 
-Esta ação não poderá ser desfeita.`
-        );
+    overlay.style.cssText =
+        "position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;";
 
-    if(!confirmou){
-        return;
-    }
+    const caixa =
+        document.createElement("div");
 
-    try{
+    caixa.style.cssText =
+        "background:#fff;width:100%;max-width:430px;border-radius:12px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.30);";
 
-        const res =
-            await fetch(
-                `/api/usuarios/${encodeURIComponent(usuarioId)}`,
-                {
-                    method: "DELETE",
-                    credentials: "include"
-                }
+    caixa.innerHTML =
+        '<h3 style="margin:0 0 10px;">Autorizar exclusão</h3>' +
+        '<p style="margin:0 0 18px;line-height:1.5;">Para excluir o usuário <strong></strong>, informe as credenciais de um administrador.</p>' +
+        '<input id="adminUsuarioExcluirUsuario" type="text" autocomplete="username" placeholder="Usuário do administrador" style="width:100%;box-sizing:border-box;padding:11px;margin-bottom:10px;border:1px solid #ccc;border-radius:7px;">' +
+        '<input id="adminSenhaExcluirUsuario" type="password" autocomplete="current-password" placeholder="Senha do administrador" style="width:100%;box-sizing:border-box;padding:11px;margin-bottom:18px;border:1px solid #ccc;border-radius:7px;">' +
+        '<div style="display:flex;justify-content:flex-end;gap:10px;">' +
+        '<button type="button" id="cancelarExcluirUsuario" style="padding:10px 16px;border:0;border-radius:7px;cursor:pointer;">Cancelar</button>' +
+        '<button type="button" id="autorizarExcluirUsuario" style="padding:10px 16px;border:0;border-radius:7px;cursor:pointer;background:#dc3545;color:#fff;">Autorizar e excluir</button>' +
+        '</div>';
+
+    caixa.querySelector("strong").textContent =
+        usuarioNome;
+
+    overlay.appendChild(caixa);
+    document.body.appendChild(overlay);
+
+    const campoUsuario =
+        caixa.querySelector("#adminUsuarioExcluirUsuario");
+
+    const campoSenha =
+        caixa.querySelector("#adminSenhaExcluirUsuario");
+
+    const btnCancelar =
+        caixa.querySelector("#cancelarExcluirUsuario");
+
+    const btnAutorizar =
+        caixa.querySelector("#autorizarExcluirUsuario");
+
+    const fechar = () => {
+        overlay.remove();
+    };
+
+    btnCancelar.onclick = fechar;
+
+    overlay.addEventListener("click", e => {
+        if(e.target === overlay){
+            fechar();
+        }
+    });
+
+    campoUsuario.focus();
+
+    btnAutorizar.onclick = async () => {
+
+        const adminUsername =
+            campoUsuario.value.trim();
+
+        const adminPassword =
+            campoSenha.value;
+
+        if(!adminUsername || !adminPassword){
+            alert("Informe o usuário e a senha do administrador.");
+            return;
+        }
+
+        btnAutorizar.disabled = true;
+        btnCancelar.disabled = true;
+
+        try{
+
+            const res =
+                await fetch(
+                    "/api/usuarios/" +
+                    encodeURIComponent(usuarioId),
+                    {
+                        method: "DELETE",
+                        credentials: "include",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            adminUsername,
+                            adminPassword
+                        })
+                    }
+                );
+
+            const data =
+                await res.json()
+                    .catch(() => ({}));
+
+            if(!res.ok){
+                throw new Error(
+                    data.error ||
+                    "Erro ao excluir usuário."
+                );
+            }
+
+            campoSenha.value = "";
+            fechar();
+
+            alert(
+                data.message ||
+                "Usuário excluído com sucesso."
             );
 
-        const data =
-            await res.json()
-                .catch(() => ({}));
+            await carregarUsuarios();
 
-        if(!res.ok){
+        }
+        catch(err){
 
-            throw new Error(
-                data.error ||
+            console.error(err);
+
+            campoSenha.value = "";
+
+            alert(
+                err.message ||
                 "Erro ao excluir usuário."
             );
 
+            btnAutorizar.disabled = false;
+            btnCancelar.disabled = false;
+            campoSenha.focus();
         }
+    };
 
-        alert(
-            data.message ||
-            "Usuário excluído com sucesso."
-        );
-
-        await carregarUsuarios();
-
-    }
-    catch(err){
-
-        console.error(err);
-
-        alert(
-            err.message ||
-            "Erro ao excluir usuário."
-        );
-
-    }
-
+    campoSenha.addEventListener("keydown", e => {
+        if(e.key === "Enter"){
+            btnAutorizar.click();
+        }
+    });
 }
 
 function fecharModalSenhaUsuario(){
@@ -8328,6 +8410,23 @@ async function excluirMaquininha(id){
     }
 
 
+    const adminUsername = prompt("Usuario do administrador:");
+
+    if(adminUsername === null){
+        return;
+    }
+
+    const adminPassword = prompt("Senha do administrador:");
+
+    if(adminPassword === null){
+        return;
+    }
+
+    if(!adminUsername.trim() || !adminPassword){
+        mostrarMensagem("Informe o usuario e a senha do administrador.", "erro");
+        return;
+    }
+
     try{
 
         const res =
@@ -8338,7 +8437,16 @@ async function excluirMaquininha(id){
 
                     method:"DELETE",
 
-                    credentials:"include"
+                    credentials:"include",
+
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+
+                    body:JSON.stringify({
+                        adminUsername:adminUsername.trim(),
+                        adminPassword
+                    })
 
                 }
             );

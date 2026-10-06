@@ -219,6 +219,17 @@ button:hover{
 
 /* ================= TABLE ================= */
 
+.tabela-scroll-top{
+    overflow-x:auto;
+    overflow-y:hidden;
+    margin-bottom:6px;
+}
+
+.tabela-scroll-top-conteudo{
+    height:1px;
+    width:1050px;
+}
+
 .tabela-wrapper{
     overflow-x:auto;
 }
@@ -415,7 +426,8 @@ td.valor{
     <a href="/financeiro.html">💵 Financeiro</a>
     <a href="/lembretes.html">🔔 Lembretes</a>
     <a href="/relatorios.html">📊 Relatórios</a>
-    <a href="/configuracoes.html">⚙️ Configurações</a>
+    <a href="/auditoria.html">🛡️ Auditoria</a>
+<a href="/configuracoes.html">⚙️ Configurações</a>
 
     <div class="usuario">
 
@@ -586,7 +598,11 @@ td.valor{
                 📋 Movimentações
             </h3>
 
-            <div class="tabela-wrapper">
+            <div class="tabela-scroll-top" id="tabelaScrollTop">
+                <div class="tabela-scroll-top-conteudo"></div>
+            </div>
+
+            <div class="tabela-wrapper" id="tabelaScrollPrincipal">
 
                 <table>
 
@@ -1588,13 +1604,38 @@ async function excluirLancamento(id){
         return;
     }
 
+    const adminUsername = prompt("Usuario do administrador:");
+
+    if(adminUsername === null){
+        return;
+    }
+
+    const adminPassword = prompt("Senha do administrador:");
+
+    if(adminPassword === null){
+        return;
+    }
+
+    if(!adminUsername.trim() || !adminPassword){
+        alert("Informe o usuario e a senha do administrador.");
+        return;
+    }
+
     try{
 
         const res =
             await fetch(
                 `/api/financeiro/${id}`,
                 {
-                    method:"DELETE"
+                    method:"DELETE",
+                    credentials:"include",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({
+                        adminUsername:adminUsername.trim(),
+                        adminPassword
+                    })
                 }
             );
 
@@ -1670,6 +1711,24 @@ window.addEventListener(
         await carregarUsuario();
 
         await carregarFinanceiro();
+
+        const scrollTop =
+            document.getElementById("tabelaScrollTop");
+
+        const scrollPrincipal =
+            document.getElementById("tabelaScrollPrincipal");
+
+        if(scrollTop && scrollPrincipal){
+
+            scrollTop.addEventListener("scroll", () => {
+                scrollPrincipal.scrollLeft = scrollTop.scrollLeft;
+            });
+
+            scrollPrincipal.addEventListener("scroll", () => {
+                scrollTop.scrollLeft = scrollPrincipal.scrollLeft;
+            });
+
+        }
 
     }
 );

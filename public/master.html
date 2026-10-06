@@ -1453,127 +1453,102 @@ if(!res.ok){
 async function excluirEmpresa(id){
 
     if(!id){
-
-        mostrarErro(
-            "Empresa inválida."
-        );
-
+        mostrarErro("Empresa inv\u00e1lida.");
         return;
-
     }
 
+    const confirmacao = confirm(
+        "ATEN\u00c7\u00c3O!\n\n" +
+        "Deseja realmente EXCLUIR esta empresa?\n\n" +
+        "Todos os dados vinculados a ela poder\u00e3o ser exclu\u00eddos.\n\n" +
+        "Esta a\u00e7\u00e3o n\u00e3o poder\u00e1 ser desfeita."
+    );
 
-    const confirmacao =
-        confirm(
-            "ATENÇÃO!\n\n" +
-            "Deseja realmente EXCLUIR esta empresa?\n\n" +
-            "Todos os dados vinculados a ela poderão ser excluídos.\n\n" +
-            "Esta ação não poderá ser desfeita."
-        );
+    if(!confirmacao) return;
 
+    const overlay = document.createElement("div");
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;";
 
-    if(!confirmacao){
+    const caixa = document.createElement("div");
+    caixa.style.cssText = "background:#fff;width:100%;max-width:430px;border-radius:12px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.30);";
 
-        return;
+    caixa.innerHTML =
+        '<h3 style="margin:0 0 10px;">Autorizar exclus\u00e3o</h3>' +
+        '<p style="margin:0 0 18px;line-height:1.5;">Para excluir esta empresa e todos os dados vinculados, informe as credenciais administrativas.</p>' +
+        '<input id="adminUsuarioExcluirEmpresa" type="text" autocomplete="username" placeholder="Usu\u00e1rio do administrador" style="width:100%;box-sizing:border-box;padding:11px;margin-bottom:10px;border:1px solid #ccc;border-radius:7px;">' +
+        '<input id="adminSenhaExcluirEmpresa" type="password" autocomplete="current-password" placeholder="Senha do administrador" style="width:100%;box-sizing:border-box;padding:11px;margin-bottom:18px;border:1px solid #ccc;border-radius:7px;">' +
+        '<div style="display:flex;justify-content:flex-end;gap:10px;">' +
+        '<button type="button" id="cancelarExcluirEmpresa" style="padding:10px 16px;border:0;border-radius:7px;cursor:pointer;">Cancelar</button>' +
+        '<button type="button" id="autorizarExcluirEmpresa" style="padding:10px 16px;border:0;border-radius:7px;cursor:pointer;background:#dc3545;color:#fff;">Autorizar e excluir</button>' +
+        '</div>';
 
-    }
+    overlay.appendChild(caixa);
+    document.body.appendChild(overlay);
 
+    const campoUsuario = caixa.querySelector("#adminUsuarioExcluirEmpresa");
+    const campoSenha = caixa.querySelector("#adminSenhaExcluirEmpresa");
+    const btnCancelar = caixa.querySelector("#cancelarExcluirEmpresa");
+    const btnAutorizar = caixa.querySelector("#autorizarExcluirEmpresa");
 
-    const botoes =
-        document.querySelectorAll(
-            `[data-company-id="${id}"]`
-        );
+    const fechar = () => overlay.remove();
 
+    btnCancelar.onclick = fechar;
 
-    botoes.forEach(botao => {
-
-        botao.disabled = true;
-
+    overlay.addEventListener("click", e => {
+        if(e.target === overlay) fechar();
     });
 
+    campoUsuario.focus();
 
-    try{
+    btnAutorizar.onclick = async () => {
 
-        const res =
-            await fetch(
+        const adminUsername = campoUsuario.value.trim();
+        const adminPassword = campoSenha.value;
+
+        if(!adminUsername || !adminPassword){
+            mostrarErro("Informe o usu\u00e1rio e a senha do administrador.");
+            return;
+        }
+
+        btnAutorizar.disabled = true;
+        btnCancelar.disabled = true;
+
+        try{
+            const res = await fetch(
                 `/api/admin/company/${encodeURIComponent(id)}`,
                 {
                     method:"DELETE",
-
-                    credentials:"include"
+                    headers:{"Content-Type":"application/json"},
+                    credentials:"include",
+                    body:JSON.stringify({adminUsername, adminPassword})
                 }
             );
 
+            const data = await res.json().catch(() => ({}));
 
-        const data =
-            await res.json().catch(() => ({}));
+            if(!res.ok){
+                throw new Error(data.error || "N\u00e3o foi poss\u00edvel excluir a empresa.");
+            }
 
+            campoSenha.value = "";
+            fechar();
+            mostrarSucesso("Empresa exclu\u00edda com sucesso.");
+            await carregarPainel();
 
-        if(res.status === 401){
-
-            window.location.href = "/";
-
-            return;
-
+        }catch(err){
+            console.error("Erro ao excluir empresa:", err);
+            campoSenha.value = "";
+            mostrarErro(err.message || "Erro ao excluir a empresa.");
+            btnAutorizar.disabled = false;
+            btnCancelar.disabled = false;
+            campoSenha.focus();
         }
+    };
 
-
-        if(res.status === 403){
-
-            mostrarErro(
-                data.error ||
-                "Você não possui permissão para excluir esta empresa."
-            );
-
-            return;
-
-        }
-
-
-        if(!res.ok){
-
-            throw new Error(
-                data.error ||
-                "Não foi possível excluir a empresa."
-            );
-
-        }
-
-
-        mostrarSucesso(
-            "Empresa excluída com sucesso."
-        );
-
-
-        await carregarPainel();
-
-
-    }catch(err){
-
-        console.error(
-            "Erro ao excluir empresa:",
-            err
-        );
-
-
-        mostrarErro(
-            err.message ||
-            "Erro ao excluir a empresa."
-        );
-
-
-    }finally{
-
-        botoes.forEach(botao => {
-
-            botao.disabled = false;
-
-        });
-
-    }
-
+    campoSenha.addEventListener("keydown", e => {
+        if(e.key === "Enter") btnAutorizar.click();
+    });
 }
-
 
 /* =========================================================
    CARREGAR PAINEL

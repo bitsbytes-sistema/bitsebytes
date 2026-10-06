@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Bits & Bytes - Auditoria</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f2f2f2;
+    color:#0f172a;
+}
+
+.sidebar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:250px;
+    height:100vh;
+    background:#0f172a;
+    color:white;
+    padding:20px 15px;
+    overflow-y:auto;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.logo img{
+    width:45px;
+}
+
+.sidebar a{
+    display:block;
+    color:#e2e8f0;
+    text-decoration:none;
+    padding:11px 12px;
+    margin:3px 0;
+    border-radius:7px;
+    font-size:14px;
+}
+
+.sidebar a:hover,
+.sidebar a.ativo{
+    background:#1e293b;
+    color:white;
+}
+
+.usuario{
+    margin-top:30px;
+    padding:14px 10px;
+    border-top:1px solid #334155;
+    font-size:13px;
+}
+
+.main{
+    margin-left:250px;
+    min-height:100vh;
+}
+
+.topbar{
+    height:70px;
+    background:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 25px;
+    box-shadow:0 1px 5px rgba(0,0,0,.08);
+    font-size:20px;
+    font-weight:bold;
+}
+
+.topbar a{
+    font-size:14px;
+    color:#dc2626;
+    text-decoration:none;
+}
+
+.container{
+    padding:20px;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.card h2{
+    margin:0 0 6px 0;
+    font-size:18px;
+}
+
+.subtitulo{
+    margin:0;
+    color:#64748b;
+    font-size:13px;
+}
+
+.filtros{
+    display:grid;
+    grid-template-columns:minmax(220px,1fr) 160px auto;
+    gap:12px;
+    align-items:end;
+}
+
+.campo label{
+    display:block;
+    font-size:12px;
+    font-weight:bold;
+    margin-bottom:6px;
+    color:#475569;
+}
+
+.campo input,
+.campo select{
+    width:100%;
+    height:40px;
+    border:1px solid #cbd5e1;
+    border-radius:7px;
+    padding:0 10px;
+    background:white;
+}
+
+button{
+    height:40px;
+    border:0;
+    border-radius:7px;
+    padding:0 16px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-atualizar{
+    background:#0f172a;
+    color:white;
+}
+
+.resumo{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+    font-size:13px;
+    color:#64748b;
+}
+
+.tabela-scroll-top{
+    overflow-x:auto;
+    overflow-y:hidden;
+    margin-bottom:6px;
+}
+
+.tabela-scroll-top-conteudo{
+    height:1px;
+    width:1050px;
+}
+
+.tabela-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1050px;
+}
+
+th{
+    text-align:left;
+    background:#f8fafc;
+    color:#475569;
+    font-size:12px;
+    padding:11px 10px;
+    border-bottom:1px solid #e2e8f0;
+}
+
+td{
+    padding:11px 10px;
+    border-bottom:1px solid #e2e8f0;
+    font-size:13px;
+    vertical-align:top;
+}
+
+tr:hover td{
+    background:#f8fafc;
+}
+
+.acao{
+    display:inline-block;
+    background:#e2e8f0;
+    color:#334155;
+    border-radius:20px;
+    padding:5px 9px;
+    font-size:11px;
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+.btn-detalhes{
+    height:30px;
+    background:#e2e8f0;
+    color:#0f172a;
+    padding:0 10px;
+    font-size:12px;
+}
+
+.vazio{
+    text-align:center;
+    padding:35px;
+    color:#64748b;
+}
+
+.erro{
+    background:#fee2e2;
+    color:#991b1b;
+    padding:12px;
+    border-radius:7px;
+    margin-bottom:15px;
+    display:none;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:9999;
+}
+
+.modal.aberto{
+    display:flex;
+}
+
+.modal-conteudo{
+    background:white;
+    width:min(720px,100%);
+    max-height:85vh;
+    overflow:auto;
+    border-radius:12px;
+    padding:20px;
+}
+
+.modal-topo{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+.modal-topo h3{
+    margin:0;
+}
+
+.btn-fechar{
+    width:34px;
+    height:34px;
+    padding:0;
+    background:#e2e8f0;
+    font-size:18px;
+}
+
+.detalhe-linha{
+    margin-bottom:12px;
+}
+
+.detalhe-linha strong{
+    display:block;
+    font-size:12px;
+    color:#64748b;
+    margin-bottom:3px;
+}
+
+pre{
+    background:#0f172a;
+    color:#e2e8f0;
+    padding:15px;
+    border-radius:8px;
+    overflow:auto;
+    white-space:pre-wrap;
+    word-break:break-word;
+    font-size:12px;
+}
+
+@media(max-width:900px){
+
+    body{
+        overflow-x:hidden;
+    }
+
+    .sidebar{
+        position:relative;
+        width:100%;
+        min-height:auto;
+        height:auto;
+        display:flex;
+        align-items:center;
+        overflow-x:auto;
+        overflow-y:hidden;
+    }
+
+    .sidebar .logo{
+        flex:0 0 auto;
+    }
+
+    .sidebar a{
+        flex:0 0 auto;
+    }
+
+    .usuario{
+        position:relative;
+        flex:0 0 auto;
+    }
+
+    .main{
+        margin-left:0;
+        width:100%;
+        min-height:100vh;
+    }
+
+    .filtros{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div class="logo">
+        <img src="/logo.png" alt="Logo">
+
+        <div>
+            <strong>Bits & Bytes</strong><br>
+            <small>Tecnology</small>
+        </div>
+    </div>
+
+    <a href="/dashboard.html">🏠 Dashboard</a>
+    <a href="/clientes.html">👥 Clientes</a>
+    <a href="/chamados.html">📋 Chamados</a>
+    <a href="/orcamentos.html">💰 Orçamentos</a>
+    <a href="/services.html">🛠️ Peças e Serviços</a>
+    <a href="/laudos.html">📄 Laudos Técnicos</a>
+    <a href="/estoque.html">📦 Estoque</a>
+    <a href="/vendas.html">🛒 Vendas</a>
+    <a href="/financeiro.html">💵 Financeiro</a>
+    <a href="/lembretes.html">🔔 Lembretes</a>
+    <a href="/relatorios.html">📊 Relatórios</a>
+    <a href="/auditoria.html" class="ativo">🛡️ Auditoria</a>
+    <a href="/configuracoes.html">⚙️ Configurações</a>
+
+    <div class="usuario">
+        <b id="nomeUsuario">Carregando...</b>
+        <br>
+        <small id="perfilUsuario"></small>
+    </div>
+
+</div>
+
+<div class="main">
+
+    <div class="topbar">
+        <div>🛡️ Auditoria</div>
+        <a href="javascript:void(0)" onclick="logout()">Sair</a>
+    </div>
+
+    <div class="container">
+
+        <div class="card">
+            <h2>Histórico de Auditoria</h2>
+            <p class="subtitulo">
+                Consulte ações administrativas e operações registradas no sistema.
+            </p>
+        </div>
+
+        <div class="card">
+
+            <div class="filtros">
+
+                <div class="campo">
+                    <label>Pesquisar</label>
+                    <input
+                        id="filtroBusca"
+                        type="text"
+                        placeholder="Ação, descrição, módulo ou usuário..."
+                        oninput="aplicarFiltros()"
+                    >
+                </div>
+
+                <div class="campo">
+                    <label>Registros</label>
+                    <select id="limite" onchange="carregarAuditoria()">
+                        <option value="50">50</option>
+                        <option value="100" selected>100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
+                    </select>
+                </div>
+
+                <button
+                    class="btn-atualizar"
+                    onclick="carregarAuditoria()"
+                >
+                    Atualizar
+                </button>
+
+            </div>
+
+        </div>
+
+        <div id="erro" class="erro"></div>
+
+        <div class="card">
+
+            <div class="resumo">
+                <span id="totalRegistros">0 registros</span>
+                <span>Mais recentes primeiro</span>
+            </div>
+
+            <div class="tabela-scroll-top" id="tabelaScrollTop">
+                <div class="tabela-scroll-top-conteudo"></div>
+            </div>
+
+            <div class="tabela-wrap" id="tabelaScrollPrincipal">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Ação</th>
+                            <th>Módulo</th>
+                            <th>Descrição</th>
+                            <th>Executado por</th>
+                            <th>Autorizado por</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="corpoAuditoria">
+
+                        <tr>
+                            <td colspan="7" class="vazio">
+                                Carregando auditoria...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="modalDetalhes" class="modal" onclick="fecharModalFora(event)">
+
+    <div class="modal-conteudo">
+
+        <div class="modal-topo">
+            <h3>Detalhes da Auditoria</h3>
+
+            <button
+                class="btn-fechar"
+                onclick="fecharDetalhes()"
+            >
+                &times;
+            </button>
+        </div>
+
+        <div id="conteudoDetalhes"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+let registrosAuditoria = [];
+let registrosFiltrados = [];
+
+
+function escapar(valor){
+
+    return String(valor ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+
+function formatarData(valor){
+
+    if(!valor){
+        return "-";
+    }
+
+    const data = new Date(valor);
+
+    if(Number.isNaN(data.getTime())){
+        return valor;
+    }
+
+    return data.toLocaleString(
+        "pt-BR",
+        {
+            dateStyle:"short",
+            timeStyle:"medium"
+        }
+    );
+}
+
+
+function formatarAcao(valor){
+
+    return String(valor || "-")
+        .replaceAll("_"," ");
+}
+
+
+async function carregarUsuario(){
+
+    try{
+
+        const resposta =
+            await fetch("/me");
+
+        if(!resposta.ok){
+            return;
+        }
+
+        const dados =
+            await resposta.json();
+
+        const usuario =
+            dados.user || dados.usuario || dados;
+
+        document.getElementById(
+            "nomeUsuario"
+        ).textContent =
+            usuario.nome ||
+            usuario.username ||
+            "Usuário";
+
+        document.getElementById(
+            "perfilUsuario"
+        ).textContent =
+            usuario.role ||
+            usuario.perfil ||
+            "";
+
+    }catch(erro){
+
+        console.error(
+            "Erro ao carregar usuário:",
+            erro
+        );
+
+    }
+
+}
+
+
+async function carregarAuditoria(){
+
+    const corpo =
+        document.getElementById(
+            "corpoAuditoria"
+        );
+
+    const erro =
+        document.getElementById("erro");
+
+    erro.style.display = "none";
+
+    corpo.innerHTML =
+        '<tr><td colspan="7" class="vazio">Carregando auditoria...</td></tr>';
+
+    try{
+
+        const limite =
+            document.getElementById(
+                "limite"
+            ).value;
+
+        const resposta =
+            await fetch(
+                "/api/auditoria?limite=" +
+                encodeURIComponent(limite)
+            );
+
+        const dados =
+            await resposta.json();
+
+        if(!resposta.ok){
+
+            throw new Error(
+                dados.error ||
+                "Não foi possível carregar a auditoria."
+            );
+
+        }
+
+        registrosAuditoria =
+            Array.isArray(dados.registros)
+                ? dados.registros
+                : [];
+
+        aplicarFiltros();
+
+    }catch(erroCarregamento){
+
+        console.error(
+            "Erro ao carregar auditoria:",
+            erroCarregamento
+        );
+
+        registrosAuditoria = [];
+        registrosFiltrados = [];
+
+        corpo.innerHTML =
+            '<tr><td colspan="7" class="vazio">Não foi possível carregar os registros.</td></tr>';
+
+        erro.textContent =
+            erroCarregamento.message;
+
+        erro.style.display =
+            "block";
+
+        atualizarTotal();
+
+    }
+
+}
+
+
+function aplicarFiltros(){
+
+    const busca =
+        document.getElementById(
+            "filtroBusca"
+        ).value
+        .trim()
+        .toLowerCase();
+
+    if(!busca){
+
+        registrosFiltrados =
+            [...registrosAuditoria];
+
+    }else{
+
+        registrosFiltrados =
+            registrosAuditoria.filter(
+                registro => {
+
+                    const texto = [
+                        registro.acao,
+                        registro.entidade,
+                        registro.entidadeId,
+                        registro.descricao,
+                        registro.executadoPor,
+                        registro.autorizadoPor
+                    ]
+                    .join(" ")
+                    .toLowerCase();
+
+                    return texto.includes(busca);
+
+                }
+            );
+
+    }
+
+    renderizarAuditoria();
+
+}
+
+
+function atualizarTotal(){
+
+    const total =
+        registrosFiltrados.length;
+
+    document.getElementById(
+        "totalRegistros"
+    ).textContent =
+        total === 1
+            ? "1 registro"
+            : total + " registros";
+
+}
+
+
+function renderizarAuditoria(){
+
+    const corpo =
+        document.getElementById(
+            "corpoAuditoria"
+        );
+
+    atualizarTotal();
+
+    if(registrosFiltrados.length === 0){
+
+        corpo.innerHTML =
+            '<tr><td colspan="7" class="vazio">Nenhum registro encontrado.</td></tr>';
+
+        return;
+    }
+
+    corpo.innerHTML =
+        registrosFiltrados
+        .map((registro, indice) => {
+
+            return `
+                <tr>
+                    <td>
+                        ${escapar(
+                            formatarData(
+                                registro.data ||
+                                registro.createdAt
+                            )
+                        )}
+                    </td>
+
+                    <td>
+                        <span class="acao">
+                            ${escapar(
+                                formatarAcao(
+                                    registro.acao
+                                )
+                            )}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${escapar(
+                            registro.entidade || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapar(
+                            registro.descricao || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapar(
+                            registro.executadoPor || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapar(
+                            registro.autorizadoPor || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        <button
+                            class="btn-detalhes"
+                            onclick="abrirDetalhes(${indice})"
+                        >
+                            Ver
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+        })
+        .join("");
+
+}
+
+
+function abrirDetalhes(indice){
+
+    const registro =
+        registrosFiltrados[indice];
+
+    if(!registro){
+        return;
+    }
+
+    const dados =
+        registro.dados &&
+        typeof registro.dados === "object"
+            ? JSON.stringify(
+                registro.dados,
+                null,
+                2
+            )
+            : String(
+                registro.dados || ""
+            );
+
+    document.getElementById(
+        "conteudoDetalhes"
+    ).innerHTML = `
+
+        <div class="detalhe-linha">
+            <strong>Data/Hora</strong>
+            ${escapar(
+                formatarData(
+                    registro.data ||
+                    registro.createdAt
+                )
+            )}
+        </div>
+
+        <div class="detalhe-linha">
+            <strong>Ação</strong>
+            ${escapar(
+                formatarAcao(
+                    registro.acao
+                )
+            )}
+        </div>
+
+        <div class="detalhe-linha">
+            <strong>Módulo / Entidade</strong>
+            ${escapar(
+                registro.entidade || "-"
+            )}
+        </div>
+
+        <div class="detalhe-linha">
+            <strong>ID da entidade</strong>
+            ${escapar(
+                registro.entidadeId || "-"
+            )}
+        </div>
+
+        <div class="detalhe-linha">
+            <strong>Descrição</strong>
+            ${escapar(
+                registro.descricao || "-"
+            )}
+        </div>
+
+        <div class="detalhe-linha">
+            <strong>Executado por</strong>
+            ${escapar(
+                registro.executadoPor || "-"
+            )}
+        </div>
+
+        <div class="detalhe-linha">
+            <strong>Autorizado por</strong>
+            ${escapar(
+                registro.autorizadoPor || "-"
+            )}
+        </div>
+
+        <div class="detalhe-linha">
+            <strong>Dados registrados</strong>
+            <pre>${escapar(dados || "{}")}</pre>
+        </div>
+    `;
+
+    document.getElementById(
+        "modalDetalhes"
+    ).classList.add("aberto");
+
+}
+
+
+function fecharDetalhes(){
+
+    document.getElementById(
+        "modalDetalhes"
+    ).classList.remove("aberto");
+
+}
+
+
+function fecharModalFora(event){
+
+    if(
+        event.target.id ===
+        "modalDetalhes"
+    ){
+        fecharDetalhes();
+    }
+
+}
+
+
+async function logout(){
+
+    try{
+
+        await fetch("/logout");
+
+    }catch(erro){
+
+        console.error(erro);
+
+    }
+
+    window.location.href =
+        "/login.html";
+
+}
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if(event.key === "Escape"){
+            fecharDetalhes();
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        carregarUsuario();
+        carregarAuditoria();
+
+        const scrollTop =
+            document.getElementById("tabelaScrollTop");
+
+        const scrollPrincipal =
+            document.getElementById("tabelaScrollPrincipal");
+
+        if(scrollTop && scrollPrincipal){
+
+            scrollTop.addEventListener("scroll", () => {
+                scrollPrincipal.scrollLeft = scrollTop.scrollLeft;
+            });
+
+            scrollPrincipal.addEventListener("scroll", () => {
+                scrollTop.scrollLeft = scrollPrincipal.scrollLeft;
+            });
+
+        }
+
+    }
+);
+
+</script>
+
+<script src="/permissoes.js"></script>
+
+</body>
+</html>

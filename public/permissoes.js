@@ -25,6 +25,7 @@
     "financeiro.html": "financeiro",
     "lembretes.html": "lembretes",
     "relatorios.html": "relatorios",
+    "auditoria.html": "auditoria",
     "configuracoes.html": "configuracoes"
   };
 
@@ -62,7 +63,10 @@
   }
 
 
-  function aplicarPermissoes(permissoes) {
+  function aplicarPermissoes(permissoes, role) {
+
+    const perfil =
+      String(role || "").toLowerCase();
 
     const links =
       document.querySelectorAll("a[href]");
@@ -74,6 +78,17 @@
 
       if (!modulo) {
         return;
+      }
+
+      if (
+        modulo === "auditoria" &&
+        perfil !== "admin" &&
+        perfil !== "master"
+      ) {
+
+        link.style.display = "none";
+        return;
+
       }
 
       if (permissoes[modulo] === false) {
@@ -116,7 +131,7 @@
         return;
       }
 
-      aplicarPermissoes(permissoes);
+      aplicarPermissoes(permissoes, dados.user.role);
 
     } catch (err) {
 

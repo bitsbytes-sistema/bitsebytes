@@ -7,6 +7,10 @@
 
 <style>
 
+*{
+  box-sizing:border-box;
+}
+
 body{
   display:flex;
   margin:0;
@@ -53,7 +57,7 @@ body{
 /* MAIN */
 .main{
   margin-left:250px;
-  width:100%;
+  width:calc(100% - 250px);
 }
 
 .topbar{
@@ -94,6 +98,12 @@ table{
  width:100%;
  border-collapse:collapse;
  margin-top:20px;
+ table-layout:fixed;
+}
+
+th, td{
+ overflow-wrap:anywhere;
+ word-break:normal;
 }
 
 th{
@@ -115,6 +125,66 @@ td{
 .inativo{
  color:red;
  font-weight:bold;
+}
+
+
+/* RESPONSIVIDADE */
+@media (max-width:1100px){
+
+  body{
+    display:block;
+    overflow-x:hidden;
+  }
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    min-height:auto;
+    height:auto;
+    display:flex;
+    align-items:center;
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    scrollbar-width:thin;
+  }
+
+  .logo{
+    flex:0 0 auto;
+    min-width:190px;
+    border-bottom:none;
+    border-right:1px solid rgba(255,255,255,.1);
+  }
+
+  .sidebar a{
+    flex:0 0 auto;
+    padding:18px 14px;
+  }
+
+  .usuario{
+    position:relative;
+    left:auto;
+    bottom:auto;
+    flex:0 0 auto;
+    padding:10px 20px;
+    min-width:170px;
+  }
+
+  .main{
+    margin-left:0;
+    width:100%;
+    min-height:100vh;
+  }
+
+  .card{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  table{
+    width:100%;
+    min-width:0;
+  }
 }
 
 /* MODAL */
@@ -172,6 +242,7 @@ input,textarea,select{
 <a href="/financeiro.html">💵 Financeiro</a>
 <a href="/lembretes.html">🔔 Lembretes</a>
 <a href="/relatorios.html">📊 Relatórios</a>
+<a href="/auditoria.html">🛡️ Auditoria</a>
 <a href="/configuracoes.html">⚙️ Configurações</a>
 
 <div class="usuario">

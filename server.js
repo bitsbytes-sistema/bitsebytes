@@ -51,6 +51,7 @@ const saleRoutes = require("./routes/sales");
 const budgetRoutes = require("./routes/budgets");
 const financeiroRoutes = require("./routes/financeiro");
 const relatoriosRoutes = require("./routes/relatorios");
+const auditoriaRoutes = require("./routes/auditoria");
 const notificationRoutes = require("./routes/notifications");
 const lembreteRoutes = require("./routes/lembretes");
 const mensagensProgramadasRoutes = require("./routes/mensagensProgramadas");
@@ -398,6 +399,8 @@ const PAGINAS_PERMISSOES = {
 
   "/relatorios.html": "relatorios",
 
+
+
   "/configuracoes.html": "configuracoes"
 };
 
@@ -425,6 +428,26 @@ for (
   );
 
 }
+
+
+/* ===================== PROTECAO AUDITORIA ===================== */
+app.get(
+  "/auditoria.html",
+  auth,
+  adminEmpresaOnly,
+  requirePermissao("auditoria"),
+  (req, res) => {
+
+    res.sendFile(
+      path.join(
+        __dirname,
+        "public",
+        "auditoria.html"
+      )
+    );
+
+  }
+);
 
 
 /* ===================== PROTECAO PAINEL MASTER ===================== */
@@ -815,7 +838,70 @@ function adminEmpresaOnly(req, res, next){
 }
 
 
-/* ===================== USUARIOS DA EMPRESA ===================== */
+async function validarAutorizacaoAdministrativa(req){
+
+  const companyId =
+    String(req.session.user.companyId);
+
+  const adminUsername =
+    String(req.body.adminUsername || '').trim();
+
+  const adminPassword =
+    String(req.body.adminPassword || '');
+
+  if(!adminUsername || !adminPassword){
+    return {
+      ok: false,
+      status: 400,
+      error: 'Informe o usuário e a senha do administrador.'
+    };
+  }
+
+  const administrador = await User.findOne({
+    username: adminUsername
+  });
+
+  if(
+    !administrador ||
+    String(administrador.companyId) !== companyId
+  ){
+    return {
+      ok: false,
+      status: 401,
+      error: 'Administrador ou senha inválidos.'
+    };
+  }
+
+  const perfil =
+    String(administrador.role || '').toLowerCase();
+
+  if(perfil !== 'admin' && perfil !== 'master'){
+    return {
+      ok: false,
+      status: 403,
+      error: 'O usuário informado não possui permissão administrativa.'
+    };
+  }
+
+  const senhaCorreta =
+    await bcrypt.compare(
+      adminPassword,
+      administrador.password
+    );
+
+  if(!senhaCorreta){
+    return {
+      ok: false,
+      status: 401,
+      error: 'Administrador ou senha inválidos.'
+    };
+  }
+
+  return {
+    ok: true,
+    administrador
+  };
+}/* ===================== USUARIOS DA EMPRESA ===================== */
 app.get(
   "/api/usuarios",
   auth,
@@ -1784,6 +1870,7 @@ const MODULOS_PERMISSOES = [
   "financeiro",
   "lembretes",
   "relatorios",
+  "auditoria",
   "configuracoes"
 ];
 
@@ -2109,9 +2196,45 @@ app.delete(
 
       }
 
+      /* ===================== AUTORIZACAO ADMINISTRATIVA ===================== */
+
+      const autorizacaoExcluirUsuario =
+        await validarAutorizacaoAdministrativa(req);
+
+      if(!autorizacaoExcluirUsuario.ok){
+        return res.status(autorizacaoExcluirUsuario.status).json({
+          ok: false,
+          error: autorizacaoExcluirUsuario.error
+        });
+      }
+
+      const administrador =
+        autorizacaoExcluirUsuario.administrador;
+
+
+      /* ===================== EXCLUIR USUARIO ===================== */
+
       await User.deleteOne({
         _id: usuario._id,
         companyId: usuario.companyId
+      });
+
+      await AuditLog.create({
+        companyId: String(usuario.companyId),
+        acao: "excluir_usuario",
+        entidade: "User",
+        entidadeId: String(usuario._id),
+        descricao: "Exclusão do usuário " + usuario.username,
+        executadoPor: req.session.user.username,
+        executadoPorId: req.session.user._id,
+        autorizadoPor: administrador.username,
+        autorizadoPorId: administrador._id,
+        dados: {
+          username: usuario.username,
+          nome: usuario.nome || "",
+          role: usuario.role || ""
+        },
+        data: new Date()
       });
 
       console.log(
@@ -3111,6 +3234,18 @@ app.delete(
       /* =========================
          EXCLUIR DADOS DA EMPRESA
       ========================= */
+
+      /* ===================== AUTORIZACAO ADMINISTRATIVA ===================== */
+
+      const autorizacaoExcluirEmpresa =
+        await validarAutorizacaoAdministrativa(req);
+
+      if(!autorizacaoExcluirEmpresa.ok){
+        return res.status(autorizacaoExcluirEmpresa.status).json({
+          ok: false,
+          error: autorizacaoExcluirEmpresa.error
+        });
+      }
 
       await User.deleteMany({
         companyId: empresa._id
@@ -4148,6 +4283,18 @@ app.delete("/api/tickets/:id/fotos/:fotoId", auth, requirePermissao("chamados"),
       });
     }
 
+    /* ===================== AUTORIZACAO ADMINISTRATIVA ===================== */
+
+    const autorizacaoExcluirFoto =
+      await validarAutorizacaoAdministrativa(req);
+
+    if(!autorizacaoExcluirFoto.ok){
+      return res.status(autorizacaoExcluirFoto.status).json({
+        ok: false,
+        error: autorizacaoExcluirFoto.error
+      });
+    }
+
     const chaveFoto = foto.chave;
 
     await r2.send(
@@ -5084,6 +5231,18 @@ app.delete("/api/tickets/:id/assinatura", auth, requirePermissao("chamados"), as
       return res.status(400).json({
         ok: false,
         error: "Este chamado não possui assinatura registrada."
+      });
+    }
+
+    /* ===================== AUTORIZACAO ADMINISTRATIVA ===================== */
+
+    const autorizacaoExcluirAssinatura =
+      await validarAutorizacaoAdministrativa(req);
+
+    if(!autorizacaoExcluirAssinatura.ok){
+      return res.status(autorizacaoExcluirAssinatura.status).json({
+        ok: false,
+        error: autorizacaoExcluirAssinatura.error
       });
     }
 
@@ -7117,6 +7276,7 @@ app.use("/api/budgets", budgetRoutes);
 
 app.use("/api/financeiro", requirePermissao("financeiro"), financeiroRoutes);
 app.use("/api/relatorios", requirePermissao("relatorios"), relatoriosRoutes);
+app.use("/api/auditoria", adminEmpresaOnly, requirePermissao("auditoria"), auditoriaRoutes);
 
 app.use("/api/products", productRoutes);
 

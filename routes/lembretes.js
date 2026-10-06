@@ -3,6 +3,8 @@ const router = express.Router();
 
 const Lembrete = require("../models/Lembrete");
 const Cliente = require("../models/Cliente");
+const User = require("../models/User");
+const bcrypt = require("bcrypt");
 
 
 function auth(req, res, next){
@@ -209,6 +211,55 @@ router.put("/:id", auth, async(req,res)=>{
 router.delete("/:id", auth, async(req,res)=>{
 
   try{
+
+    const companyId =
+      String(req.session.user.companyId);
+
+    const adminUsername =
+      String(req.body.adminUsername || "").trim();
+
+    const adminPassword =
+      String(req.body.adminPassword || "");
+
+    if(!adminUsername || !adminPassword){
+      return res.status(400).json({
+        error:"Informe o usuario e a senha do administrador."
+      });
+    }
+
+    const administrador = await User.findOne({
+      username:adminUsername
+    });
+
+    if(
+      !administrador ||
+      String(administrador.companyId) !== companyId
+    ){
+      return res.status(401).json({
+        error:"Administrador ou senha invalidos."
+      });
+    }
+
+    const perfil =
+      String(administrador.role || "").toLowerCase();
+
+    if(perfil !== "admin" && perfil !== "master"){
+      return res.status(403).json({
+        error:"O usuario informado nao possui permissao administrativa."
+      });
+    }
+
+    const senhaCorreta =
+      await bcrypt.compare(
+        adminPassword,
+        administrador.password
+      );
+
+    if(!senhaCorreta){
+      return res.status(401).json({
+        error:"Administrador ou senha invalidos."
+      });
+    }
 
     await Lembrete.deleteOne({
 

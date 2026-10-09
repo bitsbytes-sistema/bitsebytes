@@ -43,6 +43,11 @@ const StockMovement = require("./models/StockMovement");
 const PaymentMachine = require("./models/PaymentMachine");
 const BackupControl = require("./models/BackupControl");
 const AuditLog = require("./models/AuditLog");
+const {
+  iniciarContextoAuditoria,
+  possuiAuditoriaEspecifica,
+  marcarAuditoriaEspecifica
+} = require("./utils/auditoriaContext");
 
 const serviceRoutes = require("./routes/services");
 const productRoutes = require("./routes/products");
@@ -366,6 +371,12 @@ app.use(
 }
   })
 );
+
+app.use((req, res, next) => {
+  iniciarContextoAuditoria(next);
+});
+
+app.use(auditoriaGeral);
 
 /* ===================== PAGINAS PROTEGIDAS POR PERMISSAO ===================== */
 
@@ -793,6 +804,23 @@ app.post("/login", async (req, res) => {
 
 
     // ATUALIZA TAGS ONE SIGNAL
+    await AuditLog.create({
+      companyId: String(user.companyId),
+      acao: "login",
+      entidade: "Sessao",
+      entidadeId: String(user._id),
+      descricao: "Login realizado no sistema",
+      executadoPor: user.username,
+      executadoPorId: user._id,
+      autorizadoPor: user.username,
+      autorizadoPorId: user._id,
+      dados: {
+        nome: user.nome || user.username,
+        role: user.role || ""
+      },
+      data: new Date()
+    });
+    
     await atualizarTagsOneSignal(user);
 
 
@@ -2237,6 +2265,8 @@ app.delete(
         data: new Date()
       });
 
+      marcarAuditoriaEspecifica();
+
       console.log(
         "USUARIO EXCLUIDO:",
         usuario.username,
@@ -2863,6 +2893,252 @@ app.put(
 
   }
 );
+/* ===================== AUDITORIA GERAL ===================== */
+
+function sanitizarDadosAuditoria(valor, profundidade = 0) {
+
+  if (profundidade > 5) {
+    return "[CONTEUDO LIMITADO]";
+  }
+
+  if (Array.isArray(valor)) {
+    return valor.slice(0, 30).map(
+      item => sanitizarDadosAuditoria(item, profundidade + 1)
+    );
+  }
+
+  if (valor && typeof valor === "object") {
+
+    const resultado = {};
+
+    for (const [chave, conteudo] of Object.entries(valor)) {
+
+      const chaveNormalizada = chave.toLowerCase();
+
+      if (
+        chaveNormalizada.includes("password") ||
+        chaveNormalizada.includes("senha") ||
+        chaveNormalizada.includes("token") ||
+        chaveNormalizada.includes("secret") ||
+        chaveNormalizada.includes("authorization")
+      ) {
+        resultado[chave] = "[PROTEGIDO]";
+        continue;
+      }
+
+      if (
+        chaveNormalizada.includes("assinatura") ||
+        chaveNormalizada.includes("imagem") ||
+        chaveNormalizada.includes("foto") ||
+        chaveNormalizada.includes("base64")
+      ) {
+        resultado[chave] = "[CONTEUDO OMITIDO]";
+        continue;
+      }
+
+      resultado[chave] =
+        sanitizarDadosAuditoria(
+          conteudo,
+          profundidade + 1
+        );
+    }
+
+    return resultado;
+  }
+
+  if (typeof valor === "string" && valor.length > 1000) {
+    return "[TEXTO OMITIDO - " + valor.length + " CARACTERES]";
+  }
+
+  return valor;
+}
+
+function classificarAuditoriaGeral(req) {
+
+  const rota =
+    String(req.originalUrl || req.path || "")
+      .split("?")[0];
+
+  const partes =
+    rota
+      .split("/")
+      .filter(Boolean);
+
+  const recurso =
+    partes[1] || "sistema";
+
+  const ultimo =
+    partes[partes.length - 1] || "";
+
+  const nomes = {
+    clientes: "Cliente",
+    tickets: "Chamado",
+    budgets: "Or?amento",
+    financeiro: "Financeiro",
+    services: "Servi?o",
+    products: "Produto",
+    usuarios: "Usu?rio",
+    users: "Usu?rio",
+    lembretes: "Lembrete",
+    sales: "Venda",
+    vendas: "Venda",
+    configuracoes: "Configura??o",
+    "payment-machines": "M?quina de pagamento",
+    "stock-movements": "Estoque",
+    admin: "Administra??o"
+  };
+
+  const entidade =
+    nomes[recurso] ||
+    recurso.charAt(0).toUpperCase() + recurso.slice(1);
+
+  let verbo;
+
+  if (req.method === "POST") {
+    verbo = "Criar";
+  } else if (req.method === "DELETE") {
+    verbo = "Excluir";
+  } else {
+    verbo = "Editar";
+  }
+
+  const acoesEspeciais = {
+    aprovar: "Aprovar",
+    reprovar: "Reprovar",
+    pagar: "Registrar pagamento",
+    cortesia: "Marcar cortesia",
+    permuta: "Registrar permuta",
+    converter: "Converter",
+    "cancelar-pagamento": "Cancelar pagamento",
+    "vincular-chamado": "Vincular chamado",
+    "alterar-cliente": "Alterar cliente",
+    "checklist-entrega": "Atualizar checklist de entrega"
+  };
+
+  if (acoesEspeciais[ultimo]) {
+    verbo = acoesEspeciais[ultimo];
+  }
+
+  if (
+    recurso === "usuarios" &&
+    ultimo === "status" &&
+    typeof req.body?.ativo === "boolean"
+  ) {
+    verbo = req.body.ativo ? "Ativar" : "Desativar";
+  }
+
+  const corpo = req.body || {};
+
+  const identificacao =
+    corpo.nome ||
+    corpo.nomeAntigo ||
+    corpo.cliente ||
+    corpo.descricao ||
+    corpo.codigo ||
+    corpo.numeroOS ||
+    "";
+
+  return {
+    acao:
+      verbo.toLowerCase() +
+      "_" +
+      recurso.replace(/-/g, "_"),
+
+    entidade,
+
+    descricao:
+      identificacao
+        ? verbo + " " + entidade.toLowerCase() + ": " + identificacao
+        : verbo + " " + entidade.toLowerCase()
+  };
+}
+
+function auditoriaGeral(req, res, next) {
+
+  const metodosAuditados = ["POST", "PUT", "PATCH", "DELETE"];
+
+  if (
+    !req.path.startsWith("/api/") ||
+    !metodosAuditados.includes(req.method)
+  ) {
+    return next();
+  }
+
+  const usuario = req.session && req.session.user
+    ? { ...req.session.user }
+    : null;
+
+  if (!usuario) {
+    return next();
+  }
+
+  const inicio = new Date();
+
+  res.on("finish", async () => {
+
+    try {
+
+      if (
+        res.statusCode < 200 ||
+        res.statusCode >= 400 ||
+        req.auditoriaRegistrada === true ||
+        possuiAuditoriaEspecifica()
+      ) {
+        return;
+      }
+
+      const rota =
+        String(req.originalUrl || req.path || "")
+          .split("?")[0];
+
+      const classificacao =
+        classificarAuditoriaGeral(req);
+
+      await AuditLog.create({
+        companyId: String(usuario.companyId),
+        acao: classificacao.acao,
+        entidade: classificacao.entidade,
+        entidadeId:
+          String(
+            req.params?.id ||
+            req.body?._id ||
+            ""
+          ),
+        descricao:
+          classificacao.descricao,
+        executadoPor:
+          String(usuario.username || ""),
+        executadoPorId:
+          usuario._id || null,
+        autorizadoPor:
+          String(usuario.username || ""),
+        autorizadoPorId:
+          usuario._id || null,
+        dados: {
+          metodo: req.method,
+          rota,
+          parametros: req.params || {},
+          alteracoes: sanitizarDadosAuditoria(req.body || {}),
+          inicio,
+          statusHttp: res.statusCode
+        },
+        data: new Date()
+      });
+
+    } catch (err) {
+      console.error(
+        "Erro na auditoria geral:",
+        err
+      );
+    }
+
+  });
+
+  next();
+}
+
+
+
 /* ===================== DASHBOARD ===================== */
 app.get("/dashboard", auth, requirePermissao("dashboard"), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "dashboard.html"));
@@ -6426,6 +6702,7 @@ app.delete("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, r
 
     });
 
+    marcarAuditoriaEspecifica();
 
     /* ===================== EXCLUIR CHAMADO ===================== */
 
@@ -7553,8 +7830,36 @@ app.post("/api/security/backup", auth, async (req, res) => {
 
 /* ===================== LOGOUT ===================== */
 
-app.get("/logout", (req, res) => {
-  req.session.destroy(() => res.redirect("/"));
+app.get("/logout", async (req, res) => {
+  try {
+    const usuario = req.session && req.session.user
+      ? { ...req.session.user }
+      : null;
+
+    if (usuario) {
+      await AuditLog.create({
+        companyId: String(usuario.companyId),
+        acao: "logout",
+        entidade: "Sessao",
+        entidadeId: String(usuario._id),
+        descricao: "Logout realizado no sistema",
+        executadoPor: usuario.username,
+        executadoPorId: usuario._id,
+        autorizadoPor: usuario.username,
+        autorizadoPorId: usuario._id,
+        dados: {
+          nome: usuario.nome || usuario.username,
+          role: usuario.role || ""
+        },
+        data: new Date()
+      });
+    }
+
+    req.session.destroy(() => res.redirect("/"));
+  } catch (err) {
+    console.error("Erro ao registrar auditoria de logout:", err);
+    req.session.destroy(() => res.redirect("/"));
+  }
 });
 
 

@@ -4,6 +4,10 @@ const router = express.Router();
 const MovimentoFinanceiro = require("../models/MovimentoFinanceiro");
 const Sale = require("../models/Sale");
 const Budget = require("../models/Budget");
+const AuditLog = require("../models/AuditLog");
+const {
+    marcarAuditoriaEspecifica
+} = require("../utils/auditoriaContext");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 
@@ -633,6 +637,33 @@ router.post("/", auth, async (req, res) => {
             });
 
 
+        await AuditLog.create({
+            companyId: String(companyId),
+            acao: "criar_lancamento_financeiro",
+            entidade: "MovimentoFinanceiro",
+            entidadeId: String(movimento._id),
+            descricao: `Lan?amento financeiro criado: ${movimento.descricao}`,
+            executadoPor: String(req.session.user.username || ""),
+            executadoPorId: req.session.user._id || null,
+            autorizadoPor: String(req.session.user.username || ""),
+            autorizadoPorId: req.session.user._id || null,
+            dados: {
+                tipo: movimento.tipo,
+                descricao: movimento.descricao,
+                categoria: movimento.categoria || "",
+                valor: Number(movimento.valor || 0),
+                status: movimento.status,
+                formaPagamento: movimento.formaPagamento || "",
+                dataCompetencia: movimento.dataCompetencia || null,
+                dataVencimento: movimento.dataVencimento || null,
+                dataPagamento: movimento.dataPagamento || null,
+                observacoes: movimento.observacoes || ""
+            },
+            data: new Date()
+        });
+
+        marcarAuditoriaEspecifica();
+
         res.json({
 
             ok: true,
@@ -690,6 +721,19 @@ router.put("/:id", auth, async (req, res) => {
             });
 
         }
+
+        const estadoAnterior = {
+            tipo: movimento.tipo,
+            descricao: movimento.descricao,
+            categoria: movimento.categoria || "",
+            valor: Number(movimento.valor || 0),
+            status: movimento.status,
+            formaPagamento: movimento.formaPagamento || "",
+            dataCompetencia: movimento.dataCompetencia || null,
+            dataVencimento: movimento.dataVencimento || null,
+            dataPagamento: movimento.dataPagamento || null,
+            observacoes: movimento.observacoes || ""
+        };
 
 
         const {
@@ -879,6 +923,45 @@ router.put("/:id", auth, async (req, res) => {
 
         await movimento.save();
 
+        const estadoNovo = {
+            tipo: movimento.tipo,
+            descricao: movimento.descricao,
+            categoria: movimento.categoria || "",
+            valor: Number(movimento.valor || 0),
+            status: movimento.status,
+            formaPagamento: movimento.formaPagamento || "",
+            dataCompetencia: movimento.dataCompetencia || null,
+            dataVencimento: movimento.dataVencimento || null,
+            dataPagamento: movimento.dataPagamento || null,
+            observacoes: movimento.observacoes || ""
+        };
+
+        const statusAlterado =
+            estadoAnterior.status !== estadoNovo.status;
+
+        await AuditLog.create({
+            companyId: String(companyId),
+            acao: statusAlterado
+                ? "alterar_status_lancamento_financeiro"
+                : "editar_lancamento_financeiro",
+            entidade: "MovimentoFinanceiro",
+            entidadeId: String(movimento._id),
+            descricao: statusAlterado
+                ? `Status do lan?amento financeiro alterado de ${estadoAnterior.status} para ${estadoNovo.status}: ${movimento.descricao}`
+                : `Lan?amento financeiro alterado: ${movimento.descricao}`,
+            executadoPor: String(req.session.user.username || ""),
+            executadoPorId: req.session.user._id || null,
+            autorizadoPor: String(req.session.user.username || ""),
+            autorizadoPorId: req.session.user._id || null,
+            dados: {
+                anterior: estadoAnterior,
+                novo: estadoNovo
+            },
+            data: new Date()
+        });
+
+        marcarAuditoriaEspecifica();
+
 
         res.json({
 
@@ -983,6 +1066,33 @@ router.delete("/:id", auth, async (req, res) => {
             });
 
         }
+
+        await AuditLog.create({
+            companyId,
+            acao: "excluir_lancamento_financeiro",
+            entidade: "MovimentoFinanceiro",
+            entidadeId: String(movimento._id),
+            descricao: `Lan?amento financeiro exclu?do: ${movimento.descricao}`,
+            executadoPor: String(req.session.user.username || ""),
+            executadoPorId: req.session.user._id || null,
+            autorizadoPor: String(administrador.username || ""),
+            autorizadoPorId: administrador._id || null,
+            dados: {
+                tipo: movimento.tipo,
+                descricao: movimento.descricao,
+                categoria: movimento.categoria || "",
+                valor: Number(movimento.valor || 0),
+                status: movimento.status,
+                formaPagamento: movimento.formaPagamento || "",
+                dataCompetencia: movimento.dataCompetencia || null,
+                dataVencimento: movimento.dataVencimento || null,
+                dataPagamento: movimento.dataPagamento || null,
+                observacoes: movimento.observacoes || ""
+            },
+            data: new Date()
+        });
+
+        marcarAuditoriaEspecifica();
 
 
         res.json({

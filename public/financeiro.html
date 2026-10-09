@@ -731,10 +731,10 @@ td.valor{
                 </label>
 
                 <input
-                    type="number"
+                    type="text"
                     id="valor"
-                    min="0"
-                    step="0.01"
+                    inputmode="decimal"
+                    placeholder="0,00"
                 >
 
             </div>
@@ -952,20 +952,23 @@ function dataBR(valor){
         return "-";
     }
 
-    const data =
-        new Date(valor);
+    const texto = String(valor);
 
-    if(
-        Number.isNaN(
-            data.getTime()
-        )
-    ){
+    const match = texto.match(
+        /^(\d{4})-(\d{2})-(\d{2})/
+    );
+
+    if(match){
+        return `${match[3]}/${match[2]}/${match[1]}`;
+    }
+
+    const data = new Date(valor);
+
+    if(Number.isNaN(data.getTime())){
         return "-";
     }
 
-    return data.toLocaleDateString(
-        "pt-BR"
-    );
+    return data.toLocaleDateString("pt-BR");
 
 }
 
@@ -1394,7 +1397,9 @@ function editarLancamento(id){
     document.getElementById(
         "valor"
     ).value =
-        movimento.valor;
+        Number(movimento.valor || 0)
+            .toFixed(2)
+            .replace(".", ",");
 
     document.getElementById(
         "descricao"
@@ -1474,6 +1479,9 @@ async function salvarLancamento(){
                     document.getElementById(
                         "valor"
                     ).value
+                    .trim()
+                    .replace(/\./g, "")
+                    .replace(",", ".")
                 ),
 
             descricao:

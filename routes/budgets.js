@@ -17,6 +17,9 @@ const Company = require("../models/Company");
 const Ticket = require("../models/Ticket");
 const User = require("../models/User");
 const AuditLog = require("../models/AuditLog");
+const {
+    marcarAuditoriaEspecifica
+} = require("../utils/auditoriaContext");
 const bcrypt = require("bcrypt");
 
 const path = require("path");
@@ -807,6 +810,36 @@ router.post("/", auth, async(req,res)=>{
             await ticket.save();
         }
 
+        await AuditLog.create({
+            companyId: String(companyId),
+            acao: "criar_orcamento",
+            entidade: "Budget",
+            entidadeId: String(budget._id),
+            descricao: `Or?amento criado: ${budget.codigo || budget.numero || ""}`,
+            executadoPor: String(req.session.user.username || ""),
+            executadoPorId: req.session.user._id || null,
+            autorizadoPor: String(req.session.user.username || ""),
+            autorizadoPorId: req.session.user._id || null,
+            dados: {
+                codigo: budget.codigo || "",
+                numero: budget.numero || null,
+                cliente: budget.cliente || "",
+                clienteId: budget.clienteId || null,
+                subtotal: Number(budget.subtotal || 0),
+                desconto: Number(budget.desconto || 0),
+                total: Number(budget.total || 0),
+                status: budget.status || "",
+                ticketId: budget.ticketId || null,
+                numeroOS: budget.numeroOS || null,
+                quantidadeItens: Array.isArray(budget.itens)
+                    ? budget.itens.length
+                    : 0
+            },
+            data: new Date()
+        });
+
+        marcarAuditoriaEspecifica();
+
         console.log(budget);
 
         res.json(budget);
@@ -901,6 +934,26 @@ router.put("/:id", auth, async(req,res)=>{
         }
 
 
+
+        const estadoAnterior = {
+            clienteId: budget.clienteId || null,
+            cliente: budget.cliente || "",
+            telefone: budget.telefone || "",
+            observacoes: budget.observacoes || "",
+            subtotal: Number(budget.subtotal || 0),
+            desconto: Number(budget.desconto || 0),
+            total: Number(budget.total || 0),
+            status: budget.status || "",
+            itens: Array.isArray(budget.itens)
+                ? budget.itens.map(item => ({
+                    descricao: item.descricao || "",
+                    quantidade: Number(item.quantidade || 0),
+                    valor: Number(item.valor || 0),
+                    desconto: Number(item.desconto || 0),
+                    totalLiquido: Number(item.totalLiquido || 0)
+                }))
+                : []
+        };
 
         if(req.body.clienteId !== undefined)
             budget.clienteId=req.body.clienteId;
@@ -1018,6 +1071,47 @@ router.put("/:id", auth, async(req,res)=>{
 
 
         await budget.save();
+
+        const estadoNovo = {
+            clienteId: budget.clienteId || null,
+            cliente: budget.cliente || "",
+            telefone: budget.telefone || "",
+            observacoes: budget.observacoes || "",
+            subtotal: Number(budget.subtotal || 0),
+            desconto: Number(budget.desconto || 0),
+            total: Number(budget.total || 0),
+            status: budget.status || "",
+            itens: Array.isArray(budget.itens)
+                ? budget.itens.map(item => ({
+                    descricao: item.descricao || "",
+                    quantidade: Number(item.quantidade || 0),
+                    valor: Number(item.valor || 0),
+                    desconto: Number(item.desconto || 0),
+                    totalLiquido: Number(item.totalLiquido || 0)
+                }))
+                : []
+        };
+
+        await AuditLog.create({
+            companyId: String(req.session.user.companyId),
+            acao: "editar_orcamento",
+            entidade: "Budget",
+            entidadeId: String(budget._id),
+            descricao: `Or?amento editado: ${budget.codigo || budget.numero || ""}`,
+            executadoPor: String(req.session.user.username || ""),
+            executadoPorId: req.session.user._id || null,
+            autorizadoPor: String(req.session.user.username || ""),
+            autorizadoPorId: req.session.user._id || null,
+            dados: {
+                codigo: budget.codigo || "",
+                numero: budget.numero || null,
+                antes: estadoAnterior,
+                depois: estadoNovo
+            },
+            data: new Date()
+        });
+
+        marcarAuditoriaEspecifica();
 
 
 
@@ -1653,6 +1747,8 @@ router.put("/:id/reprovar", auth, async (req, res) => {
 
         });
 
+        marcarAuditoriaEspecifica();
+
 
         res.json({
             ok: true,
@@ -1733,6 +1829,31 @@ router.put("/:id/pagar", auth, async (req, res) => {
 
         await budget.save();
 
+        await AuditLog.create({
+            companyId: String(req.session.user.companyId),
+            acao: "receber_pagamento_orcamento",
+            entidade: "Budget",
+            entidadeId: String(budget._id),
+            descricao: `Pagamento recebido do or?amento ${budget.codigo || budget.numero || ""}`,
+            executadoPor: String(req.session.user.username || ""),
+            executadoPorId: req.session.user._id || null,
+            autorizadoPor: String(req.session.user.username || ""),
+            autorizadoPorId: req.session.user._id || null,
+            dados: {
+                codigo: budget.codigo || "",
+                numero: budget.numero || null,
+                cliente: budget.cliente || "",
+                clienteId: budget.clienteId || null,
+                total: Number(budget.total || 0),
+                pagamento: budget.pagamento,
+                formaPagamento: budget.formaPagamento || "",
+                dataPagamento: budget.dataPagamento || null
+            },
+            data: new Date()
+        });
+
+        marcarAuditoriaEspecifica();
+
         res.json({
             ok: true,
             budget
@@ -1785,6 +1906,31 @@ router.put("/:id/cortesia", auth, async (req, res) => {
         });
 
         await budget.save();
+
+        await AuditLog.create({
+            companyId: String(req.session.user.companyId),
+            acao: "marcar_cortesia_orcamento",
+            entidade: "Budget",
+            entidadeId: String(budget._id),
+            descricao: `Or?amento marcado como cortesia: ${budget.codigo || budget.numero || ""}`,
+            executadoPor: String(req.session.user.username || ""),
+            executadoPorId: req.session.user._id || null,
+            autorizadoPor: String(req.session.user.username || ""),
+            autorizadoPorId: req.session.user._id || null,
+            dados: {
+                codigo: budget.codigo || "",
+                numero: budget.numero || null,
+                cliente: budget.cliente || "",
+                clienteId: budget.clienteId || null,
+                total: Number(budget.total || 0),
+                pagamento: budget.pagamento,
+                dataPagamento: budget.dataPagamento || null,
+                usuarioPagamento: budget.usuarioPagamento || ""
+            },
+            data: new Date()
+        });
+
+        marcarAuditoriaEspecifica();
 
         res.json({
             ok: true,
@@ -1899,6 +2045,34 @@ router.put("/:id/permuta", auth, async (req, res) => {
         });
 
         await budget.save();
+
+        await AuditLog.create({
+            companyId: String(req.session.user.companyId),
+            acao: "registrar_permuta_orcamento",
+            entidade: "Budget",
+            entidadeId: String(budget._id),
+            descricao: `Permuta registrada no or?amento ${budget.codigo || budget.numero || ""}`,
+            executadoPor: String(req.session.user.username || ""),
+            executadoPorId: req.session.user._id || null,
+            autorizadoPor: String(req.session.user.username || ""),
+            autorizadoPorId: req.session.user._id || null,
+            dados: {
+                codigo: budget.codigo || "",
+                numero: budget.numero || null,
+                cliente: budget.cliente || "",
+                clienteId: budget.clienteId || null,
+                total: Number(budget.total || 0),
+                valorPermuta: Number(valorPermuta || 0),
+                descricaoPermuta: descricaoPermuta || "",
+                saldoRestante: Number(saldoRestante || 0),
+                pagamento: budget.pagamento,
+                dataPagamento: budget.dataPagamento || null,
+                usuarioPagamento: budget.usuarioPagamento || ""
+            },
+            data: new Date()
+        });
+
+        marcarAuditoriaEspecifica();
 
         res.json({
             ok: true,
@@ -2105,6 +2279,7 @@ router.put("/:id/cancelar-pagamento", auth, async (req, res) => {
 
         });
 
+        marcarAuditoriaEspecifica();
 
         res.json({
             ok: true,
@@ -2275,6 +2450,8 @@ router.delete("/:id", auth, async (req, res) => {
             data: new Date()
 
         });
+
+        marcarAuditoriaEspecifica();
 
 
         /* ===================== EXCLUIR ORÇAMENTO ===================== */

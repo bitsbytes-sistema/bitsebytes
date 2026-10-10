@@ -8,6 +8,7 @@ const MongoStore = require("connect-mongo");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const multer = require("multer");
+const sharp = require("sharp");
 const {
   S3Client,
   PutObjectCommand,
@@ -6782,6 +6783,8 @@ app.get("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res)
 
 app.get("/api/tickets/:id/pdf", auth, requirePermissao("chamados"), async (req,res)=>{
 
+let browser;
+
 try{
 
 
@@ -6870,13 +6873,21 @@ if (Array.isArray(ticket.fotos) && ticket.fotos.length) {
 
       const bufferFoto = Buffer.concat(chunks);
 
-      const tipoFoto =
-        foto.tipo ||
-        objeto.ContentType ||
-        "image/jpeg";
+      const bufferOtimizado = await sharp(bufferFoto, {
+  failOn: "none",
+  limitInputPixels: 40000000
+})
+  .rotate()
+  .resize(1200, 1200, {
+    fit: "inside",
+    withoutEnlargement: true
+  })
+  .flatten({ background: "#ffffff" })
+  .jpeg({ quality: 75 })
+  .toBuffer();
 
-      const base64Foto =
-        bufferFoto.toString("base64");
+const tipoFoto = "image/jpeg";
+const base64Foto = bufferOtimizado.toString("base64");
 
       fotosCarregadas.push(`
         <div
@@ -7454,7 +7465,7 @@ ${company.reportFooter || ""}
 
 `;
 
-const browser = await puppeteer.launch(
+browser = await puppeteer.launch(
 
 process.env.RENDER
 
@@ -7506,6 +7517,7 @@ left:"10mm"
 
 
 await browser.close();
+browser = null;
 
 
 
@@ -7535,6 +7547,16 @@ res.end(pdf);
 
 
 }catch(err){
+
+if (browser) {
+  try {
+    await browser.close();
+  } catch (erroFechamento) {
+    console.error("ERRO AO FECHAR CHROMIUM OS:", erroFechamento);
+  }
+  browser = null;
+}
+
 
 
 console.log("ERRO PDF:", err);

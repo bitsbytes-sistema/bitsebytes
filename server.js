@@ -3027,6 +3027,14 @@ function classificarAuditoriaGeral(req) {
     verbo = req.body.ativo ? "Ativar" : "Desativar";
   }
 
+  if (
+    recurso === "usuarios" &&
+    ultimo === "permissoes" &&
+    req.method === "PUT"
+  ) {
+    verbo = "Alterar permiss?es do";
+  }
+
   const corpo = req.body || {};
 
   const identificacao =
@@ -7862,6 +7870,27 @@ app.get("/logout", async (req, res) => {
   }
 });
 
+
+
+/* ===================== MONITORAMENTO DE MEMORIA RENDER ===================== */
+
+setInterval(() => {
+
+  const memoria = process.memoryUsage();
+
+  const mb = valor =>
+    (valor / 1024 / 1024).toFixed(2);
+
+  console.log(
+    "[MEMORIA]",
+    new Date().toISOString(),
+    "RSS:", mb(memoria.rss), "MB",
+    "HEAP:", mb(memoria.heapUsed), "MB",
+    "EXTERNAL:", mb(memoria.external), "MB",
+    "ARRAYBUFFERS:", mb(memoria.arrayBuffers), "MB"
+  );
+
+}, 30000).unref();
 
 /* ===================== START ===================== */
 

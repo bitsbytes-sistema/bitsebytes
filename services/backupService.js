@@ -125,7 +125,8 @@ function executarMongoDump(
                     [
                         `--uri=${process.env.MONGO_URL}`,
                         `--archive=${caminhoArquivo}`,
-                        "--gzip"
+                        "--gzip",
+                        "--numParallelCollections=1"
                     ],
                     {
                         stdio: "inherit"

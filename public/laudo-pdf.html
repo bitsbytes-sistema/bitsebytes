@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -708,6 +708,32 @@
   }
 }
 
+
+/* CORRECAO A4 - ESPACAMENTO DE IMPRESSAO */
+@media print {
+  .folha {
+    padding: 6mm 12mm !important;
+  }
+
+  .validacao-laudo-pdf {
+    margin-top: 6px !important;
+    padding-top: 6px !important;
+    padding-bottom: 4px !important;
+  }
+
+  .rodape-laudo-pdf {
+    margin-top: 4px !important;
+  }
+}
+
+/* AJUSTE FINAL - RODAPE NA PRIMEIRA PAGINA A4 */
+@media print {
+  .rodape-laudo-pdf {
+    min-height: 40px !important;
+    padding: 5px 10px !important;
+    margin-top: 2px !important;
+  }
+}
 </style>
 </head>
 <body>

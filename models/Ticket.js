@@ -54,6 +54,30 @@ bairro: {
     default: ""
   },
 
+  tipoEquipamento: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  marcaEquipamento: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  modeloEquipamento: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
+  numeroSerieEquipamento: {
+    type: String,
+    default: "",
+    trim: true
+  },
+
   /* ===================== CHECKLIST DE ENTRADA ===================== */
 
   checklistEntrada: {
@@ -458,6 +482,13 @@ bairro: {
     default: ""
   },
 
+  pecasUtilizadas: [{
+    descricao: { type: String, default: "", trim: true },
+    quantidade: { type: Number, default: 1, min: 1 },
+    observacao: { type: String, default: "", trim: true }
+  }],
+
+
   conclusao: {
     type: String,
     default: ""
@@ -542,10 +573,24 @@ bairro: {
     default: false
   },
 
+  laudoValidacaoToken: {
+    type: String,
+    default: null,
+    trim: true
+  },
+
+
   numeroOS: {
   type: Number,
   default: 1
 },
+
+numeroLaudo: {
+  type: String,
+  default: null,
+  trim: true
+},
+
 
 origem: {
   type: String,
@@ -637,5 +682,27 @@ ticketSchema.index({
   companyId: 1,
   status: 1
 });
+
+
+ticketSchema.index(
+  { companyId: 1, numeroLaudo: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      numeroLaudo: { $type: "string" }
+    }
+  }
+);
+
+
+ticketSchema.index(
+  { laudoValidacaoToken: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      laudoValidacaoToken: { $type: "string" }
+    }
+  }
+);
 
 module.exports = mongoose.model("Ticket", ticketSchema);

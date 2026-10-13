@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Laudo Técnico</title>
+
+<style>
+
+body{
+  font-family: Arial;
+  background:#f2f2f2;
+  margin:0;
+  padding:20px;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f2f2f2;
+}
+
+.sidebar{
+  width:250px;
+  background:#0f172a;
+  min-height:100vh;
+  color:white;
+  position:fixed;
+  left:0;
+  top:0;
+}
+
+.logo{
+  padding:20px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.sidebar a{
+  display:block;
+  color:white;
+  text-decoration:none;
+  padding:14px 20px;
+}
+
+.sidebar a:hover{
+  background:#1e293b;
+}
+
+.usuario{
+  position:absolute;
+  bottom:20px;
+  left:20px;
+}
+
+.main{
+  margin-left:250px;
+  min-height:100vh;
+}
+
+.topbar{
+  height:70px;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 30px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.container{
+  padding:25px;
+}
+
+.laudo{
+  background:white;
+  max-width:900px;
+  margin:auto;
+  padding:40px;
+  border-radius:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:2px solid #ddd;
+  padding-bottom:20px;
+  margin-bottom:30px;
+}
+
+.logo{
+  font-size:28px;
+  font-weight:bold;
+  color:#2c2c44;
+}
+
+.os{
+  font-size:18px;
+  font-weight:bold;
+}
+
+h2{
+  color:#2c2c44;
+  margin-top:30px;
+}
+
+.linha{
+  margin-bottom:15px;
+}
+
+.label{
+  font-weight:bold;
+}
+
+textarea{
+  width:100%;
+  min-height:120px;
+  padding:10px;
+  border-radius:5px;
+  border:1px solid #ccc;
+  resize:vertical;
+  font-family:Arial;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  border-radius:5px;
+  border:1px solid #ccc;
+}
+
+button{
+  padding:12px 20px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  color:white;
+  margin-top:20px;
+  margin-right:10px;
+}
+
+.salvar{
+  background:#4CAF50;
+}
+
+.imprimir{
+  background:#2c2c44;
+}
+
+@media print{
+
+  .sidebar,
+  .topbar{
+    display:none !important;
+  }
+
+  .main{
+    margin:0 !important;
+    width:100% !important;
+  }
+
+  .container{
+    padding:0 !important;
+  }
+
+  body{
+    background:white;
+  }
+
+  .laudo{
+    max-width:100%;
+    margin:0;
+    box-shadow:none;
+    border-radius:0;
+    padding:20px;
+  }
+
+  button{
+    display:none;
+  }
+
+}
+
+
+/* NOVO LAYOUT LAUDO */
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.laudo {
+  max-width: none;
+  width: 100%;
+}
+
+@media screen and (min-width: 1100px) {
+  .container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+}
+
+@media print {
+  .container {
+    display: block !important;
+    padding: 0 !important;
+  }
+}
+
+
+.preview-laudo { min-width: 0; }
+.preview-etiqueta {
+  color: #64748b; font-size: 12px; font-weight: 800;
+  letter-spacing: 1px; margin-bottom: 12px;
+}
+.folha-laudo {
+  background: #fff; color: #17243b; padding: 38px;
+  border: 1px solid #e2e8f0; border-radius: 12px;
+  box-shadow: 0 10px 35px rgba(15,23,42,.10);
+  min-height: 780px;
+}
+.documento-cabecalho {
+  display: flex; justify-content: space-between;
+  gap: 18px; border-bottom: 3px solid #2563eb;
+  padding-bottom: 22px;
+}
+.documento-cabecalho h2 { margin: 0; color: #163b74; }
+.documento-cabecalho p { font-size: 12px; color: #64748b; }
+.folha-laudo h1 {
+  text-align: center; font-size: 24px;
+  margin: 32px 0; color: #153768;
+}
+.folha-laudo h3 {
+  font-size: 13px; color: #1d4ed8;
+  border-bottom: 1px solid #dbeafe;
+  padding-bottom: 9px; margin-top: 28px;
+}
+.folha-laudo p { font-size: 13px; line-height: 1.7; }
+.documento-texto { white-space: pre-wrap; min-height: 45px; }
+.documento-rodape { text-align: center; margin-top: 75px; }
+.linha-assinatura {
+  border-top: 1px solid #334155;
+  width: 260px; max-width: 100%;
+  margin: 0 auto 12px;
+}
+@media print {
+  .laudo, .preview-etiqueta { display: none !important; }
+  .preview-laudo { display: block !important; }
+  .folha-laudo {
+    border: 0; box-shadow: none; border-radius: 0;
+    padding: 0; min-height: auto;
+  }
+}
+
+
+/* NOVOS CARTOES DO FORMULARIO */
+.laudo-cartao {
+  background: #fff;
+  border: 1px solid #e1e8f2;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 3px 12px rgba(25, 47, 83, .04);
+}
+.laudo-cartao-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.laudo-cartao-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #e7f0ff;
+  color: #1656bd;
+  font-size: 12px;
+  font-weight: 800;
+}
+.laudo .laudo-cartao-titulo h2 {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 15px;
+  color: #17345c;
+}
+.laudo-grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.laudo-campo-inteiro { grid-column: 1 / -1; }
+.laudo-campo label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #66788f;
+}
+.laudo-valor {
+  min-height: 19px;
+  padding: 11px 12px;
+  border: 1px solid #dce5f0;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #25364b;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.laudo-valor-longo {
+  min-height: 65px;
+  white-space: pre-wrap;
+}
+@media (max-width: 500px) {
+  .laudo-grade { grid-template-columns: 1fr; }
+  .laudo-campo-inteiro { grid-column: auto; }
+}
+
+
+.laudo-duas-colunas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+.laudo-duas-colunas .laudo-cartao {
+  min-width: 0;
+}
+.laudo-duas-colunas textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 145px;
+  resize: vertical;
+}
+@media (max-width: 700px) {
+  .laudo-duas-colunas {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.laudo-tabela-rolagem {
+  width: 100%;
+  overflow-x: auto;
+}
+.laudo-tabela-pecas {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.laudo-tabela-pecas th {
+  text-align: left;
+  background: #edf3fb;
+  color: #24466f;
+  padding: 10px;
+  border-bottom: 1px solid #dbe5f0;
+}
+.laudo-tabela-pecas td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #e5eaf1;
+  color: #64748b;
+}
+.laudo-aviso-pecas {
+  margin-top: 12px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+
+.laudo-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0;
+}
+.laudo-acoes button {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-weight: 700;
+}
+.laudo-botao-preview {
+  background: #e8f0ff;
+  color: #1956a8;
+  border: 1px solid #c9daf5;
+}
+.laudo-cartao #tecnico {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 450px;
+}
+
+
+/* AJUSTE DE COLUNAS DO LAUDO */
+.laudo .laudo-duas-colunas {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  width: 100%;
+}
+
+.laudo .laudo-duas-colunas > .laudo-cartao {
+  min-width: 0;
+  width: auto;
+  margin: 0 0 16px;
+}
+
+.laudo .laudo-botao-preview {
+  background: #e8f0ff !important;
+  color: #1956a8 !important;
+  border: 1px solid #c9daf5 !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 700px) {
+  .laudo .laudo-duas-colunas {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* DUAS COLUNAS INTERNAS NO DESKTOP */
+@media screen and (min-width: 1100px) {
+  .main .container .laudo .laudo-duas-colunas {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .main .container .laudo .laudo-duas-colunas > .laudo-cartao {
+    min-width: 0 !important;
+    width: auto !important;
+  }
+}
+
+@media screen and (max-width: 750px) {
+  .main .container .laudo .laudo-duas-colunas {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+
+/* FORMULARIO SEM COLUNA DE PRE-VISUALIZACAO */
+@media screen and (min-width: 900px) {
+  .main .container {
+    display: block !important;
+    max-width: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .main .container > .laudo {
+    display: block !important;
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    padding: 20px !important;
+  }
+}
+
+/* CABECALHO DO MODELO APROVADO */
+.novo-laudo-cabecalho {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  background: #fff;
+  border: 1px solid #dce5f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.novo-laudo-marca {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
+}
+
+.novo-laudo-marca img {
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+}
+
+.novo-laudo-marca h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #092b55;
+}
+
+.novo-laudo-marca p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: #36516f;
+}
+
+.novo-laudo-contato {
+  padding: 17px 20px;
+  border-left: 1px solid #e1e7ef;
+  font-size: 12px;
+  line-height: 1.9;
+  color: #273b53;
+  overflow-wrap: anywhere;
+}
+
+.novo-laudo-contato > div:empty {
+  display: none;
+}
+
+.novo-laudo-identificadores {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.novo-laudo-identificador {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #dce5f0;
+  border-radius: 9px;
+  min-width: 0;
+}
+
+.novo-laudo-identificador > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.novo-laudo-icone {
+  background: #0864e8;
+  color: white;
+  padding: 10px;
+  border-radius: 7px;
+}
+
+.novo-laudo-identificador label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.novo-laudo-valor {
+  padding: 9px;
+  background: #f2f5f9;
+  border: 1px solid #dbe3ec;
+  border-radius: 5px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 750px) {
+  .novo-laudo-cabecalho {
+    grid-template-columns: 1fr;
+  }
+
+  .novo-laudo-contato {
+    border-left: 0;
+    border-top: 1px solid #e1e7ef;
+  }
+
+  .novo-laudo-identificadores {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* CLIENTE E EQUIPAMENTO - MODELO APROVADO */
+.laudo-cliente-equipamento {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: stretch;
+}
+.laudo-cliente-equipamento > .laudo-cartao {
+  margin: 0;
+  min-width: 0;
+}
+@media (max-width: 750px) {
+  .laudo-cliente-equipamento {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* LAYOUT DO FORMULARIO EM TELA INTEIRA */
+.container {
+  display: block !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 18px 24px !important;
+}
+
+.container > .laudo {
+  display: block !important;
+  width: 100% !important;
+  max-width: 1200px !important;
+  min-width: 0 !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+.laudo-cliente-equipamento {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+@media (max-width: 750px) {
+  .container {
+    padding: 12px !important;
+  }
+
+  .laudo-cliente-equipamento {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* CORRECAO VISUAL DO CABECALHO E FORMULARIO */
+.novo-laudo-cabecalho {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.novo-laudo-marca {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  min-width: 0 !important;
+}
+
+.novo-laudo-marca img,
+#logoEmpresaLaudo {
+  display: block !important;
+  width: 80px !important;
+  height: 80px !important;
+  max-width: 80px !important;
+  max-height: 80px !important;
+  min-width: 80px !important;
+  object-fit: contain !important;
+  flex: 0 0 80px !important;
+}
+
+.novo-laudo-marca h1 {
+  font-size: 22px !important;
+  line-height: 1.2 !important;
+}
+
+.novo-laudo-identificadores {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.laudo-cliente-equipamento {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+@media (max-width: 750px) {
+  .novo-laudo-cabecalho,
+  .novo-laudo-identificadores,
+  .laudo-cliente-equipamento {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* EQUIPAMENTO - LAYOUT APROVADO */
+.laudo-cliente-equipamento > .laudo-cartao:nth-child(2) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+  align-content: start;
+}
+
+.laudo-cliente-equipamento > .laudo-cartao:nth-child(2) > .laudo-cartao-titulo,
+.laudo-cliente-equipamento > .laudo-cartao:nth-child(2) > .laudo-campo:nth-child(2) {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 500px) {
+  .laudo-cliente-equipamento > .laudo-cartao:nth-child(2) {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* CABECALHO LAUDO - AJUSTE VISUAL 01 */
+.novo-laudo-cabecalho {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) !important;
+  min-height: 115px;
+}
+
+.novo-laudo-marca {
+  padding: 18px 22px !important;
+  gap: 18px !important;
+}
+
+.novo-laudo-marca img,
+#logoEmpresaLaudo {
+  width: 100px !important;
+  height: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+  max-height: 100px !important;
+  flex: 0 0 100px !important;
+  object-fit: contain !important;
+}
+
+.novo-laudo-marca h1 {
+  font-size: 25px !important;
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+}
+
+.novo-laudo-marca p {
+  font-size: 12px !important;
+  margin-top: 6px !important;
+}
+
+.novo-laudo-contato {
+  padding: 18px 22px !important;
+  font-size: 12px !important;
+  line-height: 1.8 !important;
+}
+
+@media (max-width: 750px) {
+  .novo-laudo-cabecalho {
+    grid-template-columns: 1fr !important;
+  }
+
+  .novo-laudo-contato {
+    border-left: 0 !important;
+    border-top: 1px solid #e1e7ef !important;
+  }
+}
+
+
+/* TOPO NOVO LAUDO - MODELO APROVADO */
+.novo-laudo-topo {
+  min-height: 70px;
+  height: auto;
+  box-sizing: border-box;
+  padding: 12px 28px;
+}
+.novo-laudo-topo-esquerda {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.novo-laudo-topo-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 7px;
+  background: #1769e8;
+  color: white;
+  font-size: 22px;
+}
+.novo-laudo-topo-titulo {
+  font-size: 21px;
+  font-weight: 750;
+  color: #10233f;
+}
+.novo-laudo-topo-caminho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #718198;
+}
+.novo-laudo-topo-caminho a {
+  color: #376da9;
+  text-decoration: none;
+}
+.novo-laudo-voltar {
+  padding: 10px 17px;
+  border: 1px solid #cbd8e8;
+  border-radius: 6px;
+  background: #f8fbff;
+  color: #163b68;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.novo-laudo-voltar:hover {
+  background: #eaf2ff;
+}
+@media (max-width: 600px) {
+  .novo-laudo-topo {
+    padding: 12px;
+    gap: 10px;
+  }
+  .novo-laudo-topo-titulo {
+    font-size: 17px;
+  }
+}
+
+
+/* ICONES CONTATO EMPRESA - LAUDO */
+.novo-laudo-contato > div:not(:empty) {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  line-height: 1.6;
+  margin-bottom: 5px;
+}
+
+.novo-laudo-contato > div:not(:empty)::before {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 19px;
+  color: #1769e8;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+#cnpjEmpresaLaudo:not(:empty)::before {
+  content: "\1F4CB";
+}
+
+#enderecoEmpresaLaudo:not(:empty)::before {
+  content: "\1F4CD";
+}
+
+#telefoneEmpresaLaudo:not(:empty)::before {
+  content: "\260E";
+}
+
+#emailEmpresaLaudo:not(:empty)::before {
+  content: "\2709";
+}
+
+#siteEmpresaLaudo:not(:empty)::before {
+  content: "\1F310";
+}
+
+
+/* ICONES CONTATO AZUIS - AJUSTE 02 */
+#cnpjEmpresaLaudo:not(:empty)::before {
+  content: "\25A3";
+}
+#enderecoEmpresaLaudo:not(:empty)::before {
+  content: "\2302";
+}
+#telefoneEmpresaLaudo:not(:empty)::before {
+  content: "\260E";
+}
+#emailEmpresaLaudo:not(:empty)::before {
+  content: "\2709";
+}
+#siteEmpresaLaudo:not(:empty)::before {
+  content: "\25CE";
+}
+.novo-laudo-contato > div:not(:empty)::before {
+  color: #1769e8 !important;
+  font-family: "Segoe UI Symbol", Arial, sans-serif !important;
+  font-size: 15px;
+}
+
+
+/* IDENTIFICADORES LAUDO - ACABAMENTO 02 */
+.novo-laudo-identificadores {
+  gap: 10px !important;
+  margin-bottom: 14px !important;
+}
+
+.novo-laudo-identificador {
+  padding: 12px 14px !important;
+  gap: 12px !important;
+  border-radius: 8px !important;
+}
+
+.novo-laudo-icone {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 38px !important;
+  height: 38px !important;
+  padding: 0 !important;
+  flex: 0 0 38px !important;
+  font-size: 20px !important;
+}
+
+.novo-laudo-identificador label {
+  font-size: 11px !important;
+  margin-bottom: 5px !important;
+}
+
+.novo-laudo-valor {
+  padding: 9px 10px !important;
+  min-height: 18px;
+  font-size: 12px !important;
+  box-sizing: border-box;
+}
+
+
+/* CLIENTE E EQUIPAMENTO - ACABAMENTO 03 */
+.laudo-cliente-equipamento > .laudo-cartao {
+  padding: 15px 16px !important;
+}
+
+.laudo-cliente-equipamento .laudo-cartao-titulo {
+  margin-bottom: 12px !important;
+}
+
+.laudo-cliente-equipamento .laudo-campo label {
+  font-size: 11px !important;
+  margin-bottom: 4px !important;
+}
+
+.laudo-cliente-equipamento .laudo-valor {
+  padding: 8px 10px !important;
+  min-height: 18px !important;
+  font-size: 12px !important;
+  border-radius: 6px !important;
+  box-sizing: border-box !important;
+}
+
+.laudo-cliente-equipamento .laudo-grade {
+  gap: 10px !important;
+}
+
+.laudo-cliente-equipamento > .laudo-cartao:nth-child(2) {
+  column-gap: 10px !important;
+  row-gap: 8px !important;
+}
+
+
+/* LAUDO CARTOES 03 04 05 - ACABAMENTO 04 */
+.laudo > .laudo-cartao:has(> #problema),
+.laudo-duas-colunas > .laudo-cartao:has(> #diagnostico),
+.laudo-duas-colunas > .laudo-cartao:has(> #servico) {
+  padding: 15px 16px !important;
+}
+
+.laudo > .laudo-cartao:has(> #problema) .laudo-cartao-titulo,
+.laudo-duas-colunas > .laudo-cartao:has(> #diagnostico) .laudo-cartao-titulo,
+.laudo-duas-colunas > .laudo-cartao:has(> #servico) .laudo-cartao-titulo {
+  margin-bottom: 12px !important;
+}
+
+#problema {
+  min-height: 50px !important;
+  padding: 10px 12px !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+}
+
+#diagnostico,
+#servico {
+  display: block;
+  width: 100% !important;
+  min-height: 130px !important;
+  padding: 12px !important;
+  border: 1px solid #dce5f0 !important;
+  border-radius: 7px !important;
+  background: #f8fbff !important;
+  color: #25364b !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+  resize: vertical;
+}
+
+#diagnostico:focus,
+#servico:focus {
+  outline: 2px solid #b7d4ff;
+  border-color: #1769e8 !important;
+}
+
+
+/* ICONES PADRONIZADOS CONFORME PDF APROVADO */
+.novo-laudo-contato > div:not(:empty)::before {
+  color: #1769e8 !important;
+  font-family: "Segoe UI Emoji", "Segoe UI Symbol", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: normal !important;
+  width: 17px !important;
+  min-width: 17px !important;
+  flex: 0 0 17px !important;
+  text-align: center !important;
+}
+
+#cnpjEmpresaLaudo:not(:empty)::before {
+  content: "\1F4CB" !important;
+}
+
+#enderecoEmpresaLaudo:not(:empty)::before {
+  content: "\1F4CD" !important;
+}
+
+#telefoneEmpresaLaudo:not(:empty)::before {
+  content: "\260E" !important;
+}
+
+#emailEmpresaLaudo:not(:empty)::before {
+  content: "\2709" !important;
+}
+
+#siteEmpresaLaudo:not(:empty)::before {
+  content: "\1F310" !important;
+}
+
+
+/* ICONES SVG MONOCROMATICOS - PADRAO DO PDF APROVADO */
+.novo-laudo-contato > div:not(:empty)::before {
+  content: "" !important;
+  display: inline-block !important;
+  flex: 0 0 17px !important;
+  width: 17px !important;
+  min-width: 17px !important;
+  height: 19px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 15px 15px !important;
+  font-size: 0 !important;
+  color: transparent !important;
+  filter: none !important;
+}
+
+#cnpjEmpresaLaudo:not(:empty)::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2307508e%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%225%22%20y%3D%223%22%20width%3D%2214%22%20height%3D%2218%22%20rx%3D%221.5%22%2F%3E%3Cpath%20d%3D%22M8%208h8M8%2012h8M8%2016h5%22%2F%3E%3C%2Fsvg%3E") !important;
+}
+
+#enderecoEmpresaLaudo:not(:empty)::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2307508e%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20%2010c0%205-8%2012-8%2012S4%2015%204%2010a8%208%200%201%201%2016%200Z%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2210%22%20r%3D%222.5%22%2F%3E%3C%2Fsvg%3E") !important;
+}
+
+#telefoneEmpresaLaudo:not(:empty)::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2307508e%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M5%203h4l2%205-3%202a15%2015%200%200%200%206%206l2-3%205%202v4a2%202%200%200%201-2%202A17%2017%200%200%201%203%205a2%202%200%200%201%202-2Z%22%2F%3E%3C%2Fsvg%3E") !important;
+}
+
+#emailEmpresaLaudo:not(:empty)::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2307508e%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%2218%22%20height%3D%2214%22%20rx%3D%221.5%22%2F%3E%3Cpath%20d%3D%22m4%207%208%206%208-6%22%2F%3E%3C%2Fsvg%3E") !important;
+}
+
+#siteEmpresaLaudo:not(:empty)::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2307508e%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22M3%2012h18M12%203a15%2015%200%200%201%200%2018M12%203a15%2015%200%200%200%200%2018%22%2F%3E%3C%2Fsvg%3E") !important;
+}</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<div class="logo">
+
+<img src="/logo.png" width="45">
+
+<div>
+
+<b>Bits & Bytes</b><br>
+
+<small>Tecnology</small>
+
+</div>
+
+</div>
+
+<a href="/dashboard.html">🏠 Dashboard</a>
+<a href="/clientes.html">👥 Clientes</a>
+<a href="/chamados.html">📋 Chamados</a>
+<a href="/orcamentos.html">💰 Orçamentos</a>
+<a href="/services.html">🛠 Peças e Serviços</a>
+<a href="/laudos.html">📄 Laudos Técnicos</a>
+<a href="#">📦 Estoque</a>
+<a href="#">💵 Financeiro</a>
+<a href="/relatorios.html">📊 Relatórios</a>
+<a href="#">⚙️ Configurações</a>
+
+<div class="usuario">
+
+<b id="nomeUsuario">
+Carregando...
+</b>
+
+<br>
+
+<small id="cargoUsuario">
+Usuário
+</small>
+
+</div>
+
+</div>
+
+<div class="main">
+
+<div class="topbar novo-laudo-topo">
+  <div class="novo-laudo-topo-esquerda">
+    <span class="novo-laudo-topo-icone">&#128196;</span>
+    <div>
+      <div class="novo-laudo-topo-titulo">Laudo T&eacute;cnico</div>
+      <div class="novo-laudo-topo-caminho">
+        <a href="/dashboard.html">In&iacute;cio</a>
+        <span>&rsaquo;</span>
+        <a href="/laudos.html">Laudos T&eacute;cnicos</a>
+        <span>&rsaquo;</span>
+        <span>Novo Laudo</span>
+      </div>
+    </div>
+  </div>
+  <a class="novo-laudo-voltar" href="/laudos.html">&larr; Voltar</a>
+</div>
+
+<div class="container">
+
+<div class="laudo">
+
+
+<header class="novo-laudo-cabecalho">
+  <div class="novo-laudo-marca">
+    <img id="logoEmpresaLaudo" src="/logo.png" alt="Logo da empresa">
+    <div>
+      <h1 id="nomeEmpresaLaudo">Bits &amp; Bytes Tecnology</h1>
+      <p>Assistência Técnica Especializada</p>
+    </div>
+  </div>
+
+  <div class="novo-laudo-contato">
+    <div id="cnpjEmpresaLaudo"></div>
+    <div id="enderecoEmpresaLaudo"></div>
+    <div id="telefoneEmpresaLaudo"></div>
+    <div id="emailEmpresaLaudo"></div>
+    <div id="siteEmpresaLaudo"></div>
+  </div>
+</header>
+
+<div class="novo-laudo-identificadores">
+  <div class="novo-laudo-identificador">
+    <span class="novo-laudo-icone">&#128196;</span>
+    <div>
+      <label>Número da OS</label>
+      <div id="numeroOS" class="novo-laudo-valor">OS #</div>
+    </div>
+  </div>
+
+  <div class="novo-laudo-identificador">
+    <span class="novo-laudo-icone">&#128196;</span>
+    <div>
+      <label>Número do Laudo</label>
+      <div id="numeroLaudoVisual" class="novo-laudo-valor">
+        A definir
+      </div>
+    </div>
+  </div>
+
+  <div class="novo-laudo-identificador">
+    <span class="novo-laudo-icone">&#128197;</span>
+    <div>
+      <label>Data de Emissão</label>
+      <div id="dataEmissaoLaudo" class="novo-laudo-valor">
+        A definir
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="laudo-cliente-equipamento">
+<div class="laudo-cartao">
+  <div class="laudo-cartao-titulo">
+    <span class="laudo-cartao-numero">01</span>
+    <h2>Dados do Cliente</h2>
+  </div>
+
+  <div class="laudo-grade">
+    <div class="laudo-campo laudo-campo-inteiro">
+      <label>Nome do cliente</label>
+      <div id="cliente" class="laudo-valor"></div>
+    </div>
+
+    <div class="laudo-campo">
+      <label>Telefone</label>
+      <div id="telefone" class="laudo-valor"></div>
+    </div>
+
+    <div class="laudo-campo">
+      <label>CPF/CNPJ</label>
+      <div id="cpfcnpj" class="laudo-valor"></div>
+    </div>
+  </div>
+</div>
+
+<div class="laudo-cartao">
+  <div class="laudo-cartao-titulo">
+    <span class="laudo-cartao-numero">02</span>
+    <h2>Dados do Equipamento</h2>
+  </div>
+  <div class="laudo-campo"><label>Tipo de Equipamento</label><div id="equipamento" class="laudo-valor"></div></div>
+  <div class="laudo-campo"><label>Marca</label><div id="marcaEquipamento" class="laudo-valor"></div></div>
+  <div class="laudo-campo"><label>Modelo</label><div id="modeloEquipamento" class="laudo-valor"></div></div>
+  <div class="laudo-campo"><label>N&uacute;mero de S&eacute;rie</label><div id="numeroSerieEquipamento" class="laudo-valor"></div></div>
+  <div class="laudo-campo"><label>Acess&oacute;rios Recebidos</label><div id="acessoriosRecebidos" class="laudo-valor"></div></div>
+</div>
+
+</div>
+
+<div class="laudo-cartao">
+  <div class="laudo-cartao-titulo">
+    <span class="laudo-cartao-numero">03</span>
+    <h2>Defeito Informado pelo Cliente</h2>
+  </div>
+  <div id="problema" class="laudo-valor laudo-valor-longo"></div>
+</div>
+
+
+<div class="laudo-duas-colunas">
+
+  <section class="laudo-cartao">
+    <div class="laudo-cartao-titulo">
+      <span class="laudo-cartao-numero">04</span>
+      <h2>Diagnóstico Técnico</h2>
+    </div>
+    <textarea id="diagnostico" placeholder="Descreva o diagnóstico técnico..."></textarea>
+  </section>
+
+  <section class="laudo-cartao">
+    <div class="laudo-cartao-titulo">
+      <span class="laudo-cartao-numero">05</span>
+      <h2>Serviços Realizados</h2>
+    </div>
+    <textarea id="servico" placeholder="Descreva os serviços realizados..."></textarea>
+  </section>
+
+</div>
+
+
+<div class="laudo-duas-colunas">
+
+  <section class="laudo-cartao">
+    <div class="laudo-cartao-titulo">
+      <span class="laudo-cartao-numero">06</span>
+      <h2>Peças Utilizadas</h2>
+    </div>
+
+    <div class="laudo-tabela-rolagem">
+      <table class="laudo-tabela-pecas">
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th>Qtd.</th>
+            <th>Observação</th>
+          <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="listaPecasLaudo">
+          <tr>
+            <td colspan="4">Nenhuma peça informada.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <div class="laudo-acoes-pecas">
+      <button
+        type="button"
+        id="btnAdicionarPecaLaudo"
+        onclick="adicionarPecaLaudo()"
+        style="background:#16a34a;color:#fff;border:0;border-radius:7px;padding:10px 15px;font-weight:600;cursor:pointer"
+      >+ Adicionar Peça</button>
+    </div>
+  </section>
+
+  <section class="laudo-cartao">
+    <div class="laudo-cartao-titulo">
+      <span class="laudo-cartao-numero">07</span>
+      <h2>Conclusão Técnica</h2>
+    </div>
+    <textarea id="conclusao" placeholder="Descreva a conclusão técnica..."></textarea>
+  </section>
+
+</div>
+
+
+<section class="laudo-cartao">
+  <div class="laudo-cartao-titulo">
+    <span class="laudo-cartao-numero">08</span>
+    <h2>Técnico Responsável</h2>
+  </div>
+
+  <div class="laudo-campo">
+    <label>Nome do profissional</label>
+    <input id="tecnico" placeholder="Informe o nome do técnico">
+  </div>
+</section>
+
+<div class="laudo-acoes">
+  <button type="button" class="salvar" onclick="salvar()">
+    Salvar Laudo
+  </button>
+
+  <button type="button" class="imprimir" onclick="window.print()">
+    Imprimir / PDF
+  </button>
+
+  <button type="button" class="laudo-botao-preview"
+    onclick="visualizarPdfLaudo()">
+    Visualizar PDF
+  </button>
+</div>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+let ticket = null;
+
+function visualizarPdfLaudo() {
+  if (!id) {
+    alert("ID do chamado nao encontrado.");
+    return;
+  }
+
+  const endereco = "/laudo-pdf.html?id=" + encodeURIComponent(id);
+  window.open(endereco, "_blank", "noopener");
+}
+
+
+/* ===================== */
+/* LOAD */
+/* ===================== */
+
+async function carregarUsuario(){
+
+  const res = await fetch("/me",{
+    credentials:"include"
+  });
+
+  if(res.status===401){
+    location.href="/";
+    return;
+  }
+
+  const data = await res.json();
+
+  document.getElementById("nomeUsuario").innerText =
+    data.user?.nome || data.user?.username || "Usuário";
+
+  document.getElementById("cargoUsuario").innerText =
+    data.user?.role || "Usuário";
+
+}
+
+async function logout(){
+
+  await fetch("/logout",{
+    credentials:"include"
+  });
+
+  location.href="/";
+
+}
+
+async function carregar(){
+
+  if(!id){
+    alert("ID do laudo não encontrado na URL");
+    return;
+  }
+
+  try{
+
+    // ✅ CORRIGIDO
+    const res = await fetch("/api/tickets/" + id + "/laudo", {
+      credentials: "include"
+    });
+
+    if(!res.ok){
+      console.log("Erro HTTP:", res.status);
+      alert("Erro ao carregar laudo");
+      return;
+    }
+
+    ticket = await res.json();
+
+    if(!ticket){
+      alert("Laudo não encontrado");
+      return;
+    }
+
+    document.getElementById("cliente").innerText =
+      ticket.cliente || "";
+
+    document.getElementById("telefone").innerText =
+      ticket.telefone || "";
+
+    document.getElementById("cpfcnpj").innerText =
+      ticket.cpfcnpj || "";
+
+    document.getElementById("equipamento").innerText = ticket.equipamento || "-";
+    document.getElementById("marcaEquipamento").innerText = ticket.marcaEquipamento || "-";
+    document.getElementById("modeloEquipamento").innerText = ticket.modeloEquipamento || "-";
+    document.getElementById("numeroSerieEquipamento").innerText = ticket.numeroSerieEquipamento || "-";
+    document.getElementById("acessoriosRecebidos").innerText = ticket.checklistEntrada?.acessorios || "-";
+
+    document.getElementById("problema").innerText =
+      ticket.problema || "";
+
+    document.getElementById("diagnostico").value =
+      ticket.diagnostico || "";
+
+    document.getElementById("servico").value =
+      ticket.servico || "";
+
+    document.getElementById("conclusao").value =
+      ticket.conclusao || "";
+
+    document.getElementById("tecnico").value =
+      ticket.tecnico || "";
+
+    document.getElementById("numeroOS").innerText =
+      "OS #" + (ticket.numeroOS || "");
+
+    const campoLaudo = document.getElementById("numeroLaudoVisual");
+    if (campoLaudo) {
+      campoLaudo.textContent = Number.isInteger(Number(ticket.numeroOS)) && Number(ticket.numeroOS) > 0
+        ? "LT-" + (ticket.createdAt && !Number.isNaN(new Date(ticket.createdAt).getTime()) ? new Date(ticket.createdAt).getFullYear() : new Date().getFullYear()) + "-" + String(ticket.numeroOS).padStart(6, "0")
+        : "A definir";
+    }
+
+    const campoData = document.getElementById("dataEmissaoLaudo");
+    if (campoData) {
+      campoData.textContent = new Date().toLocaleDateString("pt-BR");
+    }
+
+    carregarPecasLaudo();
+    atualizarPreviewLaudo();
+
+  } catch(err){
+
+    console.error(err);
+
+    alert("Erro de conexão ao carregar laudo");
+
+  }
+
+}
+
+/* ===================== */
+/* SALVAR */
+/* ===================== */
+
+async function salvar(){
+
+
+  const pecasUtilizadas = [];
+
+  for (const linha of document.querySelectorAll("#listaPecasLaudo tr.peca-laudo-editavel")) {
+    const descricao = linha.querySelector('[data-campo="descricao"]')?.value.trim() || "";
+    const quantidade = Number(linha.querySelector('[data-campo="quantidade"]')?.value);
+    const observacao = linha.querySelector('[data-campo="observacao"]')?.value.trim() || "";
+
+    if (!descricao || !Number.isInteger(quantidade) || quantidade < 1) {
+      alert("Confira a descricao e a quantidade das pecas.");
+      return;
+    }
+
+    pecasUtilizadas.push({ descricao, quantidade, observacao });
+  }
+
+  const body = {
+
+    diagnostico:
+      document.getElementById("diagnostico").value,
+
+    servico:
+      document.getElementById("servico").value,
+
+    conclusao:
+      document.getElementById("conclusao").value,
+
+    tecnico:
+      document.getElementById("tecnico").value,
+
+    pecasUtilizadas
+
+  };
+
+  try{
+
+    const res = await fetch("/api/tickets/" + id + "/laudo", {
+
+      method: "PUT",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      credentials: "include",
+
+      body: JSON.stringify(body)
+
+    });
+
+    const data = await res.json();
+
+    if(data.ok){
+
+      alert("Laudo salvo com sucesso!");
+
+    } else {
+
+      alert("Erro ao salvar laudo");
+
+    }
+
+  } catch(err){
+
+    console.error(err);
+
+    alert("Erro de conexão ao salvar");
+
+  }
+
+}
+
+carregarUsuario();
+carregar();
+
+
+
+
+function adicionarPecaLaudo() {
+  const tabela = document.getElementById("listaPecasLaudo");
+  if (!tabela) return;
+
+  const vazia = tabela.querySelector('td[colspan="4"]');
+  if (vazia) vazia.parentElement.remove();
+
+  const linha = tabela.insertRow();
+  linha.className = "peca-laudo-editavel";
+
+  const campos = [
+    { nome: "descricao", tipo: "text", placeholder: "Descri\u00e7\u00e3o da pe\u00e7a" },
+    { nome: "quantidade", tipo: "number", placeholder: "Qtd." },
+    { nome: "observacao", tipo: "text", placeholder: "Observa\u00e7\u00e3o" }
+  ];
+
+  campos.forEach(campo => {
+    const celula = linha.insertCell();
+    const input = document.createElement("input");
+
+    input.type = campo.tipo;
+    input.dataset.campo = campo.nome;
+    input.placeholder = campo.placeholder;
+
+    if (campo.nome === "quantidade") {
+      input.min = "1";
+      input.step = "1";
+      input.value = "1";
+    }
+
+    input.style.width = "100%";
+    input.style.boxSizing = "border-box";
+    input.style.padding = "8px";
+
+    celula.appendChild(input);
+  });
+
+  const celulaAcao = linha.insertCell();
+  const remover = document.createElement("button");
+
+  remover.type = "button";
+  remover.textContent = "Remover";
+  remover.style.color = "#dc2626";
+  remover.style.cursor = "pointer";
+
+  remover.onclick = () => {
+    linha.remove();
+
+    if (!tabela.rows.length) {
+      const vazia = tabela.insertRow();
+      const celula = vazia.insertCell();
+      celula.colSpan = 4;
+      celula.textContent = "Nenhuma peça informada.";
+    }
+  };
+
+  celulaAcao.appendChild(remover);
+}
+
+
+function carregarPecasLaudo() {
+  const tabela = document.getElementById("listaPecasLaudo");
+  if (!tabela) return;
+
+  tabela.replaceChildren();
+
+  const estruturadas = Array.isArray(ticket?.pecasUtilizadas)
+    ? ticket.pecasUtilizadas
+    : [];
+
+  if (estruturadas.length) {
+    estruturadas.forEach(peca => {
+      adicionarPecaLaudo();
+
+      const linha = tabela.rows[tabela.rows.length - 1];
+
+      linha.querySelector('[data-campo="descricao"]').value =
+        peca.descricao || "";
+
+      linha.querySelector('[data-campo="quantidade"]').value =
+        peca.quantidade || 1;
+
+      linha.querySelector('[data-campo="observacao"]').value =
+        peca.observacao || "";
+    });
+
+    return;
+  }
+
+  const antigas = String(ticket?.pecas || "")
+    .split(/\r?\n/)
+    .map(texto => texto.trim())
+    .filter(Boolean);
+
+  if (antigas.length) {
+    antigas.forEach(descricao => {
+      adicionarPecaLaudo();
+
+      const linha = tabela.rows[tabela.rows.length - 1];
+      linha.querySelector('[data-campo="descricao"]').value = descricao;
+    });
+
+    return;
+  }
+
+  const linha = tabela.insertRow();
+  const celula = linha.insertCell();
+
+  celula.colSpan = 4;
+  celula.textContent = "Nenhuma pe\u00e7a informada.";
+}
+
+function atualizarPreviewLaudo() {
+  const campos = {
+    cliente: "previewCliente",
+    telefone: "previewTelefone",
+    cpfcnpj: "previewDocumento",
+    equipamento: "previewEquipamento",
+    problema: "previewProblema",
+    diagnostico: "previewDiagnostico",
+    servico: "previewServico",
+    conclusao: "previewConclusao",
+    tecnico: "previewTecnico"
+  };
+
+  for (const [origem, destino] of Object.entries(campos)) {
+    const campo = document.getElementById(origem);
+    const preview = document.getElementById(destino);
+
+    if (campo && preview) {
+      preview.textContent =
+        ("value" in campo ? campo.value : campo.textContent).trim() || "—";
+    }
+  }
+
+  const numero = document.getElementById("numeroOS");
+  const previewOS = document.getElementById("previewOS");
+
+  if (numero && previewOS) {
+    previewOS.textContent = numero.textContent.trim();
+  }
+}
+
+
+async function carregarEmpresaPreview() {
+  try {
+    const resposta = await fetch("/me", { credentials: "include" });
+    if (!resposta.ok) return;
+
+    const dados = await resposta.json();
+    const empresa = dados.company || {};
+
+    function preencher(id, valor, prefixo = "") {
+      const elemento = document.getElementById(id);
+      if (elemento) {
+        elemento.textContent = valor ? prefixo + valor : "";
+      }
+    }
+
+    preencher("nomeEmpresaLaudo", empresa.name || "Empresa");
+    preencher("cnpjEmpresaLaudo", empresa.cnpj, "CNPJ: ");
+    preencher("enderecoEmpresaLaudo", empresa.address);
+    preencher("telefoneEmpresaLaudo", empresa.phone, "Telefone: ");
+    preencher("emailEmpresaLaudo", empresa.email, "E-mail: ");
+    preencher("siteEmpresaLaudo", empresa.website);
+
+    preencher("previewEmpresa", empresa.name || "Empresa");
+
+    const contato = [
+      empresa.cnpj,
+      empresa.phone,
+      empresa.email,
+      empresa.address,
+      empresa.website
+    ].filter(Boolean);
+
+    preencher("previewContatoEmpresa", contato.join(" | "));
+
+    const logo = document.getElementById("logoEmpresaLaudo");
+
+    if (logo && typeof empresa.logo === "string") {
+      const origem = empresa.logo.trim();
+
+      if (
+        origem.startsWith("/") ||
+        origem.startsWith("data:image/png;base64,") ||
+        origem.startsWith("data:image/jpeg;base64,") ||
+        origem.startsWith("data:image/webp;base64,")
+      ) {
+        logo.src = origem;
+      }
+    }
+
+  } catch (erro) {
+    console.error("Erro ao carregar empresa do laudo:", erro);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  ["diagnostico", "servico", "conclusao", "tecnico"].forEach(id => {
+    const campo = document.getElementById(id);
+    if (campo) campo.addEventListener("input", atualizarPreviewLaudo);
+  });
+
+  carregarEmpresaPreview();
+  atualizarPreviewLaudo();
+});
+
+</script>
+
+<script src="/permissoes.js"></script>
+</body>
+</html>

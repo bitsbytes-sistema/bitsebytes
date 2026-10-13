@@ -823,7 +823,13 @@ oninput="buscarCliente('telefone')">
 
 </div>
 
-<input id="equipamento" placeholder="Equipamento">
+<div class="dados-identificacao-equipamento" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:15px;margin-bottom:15px;">
+  <input id="equipamento" placeholder="Tipo de Equipamento">
+  <input id="marcaEquipamento" placeholder="Marca">
+  <input id="modeloEquipamento" placeholder="Modelo">
+  <input id="numeroSerieEquipamento" placeholder="N&uacute;mero de S&eacute;rie">
+  <input id="tipoEquipamento" placeholder="Acess&oacute;rios Recebidos">
+</div>
 
 <input id="problema" placeholder="Problema">
 
@@ -2424,7 +2430,7 @@ const observacoes =
     estadoFisico: valorChecklist("checkEstadoFisico"),
 
     acessorios:
-      document.getElementById("checkAcessorios").value.trim(),
+      (document.getElementById("tipoEquipamento").value.trim() || document.getElementById("checkAcessorios").value.trim()),
 
     observacoes:
       document.getElementById("checkObservacoes").value.trim()
@@ -2511,6 +2517,9 @@ const observacoes =
       telefone,
       cpfcnpj,
       equipamento,
+      marcaEquipamento: document.getElementById("marcaEquipamento").value.trim(),
+      modeloEquipamento: document.getElementById("modeloEquipamento").value.trim(),
+      numeroSerieEquipamento: document.getElementById("numeroSerieEquipamento").value.trim(),
       problema,
       observacoes,
       checklistEntrada,
@@ -2630,6 +2639,9 @@ const observacoes =
   document.getElementById("telefone").value="";
   document.getElementById("cpfcnpj").value="";
   document.getElementById("equipamento").value="";
+  document.getElementById("marcaEquipamento").value="";
+  document.getElementById("modeloEquipamento").value="";
+  document.getElementById("numeroSerieEquipamento").value="";
   document.getElementById("problema").value="";
   document.getElementById("observacoes").value="";
 
@@ -5111,7 +5123,7 @@ document.addEventListener(
 function abrirLaudo(id){
 
   window.location.href =
-    "/laudo.html?id=" + id;
+    "/laudo-novo.html?id=" + id;
 
 }
 

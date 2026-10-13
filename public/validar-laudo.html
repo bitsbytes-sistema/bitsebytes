@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validação de Laudo Técnico</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #eef3f9;
+  font-family: Arial, sans-serif;
+  color: #172b4d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.cartao {
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 12px 35px rgba(20,45,80,.12);
+  text-align: center;
+}
+.marca {
+  color: #164b91;
+  font-weight: 800;
+  font-size: 21px;
+  margin-bottom: 22px;
+}
+.simbolo { font-size: 52px; margin-bottom: 12px; }
+h1 { font-size: 24px; margin: 10px 0; }
+p { line-height: 1.6; color: #64748b; }
+.dados {
+  text-align: left;
+  background: #f4f7fb;
+  border-radius: 10px;
+  padding: 18px;
+  margin-top: 24px;
+}
+.dados div { margin: 10px 0; overflow-wrap: anywhere; }
+.rotulo { font-size: 12px; color: #64748b; }
+.valor { display: block; font-weight: 700; margin-top: 4px; }
+.sucesso { color: #15803d; }
+.erro { color: #b91c1c; }
+.rodape { font-size: 12px; margin-top: 26px; }
+</style>
+</head>
+<body>
+<main class="cartao">
+  <div class="marca">BITS & BYTES TECNOLOGY</div>
+  <div class="simbolo" id="simbolo">&#8987;</div>
+  <h1 id="titulo">Verificando documento...</h1>
+  <p id="mensagem">Aguarde enquanto consultamos a autenticidade do laudo.</p>
+
+  <section class="dados" id="dados" hidden>
+    <div>
+      <span class="rotulo">Empresa emissora</span>
+      <span class="valor" id="empresa"></span>
+    </div>
+    <div>
+      <span class="rotulo">Número do laudo</span>
+      <span class="valor" id="numero"></span>
+    </div>
+    <div>
+      <span class="rotulo">Situação</span>
+      <span class="valor sucesso">Documento localizado e validado</span>
+    </div>
+  </section>
+
+  <p class="rodape">Consulta pública de autenticidade do Laudo Técnico.</p>
+</main>
+
+<script>
+(async function () {
+  const titulo = document.getElementById("titulo");
+  const mensagem = document.getElementById("mensagem");
+  const simbolo = document.getElementById("simbolo");
+
+  function falha(texto) {
+    titulo.textContent = "Laudo não validado";
+    titulo.className = "erro";
+    mensagem.textContent = texto;
+    simbolo.textContent = "\u2716";
+  }
+
+  const token = new URLSearchParams(location.search).get("token") || "";
+
+  if (!/^[a-f0-9]{64}$/.test(token)) {
+    falha("Código de validação ausente ou inválido.");
+    return;
+  }
+
+  try {
+    const resposta = await fetch(
+      "/api/public/laudos/validar/" + encodeURIComponent(token),
+      { cache: "no-store" }
+    );
+
+    const dados = await resposta.json();
+
+    if (!resposta.ok || !dados.valido) {
+      falha(dados.mensagem || "Documento não encontrado.");
+      return;
+    }
+
+    titulo.textContent = "Laudo Autêntico";
+    titulo.className = "sucesso";
+    simbolo.textContent = "\u2714";
+    mensagem.textContent = "A autenticidade deste documento foi confirmada.";
+
+    document.getElementById("empresa").textContent = dados.empresa || "";
+    document.getElementById("numero").textContent = dados.numeroLaudo || "Não informado";
+    document.getElementById("dados").hidden = false;
+  } catch (erro) {
+    falha("Não foi possível consultar o sistema neste momento.");
+  }
+})();
+</script>
+</body>
+</html>

@@ -33,6 +33,7 @@ const chromium = require("@sparticuz/chromium");
 const Company = require("./models/Company");
 const User = require("./models/User");
 const Ticket = require("./models/Ticket");
+const LaudoCounter = require("./models/LaudoCounter");
 const Cliente = require("./models/Cliente");
 const Service = require("./models/Service");
 const Budget = require("./models/Budget");
@@ -397,6 +398,8 @@ const PAGINAS_PERMISSOES = {
 
   "/laudos.html": "laudos",
   "/laudo.html": "laudos",
+  "/laudo-novo.html": "laudos",
+  "/laudo-pdf.html": "laudos",
 
   "/estoque.html": "estoque",
   "/produto.html": "estoque",
@@ -2344,6 +2347,100 @@ app.get("/me", auth, async (req, res) => {
 });
 
 
+
+// ASSINATURA DO TECNICO - POR EMPRESA
+app.get(
+  "/api/configuracoes/assinatura-tecnico",
+  auth,
+  requirePermissao("configuracoes"),
+  async (req, res) => {
+    try {
+      const company = await Company.findById(req.session.user.companyId);
+
+      if (!company) {
+        return res.status(404).json({ error: "Empresa nao encontrada." });
+      }
+
+      res.json({
+        ok: true,
+        assinatura: company.technicianSignature || ""
+      });
+    } catch (erro) {
+      console.error("ERRO CONSULTAR ASSINATURA:", erro);
+      res.status(500).json({ error: "Erro ao consultar assinatura." });
+    }
+  }
+);
+
+app.put(
+  "/api/configuracoes/assinatura-tecnico",
+  auth,
+  requirePermissao("configuracoes"),
+  async (req, res) => {
+    try {
+      const assinatura = req.body?.assinatura;
+
+      if (
+        typeof assinatura !== "string" ||
+        !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(assinatura)
+      ) {
+        return res.status(400).json({
+          error: "Assinatura PNG em Base64 invalida."
+        });
+      }
+
+      if (assinatura.length > 500000) {
+        return res.status(413).json({
+          error: "Assinatura excede o tamanho permitido."
+        });
+      }
+
+      const company = await Company.findById(req.session.user.companyId);
+
+      if (!company) {
+        return res.status(404).json({ error: "Empresa nao encontrada." });
+      }
+
+      company.technicianSignature = assinatura;
+      await company.save();
+
+      res.json({
+        ok: true,
+        mensagem: "Assinatura salva com sucesso."
+      });
+    } catch (erro) {
+      console.error("ERRO SALVAR ASSINATURA:", erro);
+      res.status(500).json({ error: "Erro ao salvar assinatura." });
+    }
+  }
+);
+
+app.delete(
+  "/api/configuracoes/assinatura-tecnico",
+  auth,
+  requirePermissao("configuracoes"),
+  async (req, res) => {
+    try {
+      const company = await Company.findById(req.session.user.companyId);
+
+      if (!company) {
+        return res.status(404).json({ error: "Empresa nao encontrada." });
+      }
+
+      company.technicianSignature = "";
+      await company.save();
+
+      res.json({
+        ok: true,
+        mensagem: "Assinatura removida com sucesso."
+      });
+    } catch (erro) {
+      console.error("ERRO REMOVER ASSINATURA:", erro);
+      res.status(500).json({ error: "Erro ao remover assinatura." });
+    }
+  }
+);
+
 app.get(
   "/api/configuracoes/os",
   auth,
@@ -2974,19 +3071,19 @@ function classificarAuditoriaGeral(req) {
   const nomes = {
     clientes: "Cliente",
     tickets: "Chamado",
-    budgets: "Or?amento",
+    budgets: "Orçamento",
     financeiro: "Financeiro",
-    services: "Servi?o",
+    services: "Serviço",
     products: "Produto",
-    usuarios: "Usu?rio",
-    users: "Usu?rio",
+    usuarios: "Usuário",
+    users: "Usuário",
     lembretes: "Lembrete",
     sales: "Venda",
     vendas: "Venda",
-    configuracoes: "Configura??o",
-    "payment-machines": "M?quina de pagamento",
+    configuracoes: "Configuração",
+    "payment-machines": "Máquina de pagamento",
     "stock-movements": "Estoque",
-    admin: "Administra??o"
+    admin: "Administração"
   };
 
   const entidade =
@@ -3033,7 +3130,123 @@ function classificarAuditoriaGeral(req) {
     ultimo === "permissoes" &&
     req.method === "PUT"
   ) {
-    verbo = "Alterar permiss?es do";
+    verbo = "Alterar permissões do";
+  }
+
+  if (
+    recurso === "tickets" &&
+    partes.length === 3 &&
+    req.method === "PUT"
+  ) {
+    const status = String(req.body?.status || "").toLowerCase();
+
+    const descricoesStatus = {
+      aberto: "Alterar status do chamado para Aberto",
+      andamento: "Alterar status do chamado para Em andamento",
+      reparo: "Alterar status do chamado para Em reparo",
+      finalizado: "Finalizar chamado"
+    };
+
+    if (descricoesStatus[status]) {
+      return {
+        acao: status === "finalizado"
+          ? "finalizar_chamado"
+          : "alterar_status_chamado",
+        entidade: "Chamado",
+        descricao: descricoesStatus[status]
+      };
+    }
+  }
+
+  if (
+    recurso === "tickets" &&
+    partes.length === 4 &&
+    ultimo === "diagnostico" &&
+    req.method === "PUT"
+  ) {
+    const situacao =
+      req.body?.situacaoDiagnostico || "rascunho";
+
+    const classificacoes = {
+      rascunho: {
+        acao: "salvar_rascunho_diagnostico",
+        descricao: "Salvar rascunho do diagnóstico técnico"
+      },
+      aguardando_aprovacao: {
+        acao: "enviar_diagnostico_aprovacao",
+        descricao: "Enviar diagnóstico para aprovação"
+      },
+      aprovado: {
+        acao: "aprovar_diagnostico",
+        descricao: "Aprovar diagnóstico técnico - chamado passa para Em reparo"
+      },
+      recusado: {
+        acao: "recusar_diagnostico",
+        descricao: "Recusar diagnóstico técnico"
+      }
+    };
+
+    if (classificacoes[situacao]) {
+      return {
+        acao: classificacoes[situacao].acao,
+        entidade: "Diagnóstico Técnico",
+        descricao: classificacoes[situacao].descricao
+      };
+    }
+  }
+
+  if (
+    recurso === "tickets" &&
+    partes.length === 4 &&
+    ultimo === "laudo" &&
+    req.method === "PUT"
+  ) {
+    return {
+      acao: "salvar_laudo_tecnico",
+      entidade: "Laudo Técnico",
+      descricao: "Salvar laudo técnico"
+    };
+  }
+
+  if (recurso === "tickets" && partes.length === 4 && ultimo === "fotos" && req.method === "POST") {
+    return {
+      acao: "adicionar_fotos_chamado",
+      entidade: "Foto do Chamado",
+      descricao: "Adicionar fotos ao chamado"
+    };
+  }
+
+  if (recurso === "tickets" && partes.length === 5 && partes[3] === "fotos" && req.method === "DELETE") {
+    return {
+      acao: "excluir_foto_chamado",
+      entidade: "Foto do Chamado",
+      descricao: "Excluir foto do chamado"
+    };
+  }
+  if (
+    recurso === "tickets" &&
+    partes.length === 4 &&
+    ultimo === "checklist-entrega" &&
+    req.method === "PUT"
+  ) {
+    return {
+      acao: "concluir_checklist_entrega",
+      entidade: "Checklist de Entrega",
+      descricao: "Concluir checklist de entrega do chamado"
+    };
+  }
+
+  if (
+    recurso === "tickets" &&
+    partes.length === 4 &&
+    ultimo === "assinatura" &&
+    req.method === "DELETE"
+  ) {
+    return {
+      acao: "excluir_assinatura_cliente",
+      entidade: "Assinatura do Cliente",
+      descricao: "Excluir assinatura do cliente"
+    };
   }
 
   const corpo = req.body || {};
@@ -3120,9 +3333,9 @@ function auditoriaGeral(req, res, next) {
         executadoPorId:
           usuario._id || null,
         autorizadoPor:
-          String(usuario.username || ""),
+          String(req.administradorAutorizador?.username || usuario.username || ""),
         autorizadoPorId:
-          usuario._id || null,
+          req.administradorAutorizador?._id || usuario._id || null,
         dados: {
           metodo: req.method,
           rota,
@@ -4288,7 +4501,10 @@ app.post("/api/tickets", auth, requirePermissao("chamados"), async (req, res) =>
 
 
     equipamento: req.body.equipamento,
-
+    tipoEquipamento: String(req.body.tipoEquipamento || "").trim(),
+    marcaEquipamento: String(req.body.marcaEquipamento || "").trim(),
+    modeloEquipamento: String(req.body.modeloEquipamento || "").trim(),
+    numeroSerieEquipamento: String(req.body.numeroSerieEquipamento || "").trim(),
     problema: req.body.problema,
 
     observacoes: req.body.observacoes || "",
@@ -4580,6 +4796,11 @@ app.delete("/api/tickets/:id/fotos/:fotoId", auth, requirePermissao("chamados"),
       });
     }
 
+    req.administradorAutorizador = {
+      username: autorizacaoExcluirFoto.administrador.username,
+      _id: autorizacaoExcluirFoto.administrador._id
+    };
+
     const chaveFoto = foto.chave;
 
     await r2.send(
@@ -4778,6 +4999,11 @@ return res.status(401).json({
     ticket.cep =
       novoCliente.cep || "";
 
+
+    req.administradorAutorizador = {
+      username: administrador.username,
+      _id: administrador._id
+    };
 
     /* ===================== REGISTRAR AUDITORIA ===================== */
 
@@ -5226,8 +5452,27 @@ app.post("/api/assinatura-remota/:token", async (req, res) => {
         error: "Este link de assinatura expirou."
       });
     }
+    try {
+      await AuditLog.create({
+        companyId: String(ticket.companyId),
+        acao: "confirmar_assinatura_remota",
+        entidade: "Assinatura do Cliente",
+        entidadeId: String(ticket._id),
+        descricao: "Assinatura remota confirmada pelo cliente",
+        executadoPor: nomeAssinante,
+        executadoPorId: null,
+        autorizadoPor: "Link de assinatura remota",
+        autorizadoPorId: null,
+        dados: {
+          origem: "remota",
+          dataAssinatura: agora
+        }
+      });
+    } catch (erroAuditoria) {
+      console.error("Erro ao registrar auditoria da assinatura remota:", erroAuditoria);
+    }
 
-    return res.json({
+return res.json({
       ok: true,
       message: "Assinatura registrada com sucesso.",
       dataAssinatura: agora
@@ -5530,6 +5775,11 @@ app.delete("/api/tickets/:id/assinatura", auth, requirePermissao("chamados"), as
         error: autorizacaoExcluirAssinatura.error
       });
     }
+
+    req.administradorAutorizador = {
+      username: autorizacaoExcluirAssinatura.administrador.username,
+      _id: autorizacaoExcluirAssinatura.administrador._id
+    };
 
     ticket.assinaturaCliente = "";
     ticket.nomeAssinante = "";
@@ -6218,6 +6468,146 @@ ${ticket.observacoesDiagnostico || "Nenhuma observação"}
 });
 
 
+
+// VALIDACAO PUBLICA DO LAUDO TECNICO
+app.get("/api/public/laudos/validar/:token", async (req, res) => {
+  try {
+    const token = String(req.params.token || "");
+
+    if (!/^[a-f0-9]{64}$/.test(token)) {
+      return res.status(400).json({
+        valido: false,
+        mensagem: "Codigo de validacao invalido."
+      });
+    }
+
+    const ticket = await Ticket.findOne({
+      laudoValidacaoToken: token,
+      laudoGerado: true
+    }).select("numeroLaudo numeroOS createdAt companyId laudoGerado");
+
+    if (!ticket) {
+      return res.status(404).json({
+        valido: false,
+        mensagem: "Laudo nao encontrado ou nao validado."
+      });
+    }
+
+    const company = await Company.findById(ticket.companyId)
+      .select("name");
+
+    if (!company) {
+      return res.status(404).json({
+        valido: false,
+        mensagem: "Empresa emissora nao encontrada."
+      });
+    }
+
+    res.set("Cache-Control", "no-store");
+
+    return res.json({
+      valido: true,
+      mensagem: "Autenticidade do laudo confirmada.",
+      numeroLaudo: ticket.numeroOS != null
+        ? "LT-" +
+          new Date(ticket.createdAt || Date.now()).getFullYear() +
+          "-" +
+          String(ticket.numeroOS).padStart(6, "0")
+        : (ticket.numeroLaudo || null),
+      empresa: company.name || "Empresa emissora"
+    });
+
+  } catch (erro) {
+    console.error("ERRO VALIDACAO PUBLICA LAUDO:", erro);
+
+    return res.status(500).json({
+      valido: false,
+      mensagem: "Nao foi possivel validar o documento."
+    });
+  }
+});
+
+
+// QR CODE DO LAUDO - ACESSO RESTRITO A EMPRESA
+app.get("/api/tickets/:id/laudo/qr", auth, requirePermissao("laudos"), async (req, res) => {
+  try {
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId: req.session.user.companyId,
+      laudoGerado: true
+    }).select("laudoValidacaoToken");
+
+    if (!ticket) {
+      return res.status(404).json({ error: "laudo_not_found" });
+    }
+
+    if (!ticket.laudoValidacaoToken) {
+      const cryptoLaudo = require("crypto");
+      const novoToken = cryptoLaudo.randomBytes(32).toString("hex");
+
+      const atualizado = await Ticket.findOneAndUpdate(
+        {
+          _id: ticket._id,
+          companyId: req.session.user.companyId,
+          laudoGerado: true,
+          $or: [
+            { laudoValidacaoToken: null },
+            { laudoValidacaoToken: "" },
+            { laudoValidacaoToken: { $exists: false } }
+          ]
+        },
+        { $set: { laudoValidacaoToken: novoToken } },
+        { new: true }
+      ).select("laudoValidacaoToken");
+
+      if (atualizado) {
+        ticket.laudoValidacaoToken = atualizado.laudoValidacaoToken;
+      } else {
+        const existente = await Ticket.findOne({
+          _id: ticket._id,
+          companyId: req.session.user.companyId,
+          laudoGerado: true
+        }).select("laudoValidacaoToken");
+
+        if (existente) {
+          ticket.laudoValidacaoToken = existente.laudoValidacaoToken;
+        }
+      }
+
+      if (!ticket.laudoValidacaoToken) {
+        return res.status(409).json({ error: "token_not_available" });
+      }
+    }
+
+    const QRCode = require("qrcode");
+
+    // O dominio e obtido da configuracao do servidor.
+    const base = String(process.env.PUBLIC_BASE_URL || "").trim().replace(/\/$/, "");
+
+    if (!/^https:\/\/[a-z0-9.-]+(?::[0-9]+)?$/i.test(base)) {
+      return res.status(503).json({
+        error: "public_base_url_not_configured"
+      });
+    }
+
+    const url = base + "/validar-laudo.html?token=" +
+      encodeURIComponent(ticket.laudoValidacaoToken);
+
+    const imagem = await QRCode.toDataURL(url, {
+      errorCorrectionLevel: "M",
+      margin: 1,
+      width: 240
+    });
+
+    res.set("Cache-Control", "no-store");
+    return res.json({ imagem, url });
+
+  } catch (erro) {
+    console.error("Erro ao gerar QR do laudo:", erro);
+    return res.status(500).json({ error: "qr_generation_failed" });
+  }
+});
+
 /* ===================== LAUDO ===================== */
 app.get("/api/tickets/:id/laudo", auth, requirePermissao("laudos"), async (req, res) => {
 
@@ -6265,6 +6655,13 @@ app.put("/api/tickets/:id/laudo", auth, requirePermissao("laudos"), async (req, 
   servico: req.body.servico || "",
   conclusao: req.body.conclusao || "",
   tecnico: req.body.tecnico || "",
+  ...(Array.isArray(req.body.pecasUtilizadas) ? {
+    pecasUtilizadas: req.body.pecasUtilizadas.map(peca => ({
+      descricao: String(peca.descricao || "").trim(),
+      quantidade: Number(peca.quantidade) || 1,
+      observacao: String(peca.observacao || "").trim()
+    })).filter(peca => peca.descricao)
+  } : {}),
   laudoGerado: true,
   updatedAt: new Date()
 },
@@ -6282,6 +6679,46 @@ app.put("/api/tickets/:id/laudo", auth, requirePermissao("laudos"), async (req, 
       });
 
     }
+
+    // Gera um codigo exclusivo apenas quando ainda nao existe.
+    if (!ticket.laudoValidacaoToken) {
+      const cryptoLaudo = require("crypto");
+
+      const novoToken = cryptoLaudo
+        .randomBytes(32)
+        .toString("hex");
+
+      const atualizado = await Ticket.findOneAndUpdate(
+        {
+          _id: ticket._id,
+          companyId: req.session.user.companyId,
+          $or: [
+            { laudoValidacaoToken: null },
+            { laudoValidacaoToken: "" },
+            { laudoValidacaoToken: { $exists: false } }
+          ]
+        },
+        {
+          $set: { laudoValidacaoToken: novoToken }
+        },
+        { new: true }
+      );
+
+      if (atualizado) {
+        ticket.laudoValidacaoToken = atualizado.laudoValidacaoToken;
+      } else {
+        const existente = await Ticket.findOne({
+          _id: ticket._id,
+          companyId: req.session.user.companyId
+        }).select("laudoValidacaoToken");
+
+        if (existente) {
+          ticket.laudoValidacaoToken = existente.laudoValidacaoToken;
+        }
+      }
+    }
+
+
 
     res.json({
       ok: true,
@@ -6433,6 +6870,10 @@ if(chamadosAbertos >= 3){
       cpfcnpj: req.body.cpfcnpj,
 
       equipamento: req.body.equipamento,
+      tipoEquipamento: String(req.body.tipoEquipamento || "").trim(),
+      marcaEquipamento: String(req.body.marcaEquipamento || "").trim(),
+      modeloEquipamento: String(req.body.modeloEquipamento || "").trim(),
+      numeroSerieEquipamento: String(req.body.numeroSerieEquipamento || "").trim(),
 
       problema: req.body.problema,
 
@@ -7385,9 +7826,17 @@ Equipamento
 Equipamento recebido:
 </span>
 
-${ticket.equipamento}
+${ticket.equipamento || "-"}
 
 </p>
+
+<p><span class="label">Marca:</span> ${ticket.marcaEquipamento || "-"}</p>
+
+<p><span class="label">Modelo:</span> ${ticket.modeloEquipamento || "-"}</p>
+
+<p><span class="label">N&uacute;mero de S&eacute;rie:</span> ${ticket.numeroSerieEquipamento || "-"}</p>
+
+<p><span class="label">Acess&oacute;rios Recebidos:</span> ${ticket.checklistEntrada?.acessorios || "-"}</p>
 
 
 <p>

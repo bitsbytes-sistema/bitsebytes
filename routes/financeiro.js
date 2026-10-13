@@ -642,7 +642,7 @@ router.post("/", auth, async (req, res) => {
             acao: "criar_lancamento_financeiro",
             entidade: "MovimentoFinanceiro",
             entidadeId: String(movimento._id),
-            descricao: `Lan?amento financeiro criado: ${movimento.descricao}`,
+            descricao: `Lançamento financeiro criado: ${movimento.descricao}`,
             executadoPor: String(req.session.user.username || ""),
             executadoPorId: req.session.user._id || null,
             autorizadoPor: String(req.session.user.username || ""),
@@ -947,8 +947,8 @@ router.put("/:id", auth, async (req, res) => {
             entidade: "MovimentoFinanceiro",
             entidadeId: String(movimento._id),
             descricao: statusAlterado
-                ? `Status do lan?amento financeiro alterado de ${estadoAnterior.status} para ${estadoNovo.status}: ${movimento.descricao}`
-                : `Lan?amento financeiro alterado: ${movimento.descricao}`,
+                ? `Status do lançamento financeiro alterado de ${estadoAnterior.status} para ${estadoNovo.status}: ${movimento.descricao}`
+                : `Lançamento financeiro alterado: ${movimento.descricao}`,
             executadoPor: String(req.session.user.username || ""),
             executadoPorId: req.session.user._id || null,
             autorizadoPor: String(req.session.user.username || ""),
@@ -1072,7 +1072,7 @@ router.delete("/:id", auth, async (req, res) => {
             acao: "excluir_lancamento_financeiro",
             entidade: "MovimentoFinanceiro",
             entidadeId: String(movimento._id),
-            descricao: `Lan?amento financeiro exclu?do: ${movimento.descricao}`,
+            descricao: `Lançamento financeiro excluído: ${movimento.descricao}`,
             executadoPor: String(req.session.user.username || ""),
             executadoPorId: req.session.user._id || null,
             autorizadoPor: String(administrador.username || ""),

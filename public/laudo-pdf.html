@@ -1,0 +1,1079 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laudo Tecnico</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e8edf5; color: #17243b; font-family: Arial, sans-serif; }
+  .barra { padding: 14px; text-align: center; background: #172b4d; }
+  .barra button { background: #2563eb; color: white; border: 0; border-radius: 6px; padding: 11px 22px; cursor: pointer; font-weight: bold; }
+  .folha { width: 210mm; min-height: 297mm; margin: 24px auto; padding: 18mm; background: white; box-shadow: 0 5px 24px #0002; }
+  .cabecalho { display: flex; justify-content: space-between; gap: 20px; border-bottom: 3px solid #2563eb; padding-bottom: 17px; }
+  .empresa { font-size: 19px; color: #153768; margin: 0 0 8px; }
+  .contato { font-size: 10px; line-height: 1.7; color: #64748b; }
+  .identificacao { text-align: right; font-size: 11px; line-height: 1.8; white-space: nowrap; }
+  h1 { text-align: center; font-size: 23px; color: #153768; margin: 28px 0; }
+  h3 { font-size: 12px; color: #1d4ed8; border-bottom: 1px solid #dbeafe; padding-bottom: 8px; margin-top: 25px; }
+  p { font-size: 12px; line-height: 1.7; margin: 6px 0; }
+  .texto { white-space: pre-wrap; min-height: 35px; overflow-wrap: anywhere; }
+  .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th, td { border: 1px solid #dbe3ef; padding: 9px; text-align: left; overflow-wrap: anywhere; }
+  th { background: #edf3fc; }
+  .assinatura { margin-top: 65px; text-align: center; }
+  .linha { border-top: 1px solid #334155; max-width: 280px; margin: 0 auto 9px; }
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: white; }
+    .barra { display: none; }
+    .folha { margin: 0; box-shadow: none; width: 210mm; min-height: 0; }
+    h3, tr { break-inside: avoid; }
+  }
+  @media screen and (max-width: 850px) {
+    .folha { width: 100%; min-height: 0; margin: 0; padding: 20px; }
+    .cabecalho { flex-wrap: wrap; }
+    .identificacao { text-align: left; }
+  }
+
+  .cabecalho-profissional { align-items: center; border-bottom: 0; }
+  .marca-documento { display: flex; align-items: center; gap: 12px; }
+  .marca-documento img { width: 66px; height: 66px; object-fit: contain; }
+  .marca-documento .empresa { font-size: 19px; margin-bottom: 3px; }
+  .subtitulo-empresa { font-size: 10px; color: #475569; margin: 0; }
+  .contato-profissional { max-width: 235px; font-size: 9px; overflow-wrap: anywhere; }
+  .faixa-laudo { display: flex; align-items: center; justify-content: space-between; background: #07508e; color: white; margin-top: 17px; padding: 12px 15px; gap: 12px; }
+  .faixa-laudo h1 { color: white; margin: 0; font-size: 20px; text-align: left; }
+  .faixa-laudo .identificacao { color: white; font-size: 10px; }
+  @media print { .faixa-laudo { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+
+
+/* QUADROS DO LAUDO */
+.folha h3 {
+  color: #07508e;
+  border-bottom: none;
+  margin-top: 20px;
+  margin-bottom: 9px;
+  padding-bottom: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.folha .texto {
+  background: #f0f4f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  padding: 11px 13px;
+  min-height: 42px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.folha table th {
+  background: #e7eff8;
+  color: #17365d;
+}
+
+@media print {
+  .folha .texto,
+  .folha table th {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+
+/* DADOS CLIENTE E EQUIPAMENTO */
+.dados-duas-colunas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+.dados-bloco {
+  min-width: 0;
+}
+
+.dados-bloco + .dados-bloco {
+  border-left: 1px solid #dbe3ef;
+  padding-left: 20px;
+}
+
+.dados-bloco h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #dbe3ef;
+  color: #07508e;
+}
+
+.dados-bloco p {
+  margin: 3px 0;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media print {
+  .dados-duas-colunas {
+    break-inside: avoid;
+  }
+}
+
+
+/* CABECALHO REFERENCIA OFICIAL */
+.cabecalho-profissional {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 0;
+}
+
+.marca-documento {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.marca-documento img {
+  width: 78px;
+  height: 78px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.marca-documento .empresa {
+  font-size: 21px;
+  line-height: 1.15;
+  color: #07508e;
+  margin: 0 0 5px;
+}
+
+.subtitulo-empresa {
+  font-size: 10px;
+  color: #17365d;
+  font-weight: bold;
+}
+
+.contato-profissional {
+  max-width: none;
+  font-size: 10px;
+  line-height: 1.65;
+  color: #334155;
+  overflow-wrap: anywhere;
+}
+
+.contato-profissional .contato-linha {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.contato-profissional .contato-icone {
+  color: #07508e;
+  font-weight: bold;
+  min-width: 15px;
+}
+
+.faixa-laudo {
+  display: grid;
+  grid-template-columns: 68% 32%;
+  padding: 0;
+  background: #07508e;
+  border-radius: 4px;
+  overflow: hidden;
+  min-height: 65px;
+  gap: 0;
+}
+
+.faixa-laudo h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+  color: white;
+  margin: 0;
+  padding: 12px;
+}
+
+.faixa-laudo .identificacao {
+  background: #e5f1fc;
+  color: #17365d;
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: normal;
+  border: 1px solid #c9dff2;
+}
+
+.faixa-laudo .identificacao strong {
+  font-size: 12px;
+  color: #17365d;
+}
+
+@media print {
+  .faixa-laudo,
+  .faixa-laudo .identificacao {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+
+/* AJUSTE FINAL CABECALHO 02 */
+.cabecalho-profissional {
+  gap: 0;
+}
+
+.marca-documento {
+  padding-right: 16px;
+}
+
+.contato-profissional {
+  border-left: 1px solid #dbe3ef;
+  padding-left: 18px;
+}
+
+.contato-profissional .contato-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 3px 0;
+}
+
+.contato-profissional .contato-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  min-width: 17px;
+  color: #07508e;
+  font-size: 14px;
+}
+
+.faixa-laudo .identificacao strong {
+  display: block;
+  font-size: 12px;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #c9dff2;
+}
+
+.faixa-laudo .identificacao {
+  line-height: 1.7;
+  font-size: 11px;
+}
+
+
+/* FAIXA FINAL CONFORME REFERENCIA */
+.cabecalho-profissional {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 0;
+  align-items: center;
+  border-bottom: 0;
+  padding-bottom: 12px;
+}
+
+.marca-documento {
+  min-width: 0;
+  padding-right: 18px;
+}
+
+.contato-profissional {
+  min-width: 0;
+  border-left: 1px solid #dbe3ef;
+  padding-left: 18px;
+}
+
+.contato-profissional .contato-linha {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  margin: 4px 0;
+}
+
+.contato-profissional .contato-icone {
+  width: 18px;
+  min-width: 18px;
+  color: #07508e;
+  font-size: 12px;
+  text-align: center;
+}
+
+.faixa-laudo {
+  display: grid;
+  grid-template-columns: 70% 30%;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  margin-top: 8px;
+  background: #07508e;
+  border-radius: 3px;
+  overflow: hidden;
+  min-height: 86px;
+}
+
+.faixa-laudo h1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 14px;
+  color: #fff;
+  background: #07508e;
+  font-size: 22px;
+  text-align: center;
+}
+
+.faixa-laudo .identificacao {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 14px;
+  background: #e5f1fc;
+  color: #17365d;
+  border: 0;
+  text-align: left;
+  white-space: normal;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.faixa-laudo .identificacao strong {
+  display: block;
+  margin: 0 0 2px;
+  padding: 0 0 5px;
+  border-bottom: 1px solid #c9dff2;
+  color: #17365d;
+  font-size: 12px;
+}
+
+@media print {
+  .faixa-laudo,
+  .faixa-laudo h1,
+  .faixa-laudo .identificacao {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  .cabecalho-profissional {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .contato-profissional {
+    border-left: 0;
+    border-top: 1px solid #dbe3ef;
+    padding: 10px 0 0;
+  }
+  .faixa-laudo {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* NEGRITO IDENTIFICACAO LAUDO */
+.faixa-laudo .identificacao,
+.faixa-laudo .identificacao strong,
+.faixa-laudo .identificacao #numeroOS,
+.faixa-laudo .identificacao #dataEmissao {
+  font-weight: 700;
+  color: #17365d;
+}
+
+/* ICONES PADRONIZADOS DOS DADOS */
+.dados-bloco h3.titulo-com-icone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #07508e;
+}
+.dados-bloco .icone-dados {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  color: #0875d1;
+  vertical-align: middle;
+}
+@media print {
+  .dados-bloco .icone-dados {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* ICONES PADRONIZADOS DO CABECALHO DA EMPRESA */
+.contato-profissional .contato-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  color: #0875d1;
+}
+.contato-profissional .contato-icone svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+/* SECOES PDF PADRAO MODELO APROVADO */
+.folha h3.titulo-secao-pdf {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #07508e;
+  font-size: 11px;
+  font-weight: 800;
+  margin-top: 16px;
+  margin-bottom: 7px;
+  padding: 0;
+  border: 0;
+}
+.titulo-secao-pdf .numero-secao-pdf {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: #e7f1fb;
+  color: #07508e;
+  border-radius: 4px;
+  width: 25px;
+  height: 24px;
+  flex: 0 0 25px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.folha .texto {
+  background: #edf3fa;
+  border: 1px solid #e1e8f1;
+  border-radius: 4px;
+  padding: 9px 11px;
+  min-height: 39px;
+}
+.folha table th {
+  background: #e7f1fb;
+  color: #07508e;
+  font-weight: 800;
+}
+.folha table th,
+.folha table td {
+  padding: 7px 9px;
+}
+@media print {
+  .titulo-secao-pdf .numero-secao-pdf,
+  .folha .texto,
+  .folha table th {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+
+/* ASSINATURAS E VALIDACAO DO LAUDO */
+.validacao-laudo-pdf {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid #d9e3ee;
+  margin-top: 18px;
+  padding-top: 10px;
+  padding-bottom: 14px;
+  min-height: 112px;
+  break-inside: avoid;
+}
+.coluna-validacao-pdf {
+  min-width: 0;
+  padding: 0 11px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.coluna-validacao-pdf + .coluna-validacao-pdf {
+  border-left: 1px solid #e2e8f0;
+}
+.coluna-validacao-pdf h4 {
+  margin: 0 0 3px;
+  color: #15283c;
+  font-size: 10px;
+  font-weight: 800;
+}
+.coluna-validacao-pdf small {
+  display: block;
+  font-size: 8px;
+  color: #475569;
+}
+.espaco-assinatura-pdf {
+  height: 48px;
+  width: 100%;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+}
+.espaco-assinatura-pdf img {
+  display: block;
+  max-width: 100%;
+  max-height: 46px;
+  object-fit: contain;
+}
+.espaco-assinatura-pdf img[hidden] {
+  display: none;
+}
+.linha-assinatura-pdf {
+  width: 100%;
+  border-top: 1px solid #475569;
+  margin: 3px 0 5px;
+}
+.coluna-validacao-pdf strong {
+  font-size: 9px;
+  color: #15283c;
+}
+.espaco-qr-pdf {
+  width: 100%;
+  min-height: 65px;
+  margin-top: 8px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #64748b;
+  font-size: 9px;
+}
+
+
+/* RODAPE INSTITUCIONAL DO LAUDO */
+.folha {
+  display: flex;
+  flex-direction: column;
+}
+.rodape-laudo-pdf {
+  margin-top: auto;
+  background: #06477d;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px 15px;
+  min-height: 62px;
+  border-radius: 0;
+  break-inside: avoid;
+}
+.rodape-marca-pdf {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.rodape-marca-pdf img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+.rodape-marca-pdf strong {
+  display: block;
+  font-size: 10px;
+  line-height: 1.3;
+}
+.rodape-marca-pdf small {
+  display: block;
+  font-size: 8px;
+  color: #e0efff;
+}
+.rodape-contatos-pdf {
+  font-size: 8px;
+  line-height: 1.65;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+@media print {
+  .rodape-laudo-pdf {
+    background: #06477d !important;
+    color: white !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+
+/* RODAPE COM ICONES E DISTRIBUICAO PROFISSIONAL */
+.rodape-laudo-pdf {
+  min-height: 53px;
+  padding: 9px 13px;
+}
+.rodape-contatos-pdf {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 18px;
+  row-gap: 5px;
+  align-items: center;
+  text-align: left;
+  font-size: 8px;
+  line-height: 1.3;
+}
+.rodape-contato-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.rodape-contato-item svg {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  color: #fff;
+}
+.rodape-endereco-pdf {
+  grid-column: 1 / -1;
+}
+
+
+.espaco-qr-pdf img#qrValidacaoPdf {
+  display: block;
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+.espaco-qr-pdf img#qrValidacaoPdf[hidden] {
+  display: none;
+}
+
+.detalhe-qr-pdf {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  line-height: 1.3;
+}
+
+/* AJUSTE A4 - EVITAR RODAPE ISOLADO */
+@media print {
+  .folha {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .rodape-laudo-pdf {
+    margin-top: 14px !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .validacao-laudo-pdf {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+
+/* MARGENS INTERNAS EXCLUSIVAS DA IMPRESSAO */
+@media print {
+  .folha {
+    padding: 10mm 14mm !important;
+  }
+}
+
+
+/* AJUSTE DE ESPACAMENTO PARA IMPRESSAO A4 */
+@media print {
+  .folha {
+    padding: 8mm 12mm !important;
+  }
+
+  .folha h3 {
+    margin-top: 12px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .validacao-laudo-pdf {
+    margin-top: 10px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .rodape-laudo-pdf {
+    margin-top: 8px !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="barra"><button onclick="window.print()">Imprimir / Salvar PDF</button></div>
+<main class="folha">
+  <header class="cabecalho cabecalho-profissional">
+    <div class="marca-documento">
+      <img id="logoEmpresaPdf" src="/logo.png" alt="Logo da empresa">
+      <div>
+        <h2 class="empresa" id="empresa">Empresa</h2>
+        <p class="subtitulo-empresa">Assistência Técnica Especializada</p>
+      </div>
+    </div>
+    <div class="contato contato-profissional" id="contato"></div>
+  </header>
+
+  <div class="faixa-laudo">
+    <h1>LAUDO TÉCNICO</h1>
+    <div class="identificacao">
+      <strong id="numeroLaudo">LAUDO</strong>
+      <div id="numeroOS">OS #</div>
+      <div id="dataEmissao"></div>
+    </div>
+  </div>
+
+
+  <section class="dados-duas-colunas">
+    <div class="dados-bloco">
+      <h3 class="titulo-com-icone">
+  <svg class="icone-dados" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="7" r="4" fill="currentColor"/>
+    <path d="M4 21v-2a8 8 0 0 1 16 0v2z" fill="currentColor"/>
+  </svg>
+  <span>Dados do Cliente</span>
+</h3>
+      <p><strong>Nome:</strong> <span id="cliente"></span></p>
+      <p><strong>Telefone:</strong> <span id="telefone"></span></p>
+      <p><strong>CPF/CNPJ:</strong> <span id="cpfcnpj"></span></p>
+    </div>
+
+    <div class="dados-bloco">
+      <h3 class="titulo-com-icone">
+  <svg class="icone-dados" viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="4" width="18" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M1.5 20h21M9 17l-1 3m7-3 1 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <span>Dados do Equipamento</span>
+</h3>
+      <p><strong>Tipo:</strong> <span id="equipamento"></span></p>
+      <p><strong>Marca:</strong> <span id="marca"></span></p>
+      <p><strong>Modelo:</strong> <span id="modelo"></span></p>
+      <p><strong>Número de Série:</strong> <span id="serie"></span></p>
+      <p><strong>Acessórios Recebidos:</strong> <span id="acessorios"></span></p>
+    </div>
+  </section>
+
+  <h3 class="titulo-secao-pdf"><span class="numero-secao-pdf">03</span><span>DEFEITO RELATADO</span></h3>
+  <p class="texto" id="problema"></p>
+
+  <h3 class="titulo-secao-pdf"><span class="numero-secao-pdf">04</span><span>DIAGNÓSTICO TÉCNICO</span></h3>
+  <p class="texto" id="diagnostico"></p>
+
+  <h3 class="titulo-secao-pdf"><span class="numero-secao-pdf">05</span><span>SERVIÇOS REALIZADOS</span></h3>
+  <p class="texto" id="servico"></p>
+
+  <h3 class="titulo-secao-pdf"><span class="numero-secao-pdf">06</span><span>PEÇAS UTILIZADAS</span></h3>
+  <table>
+    <thead><tr><th>Descrição</th><th>Qtd.</th><th>Observação</th></tr></thead>
+    <tbody id="pecas"><tr><td colspan="3">Nenhuma peça informada.</td></tr></tbody>
+  </table>
+
+  <h3 class="titulo-secao-pdf"><span class="numero-secao-pdf">07</span><span>CONCLUSÃO TÉCNICA</span></h3>
+  <p class="texto" id="conclusao"></p>
+
+
+  <section class="validacao-laudo-pdf">
+    <div class="coluna-validacao-pdf">
+      <h4>Técnico Responsável</h4>
+      <div class="espaco-assinatura-pdf"><img id="assinaturaTecnicoPdf" alt="Assinatura do t?cnico" hidden></div>
+      <div class="linha-assinatura-pdf"></div>
+      <strong id="tecnico"></strong>
+      <small>Responsável pelo laudo técnico</small>
+      <small id="dataHoraTecnicoPdf"></small>
+    </div>
+
+    <div class="coluna-validacao-pdf">
+      <h4>Assinatura do Cliente</h4>
+      <small>(Recebimento e Ciência)</small>
+      <div class="espaco-assinatura-pdf">
+        <img id="assinaturaClientePdf" alt="Assinatura do cliente" hidden>
+      </div>
+      <div class="linha-assinatura-pdf"></div>
+      <small id="nomeAssinantePdf"></small>
+      <small id="dataAssinaturaPdf"></small>
+    </div>
+
+    <div class="coluna-validacao-pdf">
+      <h4>Validação do Documento</h4>
+      <div class="espaco-qr-pdf">
+        <img id="qrValidacaoPdf" alt="QR Code" hidden>
+        <small id="statusQrPdf">Carregando QR Code...</small>
+        <small id="enderecoValidacaoPdf" class="detalhe-qr-pdf" hidden></small>
+        <small id="codigoValidacaoPdf" class="detalhe-qr-pdf" hidden></small>
+      </div>
+    </div>
+  </section>
+
+  <footer class="rodape-laudo-pdf" id="rodapeEmpresaPdf">
+    <div class="rodape-marca-pdf">
+      <img id="logoRodapePdf" alt="Logo da empresa">
+      <div>
+        <strong id="nomeRodapePdf"></strong>
+        <small>Assistência Técnica Especializada</small>
+      </div>
+    </div>
+
+    <div class="rodape-contatos-pdf">
+      <div class="rodape-contato-item">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 3h4l2 5-3 2a15 15 0 0 0 5 5l2-3 5 2v4c0 1-1 2-2 2C10 20 4 14 4 5c0-1 1-2 2-2Z" fill="currentColor"/>
+        </svg>
+        <span id="telefoneRodapePdf"></span>
+      </div>
+      <div class="rodape-contato-item">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span id="emailRodapePdf"></span>
+      </div>
+      <div class="rodape-contato-item rodape-endereco-pdf">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span id="enderecoRodapePdf"></span>
+      </div>
+    </div>
+  </footer>
+
+</main>
+<script>
+const id = new URLSearchParams(location.search).get("id");
+
+function preencher(campo, valor) {
+  document.getElementById(campo).textContent = String(valor || "-");
+}
+
+async function carregar() {
+  if (!id) {
+    document.body.insertAdjacentText("afterbegin", "ID da OS não informado.");
+    return;
+  }
+
+  try {
+    const [resposta, sessao] = await Promise.all([
+      fetch("/api/tickets/" + encodeURIComponent(id) + "/laudo", { credentials: "include" }),
+      fetch("/me", { credentials: "include" })
+    ]);
+
+    if (!resposta.ok || !sessao.ok) throw new Error("Acesso ou carregamento indisponível");
+
+    const ticket = await resposta.json();
+    const dados = await sessao.json();
+    const empresa = dados.company || {};
+
+    preencher("empresa", empresa.name || "Empresa");
+
+    preencher("nomeRodapePdf", empresa.name || "Empresa");
+    preencher("telefoneRodapePdf", empresa.phone || "");
+    preencher("emailRodapePdf", empresa.email || "");
+    preencher("enderecoRodapePdf", empresa.address || "");
+
+    const logoRodape = document.getElementById("logoRodapePdf");
+    const logoCabecalho = document.getElementById("logoEmpresaPdf");
+
+    if (logoRodape && logoCabecalho) {
+      logoRodape.src = logoCabecalho.src;
+    }
+
+    const logoPdf = document.getElementById("logoEmpresaPdf");
+    if (logoPdf && typeof empresa.logo === "string") {
+      const origem = empresa.logo.trim();
+      if (origem.startsWith("/") || /^data:image\/(png|jpeg|webp);base64,/.test(origem)) {
+        logoPdf.src = origem;
+      }
+    }
+
+    const contatoPdf = document.getElementById("contato");
+    contatoPdf.replaceChildren();
+
+    [
+      ["cnpj", empresa.cnpj],
+      ["endereco", empresa.address],
+      ["telefone", empresa.phone],
+      ["email", empresa.email]
+    ].forEach(([tipo, valor]) => {
+      if (!valor) return;
+
+      const icones = {
+        cnpj: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        endereco: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+        telefone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h4l2 5-3 2a15 15 0 0 0 5 5l2-3 5 2v4c0 1-1 2-2 2C10 20 4 14 4 5c0-1 1-2 2-2Z" fill="currentColor"/></svg>',
+        email: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      };
+
+      const linha = document.createElement("div");
+      linha.className = "contato-linha";
+
+      const simbolo = document.createElement("span");
+      simbolo.className = "contato-icone";
+      simbolo.innerHTML = icones[tipo];
+
+      const texto = document.createElement("span");
+      texto.textContent = valor;
+
+      linha.append(simbolo, texto);
+      contatoPdf.appendChild(linha);
+    });
+    preencher("numeroOS", "OS #" + (ticket.numeroOS || ""));
+    preencher("numeroLaudo", "N\u00ba LT-" + new Date(ticket.createdAt || Date.now()).getFullYear() + "-" + String(ticket.numeroOS || 0).padStart(6, "0"));
+    preencher("dataEmissao", "EMISS\u00c3O: " + new Date().toLocaleDateString("pt-BR"));
+    preencher("cliente", ticket.cliente);
+    preencher("telefone", ticket.telefone);
+    preencher("cpfcnpj", ticket.cpfcnpj);
+    preencher("equipamento", ticket.tipoEquipamento || ticket.equipamento);
+    preencher("marca", ticket.marcaEquipamento);
+    preencher("modelo", ticket.modeloEquipamento);
+    preencher("serie", ticket.numeroSerieEquipamento);
+    preencher("acessorios", ticket.checklistEntrada?.acessorios);
+    preencher("problema", ticket.problema);
+    preencher("diagnostico", ticket.diagnostico);
+    preencher("servico", ticket.servico);
+    preencher("conclusao", ticket.conclusao);
+    preencher("tecnico", ticket.tecnico);
+
+    const dataTecnico = new Date(
+      ticket.updatedAt || ticket.createdAt || Date.now()
+    );
+
+    preencher(
+      "dataHoraTecnicoPdf",
+      dataTecnico.toLocaleDateString("pt-BR") + " " +
+      dataTecnico.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    );
+
+    const assinaturaTecnicoPdf = document.getElementById("assinaturaTecnicoPdf");
+
+    try {
+      const respostaAssinatura = await fetch(
+        "/api/configuracoes/assinatura-tecnico",
+        { credentials: "include" }
+      );
+
+      if (respostaAssinatura.ok) {
+        const dadosAssinatura = await respostaAssinatura.json();
+        const imagemAssinatura = dadosAssinatura.assinatura;
+
+        if (
+          typeof imagemAssinatura === "string" &&
+          /^data:image\/png;base64,/.test(imagemAssinatura)
+        ) {
+          assinaturaTecnicoPdf.src = imagemAssinatura;
+          assinaturaTecnicoPdf.hidden = false;
+        }
+      }
+    } catch (erroAssinatura) {
+      console.warn("Assinatura do tecnico indisponivel:", erroAssinatura);
+    }
+
+
+
+    // QR Code exclusivo do laudo.
+    try {
+      const respostaQr = await fetch(
+        "/api/tickets/" + encodeURIComponent(id) + "/laudo/qr",
+        { credentials: "include", cache: "no-store" }
+      );
+
+      if (!respostaQr.ok) {
+        throw new Error("QR indisponivel: " + respostaQr.status);
+      }
+
+      const dadosQr = await respostaQr.json();
+
+      if (
+        typeof dadosQr.imagem !== "string" ||
+        !dadosQr.imagem.startsWith("data:image/png;base64,")
+      ) {
+        throw new Error("Imagem QR invalida.");
+      }
+
+      const imagemQr = document.getElementById("qrValidacaoPdf");
+      imagemQr.src = dadosQr.imagem;
+      imagemQr.hidden = false;
+
+      document.getElementById("statusQrPdf").textContent =
+        "Consulte a autenticidade";
+
+      const urlValidacao = new URL(dadosQr.url);
+
+      document.getElementById("enderecoValidacaoPdf").textContent =
+        "Acesse: " + urlValidacao.host + urlValidacao.pathname;
+
+      document.getElementById("codigoValidacaoPdf").textContent =
+        "Codigo: " + document.getElementById("numeroLaudo").textContent
+          .replace(/^N\u00ba\s*/, "");
+
+      document.getElementById("enderecoValidacaoPdf").hidden = false;
+      document.getElementById("codigoValidacaoPdf").hidden = false;
+    } catch (erroQr) {
+      console.warn("QR do laudo indisponivel:", erroQr);
+      document.getElementById("statusQrPdf").textContent =
+        "Validacao indisponivel";
+    }
+
+    const assinaturaClientePdf = document.getElementById("assinaturaClientePdf");
+    const assinaturaRegistrada = ticket.assinaturaCliente;
+
+    if (
+      typeof assinaturaRegistrada === "string" &&
+      /^data:image\/png;base64,/.test(assinaturaRegistrada)
+    ) {
+      assinaturaClientePdf.src = assinaturaRegistrada;
+      assinaturaClientePdf.hidden = false;
+    }
+
+    preencher("nomeAssinantePdf", "Nome: " + (ticket.nomeAssinante || ticket.cliente || ""));
+
+    if (ticket.dataAssinaturaCliente) {
+      preencher(
+        "dataAssinaturaPdf",
+        "Data: " +
+        new Date(ticket.dataAssinaturaCliente).toLocaleDateString("pt-BR")
+      );
+    }
+
+
+    const corpo = document.getElementById("pecas");
+    corpo.replaceChildren();
+
+    const pecas = Array.isArray(ticket.pecasUtilizadas) ? ticket.pecasUtilizadas : [];
+
+    if (!pecas.length) {
+      const linha = corpo.insertRow();
+      const celula = linha.insertCell();
+      celula.colSpan = 3;
+      celula.textContent = "Nenhuma peça informada.";
+    } else {
+      pecas.forEach(peca => {
+        const linha = corpo.insertRow();
+        [peca.descricao, peca.quantidade, peca.observacao].forEach(valor => {
+          linha.insertCell().textContent = String(valor ?? "");
+        });
+      });
+    }
+  } catch (erro) {
+    console.error(erro);
+    alert("Não foi possível carregar o laudo.");
+  }
+}
+
+carregar();
+</script>
+</body>
+</html>

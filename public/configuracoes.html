@@ -3441,7 +3441,54 @@ th.subcoluna{
 
             </div>
 
-        </div>
+
+            <div id="painelAssinaturaTecnico"
+                 style="margin-top:22px;padding:20px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;">
+
+                <h4 style="margin:0 0 8px;">
+                    Cadastro da assinatura do técnico
+                </h4>
+
+                <p style="font-size:13px;color:#64748b;margin-bottom:12px;">
+                    Desenhe sua assinatura ou carregue uma imagem PNG.
+                </p>
+
+                <canvas id="assinaturaTecnicoCanvas"
+                        width="620" height="170"
+                        style="display:block;width:100%;max-width:620px;height:170px;background:#fff;border:1px solid #cbd5e1;border-radius:8px;touch-action:none;cursor:crosshair;">
+                </canvas>
+
+                <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;">
+                    <button type="button" class="btn btn-secondary"
+                            onclick="limparDesenhoAssinaturaTecnico()">
+                        Limpar desenho
+                    </button>
+
+                    <label class="btn btn-secondary" style="cursor:pointer;">
+                        Carregar PNG
+                        <input type="file" accept="image/png"
+                               style="display:none"
+                               onchange="carregarArquivoAssinaturaTecnico(this)">
+                    </label>
+
+                    <button type="button" class="btn btn-primary"
+                            onclick="salvarAssinaturaTecnico()">
+                        Salvar assinatura
+                    </button>
+
+                    <button type="button" class="btn btn-secondary"
+                            onclick="removerAssinaturaTecnico()">
+                        Remover assinatura
+                    </button>
+                </div>
+
+                <p id="statusAssinaturaTecnico"
+                   style="font-size:13px;margin-top:12px;">
+                    Aguardando configuração.
+                </p>
+            </div>
+
+</div>
 
 
     </div>
@@ -8964,6 +9011,245 @@ carregarMaquininhas();
 
 
 <script src="/permissoes.js"></script>
+<script>
+
+(function () {
+    let desenhando = false;
+    let temAssinatura = false;
+    let carregamentoPendente = false;
+
+    const rota = "/api/configuracoes/assinatura-tecnico";
+
+    function obterCanvas() {
+        const canvas = document.getElementById("assinaturaTecnicoCanvas");
+        if (!canvas) return null;
+        return { canvas, ctx: canvas.getContext("2d") };
+    }
+
+    function mostrarStatus(texto, erro) {
+        const elemento = document.getElementById("statusAssinaturaTecnico");
+        if (!elemento) return;
+        elemento.textContent = texto;
+        elemento.style.color = erro ? "#b91c1c" : "#166534";
+    }
+
+    function desenharImagem(imagem) {
+        const e = obterCanvas();
+        if (!e) return;
+
+        const escala = Math.min(
+            e.canvas.width / imagem.width,
+            e.canvas.height / imagem.height
+        );
+
+        const largura = imagem.width * escala;
+        const altura = imagem.height * escala;
+
+        e.ctx.clearRect(0, 0, e.canvas.width, e.canvas.height);
+        e.ctx.drawImage(
+            imagem,
+            (e.canvas.width - largura) / 2,
+            (e.canvas.height - altura) / 2,
+            largura,
+            altura
+        );
+
+        temAssinatura = true;
+    }
+
+    window.limparDesenhoAssinaturaTecnico = function () {
+        const e = obterCanvas();
+        if (!e) return;
+
+        e.ctx.clearRect(0, 0, e.canvas.width, e.canvas.height);
+        temAssinatura = false;
+        mostrarStatus("Desenho limpo. A assinatura salva ainda nao foi removida.", false);
+    };
+
+    window.carregarArquivoAssinaturaTecnico = function (input) {
+        const arquivo = input.files && input.files[0];
+        if (!arquivo) return;
+
+        if (arquivo.type !== "image/png" || arquivo.size > 350000) {
+            mostrarStatus("Selecione um arquivo PNG de ate 350 KB.", true);
+            input.value = "";
+            return;
+        }
+
+        carregamentoPendente = true;
+        const leitor = new FileReader();
+
+        leitor.onload = function () {
+            const imagem = new Image();
+
+            imagem.onload = function () {
+                desenharImagem(imagem);
+                carregamentoPendente = false;
+                mostrarStatus("Imagem carregada. Clique em Salvar assinatura.", false);
+            };
+
+            imagem.onerror = function () {
+                carregamentoPendente = false;
+                mostrarStatus("Nao foi possivel abrir a imagem PNG.", true);
+            };
+
+            imagem.src = leitor.result;
+        };
+
+        leitor.onerror = function () {
+            carregamentoPendente = false;
+            mostrarStatus("Erro ao ler o arquivo.", true);
+        };
+
+        leitor.readAsDataURL(arquivo);
+        input.value = "";
+    };
+
+    window.salvarAssinaturaTecnico = async function () {
+        const e = obterCanvas();
+
+        if (!e || !temAssinatura || carregamentoPendente) {
+            mostrarStatus("Desenhe ou carregue uma assinatura antes de salvar.", true);
+            return;
+        }
+
+        try {
+            const assinatura = e.canvas.toDataURL("image/png");
+
+            if (assinatura.length > 500000) {
+                mostrarStatus("Assinatura muito grande. Utilize um PNG menor.", true);
+                return;
+            }
+
+            const resposta = await fetch(rota, {
+                method: "PUT",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ assinatura })
+            });
+
+            const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(dados.error || "Erro ao salvar assinatura.");
+            }
+
+            mostrarStatus("Assinatura salva com sucesso.", false);
+        } catch (erro) {
+            mostrarStatus(erro.message, true);
+        }
+    };
+
+    window.removerAssinaturaTecnico = async function () {
+        if (!confirm("Deseja remover a assinatura cadastrada?")) return;
+
+        try {
+            const resposta = await fetch(rota, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(dados.error || "Erro ao remover assinatura.");
+            }
+
+            const e = obterCanvas();
+            if (e) e.ctx.clearRect(0, 0, e.canvas.width, e.canvas.height);
+
+            temAssinatura = false;
+            mostrarStatus("Assinatura removida com sucesso.", false);
+        } catch (erro) {
+            mostrarStatus(erro.message, true);
+        }
+    };
+
+    async function iniciarPainelAssinaturaTecnico() {
+        const e = obterCanvas();
+        if (!e || e.canvas.dataset.iniciado === "1") return;
+
+        e.canvas.dataset.iniciado = "1";
+        e.ctx.strokeStyle = "#163d80";
+        e.ctx.lineWidth = 2.5;
+        e.ctx.lineCap = "round";
+        e.ctx.lineJoin = "round";
+
+        function posicao(evento) {
+            const retangulo = e.canvas.getBoundingClientRect();
+
+            return {
+                x: (evento.clientX - retangulo.left) * e.canvas.width / retangulo.width,
+                y: (evento.clientY - retangulo.top) * e.canvas.height / retangulo.height
+            };
+        }
+
+        e.canvas.addEventListener("pointerdown", function (evento) {
+            desenhando = true;
+            temAssinatura = true;
+            e.canvas.setPointerCapture(evento.pointerId);
+
+            const p = posicao(evento);
+            e.ctx.beginPath();
+            e.ctx.moveTo(p.x, p.y);
+        });
+
+        e.canvas.addEventListener("pointermove", function (evento) {
+            if (!desenhando) return;
+
+            const p = posicao(evento);
+            e.ctx.lineTo(p.x, p.y);
+            e.ctx.stroke();
+        });
+
+        e.canvas.addEventListener("pointerup", function () {
+            desenhando = false;
+        });
+
+        e.canvas.addEventListener("pointercancel", function () {
+            desenhando = false;
+        });
+
+        try {
+            const resposta = await fetch(rota, {
+                credentials: "include"
+            });
+
+            if (!resposta.ok) {
+                throw new Error("Nao foi possivel consultar a assinatura.");
+            }
+
+            const dados = await resposta.json();
+
+            if (
+                typeof dados.assinatura === "string" &&
+                dados.assinatura.startsWith("data:image/png;base64,")
+            ) {
+                const imagem = new Image();
+
+                imagem.onload = function () {
+                    if (temAssinatura) return;
+                    desenharImagem(imagem);
+                    mostrarStatus("Assinatura cadastrada carregada.", false);
+                };
+
+                imagem.src = dados.assinatura;
+            } else {
+                mostrarStatus("Nenhuma assinatura cadastrada.", false);
+            }
+        } catch (erro) {
+            mostrarStatus(erro.message, true);
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", iniciarPainelAssinaturaTecnico);
+    } else {
+        iniciarPainelAssinaturaTecnico();
+    }
+})();
+
+</script>
 </body>
 
 </html>

@@ -1615,7 +1615,7 @@ font-family:Arial;
 <br><br>
 
 
-<button onclick="criar()">
+<button id="btnSalvarChamado" onclick="criar()">
 Criar Chamado
 </button>
 
@@ -1694,6 +1694,7 @@ Resumo
 <script>
 
 let clienteSelecionado = null;
+let chamadoEmEdicaoId = null;
 let clientes = [];
 
 // ===================== CARREGAR CLIENTES =====================
@@ -1755,6 +1756,10 @@ function preencherCliente(){
   const params = new URLSearchParams(
     window.location.search
   );
+
+  if (params.has("editarReaberto")) {
+    return;
+  }
 
   const clienteId = params.get("clienteId");
   const cliente = params.get("cliente");
@@ -2389,6 +2394,10 @@ function selecionarCliente(c){
 
 async function criar(){
 
+  if (chamadoEmEdicaoId) {
+    return salvarEdicaoReaberta();
+  }
+
   const cliente =
     document.getElementById("cliente").value.trim();
 
@@ -2653,6 +2662,238 @@ const observacoes =
 
 
 
+/* ===================== SALVAR EDICAO DE OS REABERTA ===================== */
+async function salvarEdicaoReaberta() {
+  if (!chamadoEmEdicaoId) {
+    alert("Nenhuma OS selecionada para edicao.");
+    return;
+  }
+
+  const valor = id =>
+    (document.getElementById(id)?.value || "").trim();
+
+  const radio = nome =>
+    document.querySelector(`input[name="${nome}"]:checked`)?.value || "";
+
+  const checklistEntrada = {
+    liga: radio("checkLiga"),
+    tela: radio("checkTela"),
+    teclado: radio("checkTeclado"),
+    touchpadMouse: radio("checkTouchpadMouse"),
+    usbConectores: radio("checkUsbConectores"),
+    carregadorFonte: radio("checkCarregadorFonte"),
+    bateria: radio("checkBateria"),
+    wifi: radio("checkWifi"),
+    bluetooth: radio("checkBluetooth"),
+    camera: radio("checkCamera"),
+    audio: radio("checkAudio"),
+    microfone: radio("checkMicrofone"),
+    estadoFisico: radio("checkEstadoFisico"),
+    acessorios: valor("tipoEquipamento") || valor("checkAcessorios"),
+    observacoes: valor("checkObservacoes")
+  };
+
+  const dados = {
+    cliente: valor("cliente"),
+    telefone: valor("telefone"),
+    cpfcnpj: valor("cpfcnpj"),
+    equipamento: valor("equipamento"),
+    marcaEquipamento: valor("marcaEquipamento"),
+    modeloEquipamento: valor("modeloEquipamento"),
+    numeroSerieEquipamento: valor("numeroSerieEquipamento"),
+    problema: valor("problema"),
+    observacoes: valor("observacoes"),
+    checklistEntrada,
+    desenhoEquipamento: {
+      tipo: tipoDesenhoEquipamentoSelecionado || "",
+      observacoes: valor("observacoesDesenhoEquipamento"),
+      marcacoes: marcacoesDesenhoEquipamento.map(m => ({
+        vista: m.vista,
+        tipo: m.tipo,
+        x: m.x,
+        y: m.y
+      }))
+    }
+  };
+
+  if (!dados.cliente || !dados.telefone ||
+      !dados.equipamento || !dados.problema) {
+    alert("Preencha cliente, telefone, equipamento e problema.");
+    return;
+  }
+
+  const botao = document.getElementById("btnSalvarChamado");
+
+  try {
+    if (botao) botao.disabled = true;
+
+    const resposta = await fetch(
+      `/api/tickets/${encodeURIComponent(chamadoEmEdicaoId)}/editar-reaberto`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados)
+      }
+    );
+
+    const resultado = await resposta.json();
+
+    if (!resposta.ok || !resultado.ok) {
+      throw new Error(resultado.message || resultado.error ||
+                      "Nao foi possivel salvar as correcoes.");
+    }
+
+    alert("Correcoes salvas na mesma OS com sucesso.");
+
+    // Encerra a edicao e abre o formulario limpo.
+    window.location.replace("/chamados.html");
+    return;
+
+  } catch (erro) {
+    console.error("Erro ao salvar OS reaberta:", erro);
+    alert(erro.message);
+  } finally {
+    if (botao) botao.disabled = false;
+  }
+}
+/* ===================== CARREGAR OS REABERTA PARA EDICAO ===================== */
+async function carregarEdicaoReaberta() {
+  const params = new URLSearchParams(window.location.search);
+
+  if (!params.has("editarReaberto")) return;
+
+  const id = params.get("editarReaberto");
+
+  // Bloqueia a criacao acidental de outra OS.
+  chamadoEmEdicaoId = id || "ID_INVALIDO";
+
+  const botao = document.getElementById("btnSalvarChamado");
+
+  if (botao) {
+    botao.disabled = true;
+    botao.textContent = "Carregando OS...";
+  }
+
+  const preencher = (campo, valor) => {
+    const elemento = document.getElementById(campo);
+    if (elemento) elemento.value = valor ?? "";
+  };
+
+  try {
+    if (!id) throw new Error("ID da OS nao informado.");
+
+    const resposta = await fetch(
+      `/api/tickets/${encodeURIComponent(id)}`,
+      { credentials: "include" }
+    );
+
+    const resultado = await resposta.json();
+
+    if (!resposta.ok) {
+      throw new Error(resultado.message || resultado.error ||
+                      "Nao foi possivel carregar a OS.");
+    }
+
+    const os = resultado.ticket || resultado.chamado ||
+               resultado.data || resultado;
+
+    if (!os || !os._id) {
+      throw new Error("Dados da OS nao encontrados.");
+    }
+
+    const foiReaberta = Array.isArray(os.auditoria) &&
+      os.auditoria.some(item => item.acao === "reabrir_chamado");
+
+    if (os.status !== "andamento" || !foiReaberta) {
+      throw new Error("Esta OS nao esta disponivel para edicao por reabertura.");
+    }
+
+    preencher("cliente", os.cliente);
+    preencher("telefone", os.telefone);
+    preencher("cpfcnpj", os.cpfcnpj);
+    preencher("equipamento", os.equipamento);
+    preencher("marcaEquipamento", os.marcaEquipamento);
+    preencher("modeloEquipamento", os.modeloEquipamento);
+    preencher("numeroSerieEquipamento", os.numeroSerieEquipamento);
+    preencher("problema", os.problema);
+    preencher("observacoes", os.observacoes);
+
+    clienteSelecionado = os.clienteId || null;
+
+    const checklist = os.checklistEntrada || {};
+
+    const camposChecklist = {
+      liga: "checkLiga",
+      tela: "checkTela",
+      teclado: "checkTeclado",
+      touchpadMouse: "checkTouchpadMouse",
+      usbConectores: "checkUsbConectores",
+      carregadorFonte: "checkCarregadorFonte",
+      bateria: "checkBateria",
+      wifi: "checkWifi",
+      bluetooth: "checkBluetooth",
+      camera: "checkCamera",
+      audio: "checkAudio",
+      microfone: "checkMicrofone",
+      estadoFisico: "checkEstadoFisico"
+    };
+
+    for (const [campo, nome] of Object.entries(camposChecklist)) {
+      document.querySelectorAll(`input[name="${nome}"]`)
+        .forEach(input => {
+          input.checked = input.value === (checklist[campo] || "");
+        });
+    }
+
+    preencher("tipoEquipamento", checklist.acessorios || os.tipoEquipamento);
+    preencher("checkAcessorios", checklist.acessorios);
+    preencher("checkObservacoes", checklist.observacoes);
+
+    const desenho = os.desenhoEquipamento || {};
+
+    marcacoesDesenhoEquipamento =
+      Array.isArray(desenho.marcacoes)
+        ? desenho.marcacoes.map(m => ({
+            vista: m.vista,
+            tipo: m.tipo,
+            x: m.x,
+            y: m.y
+          }))
+        : [];
+
+    preencher("observacoesDesenhoEquipamento", desenho.observacoes);
+
+    if (desenho.tipo) {
+      selecionarTipoDesenhoEquipamento(desenho.tipo);
+      atualizarListaMarcacoesEquipamento();
+    }
+
+    chamadoEmEdicaoId = os._id;
+
+    if (botao) {
+      botao.textContent = "Salvar Correcoes da OS";
+      botao.disabled = false;
+    }
+
+    const titulo = document.querySelector(".card h3");
+    if (titulo) {
+      titulo.textContent =
+        `Editar OS Reaberta - ${os.numeroOS || os.numero || ""}`;
+    }
+
+  } catch (erro) {
+    console.error("Erro ao carregar OS reaberta:", erro);
+    alert(erro.message);
+
+    if (botao) {
+      botao.textContent = "Edicao indisponivel";
+      botao.disabled = true;
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", carregarEdicaoReaberta);
 /* ===================== VISUALIZAR ASSINATURA ===================== */
 
 function abrirAssinaturaCliente(id){

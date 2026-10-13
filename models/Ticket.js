@@ -658,6 +658,26 @@ budgetId: {
         default: null
       },
 
+      motivo: {
+        type: String,
+        default: ""
+      },
+
+      statusAnterior: {
+        type: String,
+        default: ""
+      },
+
+      statusNovo: {
+        type: String,
+        default: ""
+      },
+
+      alteracoes: {
+        type: mongoose.Schema.Types.Mixed,
+        default: null
+      },
+
       data: {
         type: Date,
         default: Date.now

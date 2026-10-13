@@ -3529,6 +3529,17 @@ th.subcoluna{
 
                 <div
                     class="ferramenta-card"
+                    onclick="abrirReaberturaChamado()"
+                >
+                    <div class="ferramenta-icone">🔓</div>
+                    <div>
+                        <h3>Reabrir Chamado Finalizado</h3>
+                        <p>Reabrir chamados finalizados para corrigir ou completar informações.</p>
+                    </div>
+                </div>
+
+                <div
+                    class="ferramenta-card"
                     onclick="abrirConfiguracaoOS()"
                 >
                     <div class="ferramenta-icone">📋</div>
@@ -4442,6 +4453,51 @@ th.subcoluna{
 
     </div>
 </div>
+<!-- MODAL REABRIR CHAMADO FINALIZADO -->
+<div id="modalReabrirChamado" class="modal">
+    <div class="modal-caixa">
+
+        <div class="modal-header">
+            <h2>🔓 Reabrir Chamado Finalizado</h2>
+            <button type="button" class="fechar"
+                onclick="fecharReaberturaChamado()">×</button>
+        </div>
+
+        <p>Localize uma ordem de serviço finalizada para corrigir informações.</p>
+
+        <div class="form-group">
+            <label for="reabrirNumeroOS">Número da Ordem de Serviço</label>
+            <input type="text" id="reabrirNumeroOS"
+                placeholder="Digite o número da OS">
+        </div>
+
+        <button type="button" class="btn btn-secondary"
+            onclick="buscarChamadoParaReabrir()">
+            🔍 Buscar chamado
+        </button>
+
+        <div id="reabrirDadosChamado" style="display:none; margin-top:20px;">
+            <p><strong>OS:</strong> <span id="reabrirOsEncontrada"></span></p>
+            <p><strong>Cliente:</strong> <span id="reabrirCliente"></span></p>
+            <p><strong>Status:</strong> <span id="reabrirStatus"></span></p>
+
+            <div class="form-group">
+                <label for="reabrirMotivo">Motivo da reabertura</label>
+                <textarea id="reabrirMotivo" rows="4"
+                    placeholder="Explique quais informações precisam ser corrigidas"></textarea>
+            </div>
+
+            <button type="button" class="btn btn-primary"
+                id="btnConfirmarReabertura" onclick="confirmarReaberturaChamado()" disabled>
+                Confirmar Reabertura
+            </button>
+        </div>
+
+        <div id="reabrirMensagem" style="margin-top:15px;"></div>
+
+    </div>
+</div>
+
 <div
     id="mensagem"
     class="mensagem"
@@ -4455,6 +4511,145 @@ th.subcoluna{
 /* =========================================================
    USUÁRIO
 ========================================================= */
+
+async function buscarChamadoParaReabrir(){
+    const numeroTexto = document.getElementById("reabrirNumeroOS").value.trim();
+    const mensagem = document.getElementById("reabrirMensagem");
+    const dados = document.getElementById("reabrirDadosChamado");
+
+    dados.style.display = "none";
+    dados.dataset.ticketId = "";
+    mensagem.textContent = "";
+    document.getElementById("btnConfirmarReabertura").disabled = true;
+
+    if(!/^[0-9]+$/.test(numeroTexto) || Number(numeroTexto) <= 0){
+        mensagem.textContent = "Informe um número de OS válido.";
+        return;
+    }
+
+    try{
+        const resposta = await fetch("/api/tickets", {
+            credentials: "include"
+        });
+
+        if(!resposta.ok){
+            throw new Error("Não foi possível consultar os chamados.");
+        }
+
+        const chamados = await resposta.json();
+
+        if(!Array.isArray(chamados)){
+            throw new Error("Resposta inesperada do servidor.");
+        }
+
+        const chamado = chamados.find(item =>
+            Number(item.numeroOS) === Number(numeroTexto)
+        );
+
+        if(!chamado){
+            mensagem.textContent = "Ordem de Serviço não encontrada.";
+            return;
+        }
+
+        if(String(chamado.status).toLowerCase() !== "finalizado"){
+            mensagem.textContent = "Esta OS não está finalizada.";
+            return;
+        }
+
+        document.getElementById("reabrirOsEncontrada").textContent =
+            chamado.numeroOS;
+
+        document.getElementById("reabrirCliente").textContent =
+            chamado.cliente || "Não informado";
+
+        document.getElementById("reabrirStatus").textContent =
+            chamado.status;
+
+        dados.style.display = "block";
+        dados.dataset.ticketId = String(chamado._id);
+        document.getElementById("btnConfirmarReabertura").disabled = false;
+        mensagem.textContent = "Chamado localizado. Informe o motivo para confirmar a reabertura.";
+
+    }catch(erro){
+        mensagem.textContent = erro.message || "Erro ao buscar chamado.";
+    }
+}
+
+async function confirmarReaberturaChamado(){
+    const dados = document.getElementById("reabrirDadosChamado");
+    const mensagem = document.getElementById("reabrirMensagem");
+    const botao = document.getElementById("btnConfirmarReabertura");
+    const ticketId = dados.dataset.ticketId;
+    const motivo = document.getElementById("reabrirMotivo").value.trim();
+
+    if(!ticketId){
+        mensagem.textContent = "Busque uma OS finalizada antes de continuar.";
+        return;
+    }
+
+    if(motivo.length < 10 || motivo.length > 2000){
+        mensagem.textContent = "Informe uma justificativa entre 10 e 2000 caracteres.";
+        return;
+    }
+
+    const numeroOS = document.getElementById("reabrirOsEncontrada").textContent;
+
+    if(!confirm("Confirma a reabertura da OS " + numeroOS + "?")){
+        return;
+    }
+
+    botao.disabled = true;
+    mensagem.textContent = "Processando reabertura...";
+
+    try{
+        const resposta = await fetch(
+            "/api/tickets/" + encodeURIComponent(ticketId) + "/reabrir",
+            {
+                method: "PUT",
+                credentials: "include",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({motivo})
+            }
+        );
+
+        const resultado = await resposta.json();
+
+        if(!resposta.ok || !resultado.ok){
+            throw new Error(resultado.error || "N?o foi poss?vel reabrir a OS.");
+        }
+
+        document.getElementById("reabrirStatus").textContent = resultado.status;
+        dados.dataset.ticketId = "";
+        mensagem.textContent = "OS " + resultado.numeroOS + " reaberta com sucesso.";
+
+        // Abre a mesma OS no formulario para corrigir os dados.
+        window.location.href =
+            "/chamados.html?editarReaberto=" + encodeURIComponent(ticketId);
+
+    }catch(erro){
+        mensagem.textContent = erro.message || "Erro ao reabrir chamado.";
+        botao.disabled = false;
+    }
+}
+
+function abrirReaberturaChamado(){
+    const modal = document.getElementById("modalReabrirChamado");
+    if(!modal) return;
+
+    document.getElementById("reabrirNumeroOS").value = "";
+    document.getElementById("reabrirMotivo").value = "";
+    document.getElementById("reabrirDadosChamado").style.display = "none";
+    document.getElementById("reabrirDadosChamado").dataset.ticketId = "";
+    document.getElementById("reabrirMensagem").textContent = "";
+    document.getElementById("btnConfirmarReabertura").disabled = true;
+
+    modal.classList.add("ativo");
+}
+
+function fecharReaberturaChamado(){
+    const modal = document.getElementById("modalReabrirChamado");
+    if(modal) modal.classList.remove("ativo");
+}
 
 async function carregarUsuario(){
 

@@ -5493,6 +5493,503 @@ return res.json({
 });
 
 
+/* ===================== REABRIR CHAMADO FINALIZADO ===================== */
+app.put(
+  "/api/tickets/:id/reabrir",
+  auth,
+  adminEmpresaOnly,
+  requirePermissao("chamados"),
+  async (req, res) => {
+    try {
+      const motivo = String(req.body.motivo || "").trim();
+
+      if (motivo.length < 10 || motivo.length > 2000) {
+        return res.status(400).json({
+          ok: false,
+          error: "Informe uma justificativa entre 10 e 2000 caracteres."
+        });
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({
+          ok: false,
+          error: "Identificador do chamado invalido."
+        });
+      }
+
+      const companyId = req.session.user.companyId;
+      const usuario = req.session.user;
+
+      const ticket = await Ticket.findOne({
+        _id: req.params.id,
+        companyId
+      });
+
+      if (!ticket) {
+        return res.status(404).json({
+          ok: false,
+          error: "Chamado nao encontrado."
+        });
+      }
+
+      if (ticket.status !== "finalizado") {
+        return res.status(409).json({
+          ok: false,
+          error: "Somente chamados finalizados podem ser reabertos."
+        });
+      }
+
+      const agora = new Date();
+
+      const registro = {
+        acao: "reabrir_chamado",
+        executadoPor: usuario.username,
+        executadoPorId: usuario._id || null,
+        autorizadoPor: usuario.username,
+        autorizadoPorId: usuario._id || null,
+        motivo,
+        statusAnterior: "finalizado",
+        statusNovo: "andamento",
+        data: agora
+      };
+
+      // Registra a justificativa antes de liberar a alteracao de status.
+      const atualizado = await Ticket.findOneAndUpdate(
+        {
+          _id: ticket._id,
+          companyId,
+          status: "finalizado"
+        },
+        {
+          $set: {
+            status: "andamento",
+            updatedAt: agora
+          },
+          $push: {
+            auditoria: registro
+          }
+        },
+        {
+          new: true,
+          runValidators: true
+        }
+      );
+
+      if (!atualizado) {
+        return res.status(409).json({
+          ok: false,
+          error: "O status do chamado foi alterado. Atualize a consulta."
+        });
+      }
+
+      try {
+        await AuditLog.create({
+          companyId: String(companyId),
+          acao: "reabrir_chamado",
+          entidade: "Ticket",
+          entidadeId: String(atualizado._id),
+          descricao: `Reabertura da OS ${atualizado.numeroOS}`,
+          executadoPor: usuario.username,
+          executadoPorId: usuario._id || null,
+          autorizadoPor: usuario.username,
+          autorizadoPorId: usuario._id || null,
+          dados: {
+            numeroOS: atualizado.numeroOS,
+            motivo,
+            statusAnterior: "finalizado",
+            statusNovo: "andamento"
+          }
+        });
+      } catch (erroAuditoria) {
+        console.error(
+          "Erro ao registrar auditoria geral da reabertura:",
+          erroAuditoria
+        );
+      }
+
+      return res.json({
+        ok: true,
+        message: "Chamado reaberto com sucesso.",
+        numeroOS: atualizado.numeroOS,
+        status: atualizado.status
+      });
+
+    } catch (err) {
+      console.error("Erro ao reabrir chamado:", err);
+
+      return res.status(500).json({
+        ok: false,
+        error: "Erro interno ao reabrir chamado."
+      });
+    }
+  }
+);
+
+/* ===================== EDITAR CHAMADO REABERTO ===================== */
+
+app.put(
+  "/api/tickets/:id/editar-reaberto",
+  auth,
+  adminEmpresaOnly,
+  requirePermissao("chamados"),
+  async (req, res) => {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({
+          ok: false,
+          error: "Identificador do chamado invalido."
+        });
+      }
+
+      const companyId = req.session.user.companyId;
+      const usuario = req.session.user;
+
+      const ticket = await Ticket.findOne({
+        _id: req.params.id,
+        companyId
+      });
+
+      if (!ticket) {
+        return res.status(404).json({
+          ok: false,
+          error: "Chamado nao encontrado."
+        });
+      }
+
+      if (ticket.status !== "andamento") {
+        return res.status(409).json({
+          ok: false,
+          error: "A OS precisa estar em andamento para ser editada."
+        });
+      }
+
+      const foiReaberto = (ticket.auditoria || []).some(
+        registro => registro.acao === "reabrir_chamado"
+      );
+
+      if (!foiReaberto) {
+        return res.status(403).json({
+          ok: false,
+          error: "Esta OS nao possui reabertura administrativa registrada."
+        });
+      }
+
+      const camposPermitidos = [
+        "cliente",
+        "telefone",
+        "cpfcnpj",
+        "equipamento",
+        "tipoEquipamento",
+        "marcaEquipamento",
+        "modeloEquipamento",
+        "numeroSerieEquipamento",
+        "problema",
+        "observacoes"
+      ];
+
+      const alteracoes = {};
+      const dadosAtualizados = {};
+
+      for (const campo of camposPermitidos) {
+        if (!Object.prototype.hasOwnProperty.call(req.body, campo)) {
+          continue;
+        }
+
+        if (typeof req.body[campo] !== "string") {
+          return res.status(400).json({
+            ok: false,
+            error: `Valor invalido para o campo ${campo}.`
+          });
+        }
+
+        const anterior = String(ticket[campo] || "");
+        const novo = req.body[campo].trim();
+
+        if (anterior !== novo) {
+          alteracoes[campo] = {
+            anterior,
+            novo
+          };
+          dadosAtualizados[campo] = novo;
+        }
+      }
+      const camposObrigatorios = [
+        "cliente",
+        "telefone",
+        "equipamento",
+        "problema"
+      ];
+
+      for (const campo of camposObrigatorios) {
+        const valorFinal = Object.prototype.hasOwnProperty.call(
+          dadosAtualizados,
+          campo
+        )
+          ? dadosAtualizados[campo]
+          : String(ticket[campo] || "").trim();
+
+        if (!valorFinal) {
+          return res.status(400).json({
+            ok: false,
+            error: `O campo ${campo} e obrigatorio.`
+          });
+        }
+      }
+      if (Object.prototype.hasOwnProperty.call(req.body, "checklistEntrada")) {
+        const recebido = req.body.checklistEntrada;
+
+        if (!recebido || typeof recebido !== "object" || Array.isArray(recebido)) {
+          return res.status(400).json({
+            ok: false,
+            error: "Checklist de entrada invalido."
+          });
+        }
+
+        const camposChecklist = [
+          "liga", "tela", "teclado", "touchpadMouse",
+          "usbConectores", "carregadorFonte", "bateria",
+          "wifi", "bluetooth", "camera", "audio",
+          "microfone", "estadoFisico", "acessorios", "observacoes"
+        ];
+
+        const valoresPermitidos = [
+          "", "ok", "defeito", "nao_testado", "nao_aplica"
+        ];
+
+        for (const campo of camposChecklist) {
+          if (!Object.prototype.hasOwnProperty.call(recebido, campo)) {
+            continue;
+          }
+
+          if (typeof recebido[campo] !== "string") {
+            return res.status(400).json({
+              ok: false,
+              error: `Valor invalido no checklist: ${campo}.`
+            });
+          }
+
+          const novo = recebido[campo].trim();
+
+          if (
+            campo !== "acessorios" &&
+            campo !== "observacoes" &&
+            !valoresPermitidos.includes(novo)
+          ) {
+            return res.status(400).json({
+              ok: false,
+              error: `Opcao invalida no checklist: ${campo}.`
+            });
+          }
+
+          const anterior = String(ticket.checklistEntrada?.[campo] || "");
+
+          if (anterior !== novo) {
+            const caminho = `checklistEntrada.${campo}`;
+            alteracoes[caminho] = { anterior, novo };
+            dadosAtualizados[caminho] = novo;
+          }
+        }
+      }
+      if (Object.prototype.hasOwnProperty.call(req.body, "desenhoEquipamento")) {
+        const recebido = req.body.desenhoEquipamento;
+
+        if (!recebido || typeof recebido !== "object" || Array.isArray(recebido)) {
+          return res.status(400).json({
+            ok: false,
+            error: "Desenho do equipamento invalido."
+          });
+        }
+
+        const tiposPermitidos = [
+          "", "notebook", "desktop", "impressora", "celular",
+          "playstation", "xbox", "monitor", "tablet", "tv", "roteador"
+        ];
+
+        const avariasPermitidas = [
+          "trinca", "arranhao", "amassado", "quebrado", "outro"
+        ];
+
+        for (const campo of ["tipo", "observacoes"]) {
+          if (!Object.prototype.hasOwnProperty.call(recebido, campo)) {
+            continue;
+          }
+
+          if (typeof recebido[campo] !== "string") {
+            return res.status(400).json({
+              ok: false,
+              error: `Campo invalido no desenho: ${campo}.`
+            });
+          }
+
+          const novo = recebido[campo].trim();
+
+          if (campo === "tipo" && !tiposPermitidos.includes(novo)) {
+            return res.status(400).json({
+              ok: false,
+              error: "Tipo de desenho invalido."
+            });
+          }
+
+          const anterior = String(ticket.desenhoEquipamento?.[campo] || "");
+
+          if (anterior !== novo) {
+            const caminho = `desenhoEquipamento.${campo}`;
+            alteracoes[caminho] = { anterior, novo };
+            dadosAtualizados[caminho] = novo;
+          }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(recebido, "marcacoes")) {
+          if (!Array.isArray(recebido.marcacoes)) {
+            return res.status(400).json({
+              ok: false,
+              error: "Marcacoes do desenho invalidas."
+            });
+          }
+
+          const marcacoes = [];
+
+          for (const item of recebido.marcacoes) {
+            if (!item || typeof item !== "object" || Array.isArray(item)) {
+              return res.status(400).json({
+                ok: false,
+                error: "Marcacao invalida."
+              });
+            }
+
+            const vista = typeof item.vista === "string" ? item.vista.trim() : "";
+            const tipo = typeof item.tipo === "string" ? item.tipo.trim() : "";
+            const x = item.x;
+            const y = item.y;
+
+            if (
+              !vista ||
+              !avariasPermitidas.includes(tipo) ||
+              typeof x !== "number" ||
+              typeof y !== "number" ||
+              !Number.isFinite(x) ||
+              !Number.isFinite(y) ||
+              x < 0 || x > 100 || y < 0 || y > 100
+            ) {
+              return res.status(400).json({
+                ok: false,
+                error: "Dados invalidos em uma marcacao."
+              });
+            }
+
+            marcacoes.push({ vista, tipo, x, y });
+          }
+
+          const anteriores = (ticket.desenhoEquipamento?.marcacoes || [])
+            .map(item => ({
+              vista: item.vista,
+              tipo: item.tipo,
+              x: item.x,
+              y: item.y
+            }));
+
+          if (JSON.stringify(anteriores) !== JSON.stringify(marcacoes)) {
+            alteracoes["desenhoEquipamento.marcacoes"] = {
+              anterior: anteriores,
+              novo: marcacoes
+            };
+            dadosAtualizados["desenhoEquipamento.marcacoes"] = marcacoes;
+          }
+        }
+      }
+      if (Object.keys(dadosAtualizados).length === 0) {
+        return res.json({
+          ok: true,
+          message: "Nenhuma alteracao identificada.",
+          numeroOS: ticket.numeroOS
+        });
+      }
+
+      const agora = new Date();
+
+      const registro = {
+        acao: "editar_chamado_reaberto",
+        executadoPor: usuario.username,
+        executadoPorId: usuario._id || null,
+        autorizadoPor: usuario.username,
+        autorizadoPorId: usuario._id || null,
+        motivo: "Correcao de dados apos reabertura administrativa.",
+        alteracoes,
+        data: agora
+      };
+
+      const atualizado = await Ticket.findOneAndUpdate(
+        {
+          _id: ticket._id,
+          companyId,
+          status: "andamento",
+          updatedAt: ticket.updatedAt,
+          "auditoria.acao": "reabrir_chamado"
+        },
+        {
+          $set: {
+            ...dadosAtualizados,
+            updatedAt: agora
+          },
+          $push: {
+            auditoria: registro
+          }
+        },
+        {
+          new: true,
+          runValidators: true
+        }
+      );
+
+      if (!atualizado) {
+        return res.status(409).json({
+          ok: false,
+          error: "A OS foi modificada por outro usuario ou mudou de status. Atualize a pagina."
+        });
+      }
+
+      try {
+        await AuditLog.create({
+          companyId: String(companyId),
+          acao: "editar_chamado_reaberto",
+          entidade: "Ticket",
+          entidadeId: String(atualizado._id),
+          descricao: `Correcao de dados da OS ${atualizado.numeroOS}`,
+          executadoPor: usuario.username,
+          executadoPorId: usuario._id || null,
+          autorizadoPor: usuario.username,
+          autorizadoPorId: usuario._id || null,
+          dados: {
+            numeroOS: atualizado.numeroOS,
+            alteracoes
+          }
+        });
+      } catch (erroAuditoria) {
+        console.error(
+          "Erro ao registrar auditoria geral da edicao:",
+          erroAuditoria
+        );
+      }
+
+      return res.json({
+        ok: true,
+        message: "Dados da OS atualizados com sucesso.",
+        numeroOS: atualizado.numeroOS,
+        status: atualizado.status,
+        camposAlterados: Object.keys(dadosAtualizados)
+      });
+
+    } catch (err) {
+      console.error("Erro ao editar chamado reaberto:", err);
+
+      return res.status(500).json({
+        ok: false,
+        error: "Erro interno ao editar chamado reaberto."
+      });
+    }
+  }
+);
+
 /* ===================== STATUS UPDATE ===================== */
 app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res) => {
 
@@ -5508,6 +6005,28 @@ app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res)
     if(!statusValidos.includes(req.body.status)){
       return res.status(400).json({
         error: "status_invalido"
+      });
+    }
+
+    /* PROTECAO: REABERTURA SOMENTE PELA ROTA ADMINISTRATIVA */
+    const chamadoExistente = await Ticket.findOne({
+      _id: req.params.id,
+      companyId: req.session.user.companyId
+    }).select("status");
+
+    if(!chamadoExistente){
+      return res.status(404).json({
+        error: "chamado_nao_encontrado"
+      });
+    }
+
+    if(
+      chamadoExistente.status === "finalizado" &&
+      req.body.status !== "finalizado"
+    ){
+      return res.status(403).json({
+        error: "reabertura_exige_administrador",
+        message: "Utilize a ferramenta administrativa para reabrir este chamado."
       });
     }
 
@@ -5605,7 +6124,10 @@ app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res)
     const ticket = await Ticket.findOneAndUpdate(
       {
         _id: req.params.id,
-        companyId: req.session.user.companyId
+        companyId: req.session.user.companyId,
+        ...(req.body.status !== "finalizado"
+          ? { status: { $ne: "finalizado" } }
+          : {})
       },
       {
         $set: atualizacao

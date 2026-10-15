@@ -4297,6 +4297,21 @@ try {
   });
 
 
+  if (req.query.semAssinatura === "1") {
+    const idsAssinados = await Ticket.distinct("_id", {
+      companyId: req.session.user.companyId,
+      assinaturaConfirmada: true,
+      assinaturaCliente: { $exists: true, $nin: ["", null] }
+    });
+
+    const assinados = new Set(idsAssinados.map(id => String(id)));
+
+    return res.json(tickets.map(ticket => ({
+      ...ticket.toObject(),
+      possuiAssinaturaCliente: assinados.has(String(ticket._id))
+    })));
+  }
+
   res.json(tickets);
 
 } catch (erro) {

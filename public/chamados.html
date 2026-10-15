@@ -2037,7 +2037,7 @@ style="display:block; width:100%; text-align:left; margin-bottom:5px;"
 }
 
 ${
-c.assinaturaConfirmada && c.assinaturaCliente
+c.assinaturaConfirmada && c.possuiAssinaturaCliente
 ?
 `
 <button
@@ -2198,7 +2198,7 @@ async function load(){
 
   try {
 
-    const res = await fetch("/api/tickets", {
+    const res = await fetch("/api/tickets?semAssinatura=1", {
       credentials:"include"
     });
 
@@ -2936,10 +2936,27 @@ async function carregarEdicaoReaberta() {
 document.addEventListener("DOMContentLoaded", carregarEdicaoReaberta);
 /* ===================== VISUALIZAR ASSINATURA ===================== */
 
-function abrirAssinaturaCliente(id){
+async function abrirAssinaturaCliente(id){
 
-  const ticket =
-    chamados.find(x => x._id === id);
+  let ticket;
+
+  try {
+    const res = await fetch(
+      "/api/tickets/" + encodeURIComponent(id),
+      { credentials: "include" }
+    );
+
+    if (!res.ok) {
+      throw new Error("Falha ao buscar assinatura");
+    }
+
+    ticket = await res.json();
+
+  } catch (erro) {
+    console.error("Erro ao carregar assinatura:", erro);
+    alert("Nao foi possivel carregar a assinatura do cliente.");
+    return;
+  }
 
   if(!ticket){
     alert("Chamado não encontrado.");
@@ -3720,7 +3737,7 @@ async function status(id){
       return;
     }
 
-    if(!t.assinaturaConfirmada || !t.assinaturaCliente){
+    if(!t.assinaturaConfirmada || !t.possuiAssinaturaCliente){
 
 
       abrirModalAssinatura(t);

@@ -384,7 +384,7 @@ async function carregarUsuario(){
 
 async function carregar(){
 
-  const res = await fetch("/api/tickets",{
+  const res = await fetch("/api/tickets?semAssinatura=1",{
     credentials:"include"
   });
 

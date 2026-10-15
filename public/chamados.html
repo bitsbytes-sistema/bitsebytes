@@ -644,6 +644,44 @@ h3{
 
 }
 
+
+/* ORGANIZACAO DOS CAMPOS DO CLIENTE */
+#cardCriarChamado .linha-cliente-chamado {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 15px 0;
+}
+
+#cardCriarChamado .campo-cliente-chamado {
+  min-width: 0;
+}
+
+#cardCriarChamado .campo-cliente-chamado input {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+#cardCriarChamado .campo-cliente-chamado .autocomplete-box {
+  width: 100%;
+  left: 0;
+  top: 100%;
+}
+
+@media (max-width: 700px) {
+  #cardCriarChamado .linha-cliente-chamado {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ALINHAMENTO DO CAMPO PROBLEMA */
+#cardCriarChamado #problema {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 12px 0;
+}
 </style>
 
 
@@ -784,14 +822,15 @@ Sair
 <div class="container">
 
 
-<div class="card">
+<div class="card" id="cardCriarChamado">
 
 <h3>
 📋 Criar Chamado
 </h3>
 
 
-<div style="position:relative;display:inline-block">
+<div class="linha-cliente-chamado">
+<div class="campo-cliente-chamado" style="position:relative">
 
 <input id="cpfcnpj" 
 placeholder="CPF/CNPJ"
@@ -802,7 +841,7 @@ oninput="buscarCliente('cpfcnpj')">
 </div>
 
 
-<div style="position:relative;display:inline-block">
+<div class="campo-cliente-chamado" style="position:relative">
 
 <input id="cliente" 
 placeholder="Cliente"
@@ -813,7 +852,7 @@ oninput="buscarCliente('cliente')">
 </div>
 
 
-<div style="position:relative;display:inline-block">
+<div class="campo-cliente-chamado" style="position:relative">
 
 <input id="telefone" 
 placeholder="Telefone"
@@ -821,6 +860,7 @@ oninput="buscarCliente('telefone')">
 
 <div id="listaTelefone" class="autocomplete-box"></div>
 
+</div>
 </div>
 
 <div class="dados-identificacao-equipamento" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:15px;margin-bottom:15px;">

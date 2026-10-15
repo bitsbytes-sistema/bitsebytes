@@ -685,6 +685,40 @@ budgetId: {
 
     }
   ],
+  /* ===================== ATRIBUICAO DE TECNICOS ===================== */
+
+  tecnicoResponsavel: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
+
+  historicoAtribuicoes: [{
+    tecnicoAnterior: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
+    },
+    tecnicoNovo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
+    },
+    realizadoPor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+    data: {
+      type: Date,
+      default: Date.now
+    },
+    observacao: {
+      type: String,
+      default: "",
+      trim: true
+    }
+  }],
   /* ===================== EMPRESA ===================== */
 
   companyId: {

@@ -552,6 +552,20 @@ opacity:1;
 
 </div>
 
+<div class="section-card" id="painelControleTecnicos">
+
+  <h3>Controle de Tecnicos</h3>
+
+  <div id="resumoControleTecnicos">
+    Carregando...
+  </div>
+
+  <div id="listaControleTecnicos">
+    Carregando ordens de servico...
+  </div>
+
+</div>
+
 <div class="section-card">
 
   <h3>📈 Indicadores</h3>
@@ -613,6 +627,47 @@ onclick="proximoAlerta()">
 
 </div>
 
+<!-- JANELA DE ATRIBUICAO DE TECNICOS -->
+<div id="modalAtribuirTecnico"
+     style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.65); z-index:99999;
+            align-items:center; justify-content:center; padding:16px;">
+
+  <div style="background:#fff; color:#222; padding:25px;
+              border-radius:12px; width:100%; max-width:450px;">
+
+    <h3>Atribuir Técnico</h3>
+
+    <p id="identificacaoOSTecnico"></p>
+
+    <label for="selecionarTecnicoOS">Técnico responsável</label>
+
+    <select id="selecionarTecnicoOS"
+            style="width:100%; padding:10px; margin:10px 0;">
+      <option value="">Selecione um técnico</option>
+    </select>
+
+    <label for="observacaoAtribuicaoOS">Observação</label>
+
+    <textarea id="observacaoAtribuicaoOS"
+              rows="3"
+              style="width:100%; padding:10px; margin:10px 0;"></textarea>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+
+      <button type="button" id="cancelarAtribuicaoTecnico">
+        Cancelar
+      </button>
+
+      <button type="button" id="salvarAtribuicaoTecnico">
+        Salvar atribuição
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <script>
@@ -631,6 +686,11 @@ async function carregarUsuario(){
 
   const data = await res.json();
 
+  window.podeGerenciarTecnicos =
+    ["master", "admin"].includes(
+      String(data.user?.role || "").toLowerCase()
+    );
+
   document.getElementById("nomeUsuario").innerText =
     data.user?.nome || data.user?.username || "Usuário";
 
@@ -642,7 +702,7 @@ async function carregarUsuario(){
 /* ===================== STATS ===================== */
 async function loadStats(){
 
-  const res = await fetch("/api/tickets", {
+  const res = await fetch("/api/tickets?semAssinatura=1", {
     credentials:"include"
   });
 
@@ -682,7 +742,7 @@ async function loadStats(){
 
 async function loadUltimosChamados(){
 
-  const res = await fetch("/api/tickets", {
+  const res = await fetch("/api/tickets?semAssinatura=1", {
     credentials:"include"
   });
 
@@ -717,6 +777,18 @@ async function loadUltimosChamados(){
 
         <br>
 
+        👨‍🔧 Técnico: ${
+          c.tecnicoResponsavel
+            ? (
+                c.tecnicoResponsavel.nome ||
+                c.tecnicoResponsavel.username ||
+                "Não identificado"
+              )
+            : "Não atribuído"
+        }
+
+        <br>
+
         👤 ${c.cliente || "-"}
 
         <br>
@@ -737,9 +809,305 @@ async function loadUltimosChamados(){
 
 /* ===================== INDICADORES ===================== */
 
+/* ===================== CANCELAR ATRIBUICAO ===================== */
+/* ===================== CARREGAR TECNICOS ATIVOS ===================== */
+async function carregarTecnicosParaAtribuicao(tecnicoAtualId = ""){
+
+  const seletor = document.getElementById("selecionarTecnicoOS");
+
+  if (!seletor) return;
+
+  seletor.replaceChildren();
+  seletor.disabled = true;
+
+  const carregando = document.createElement("option");
+  carregando.value = "";
+  carregando.textContent = "Carregando tecnicos...";
+  seletor.appendChild(carregando);
+
+  try {
+
+    const res = await fetch("/api/usuarios", {
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      throw new Error("Erro HTTP " + res.status);
+    }
+
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.usuarios)) {
+      throw new Error("Resposta invalida da API");
+    }
+
+    const tecnicos = data.usuarios.filter(usuario =>
+      usuario.role === "tech" &&
+      usuario.ativo === true
+    );
+
+    seletor.replaceChildren();
+
+    const opcaoInicial = document.createElement("option");
+    opcaoInicial.value = "";
+    opcaoInicial.textContent = "Sem tecnico atribuido";
+    seletor.appendChild(opcaoInicial);
+
+    tecnicos.forEach(usuario => {
+
+      const opcao = document.createElement("option");
+
+      opcao.value = usuario._id;
+      opcao.textContent = usuario.nome || usuario.username;
+
+      seletor.appendChild(opcao);
+
+    });
+
+    seletor.value = tecnicoAtualId || "";
+
+    seletor.disabled = false;
+
+  } catch (erro) {
+
+    seletor.replaceChildren();
+
+    const opcaoErro = document.createElement("option");
+    opcaoErro.value = "";
+    opcaoErro.textContent = "Erro ao carregar tecnicos";
+
+    seletor.appendChild(opcaoErro);
+
+    console.error("Erro ao carregar tecnicos:", erro);
+
+  }
+
+}
+/* ===================== SALVAR ATRIBUICAO ===================== */
+async function salvarAtribuicaoTecnico(){
+
+  const botao = document.getElementById("salvarAtribuicaoTecnico");
+  const seletor = document.getElementById("selecionarTecnicoOS");
+  const observacao = document.getElementById("observacaoAtribuicaoOS");
+
+  const osId = window.osSelecionadaParaAtribuicao;
+
+  if (!botao || !seletor || !osId) {
+    alert("Nao foi possivel identificar a OS selecionada.");
+    return;
+  }
+
+  if (botao.disabled || seletor.disabled) {
+    return;
+  }
+
+  const tecnicoId = seletor.value;
+  const textoObservacao = observacao ? observacao.value.trim() : "";
+
+  botao.disabled = true;
+  botao.textContent = "Salvando...";
+
+  try {
+
+    const resposta = await fetch(
+      "/api/tickets/" + encodeURIComponent(osId) + "/atribuir-tecnico",
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          tecnicoId: tecnicoId || null,
+          observacao: textoObservacao
+        })
+      }
+    );
+
+    const dados = await resposta.json();
+
+    if (!resposta.ok || dados.ok === false) {
+      throw new Error(dados.error || dados.message || "Falha ao salvar atribuicao");
+    }
+
+    alert("Atribuicao salva com sucesso!");
+
+    cancelarAtribuicaoTecnico();
+
+  } catch (erro) {
+
+    console.error("Erro ao salvar atribuicao:", erro);
+    alert("Erro ao salvar atribuicao: " + erro.message);
+
+  } finally {
+
+    botao.disabled = false;
+    botao.textContent = "Salvar atribuição";
+
+  }
+
+}
+
+document.getElementById("salvarAtribuicaoTecnico")
+  ?.addEventListener("click", salvarAtribuicaoTecnico);
+function cancelarAtribuicaoTecnico(){
+
+  const modal = document.getElementById("modalAtribuirTecnico");
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  const seletor = document.getElementById("selecionarTecnicoOS");
+  const observacao = document.getElementById("observacaoAtribuicaoOS");
+  const identificacao = document.getElementById("identificacaoOSTecnico");
+
+  if (seletor) seletor.value = "";
+  if (observacao) observacao.value = "";
+  if (identificacao) identificacao.textContent = "";
+
+  window.osSelecionadaParaAtribuicao = null;
+  window.atribuicaoTecnicoEmAndamento = false;
+
+  loadControleTecnicos();
+}
+
+document.getElementById("cancelarAtribuicaoTecnico")
+  ?.addEventListener("click", cancelarAtribuicaoTecnico);
+async function loadControleTecnicos(){
+
+  if (window.atribuicaoTecnicoEmAndamento === true) {
+    return;
+  }
+
+  const resumo = document.getElementById("resumoControleTecnicos");
+  const lista = document.getElementById("listaControleTecnicos");
+
+  if (!resumo || !lista) return;
+
+  try {
+
+    const res = await fetch("/api/tickets?semAssinatura=1", {
+      credentials: "include"
+    });
+
+    if (!res.ok) throw new Error("Falha ao carregar OS");
+
+    const chamados = await res.json();
+
+    if (window.atribuicaoTecnicoEmAndamento === true) {
+      return;
+    }
+
+    if (!Array.isArray(chamados)) {
+      throw new Error("Resposta invalida");
+    }
+
+    const ativos = chamados.filter(c =>
+      !["finalizado", "cancelado"].includes(
+        String(c.status || "").toLowerCase()
+      )
+    );
+
+    const atribuidos = ativos.filter(c => c.tecnicoResponsavel);
+    const semTecnico = ativos.filter(c => !c.tecnicoResponsavel);
+
+    resumo.textContent =
+      "OS em aberto: " + ativos.length +
+      " | Atribuidas: " + atribuidos.length +
+      " | Sem tecnico: " + semTecnico.length;
+
+    lista.replaceChildren();
+
+    if (ativos.length === 0) {
+      lista.textContent = "Nenhuma OS em aberto.";
+      return;
+    }
+
+    const ordenados = [...ativos].sort((a, b) =>
+      Number(a.numeroOS || 0) - Number(b.numeroOS || 0)
+    );
+
+    ordenados.forEach(c => {
+
+      const tecnico = c.tecnicoResponsavel;
+
+      const nomeTecnico = tecnico && typeof tecnico === "object"
+        ? (tecnico.nome || tecnico.username || "Nao identificado")
+        : (tecnico ? "Nao identificado" : "Nao atribuido");
+
+      const item = document.createElement("div");
+
+      item.style.padding = "10px 0";
+      item.style.borderBottom = "1px solid #ddd";
+
+      const titulo = document.createElement("strong");
+      titulo.textContent = "OS " + (c.numeroOS || "-");
+
+      const detalhes = document.createElement("div");
+      detalhes.textContent =
+        "Tecnico: " + nomeTecnico +
+        " | Status: " + (c.status || "-");
+
+      item.append(titulo, detalhes);
+
+      if (window.podeGerenciarTecnicos === true) {
+
+        const botao = document.createElement("button");
+
+        botao.type = "button";
+        botao.textContent = tecnico
+          ? "Alterar tecnico"
+          : "Atribuir tecnico";
+
+        botao.style.marginTop = "8px";
+        botao.style.padding = "7px 12px";
+        botao.style.cursor = "pointer";
+
+        botao.addEventListener("click", () => {
+          const modal = document.getElementById("modalAtribuirTecnico");
+const identificacao = document.getElementById("identificacaoOSTecnico");
+
+if (!modal || !identificacao) return;
+
+window.atribuicaoTecnicoEmAndamento = true;
+window.osSelecionadaParaAtribuicao = c._id;
+
+identificacao.textContent = "OS " + (c.numeroOS || "-");
+
+document.getElementById("observacaoAtribuicaoOS").value = "";
+
+modal.style.display = "flex";
+
+const tecnicoAtualId =
+  c.tecnicoResponsavel &&
+  typeof c.tecnicoResponsavel === "object"
+    ? String(c.tecnicoResponsavel._id || "")
+    : String(c.tecnicoResponsavel || "");
+
+carregarTecnicosParaAtribuicao(tecnicoAtualId);
+        });
+
+        item.appendChild(botao);
+      }
+
+      lista.appendChild(item);
+
+    });
+
+  } catch (erro) {
+
+    resumo.textContent = "Nao foi possivel carregar os dados.";
+    lista.textContent = "Erro ao consultar as ordens de servico.";
+
+    console.error("Controle de Tecnicos:", erro);
+
+  }
+
+}
 async function loadIndicadores(){
 
-  const res = await fetch("/api/tickets", {
+  const res = await fetch("/api/tickets?semAssinatura=1", {
     credentials:"include"
   });
 
@@ -961,6 +1329,7 @@ setInterval(()=>{
   loadUltimosChamados();
 
   loadIndicadores();
+  loadControleTecnicos();
 
 },10000);
 
@@ -1473,6 +1842,7 @@ carregarUsuario();
 loadStats();
 loadUltimosChamados();
 loadIndicadores();
+loadControleTecnicos();
 carregarNotificacoes();
 carregarAlertasSistema();
 

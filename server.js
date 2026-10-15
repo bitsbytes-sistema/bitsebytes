@@ -4178,14 +4178,137 @@ app.get("/api/services", auth, async (req, res) => {
 
 });
 
+/* ===================== ATRIBUICAO DE TECNICOS ===================== */
+app.put(
+  "/api/tickets/:id/atribuir-tecnico",
+  auth,
+  adminEmpresaOnly,
+  async (req, res) => {
+    try {
+      const companyId = req.session.user.companyId;
+      const tecnicoId = req.body.tecnicoId;
+
+      if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({
+          ok: false,
+          error: "OS invalida."
+        });
+      }
+
+      const ticket = await Ticket.findOne({
+        _id: req.params.id,
+        companyId
+      });
+
+      if (!ticket) {
+        return res.status(404).json({
+          ok: false,
+          error: "OS nao encontrada."
+        });
+      }
+
+      let tecnicoNovo = null;
+
+      if (tecnicoId) {
+        if (!mongoose.isValidObjectId(tecnicoId)) {
+          return res.status(400).json({
+            ok: false,
+            error: "Tecnico invalido."
+          });
+        }
+
+        const usuario = await User.findOne({
+          _id: tecnicoId,
+          companyId,
+          role: "tech",
+          ativo: true
+        });
+
+        if (!usuario) {
+          return res.status(400).json({
+            ok: false,
+            error: "Tecnico ativo nao encontrado nesta empresa."
+          });
+        }
+
+        tecnicoNovo = usuario._id;
+      }
+
+      const tecnicoAnterior = ticket.tecnicoResponsavel || null;
+
+      if (String(tecnicoAnterior || "") === String(tecnicoNovo || "")) {
+        return res.json({
+          ok: true,
+          mensagem: "A OS ja possui essa atribuicao."
+        });
+      }
+
+      ticket.tecnicoResponsavel = tecnicoNovo;
+
+      ticket.historicoAtribuicoes.push({
+        tecnicoAnterior,
+        tecnicoNovo,
+        realizadoPor: req.session.user._id,
+        data: new Date(),
+        observacao: String(req.body.observacao || "").trim()
+      });
+
+      await ticket.save();
+
+      res.json({
+        ok: true,
+        mensagem: "Atribuicao atualizada com sucesso.",
+        tecnicoResponsavel: ticket.tecnicoResponsavel
+      });
+
+    } catch (err) {
+      console.error("ERRO AO ATRIBUIR TECNICO:", err);
+      res.status(500).json({
+        ok: false,
+        error: "Erro ao atribuir tecnico."
+      });
+    }
+  }
+);
 /* ===================== TICKETS ===================== */
 app.get("/api/tickets", auth, async (req, res) => {
 
-const tickets = await Ticket.find({
-  companyId: req.session.user.companyId
-}).sort({ createdAt: -1 });
+try {
 
-res.json(tickets);
+
+  const consulta = Ticket.find({
+    companyId: req.session.user.companyId
+  });
+
+  if (req.query.semAssinatura === "1") {
+    consulta.select("-assinaturaCliente");
+  }
+
+  const tickets = await consulta
+    .sort({ createdAt: -1 });
+
+
+  await Ticket.populate(tickets, {
+    path: "tecnicoResponsavel",
+    select: "nome username",
+    match: {
+      companyId: req.session.user.companyId
+    }
+  });
+
+
+  res.json(tickets);
+
+} catch (erro) {
+
+  console.error("[ERRO DIAGNOSTICO TICKETS]", erro);
+
+  res.status(500).json({
+    ok: false,
+    error: "Erro ao consultar chamados"
+  });
+
+}
 
 });
 

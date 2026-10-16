@@ -4217,11 +4217,16 @@ app.put(
           });
         }
 
-        const usuario = await User.findOne({
-          _id: tecnicoId,
-          companyId,
-          role: "tech",
-          ativo: true
+        const usuario = await User.collection.findOne({
+          _id: new mongoose.Types.ObjectId(tecnicoId),
+          companyId: {
+            $in: [
+              String(companyId),
+              new mongoose.Types.ObjectId(String(companyId))
+            ]
+          },
+          role: { $in: ["tech", "admin", "master"] },
+          ativo: { $ne: false }
         });
 
         if (!usuario) {
@@ -4288,13 +4293,63 @@ try {
     .sort({ createdAt: -1 });
 
 
-  await Ticket.populate(tickets, {
-    path: "tecnicoResponsavel",
-    select: "nome username",
-    match: {
-      companyId: req.session.user.companyId
-    }
-  });
+  const idsTecnicos = [
+    ...new Set(
+      tickets
+        .map(t => String(t.tecnicoResponsavel || ""))
+        .filter(id => mongoose.isValidObjectId(id))
+    )
+  ];
+
+  if (idsTecnicos.length > 0) {
+    const empresaId = String(req.session.user.companyId);
+
+    const usuariosTecnicos = await User.collection.find(
+      {
+        _id: {
+          $in: idsTecnicos.map(
+            id => new mongoose.Types.ObjectId(id)
+          )
+        },
+        companyId: {
+          $in: [
+            empresaId,
+            new mongoose.Types.ObjectId(empresaId)
+          ]
+        },
+        role: { $in: ["tech", "admin", "master"] },
+        ativo: { $ne: false }
+      },
+      {
+        projection: {
+          nome: 1,
+          username: 1
+        }
+      }
+    ).toArray();
+
+    const mapaTecnicos = new Map(
+      usuariosTecnicos.map(usuario => [
+        String(usuario._id),
+        {
+          _id: usuario._id,
+          nome: usuario.nome || "",
+          username: usuario.username || ""
+        }
+      ])
+    );
+
+    tickets.forEach((ticket, indice) => {
+      const id = String(ticket.tecnicoResponsavel || "");
+
+      const dados = ticket.toObject();
+
+      dados.tecnicoResponsavel =
+        mapaTecnicos.get(id) || null;
+
+      tickets[indice] = dados;
+    });
+  }
 
 
   if (req.query.semAssinatura === "1") {
@@ -4307,7 +4362,7 @@ try {
     const assinados = new Set(idsAssinados.map(id => String(id)));
 
     return res.json(tickets.map(ticket => ({
-      ...ticket.toObject(),
+      ...(typeof ticket.toObject === "function" ? ticket.toObject() : ticket),
       possuiAssinaturaCliente: assinados.has(String(ticket._id))
     })));
   }

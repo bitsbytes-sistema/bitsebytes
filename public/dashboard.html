@@ -12,6 +12,33 @@ body{
   font-family:Arial;
 }
 
+/* ROLAGEM PADRONIZADA DO MENU LATERAL */
+@media (min-width:1101px) {
+  .sidebar {
+    height:100vh;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:#64748b #0f172a;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width:7px;
+  }
+
+  .sidebar::-webkit-scrollbar-track {
+    background:#0f172a;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background:#64748b;
+    border-radius:10px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background:#94a3b8;
+  }
+}
 /* SIDEBAR */
 .sidebar{
   width:250px;
@@ -442,6 +469,158 @@ opacity:1;
 
 }
 
+
+/* ===== CORES PERSONALIZADAS DO DASHBOARD ===== */
+
+/* Ultimos Chamados */
+.container > .section-card:has(#ultimosChamados) {
+  background:#E4E9F1;
+}
+
+/* Controle de Tecnicos */
+#painelControleTecnicos {
+  background:#EDF2F7;
+}
+
+/* Indicadores */
+.container > .section-card:has(#indicadores) {
+  background:#E0F1EA;
+}
+
+/* ===== VISUAL PREMIUM - ULTIMOS CHAMADOS ===== */
+
+.container > .section-card:has(#ultimosChamados) {
+  background:#FFFFFF;
+  border-left:5px solid #2563EB;
+  box-shadow:0 4px 16px rgba(15,23,42,.10);
+}
+
+.container > .section-card:has(#ultimosChamados) h3 {
+  color:#172B4D;
+  font-size:18px;
+  font-weight:700;
+}
+
+#ultimosChamados {
+  color:#334155;
+}
+
+#ultimosChamados .chamado-item {
+  background:#EDF2FA;
+  border-left:3px solid #93B4E8;
+  border-bottom:1px solid #D9E3F0;
+  border-radius:7px;
+  margin-bottom:8px;
+  padding:14px;
+}
+
+/* ===== FIM VISUAL PREMIUM - ULTIMOS CHAMADOS ===== */
+/* ===== VISUAL PREMIUM - CONTROLE DE TECNICOS ===== */
+
+#painelControleTecnicos {
+  background:#F0F5FC;
+  border-left:5px solid #3B82F6;
+  box-shadow:0 4px 16px rgba(15,23,42,.10);
+}
+
+#painelControleTecnicos h3 {
+  color:#17365D;
+  font-size:18px;
+  font-weight:700;
+}
+
+#resumoControleTecnicos {
+  color:#475569;
+  font-size:14px;
+  margin-bottom:15px;
+}
+
+#listaControleTecnicos > div {
+  background:#FFFFFF;
+  border:1px solid #DFE8F4;
+  border-left:3px solid #93B4E8;
+  border-radius:8px;
+  padding:14px !important;
+  margin-bottom:10px;
+  box-shadow:0 2px 6px rgba(15,23,42,.04);
+}
+
+#listaControleTecnicos > div > strong {
+  color:#17365D;
+  font-size:15px;
+}
+
+#listaControleTecnicos > div > div {
+  color:#475569;
+  font-size:13px;
+  margin-top:5px;
+}
+
+#listaControleTecnicos button {
+  background:#2563EB;
+  color:#FFFFFF;
+  border:0;
+  border-radius:6px;
+  font-weight:600;
+  transition:background .2s;
+}
+
+#listaControleTecnicos button:hover {
+  background:#1D4ED8;
+}
+
+/* ===== FIM VISUAL PREMIUM - CONTROLE DE TECNICOS ===== */
+/* ===== VISUAL PREMIUM - INDICADORES ===== */
+
+.container > .section-card:has(#indicadores) {
+  background:#F1F8F5;
+  border-left:5px solid #16A34A;
+  box-shadow:0 4px 16px rgba(15,23,42,.10);
+}
+
+.container > .section-card:has(#indicadores) h3 {
+  color:#14532D;
+  font-size:18px;
+  font-weight:700;
+}
+
+.indicadores-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+
+.indicador-card {
+  background:#FFFFFF;
+  border:1px solid #DCECE2;
+  border-radius:10px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow:0 2px 8px rgba(15,23,42,.05);
+}
+
+.indicador-card span {
+  color:#52647B;
+  font-size:14px;
+  font-weight:500;
+}
+
+.indicador-card strong {
+  color:#166534;
+  font-size:30px;
+  font-weight:700;
+}
+
+@media (max-width:700px) {
+  .indicadores-grid {
+    grid-template-columns:1fr;
+  }
+}
+
+/* ===== FIM VISUAL PREMIUM - INDICADORES ===== */
+/* ===== FIM DAS CORES PERSONALIZADAS ===== */
 </style>
 </head>
 
@@ -842,7 +1021,7 @@ async function carregarTecnicosParaAtribuicao(tecnicoAtualId = ""){
     }
 
     const tecnicos = data.usuarios.filter(usuario =>
-      usuario.role === "tech" &&
+      ["tech", "admin", "master"].includes(usuario.role) &&
       usuario.ativo === true
     );
 
@@ -1149,28 +1328,30 @@ async function loadIndicadores(){
 
     }).length;
 
-  document.getElementById(
-    "indicadores"
-  ).innerHTML = `
+  document.getElementById("indicadores").innerHTML = `
+    <div class="indicadores-grid">
 
-    👥 Clientes cadastrados:
-    <b>${clientesUnicos}</b>
+      <div class="indicador-card">
+        <span>👥 Clientes cadastrados</span>
+        <strong>${clientesUnicos}</strong>
+      </div>
 
-    <br><br>
+      <div class="indicador-card">
+        <span>📋 Total de chamados</span>
+        <strong>${totalChamados}</strong>
+      </div>
 
-    📋 Total de chamados:
-    <b>${totalChamados}</b>
+      <div class="indicador-card">
+        <span>🟢 Taxa de conclusão</span>
+        <strong>${taxaConclusao}%</strong>
+      </div>
 
-    <br><br>
+      <div class="indicador-card">
+        <span>📅 Chamados hoje</span>
+        <strong>${chamadosHoje}</strong>
+      </div>
 
-    🟢 Taxa de conclusão:
-    <b>${taxaConclusao}%</b>
-
-    <br><br>
-
-    📅 Chamados hoje:
-    <b>${chamadosHoje}</b>
-
+    </div>
   `;
 
 }

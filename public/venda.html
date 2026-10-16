@@ -3941,6 +3941,43 @@ h1{
 
 }
 
+
+/* ROLAGEM LATERAL PADRONIZADA V2 */
+@media (min-width:1101px) {
+  .sidebar {
+    height:100vh;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:#64748b #0f172a;
+  }
+
+  .sidebar .usuario {
+    position:relative;
+    bottom:auto;
+    left:auto;
+    margin:16px 20px 20px;
+    padding-bottom:12px;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width:7px;
+  }
+
+  .sidebar::-webkit-scrollbar-track {
+    background:#0f172a;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background:#64748b;
+    border-radius:10px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background:#94a3b8;
+  }
+}
 </style>
 
 </head>

@@ -737,7 +737,7 @@
 </style>
 </head>
 <body>
-<div class="barra"><button onclick="window.print()">Imprimir / Salvar PDF</button></div>
+<div class="barra"><button type="button" onclick="window.location.href='/api/tickets/' + encodeURIComponent(new URLSearchParams(window.location.search).get('id')) + '/laudo/pdf'">Imprimir / Salvar PDF</button></div>
 <main class="folha">
   <header class="cabecalho cabecalho-profissional">
     <div class="marca-documento">
@@ -883,6 +883,7 @@ function preencher(campo, valor) {
 }
 
 async function carregar() {
+  document.documentElement.dataset.laudoPdfStatus = "carregando";
   if (!id) {
     document.body.insertAdjacentText("afterbegin", "ID da OS não informado.");
     return;
@@ -1093,7 +1094,9 @@ async function carregar() {
         });
       });
     }
+    document.documentElement.dataset.laudoPdfStatus = "pronto";
   } catch (erro) {
+    document.documentElement.dataset.laudoPdfStatus = "erro";
     console.error(erro);
     alert("Não foi possível carregar o laudo.");
   }

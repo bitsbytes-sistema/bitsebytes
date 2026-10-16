@@ -7268,6 +7268,16 @@ app.get("/api/tickets/:id/laudo/qr", auth, requirePermissao("laudos"), async (re
   }
 });
 
+const criarRotaLaudoPdf = require("./routes/laudoPdf");
+
+app.use(criarRotaLaudoPdf({
+  Ticket,
+  auth,
+  requirePermissao,
+  puppeteer,
+  chromium,
+  port: PORT
+}));
 /* ===================== LAUDO ===================== */
 app.get("/api/tickets/:id/laudo", auth, requirePermissao("laudos"), async (req, res) => {
 

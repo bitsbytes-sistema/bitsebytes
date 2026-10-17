@@ -395,6 +395,12 @@ button:disabled{
         >
       </div>
 
+      <div id="avisoOrientacaoAssinatura" style="display:none; position:relative; background:#eff6ff; border:1px solid #93c5fd; border-radius:12px; padding:14px 42px 14px 14px; margin-bottom:15px; color:#1e40af; font-size:14px; line-height:1.5;">
+        <button type="button" aria-label="Fechar aviso" onclick="document.getElementById('avisoOrientacaoAssinatura').style.display='none'; sessionStorage.setItem('avisoAssinaturaFechado','1');" style="position:absolute; top:7px; right:8px; background:transparent; color:#1e40af; border:0; font-size:23px; cursor:pointer; padding:3px 8px;">&times;</button>
+        <strong>Dica para sua assinatura</strong>
+        <div>Para assinar com mais conforto e espaço, recomendamos colocar seu celular na posição horizontal.</div>
+        <div style="margin-top:5px;">Você também pode assinar normalmente com o celular na vertical.</div>
+      </div>
       <div class="ajuda">
         Assine no espaço abaixo usando o dedo, caneta ou mouse.
       </div>
@@ -1062,6 +1068,24 @@ document.addEventListener(
       finalizarTracoAssinatura
     );
 
+    const avisoOrientacao = document.getElementById("avisoOrientacaoAssinatura");
+
+    function atualizarAvisoOrientacao() {
+      if (!avisoOrientacao) return;
+
+      const celularVertical =
+        window.matchMedia("(max-width: 767px) and (orientation: portrait)").matches;
+
+      const fechado =
+        sessionStorage.getItem("avisoAssinaturaFechado") === "1";
+
+      avisoOrientacao.style.display =
+        celularVertical && !fechado ? "block" : "none";
+    }
+
+    atualizarAvisoOrientacao();
+
+    window.addEventListener("resize", atualizarAvisoOrientacao);
     carregarChamado();
   }
 );

@@ -1867,7 +1867,7 @@ function renderChamados(listaChamados){
 
         lista.innerHTML += `
 
-<tr>
+<tr data-os-id="${c._id}">
 
 <td>
 
@@ -2185,7 +2185,29 @@ switch(ordenacao){
 
 }
 
-  renderChamados(filtrados);
+  const osId = new URLSearchParams(window.location.search).get("abrirOS");
+
+  const osSelecionada = osId
+    ? chamados.find(c => String(c._id) === osId)
+    : null;
+
+  const listaFinal = osSelecionada
+    ? [osSelecionada]
+    : filtrados;
+
+  renderChamados(listaFinal);
+
+  if (osSelecionada) {
+    const linha = Array.from(
+      document.querySelectorAll("tr[data-os-id]")
+    ).find(tr => tr.getAttribute("data-os-id") === osId);
+
+    if (linha) {
+      linha.style.backgroundColor = "#dcfce7";
+      linha.style.outline = "2px solid #16a34a";
+      linha.scrollIntoView({ behavior: "auto", block: "center" });
+    }
+  }
 
 }
 

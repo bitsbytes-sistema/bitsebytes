@@ -1542,6 +1542,26 @@ carregarTecnicosParaAtribuicao(tecnicoAtualId);
         item.appendChild(botao);
       }
 
+      const botaoAbrirOS = document.createElement("button");
+
+      botaoAbrirOS.type = "button";
+      botaoAbrirOS.textContent = "Abrir OS";
+      botaoAbrirOS.style.marginTop = "8px";
+      botaoAbrirOS.style.marginLeft = "8px";
+      botaoAbrirOS.style.padding = "7px 12px";
+      botaoAbrirOS.style.backgroundColor = "#16a34a";
+      botaoAbrirOS.style.color = "#ffffff";
+      botaoAbrirOS.style.border = "none";
+      botaoAbrirOS.style.borderRadius = "5px";
+      botaoAbrirOS.style.cursor = "pointer";
+
+      botaoAbrirOS.addEventListener("click", () => {
+        window.location.href =
+          "/chamados.html?abrirOS=" + encodeURIComponent(c._id);
+      });
+
+      item.appendChild(botaoAbrirOS);
+
       lista.appendChild(item);
 
     });

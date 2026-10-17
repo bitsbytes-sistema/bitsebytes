@@ -2005,6 +2005,13 @@ style="display:block; width:100%; text-align:left; margin-bottom:5px;"
 }
 <button
 type="button"
+onclick="fecharMenusAcoesChamado(); reenviarAcompanhamentoWhatsApp('${c._id}')"
+style="display:block; width:100%; text-align:left; margin-bottom:5px;"
+>
+💬 Reenviar acompanhamento
+</button>
+<button
+type="button"
 onclick="fecharMenusAcoesChamado(); abrirFotosChamado('${c._id}')"
 style="display:block; width:100%; text-align:left; margin-bottom:5px;"
 >
@@ -3807,6 +3814,45 @@ async function trocarCliente(id){
   overlay.appendChild(modal);
 
   document.body.appendChild(overlay);
+
+}
+
+/* ===================== REENVIAR ACOMPANHAMENTO WHATSAPP ===================== */
+async function reenviarAcompanhamentoWhatsApp(id) {
+
+  try {
+
+    const res = await fetch(
+      `/api/tickets/${encodeURIComponent(id)}/whatsapp-acompanhamento`,
+      { credentials: "include" }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok || !data.whatsapp) {
+      throw new Error(
+        data.error || "Nao foi possivel gerar a mensagem."
+      );
+    }
+
+    window.open(
+      data.whatsapp,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
+  } catch (erro) {
+
+    console.error(
+      "Erro ao reenviar acompanhamento:",
+      erro
+    );
+
+    alert(
+      erro.message || "Erro ao abrir WhatsApp."
+    );
+
+  }
 
 }
 

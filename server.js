@@ -6625,6 +6625,85 @@ app.put(
 );
 
 
+/* ===================== REENVIAR ACOMPANHAMENTO WHATSAPP ===================== */
+app.get("/api/tickets/:id/whatsapp-acompanhamento", auth, requirePermissao("chamados"), async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: "ID de chamado invalido." });
+    }
+
+    const ticket = await Ticket.findOne({
+      _id: req.params.id,
+      companyId: req.session.user.companyId
+    }).select("numeroOS status telefone cliente cpfcnpj equipamento problema");
+
+    if (!ticket) {
+      return res.status(404).json({ error: "Chamado nao encontrado." });
+    }
+
+    const textos = {
+      aberto: "Seu chamado foi aberto e aguarda análise.",
+      andamento: "Seu equipamento está em análise.",
+      reparo: "Seu equipamento está em manutenção na bancada.",
+      finalizado: "Seu equipamento está pronto, aguarde que em breve entraremos em contato."
+    };
+
+    if (!Object.prototype.hasOwnProperty.call(textos, ticket.status)) {
+      return res.status(400).json({ error: "Status do chamado invalido." });
+    }
+
+    let numero = String(ticket.telefone || "").replace(/\D/g, "");
+
+    if (numero.startsWith("55") && numero.length > 11) {
+      numero = numero.substring(2);
+    }
+
+    if (numero.length < 10 || numero.length > 11) {
+      return res.status(400).json({ error: "Telefone do cliente invalido para WhatsApp." });
+    }
+
+    const data = new Date().toLocaleString("pt-BR", {
+      timeZone: "America/Cuiaba"
+    });
+
+    const msg = encodeURIComponent(
+`Bits & Bytes Assistência Técnica
+
+ORDEM DE SERVIÇO:
+${ticket.numeroOS}
+
+Status:
+${ticket.status.toUpperCase()}
+
+Cliente:
+${ticket.cliente}
+
+CPF/CNPJ:
+${ticket.cpfcnpj || "Não informado"}
+
+Equipamento:
+${ticket.equipamento || "Não informado"}
+
+Problema informado:
+${ticket.problema || "Não informado"}
+
+Atualizado em:
+${data}
+
+${textos[ticket.status]}`
+    );
+
+    return res.json({
+      ok: true,
+      status: ticket.status,
+      whatsapp: `https://wa.me/55${numero}?text=${msg}`
+    });
+  } catch (err) {
+    console.error("Erro ao gerar acompanhamento WhatsApp:", err);
+    return res.status(500).json({ error: "Erro ao gerar mensagem de acompanhamento." });
+  }
+});
+
 /* ===================== STATUS UPDATE ===================== */
 app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res) => {
 

@@ -5693,14 +5693,20 @@ function abrirCliente(cpfcnpj){
 /* ===================== LOGOUT ===================== */
 
 async function logout(){
+  try {
+    if (window.OneSignal && OneSignal.User) {
+      await OneSignal.logout();
+      console.log("OneSignal desvinculado no logout");
+    }
+  } catch (erro) {
+    console.error("Falha ao desvincular OneSignal:", erro);
+  }
 
-  await fetch("/logout",{
+  await fetch("/logout", {
     credentials:"include"
   });
 
-
   window.location.href="/";
-
 }
 
 /* ===================== IMPRIMIR OS ===================== */

@@ -621,6 +621,101 @@ opacity:1;
 
 /* ===== FIM VISUAL PREMIUM - INDICADORES ===== */
 /* ===== FIM DAS CORES PERSONALIZADAS ===== */
+
+/* VISUAL DASHBOARD INDIVIDUAL TECNICO */
+#painelMeuTecnico {
+  background:#FFFFFF;
+  border-left:5px solid #2563EB;
+  border-radius:12px;
+  padding:24px;
+  box-shadow:0 4px 16px rgba(15,23,42,.10);
+  margin-top:20px;
+  margin-bottom:20px;
+}
+
+#painelMeuTecnico .meu-tecnico-cabecalho > small {
+  color:#64748B;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:1px;
+}
+
+#painelMeuTecnico .meu-tecnico-cabecalho h2 {
+  color:#172B4D;
+  font-size:25px;
+  margin:12px 0;
+}
+
+#painelMeuTecnico .meu-tecnico-cabecalho p {
+  color:#475569;
+  font-size:15px;
+  margin-bottom:22px;
+}
+
+#painelMeuTecnico .meu-tecnico-indicadores {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:24px;
+}
+
+#painelMeuTecnico .meu-tecnico-indicadores > div {
+  background:#F1F5F9;
+  border-radius:10px;
+  padding:20px 12px;
+  text-align:center;
+}
+
+#painelMeuTecnico .meu-tecnico-indicadores h2 {
+  font-size:30px;
+  color:#172B4D;
+  margin:0 0 6px;
+}
+
+#painelMeuTecnico .meu-tecnico-indicadores small {
+  font-size:13px;
+  color:#64748B;
+}
+
+#painelMeuTecnico .meu-tecnico-lista {
+  border-top:1px solid #E2E8F0;
+  padding-top:20px;
+}
+
+#painelMeuTecnico .meu-tecnico-lista h3 {
+  color:#172B4D;
+  font-size:17px;
+  margin-bottom:15px;
+}
+
+#painelMeuTecnico #listaMinhasOS {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  color:#64748B;
+}
+
+@media (max-width:600px) {
+  #painelMeuTecnico {
+    padding:16px;
+  }
+
+  #painelMeuTecnico .meu-tecnico-indicadores {
+    gap:8px;
+  }
+
+  #painelMeuTecnico .meu-tecnico-indicadores > div {
+    padding:14px 5px;
+  }
+
+  #painelMeuTecnico .meu-tecnico-indicadores h2 {
+    font-size:24px;
+  }
+
+  #painelMeuTecnico .meu-tecnico-indicadores small {
+    font-size:11px;
+  }
+}
 </style>
 </head>
 
@@ -720,6 +815,41 @@ opacity:1;
     <h3>Resumo Geral</h3>
 
     <div id="stats" class="stats-grid"></div>
+<div class="section-card" id="painelMeuTecnico">
+
+  <div class="meu-tecnico-cabecalho">
+    <small>DASHBOARD DO TÉCNICO</small>
+    <h2 id="saudacaoMeuTecnico">Carregando...</h2>
+    <p id="mensagemMeuTecnico">
+      Carregando seus chamados...
+    </p>
+  </div>
+
+  <div class="meu-tecnico-indicadores">
+    <div>
+      <h2 id="totalMinhasOS">0</h2>
+      <small>Minhas OS</small>
+    </div>
+
+    <div>
+      <h2 id="totalMinhasOSReparo">0</h2>
+      <small>Em reparo</small>
+    </div>
+
+    <div>
+      <h2 id="totalMinhasOSAguardando">0</h2>
+      <small>Aguardando</small>
+    </div>
+  </div>
+
+  <div class="meu-tecnico-lista">
+    <h3>Meus chamados atribuídos</h3>
+    <div id="listaMinhasOS">
+      Carregando...
+    </div>
+  </div>
+
+</div>
 
 <div class="section-card">
 
@@ -847,7 +977,7 @@ onclick="proximoAlerta()">
   </div>
 </div>
 
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
 
 <script>
 
@@ -875,8 +1005,150 @@ async function carregarUsuario(){
 
   document.getElementById("cargoUsuario").innerText =
     data.user?.role || "Usuário";
+
+  // SAUDACAO AUTOMATICA DO DASHBOARD DO TECNICO
+  const nomeTecnico =
+    data.user?.nome || data.user?.username || "Usuário";
+
+  const horaRondonia = Number(
+    new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Porto_Velho",
+      hour: "2-digit",
+      hourCycle: "h23"
+    }).format(new Date())
+  );
+
+  let saudacao = "Boa noite";
+  let iconeSaudacao = "🌙";
+
+  if (horaRondonia >= 5 && horaRondonia < 12) {
+    saudacao = "Bom dia";
+    iconeSaudacao = "☀️";
+  } else if (horaRondonia >= 12 && horaRondonia < 18) {
+    saudacao = "Boa tarde";
+    iconeSaudacao = "☀️";
+  }
+
+  const elementoSaudacao =
+    document.getElementById("saudacaoMeuTecnico");
+
+  if (elementoSaudacao) {
+    elementoSaudacao.textContent =
+      `${iconeSaudacao} ${saudacao}, ${nomeTecnico}!`;
+  }
 }
 
+
+/* ===================== MINHAS OS ===================== */
+async function loadMinhasOS(){
+
+  const mensagem = document.getElementById("mensagemMeuTecnico");
+  const lista = document.getElementById("listaMinhasOS");
+  const total = document.getElementById("totalMinhasOS");
+  const reparo = document.getElementById("totalMinhasOSReparo");
+  const aguardando = document.getElementById("totalMinhasOSAguardando");
+
+  if (!mensagem || !lista || !total || !reparo || !aguardando) return;
+
+  try {
+
+    const [resUsuario, resTickets] = await Promise.all([
+      fetch("/me", { credentials:"include" }),
+      fetch("/api/tickets?semAssinatura=1", {
+        credentials:"include"
+      })
+    ]);
+
+    if (!resUsuario.ok || !resTickets.ok) {
+      throw new Error("Falha ao carregar os dados.");
+    }
+
+    const dadosUsuario = await resUsuario.json();
+    const chamados = await resTickets.json();
+
+    if (!Array.isArray(chamados) || !dadosUsuario.user?._id) {
+      throw new Error("Dados invalidos.");
+    }
+
+    const meuId = String(dadosUsuario.user._id);
+
+    const minhasOS = chamados.filter(c => {
+
+      const tecnico = c.tecnicoResponsavel;
+
+      const idTecnico = tecnico && typeof tecnico === "object"
+        ? String(tecnico._id || "")
+        : String(tecnico || "");
+
+      const status = String(c.status || "").toLowerCase();
+
+      return idTecnico === meuId &&
+        !["finalizado", "cancelado"].includes(status);
+
+    });
+
+    const emReparo = minhasOS.filter(c =>
+      String(c.status || "").toLowerCase() === "reparo"
+    );
+
+    const emAguardo = minhasOS.filter(c =>
+      ["aberto", "pendente", "aguardando", "andamento"].includes(
+        String(c.status || "").toLowerCase()
+      )
+    );
+
+    total.textContent = minhasOS.length;
+    reparo.textContent = emReparo.length;
+    aguardando.textContent = emAguardo.length;
+
+    mensagem.textContent =
+      "Você possui " + minhasOS.length +
+      (minhasOS.length === 1
+        ? " chamado atribuído a você que precisa de acompanhamento."
+        : " chamados atribuídos a você que precisam de acompanhamento.");
+
+    lista.replaceChildren();
+
+    if (minhasOS.length === 0) {
+      lista.textContent = "Nenhum chamado ativo atribuído a você.";
+      return;
+    }
+
+    const ordenadas = [...minhasOS].sort((a,b) =>
+      Number(a.numeroOS || 0) - Number(b.numeroOS || 0)
+    );
+
+    ordenadas.forEach(c => {
+
+      const linha = document.createElement("div");
+
+      linha.style.display = "flex";
+      linha.style.justifyContent = "space-between";
+      linha.style.alignItems = "center";
+      linha.style.gap = "12px";
+      linha.style.padding = "10px 4px";
+      linha.style.borderBottom = "1px solid #E2E8F0";
+
+      const numero = document.createElement("strong");
+      numero.textContent = "OS " + (c.numeroOS || "-");
+      numero.style.color = "#172B4D";
+
+      const situacao = document.createElement("span");
+      situacao.textContent = c.status || "Sem status";
+      situacao.style.color = "#64748B";
+      situacao.style.fontSize = "13px";
+
+      linha.append(numero, situacao);
+      lista.appendChild(linha);
+
+    });
+
+  } catch (erro) {
+    console.error("Erro ao carregar minhas OS:", erro);
+    mensagem.textContent = "Não foi possível carregar seus chamados.";
+    lista.textContent = "Erro ao consultar os chamados.";
+  }
+}
 
 /* ===================== STATS ===================== */
 async function loadStats(){
@@ -1511,11 +1783,21 @@ setInterval(()=>{
 
   loadIndicadores();
   loadControleTecnicos();
+  loadMinhasOS();
 
 },10000);
 
 /* ===================== LOGOUT ===================== */
 async function logout(){
+  try {
+    if (window.OneSignal && OneSignal.User) {
+      await OneSignal.logout();
+      console.log("OneSignal desvinculado no logout");
+    }
+  } catch (erro) {
+    console.error("Falha ao desvincular OneSignal:", erro);
+  }
+
   await fetch("/logout", { credentials:"include" });
   window.location.href="/";
 }
@@ -2024,6 +2306,7 @@ loadStats();
 loadUltimosChamados();
 loadIndicadores();
 loadControleTecnicos();
+loadMinhasOS();
 carregarNotificacoes();
 carregarAlertasSistema();
 

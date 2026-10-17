@@ -4770,6 +4770,26 @@ app.post("/api/tickets/:id/fotos", auth, requirePermissao("chamados"), (req, res
         });
       }
 
+      /* PROTECAO: TECNICO SOMENTE NA OS ATRIBUIDA */
+      const perfilAtual = String(
+        req.usuarioAtual?.role || req.session.user?.role || ""
+      ).toLowerCase();
+
+      if (perfilAtual === "tech") {
+        const tecnicoResponsavel = String(
+          ticket.tecnicoResponsavel || ""
+        );
+
+        const usuarioAtual = String(req.session.user._id);
+
+        if (tecnicoResponsavel !== usuarioAtual) {
+          return res.status(403).json({
+            ok: false,
+            error: "os_nao_atribuida_ao_tecnico",
+            message: "Somente o tecnico responsavel pode adicionar fotos nesta OS."
+          });
+        }
+      }
       const arquivos = req.files || [];
 
       if (!arquivos.length) {
@@ -4977,6 +4997,26 @@ app.delete("/api/tickets/:id/fotos/:fotoId", auth, requirePermissao("chamados"),
       });
     }
 
+    /* PROTECAO: TECNICO SOMENTE NA OS ATRIBUIDA */
+    const perfilAtual = String(
+      req.usuarioAtual?.role || req.session.user?.role || ""
+    ).toLowerCase();
+
+    if (perfilAtual === "tech") {
+      const tecnicoResponsavel = String(
+        ticket.tecnicoResponsavel || ""
+      );
+
+      const usuarioAtual = String(req.session.user._id);
+
+      if (tecnicoResponsavel !== usuarioAtual) {
+        return res.status(403).json({
+          ok: false,
+          error: "os_nao_atribuida_ao_tecnico",
+          message: "Somente o tecnico responsavel pode solicitar a exclusao de fotos desta OS."
+        });
+      }
+    }
     /* ===================== AUTORIZACAO ADMINISTRATIVA ===================== */
 
     const autorizacaoExcluirFoto =
@@ -5033,6 +5073,18 @@ app.put("/api/tickets/:id/alterar-cliente", auth, requirePermissao("chamados"), 
 
   try {
 
+    /* PROTECAO: ALTERACAO DE CLIENTE EXCLUSIVA DE ADMIN E MASTER */
+    const perfilAtual = String(
+      req.usuarioAtual?.role || req.session.user?.role || ""
+    ).toLowerCase();
+
+    if (perfilAtual !== "admin" && perfilAtual !== "master") {
+      return res.status(403).json({
+        ok: false,
+        error: "alteracao_cliente_restrita_administradores",
+        message: "Somente administradores e master podem alterar o cliente da OS."
+      });
+    }
     const companyId =
       String(req.session.user.companyId);
 
@@ -5290,6 +5342,26 @@ app.put("/api/tickets/:id/checklist-entrega", auth, requirePermissao("chamados")
       });
     }
 
+    /* PROTECAO: TECNICO SOMENTE NA OS ATRIBUIDA */
+    const perfilAtual = String(
+      req.usuarioAtual?.role || req.session.user?.role || ""
+    ).toLowerCase();
+
+    if (perfilAtual === "tech") {
+      const tecnicoResponsavel = String(
+        ticket.tecnicoResponsavel || ""
+      );
+
+      const usuarioAtual = String(req.session.user._id);
+
+      if (tecnicoResponsavel !== usuarioAtual) {
+        return res.status(403).json({
+          ok: false,
+          error: "os_nao_atribuida_ao_tecnico",
+          message: "Somente o tecnico responsavel pode alterar o Checklist de Entrega desta OS."
+        });
+      }
+    }
     const valoresPermitidos = [
       "ok",
       "defeito",
@@ -5412,6 +5484,23 @@ app.post("/api/tickets/:id/assinatura-remota/link", auth, requirePermissao("cham
       });
     }
 
+    /* PROTECAO: TECNICO SOMENTE NA OS ATRIBUIDA */
+    const perfilAtual = String(
+      req.usuarioAtual?.role || req.session.user?.role || ""
+    ).toLowerCase();
+
+    if (perfilAtual === "tech") {
+      const tecnicoResponsavel = String(ticket.tecnicoResponsavel || "");
+      const usuarioAtual = String(req.session.user._id);
+
+      if (tecnicoResponsavel !== usuarioAtual) {
+        return res.status(403).json({
+          ok: false,
+          error: "os_nao_atribuida_ao_tecnico",
+          message: "Somente o tecnico responsavel pode gerar o link de assinatura desta OS."
+        });
+      }
+    }
     if (ticket.assinaturaConfirmada) {
       return res.status(400).json({
         ok: false,
@@ -6205,13 +6294,37 @@ app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res)
     const chamadoExistente = await Ticket.findOne({
       _id: req.params.id,
       companyId: req.session.user.companyId
-    }).select("status");
+    }).select("status tecnicoResponsavel");
 
     if(!chamadoExistente){
       return res.status(404).json({
         error: "chamado_nao_encontrado"
       });
     }
+
+    /* PROTECAO: TECNICO SOMENTE NA OS ATRIBUIDA */
+    const perfilAtual = String(
+      req.usuarioAtual?.role || req.session.user?.role || ""
+    ).toLowerCase();
+
+    if(perfilAtual === "tech"){
+
+      const idTecnicoResponsavel = String(
+        chamadoExistente.tecnicoResponsavel || ""
+      );
+
+      const idUsuarioAtual = String(
+        req.session.user._id
+      );
+
+      if(idTecnicoResponsavel !== idUsuarioAtual){
+        return res.status(403).json({
+          error: "os_nao_atribuida_ao_tecnico",
+          message: "Somente o tecnico responsavel pode alterar o status desta OS."
+        });
+      }
+    }
+
 
     if(
       chamadoExistente.status === "finalizado" &&
@@ -6673,7 +6786,10 @@ if (situacaoDiagnostico === "aprovado") {
       await Ticket.findOneAndUpdate(
         {
           _id: req.params.id,
-          companyId: req.session.user.companyId
+          companyId: req.session.user.companyId,
+          ...(String(req.usuarioAtual?.role || "").toLowerCase() === "tech"
+            ? { tecnicoResponsavel: req.session.user._id }
+            : {})
         },
         {
           $set: atualizacao
@@ -6687,8 +6803,20 @@ if (situacaoDiagnostico === "aprovado") {
 
     if (!ticket) {
 
-      return res.status(404).json({
-        error: "Chamado não encontrado"
+      const chamadoExistente = await Ticket.findOne({
+        _id: req.params.id,
+        companyId: req.session.user.companyId
+      }).select("_id");
+
+      if (!chamadoExistente) {
+        return res.status(404).json({
+          error: "chamado_nao_encontrado"
+        });
+      }
+
+      return res.status(403).json({
+        error: "os_nao_atribuida_ao_tecnico",
+        message: "Somente o tecnico responsavel pode alterar o diagnostico desta OS."
       });
 
     }
@@ -7372,7 +7500,10 @@ app.put("/api/tickets/:id/laudo", auth, requirePermissao("laudos"), async (req, 
 
       {
         _id: req.params.id,
-        companyId: req.session.user.companyId
+        companyId: req.session.user.companyId,
+        ...(String(req.usuarioAtual?.role || req.session.user?.role || "").toLowerCase() === "tech"
+          ? { tecnicoResponsavel: req.session.user._id }
+          : {})
       },
 
       {
@@ -7399,8 +7530,21 @@ app.put("/api/tickets/:id/laudo", auth, requirePermissao("laudos"), async (req, 
 
     if(!ticket){
 
-      return res.status(404).json({
-        error: "ticket_not_found"
+      const existente = await Ticket.findOne({
+        _id: req.params.id,
+        companyId: req.session.user.companyId
+      }).select("_id");
+
+      if (!existente) {
+        return res.status(404).json({
+          error: "ticket_not_found"
+        });
+      }
+
+      return res.status(403).json({
+        ok: false,
+        error: "os_nao_atribuida_ao_tecnico",
+        message: "Somente o tecnico responsavel pode alterar o laudo desta OS."
       });
 
     }
@@ -7525,41 +7669,97 @@ app.post("/abrir-chamado", async (req, res) => {
 
   try {
 
-    const company = await Company.findOne();
+    const empresaIdRecebido = String(
+      req.query.empresa ||
+      req.body.empresa ||
+      ""
+    ).trim();
 
-    if(!company){
+    let company = null;
 
-      return res.status(404).json({
-        error: "Empresa não encontrada"
+    if (empresaIdRecebido) {
+      if (!mongoose.Types.ObjectId.isValid(empresaIdRecebido)) {
+        return res.status(400).json({
+          ok: false,
+          error: "Identificador da empresa inválido."
+        });
+      }
+
+      company = await Company.findOne({
+        _id: empresaIdRecebido,
+        active: true
       });
-
+    } else {
+      company = await Company.findOne({
+        name: "Bits & Bytes Tecnology",
+        protected: true,
+        active: true
+      });
     }
 
+    if (!company) {
+      return res.status(404).json({
+        ok: false,
+        error: "Empresa não encontrada ou inativa."
+      });
+    }
+
+    // Validacao dos campos obrigatorios da abertura publica
+    const camposObrigatorios = [
+      "cliente",
+      "telefone",
+      "cpfcnpj",
+      "equipamento",
+      "problema"
+    ];
+
+    for (const campo of camposObrigatorios) {
+      if (
+        typeof req.body?.[campo] !== "string" ||
+        !req.body[campo].trim()
+      ) {
+        return res.status(400).json({
+          ok: false,
+          error: `O campo ${campo} e obrigatorio.`
+        });
+      }
+    }
 // ===================== LIMITE DE CHAMADOS POR CLIENTE =====================
 
-const chamadosAbertos = await Ticket.countDocuments({
+const somenteDigitos = valor =>
+  String(valor || "").replace(/\D/g, "");
 
+const documentoInformado = somenteDigitos(req.body.cpfcnpj);
+const telefoneInformado = somenteDigitos(req.body.telefone);
+
+if (![11, 14].includes(documentoInformado.length)) {
+  return res.status(400).json({
+    ok: false,
+    error: "Informe um CPF ou CNPJ com quantidade valida de digitos."
+  });
+}
+
+if (![10, 11].includes(telefoneInformado.length)) {
+  return res.status(400).json({
+    ok: false,
+    error: "Informe um telefone com DDD valido."
+  });
+}
+const chamadosAtivos = await Ticket.find({
   companyId: company._id,
-
-  $or:[
-    {
-      cpfcnpj: req.body.cpfcnpj
-    },
-    {
-      telefone: req.body.telefone
-    }
-  ],
-
-  status:{
-    $in:[
-      "aberto",
-      "andamento",
-      "reparo"
-    ]
+  status: {
+    $in: ["aberto", "andamento", "reparo"]
   }
+})
+.select("cpfcnpj telefone")
+.lean();
 
-});
-
+const chamadosAbertos = chamadosAtivos.filter(chamado =>
+  (documentoInformado &&
+    somenteDigitos(chamado.cpfcnpj) === documentoInformado) ||
+  (telefoneInformado &&
+    somenteDigitos(chamado.telefone) === telefoneInformado)
+).length;
 if(chamadosAbertos >= 3){
 
   return res.status(400).json({
@@ -7649,7 +7849,14 @@ const response = await oneSignalClient.createNotification({
 
     app_id: process.env.ONESIGNAL_APP_ID,
 
-    included_segments: ["All"],
+    filters: [
+      {
+        field: "tag",
+        key: "companyId",
+        relation: "=",
+        value: String(company._id)
+      }
+    ],
 
     headings:{
       en:"?? Novo chamado recebido"
@@ -7754,6 +7961,18 @@ app.delete("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, r
 
   try {
 
+    /* PROTECAO: EXCLUSAO EXCLUSIVA DE ADMIN E MASTER */
+    const perfilAtual = String(
+      req.usuarioAtual?.role || req.session.user?.role || ""
+    ).toLowerCase();
+
+    if (perfilAtual !== "admin" && perfilAtual !== "master") {
+      return res.status(403).json({
+        ok: false,
+        error: "exclusao_os_restrita_administradores",
+        message: "Somente administradores e master podem excluir Ordens de Servico."
+      });
+    }
     const companyId =
       String(req.session.user.companyId);
 

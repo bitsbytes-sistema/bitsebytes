@@ -57,7 +57,13 @@ console.log("Status /me:", resposta.status);
 console.log("URL:", resposta.url);
 
 if (!resposta.ok) {
-    console.log("Usuário não autenticado");
+    console.log("Usuario nao autenticado");
+
+    if (resposta.status === 401) {
+        await OneSignal.logout();
+        console.log("OneSignal desvinculado: sessao encerrada");
+    }
+
     return;
 }
 
@@ -71,6 +77,15 @@ if (user) {
     console.log("USUÁRIO RECEBIDO /me:", user);
 
     await OneSignal.login(String(user._id));
+
+    if (user.companyId) {
+        await OneSignal.User.addTag(
+            "companyId",
+            String(user.companyId)
+        );
+
+        console.log("Tag da empresa registrada no OneSignal");
+    }
 
     console.log("✅ Login OneSignal realizado");
 

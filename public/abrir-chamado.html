@@ -182,10 +182,8 @@ footer span{
       required
     >
 
-    <input type="text" name="tipoEquipamento" placeholder="Tipo de equipamento">
     <input type="text" name="marcaEquipamento" placeholder="Marca">
     <input type="text" name="modeloEquipamento" placeholder="Modelo">
-    <input type="text" name="numeroSerieEquipamento" placeholder="N?mero de s?rie">
 
     <textarea
       name="problema"
@@ -237,7 +235,12 @@ form.addEventListener(
     alerta.style.display =
       "none";
 
+    const empresaId = new URLSearchParams(
+      window.location.search
+    ).get("empresa");
+
     const data = {
+      ...(empresaId ? { empresa: empresaId } : {}),
 
       cliente:
         form.cliente.value.trim(),

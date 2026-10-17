@@ -1782,11 +1782,19 @@ async function carregarUsuario(){
     data.user?.nome || data.user?.username || "Usuário";
 
 
+  usuarioPodeEditarOS = ["master", "admin"].includes(
+    String(data.user?.role || "").toLowerCase()
+  );
+
   document.getElementById("cargoUsuario").innerText =
     data.user?.role || "Usuário";
 
+  await load();
+
+
 }
 
+let usuarioPodeEditarOS = false;
 let chamados = [];
 
 // ===================== PREENCHER CLIENTE =====================
@@ -1980,6 +1988,21 @@ z-index:9999;
 "
 >
 
+${
+usuarioPodeEditarOS && c.status !== "finalizado"
+?
+`
+<button
+type="button"
+onclick="fecharMenusAcoesChamado(); abrirEdicaoAdministrativaOS('${c._id}')"
+style="display:block; width:100%; text-align:left; margin-bottom:5px;"
+>
+✏️ Editar OS
+</button>
+`
+:
+""
+}
 <button
 type="button"
 onclick="fecharMenusAcoesChamado(); abrirFotosChamado('${c._id}')"
@@ -2770,6 +2793,8 @@ async function salvarEdicaoReaberta() {
       tipo: tipoDesenhoEquipamentoSelecionado || "",
       observacoes: valor("observacoesDesenhoEquipamento"),
       marcacoes: marcacoesDesenhoEquipamento.map(m => ({
+        id: m.id || "",
+        equipamento: m.equipamento || tipoDesenhoEquipamentoSelecionado || "",
         vista: m.vista,
         tipo: m.tipo,
         x: m.x,
@@ -2790,7 +2815,7 @@ async function salvarEdicaoReaberta() {
     if (botao) botao.disabled = true;
 
     const resposta = await fetch(
-      `/api/tickets/${encodeURIComponent(chamadoEmEdicaoId)}/editar-reaberto`,
+      `/api/tickets/${encodeURIComponent(chamadoEmEdicaoId)}/${new URLSearchParams(window.location.search).has("editarAdmin") ? "editar-admin" : "editar-reaberto"}`,
       {
         method: "PUT",
         credentials: "include",
@@ -2806,7 +2831,11 @@ async function salvarEdicaoReaberta() {
                       "Nao foi possivel salvar as correcoes.");
     }
 
-    alert("Correcoes salvas na mesma OS com sucesso.");
+    const edicaoAdministrativa = new URLSearchParams(window.location.search).has("editarAdmin");
+
+    alert(edicaoAdministrativa
+      ? "Alteracoes administrativas da OS salvas com sucesso."
+      : "Correcoes salvas na mesma OS com sucesso.");
 
     // Encerra a edicao e abre o formulario limpo.
     window.location.replace("/chamados.html");
@@ -2819,13 +2848,33 @@ async function salvarEdicaoReaberta() {
     if (botao) botao.disabled = false;
   }
 }
+/* ===================== ABRIR EDICAO ADMINISTRATIVA DA OS ===================== */
+function abrirEdicaoAdministrativaOS(id) {
+
+  if (!usuarioPodeEditarOS) {
+    alert("Apenas Master ou Administrador pode editar esta OS.");
+    return;
+  }
+
+  if (!id) {
+    alert("Identificador da OS nao informado.");
+    return;
+  }
+
+  window.location.href =
+    "/chamados.html?editarAdmin=" + encodeURIComponent(id);
+}
 /* ===================== CARREGAR OS REABERTA PARA EDICAO ===================== */
 async function carregarEdicaoReaberta() {
   const params = new URLSearchParams(window.location.search);
 
-  if (!params.has("editarReaberto")) return;
+  const edicaoAdministrativa = params.has("editarAdmin");
 
-  const id = params.get("editarReaberto");
+  if (!edicaoAdministrativa && !params.has("editarReaberto")) return;
+
+  const id = edicaoAdministrativa
+    ? params.get("editarAdmin")
+    : params.get("editarReaberto");
 
   // Bloqueia a criacao acidental de outra OS.
   chamadoEmEdicaoId = id || "ID_INVALIDO";
@@ -2867,7 +2916,26 @@ async function carregarEdicaoReaberta() {
     const foiReaberta = Array.isArray(os.auditoria) &&
       os.auditoria.some(item => item.acao === "reabrir_chamado");
 
-    if (os.status !== "andamento" || !foiReaberta) {
+    if (edicaoAdministrativa) {
+      const usuario = await fetch("/me", {
+        credentials: "include"
+      });
+
+      if (!usuario.ok) {
+        throw new Error("Nao foi possivel verificar suas permissoes.");
+      }
+
+      const dadosUsuario = await usuario.json();
+      const perfil = String(dadosUsuario.user?.role || "").toLowerCase();
+
+      if (!["master", "admin"].includes(perfil)) {
+        throw new Error("Apenas Master ou Administrador pode editar esta OS.");
+      }
+
+      if (os.status === "finalizado") {
+        throw new Error("OS finalizada nao pode ser editada por esta funcao.");
+      }
+    } else if (os.status !== "andamento" || !foiReaberta) {
       throw new Error("Esta OS nao esta disponivel para edicao por reabertura.");
     }
 
@@ -2917,6 +2985,8 @@ async function carregarEdicaoReaberta() {
     marcacoesDesenhoEquipamento =
       Array.isArray(desenho.marcacoes)
         ? desenho.marcacoes.map(m => ({
+            id: m.id || "",
+            equipamento: m.equipamento || desenho.tipo || "",
             vista: m.vista,
             tipo: m.tipo,
             x: m.x,
@@ -2934,14 +3004,17 @@ async function carregarEdicaoReaberta() {
     chamadoEmEdicaoId = os._id;
 
     if (botao) {
-      botao.textContent = "Salvar Correcoes da OS";
+      botao.textContent = edicaoAdministrativa
+        ? "Salvar Alteracoes da OS"
+        : "Salvar Correcoes da OS";
       botao.disabled = false;
     }
 
     const titulo = document.querySelector(".card h3");
     if (titulo) {
-      titulo.textContent =
-        `Editar OS Reaberta - ${os.numeroOS || os.numero || ""}`;
+      titulo.textContent = edicaoAdministrativa
+        ? `Editar OS - ${os.numeroOS || os.numero || ""}`
+        : `Editar OS Reaberta - ${os.numeroOS || os.numero || ""}`;
     }
 
   } catch (erro) {

@@ -1502,6 +1502,58 @@ async function carregarMensagensProgramadas(){
 
       }
 
+      const botaoExcluirMensagemProgramada = document.createElement("button");
+
+      botaoExcluirMensagemProgramada.type = "button";
+      botaoExcluirMensagemProgramada.textContent = "🗑️ Excluir Mensagem";
+      botaoExcluirMensagemProgramada.style.marginTop = "12px";
+      botaoExcluirMensagemProgramada.style.marginLeft = "8px";
+      botaoExcluirMensagemProgramada.style.background = "#dc2626";
+
+      botaoExcluirMensagemProgramada.addEventListener("click", async () => {
+
+        const confirmou = confirm(
+          "Deseja realmente excluir esta mensagem programada?\n\n" +
+          "Cliente: " + String(m.cliente || "Cliente") + "\n" +
+          "Esta acao nao podera ser desfeita."
+        );
+
+        if(!confirmou) return;
+
+        botaoExcluirMensagemProgramada.disabled = true;
+
+        try{
+
+          const resposta = await fetch(
+            "/api/mensagens-programadas/" + encodeURIComponent(m._id),
+            {
+              method:"DELETE",
+              credentials:"include"
+            }
+          );
+
+          const resultado = await resposta.json();
+
+          if(!resposta.ok){
+            throw new Error(
+              resultado.message || "Erro ao excluir mensagem."
+            );
+          }
+
+          alert("Mensagem excluida com sucesso!");
+
+          await carregarMensagensProgramadas();
+
+        }catch(erro){
+
+          botaoExcluirMensagemProgramada.disabled = false;
+          alert(erro.message);
+
+        }
+
+      });
+
+      item.appendChild(botaoExcluirMensagemProgramada);
       lista.appendChild(item);
 
     });

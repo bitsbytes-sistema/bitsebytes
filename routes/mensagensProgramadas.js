@@ -339,4 +339,48 @@ router.put("/:id", auth, async(req,res)=>{
   }
 
 });
+/* ===================== EXCLUIR MENSAGEM PROGRAMADA ===================== */
+
+router.delete("/:id", auth, async(req,res)=>{
+
+  try{
+
+    const id = req.params.id;
+
+    if(!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400).json({
+        error:"id_invalido",
+        message:"Identificador invalido."
+      });
+    }
+
+    const excluida = await MensagemProgramada.findOneAndDelete({
+      _id:id,
+      companyId:req.session.user.companyId
+    });
+
+    if(!excluida){
+      return res.status(404).json({
+        error:"mensagem_nao_encontrada",
+        message:"Mensagem nao encontrada."
+      });
+    }
+
+    return res.json({
+      success:true,
+      message:"Mensagem excluida com sucesso."
+    });
+
+  }catch(err){
+
+    console.error("Erro ao excluir mensagem programada:",err);
+
+    return res.status(500).json({
+      error:true,
+      message:"Erro ao excluir mensagem."
+    });
+
+  }
+
+});
 module.exports = router;

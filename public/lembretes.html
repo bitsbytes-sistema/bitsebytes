@@ -5,7 +5,7 @@
 
 <meta charset="UTF-8">
 
-<title>Central de Lembretes - Bits & Bytes</title>
+<title>Central de Agendamentos - Bits & Bytes</title>
 
 <link rel="manifest" href="/manifest.json">
 
@@ -124,6 +124,81 @@ button:hover{
 }
 
 
+/* BITSBYTES SIDEBAR AGENDAMENTOS */
+
+.sidebar{
+    width:250px;
+    height:100vh;
+    background:#0f172a;
+    color:white;
+    position:fixed;
+    top:0;
+    left:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:#64748b #0f172a;
+}
+
+.sidebar .logo{
+    padding:20px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.sidebar a{
+    display:block;
+    padding:14px 20px;
+    color:white;
+    text-decoration:none;
+}
+
+.sidebar a:hover,
+.sidebar a.ativo{
+    background:#1e293b;
+}
+
+.sidebar .usuario{
+    padding:20px;
+    margin-top:10px;
+}
+
+.main-agendamentos{
+    margin-left:250px;
+    min-height:100vh;
+    padding:1px 20px 30px;
+}
+
+@media(max-width:900px){
+
+    .sidebar{
+        position:relative;
+        width:100%;
+        height:auto;
+        display:flex;
+        align-items:center;
+        overflow-x:auto;
+        overflow-y:hidden;
+        white-space:nowrap;
+    }
+
+    .sidebar .logo,
+    .sidebar .usuario{
+        flex:0 0 auto;
+    }
+
+    .sidebar a{
+        flex:0 0 auto;
+    }
+
+    .main-agendamentos{
+        margin-left:0;
+        padding:1px 10px 20px;
+    }
+}
+
 </style>
 
 </head>
@@ -132,66 +207,43 @@ button:hover{
 <body>
 
 
-<div class="container">
+<!-- MENU LATERAL BITS & BYTES -->
+<div class="sidebar">
 
+  <div class="logo">
+    <img src="/logo.png" width="45" alt="Bits & Bytes">
+    <div>
+      <b>Bits & Bytes</b><br>
+      <small>Tecnology</small>
+    </div>
+  </div>
 
-<h1>🔔 Central de Lembretes</h1>
+  <a href="/dashboard.html">🏠 Dashboard</a>
+  <a href="/clientes.html">👥 Clientes</a>
+  <a href="/chamados.html">📋 Chamados</a>
+  <a href="/orcamentos.html">💰 Orçamentos</a>
+  <a href="/services.html">🛠 Peças e Serviços</a>
+  <a href="/laudos.html">📄 Laudos Técnicos</a>
+  <a href="/estoque.html">📦 Estoque</a>
+  <a href="/vendas.html">🛒 Vendas</a>
+  <a href="/financeiro.html">💵 Financeiro</a>
+  <a href="/lembretes.html" class="ativo">📅 Agendamentos</a>
+  <a href="/relatorios.html">📊 Relatórios</a>
+  <a href="/auditoria.html">🛡️ Auditoria</a>
+  <a href="/configuracoes.html">⚙️ Configurações</a>
 
-
-<div class="card">
-
-
-<h3>Novo Lembrete</h3>
-
-
-<input id="titulo" placeholder="Título">
-
-
-<textarea id="descricao" placeholder="Descrição"></textarea>
-
-
-<input id="cliente" placeholder="Cliente">
-
-
-<input id="telefone" placeholder="Telefone">
-
-
-<label>Data</label>
-
-<input type="date" id="data">
-
-
-<label>Hora</label>
-
-<input type="time" id="hora">
-
-
-<select id="tipo">
-
-<option value="retorno">Retorno</option>
-
-<option value="cobranca">Cobrança</option>
-
-<option value="entrega">Entrega</option>
-
-<option value="garantia">Garantia</option>
-
-<option value="revisao">Revisão</option>
-
-<option value="outros">Outros</option>
-
-</select>
-
-
-<button onclick="salvar()">
-
-Salvar Lembrete
-
-</button>
-
+  <div class="usuario">
+    <b id="nomeUsuario">Carregando...</b><br>
+    <small id="cargoUsuario">Usuário</small>
+  </div>
 
 </div>
 
+<div class="main-agendamentos">
+<div class="container">
+
+
+<h1>📅 Central de Agendamentos</h1>
 
 
 <div class="card">
@@ -276,10 +328,32 @@ Salvar Lembrete
 </div>
 
 
-<button onclick="salvarAgendamento()">
+<div id="areaStatusEdicao" style="display:none;margin-bottom:16px;">
+
+<label for="statusEdicaoAgendamento">Status do agendamento</label>
+
+<select id="statusEdicaoAgendamento">
+<option value="agendado">Agendado</option>
+<option value="confirmado">Confirmado</option>
+<option value="concluido">Concluído</option>
+<option value="cancelado">Cancelado</option>
+</select>
+
+</div>
+
+<button id="botaoSalvarAgendamento" onclick="salvarAgendamento()">
 
 Salvar Agendamento
 
+</button>
+
+<button
+  id="botaoCancelarEdicao"
+  type="button"
+  onclick="cancelarEdicaoAgendamento()"
+  style="display:none;background:#6b7280;margin-top:10px;"
+>
+Cancelar Edição
 </button>
 
 
@@ -352,23 +426,98 @@ Programar Mensagem
 
 
 
-<div class="card">
 
-
-<h3>Meus Lembretes</h3>
-
-
-<div id="lista"></div>
-
-
-</div>
 
 
 </div>
 
 
 
+
+</div><!-- FIM MAIN AGENDAMENTOS -->
+
+<div id="modalExcluirAgendamento"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+
+  <div style="background:white;padding:25px;border-radius:12px;width:100%;max-width:420px;box-sizing:border-box;">
+
+    <h3>🗑️ Excluir Agendamento</h3>
+
+    <p id="textoExcluirAgendamento">
+      Confirme a exclusão do agendamento.
+    </p>
+
+    <label for="usuarioAdminExclusao">Usuário administrador</label>
+    <input id="usuarioAdminExclusao"
+           type="text"
+           autocomplete="username">
+
+    <label for="senhaAdminExclusao">Senha do administrador</label>
+    <input id="senhaAdminExclusao"
+           type="password"
+           autocomplete="current-password">
+
+    <div style="display:flex;gap:10px;margin-top:20px;">
+
+      <button type="button"
+              id="confirmarExclusaoAgendamento"
+              style="background:#dc2626;">
+        Confirmar Exclusão
+      </button>
+
+      <button type="button"
+              id="cancelarExclusaoAgendamento"
+              style="background:#6b7280;">
+        Cancelar
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 <script>
+
+/* IDENTIFICACAO DO USUARIO - AGENDAMENTOS */
+async function carregarUsuarioAgendamentos(){
+
+  try{
+
+    const res = await fetch("/me", {
+      credentials:"include"
+    });
+
+    if(res.status === 401){
+      window.location.href = "/";
+      return;
+    }
+
+    if(!res.ok){
+      throw new Error("Falha ao consultar usuario.");
+    }
+
+    const data = await res.json();
+
+    const nome = document.getElementById("nomeUsuario");
+    const cargo = document.getElementById("cargoUsuario");
+
+    if(nome){
+      nome.textContent =
+        data.user?.nome || data.user?.username || "Usuário";
+    }
+
+    if(cargo){
+      cargo.textContent = data.user?.role || "Usuário";
+    }
+
+  }catch(erro){
+    console.error("Erro ao carregar usuario:", erro);
+  }
+
+}
+
+carregarUsuarioAgendamentos();
+
 
 
 async function carregarClientesAgendamento(){
@@ -410,6 +559,210 @@ async function carregarClientesAgendamento(){
 
 
 
+let agendamentosCarregados = [];
+let agendamentoEmEdicao = null;
+
+function editarAgendamento(id){
+
+  const agendamento = agendamentosCarregados.find(
+    a => String(a._id) === String(id)
+  );
+
+  if(!agendamento){
+    alert("Agendamento nao encontrado.");
+    return;
+  }
+
+  agendamentoEmEdicao = agendamento._id;
+
+  document.getElementById("clienteAgendamento").value =
+    agendamento.clienteId || "";
+
+  const data = agendamento.data
+    ? new Date(agendamento.data).toISOString().slice(0,10)
+    : "";
+
+  document.getElementById("dataAgendamento").value = data;
+
+  document.getElementById("horaAgendamento").value =
+    agendamento.hora || "";
+
+  document.getElementById("assuntoAgendamento").value =
+    agendamento.assuntoServico || agendamento.titulo || "";
+
+  document.getElementById("observacaoAgendamento").value =
+    agendamento.observacaoAgendamento || "";
+
+  document.getElementById("avisoNoHorario").checked =
+    agendamento.avisoNoHorario !== false;
+
+  document.getElementById("avisoUmDiaAntes").checked =
+    agendamento.avisoUmDiaAntes === true;
+
+  document.getElementById("statusEdicaoAgendamento").value =
+    agendamento.status || "agendado";
+
+  document.getElementById("areaStatusEdicao").style.display = "block";
+
+  document.getElementById("botaoSalvarAgendamento").textContent =
+    "Salvar Alteracoes";
+
+  document.getElementById("botaoCancelarEdicao").style.display =
+    "block";
+
+  document.getElementById("clienteAgendamento").scrollIntoView({
+    behavior:"smooth",
+    block:"center"
+  });
+
+}
+
+let agendamentoPendenteExclusao = null;
+let exclusaoAgendamentoEmAndamento = false;
+
+function fecharModalExcluirAgendamento(){
+
+  if(exclusaoAgendamentoEmAndamento) return;
+
+  agendamentoPendenteExclusao = null;
+
+  document.getElementById("usuarioAdminExclusao").value = "";
+  document.getElementById("senhaAdminExclusao").value = "";
+
+  document.getElementById("modalExcluirAgendamento").style.display = "none";
+}
+
+function excluirAgendamento(id){
+
+  const agendamento = agendamentosCarregados.find(
+    a => String(a._id) === String(id)
+  );
+
+  if(!agendamento){
+    alert("Agendamento nao encontrado.");
+    return;
+  }
+
+  agendamentoPendenteExclusao = id;
+
+  document.getElementById("usuarioAdminExclusao").value = "";
+  document.getElementById("senhaAdminExclusao").value = "";
+
+  document.getElementById("textoExcluirAgendamento").textContent =
+    "Confirme a exclusao do agendamento de " +
+    (agendamento.cliente || "cliente") +
+    ". Esta acao nao podera ser desfeita.";
+
+  document.getElementById("modalExcluirAgendamento").style.display = "flex";
+
+  document.getElementById("usuarioAdminExclusao").focus();
+}
+
+async function confirmarExclusaoAgendamento(){
+
+  if(!agendamentoPendenteExclusao || exclusaoAgendamentoEmAndamento) return;
+
+  const id = agendamentoPendenteExclusao;
+
+  const adminUsername =
+    document.getElementById("usuarioAdminExclusao").value.trim();
+
+  const adminPassword =
+    document.getElementById("senhaAdminExclusao").value;
+
+  if(!adminUsername || !adminPassword){
+    alert("Informe o usuario e a senha do administrador.");
+    return;
+  }
+
+  const botao = document.getElementById("confirmarExclusaoAgendamento");
+
+  exclusaoAgendamentoEmAndamento = true;
+  botao.disabled = true;
+
+  try{
+
+    const res = await fetch(
+      "/api/lembretes/" + encodeURIComponent(id),
+      {
+        method:"DELETE",
+        credentials:"include",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          adminUsername,
+          adminPassword
+        })
+      }
+    );
+
+    const resposta = await res.json();
+
+    if(!res.ok){
+      alert(
+        resposta.message ||
+        resposta.error ||
+        "Nao foi possivel excluir o agendamento."
+      );
+      return;
+    }
+
+    if(String(agendamentoEmEdicao) === String(id)){
+      cancelarEdicaoAgendamento();
+    }
+
+    agendamentoPendenteExclusao = null;
+
+    document.getElementById("usuarioAdminExclusao").value = "";
+    document.getElementById("senhaAdminExclusao").value = "";
+    document.getElementById("modalExcluirAgendamento").style.display = "none";
+
+    alert("Agendamento excluido com sucesso!");
+
+    await carregar();
+
+  }catch(err){
+
+    console.error("Erro ao excluir agendamento:",err);
+    alert("Erro ao excluir agendamento.");
+
+  }finally{
+
+    exclusaoAgendamentoEmAndamento = false;
+    botao.disabled = false;
+
+  }
+}
+
+document.getElementById("confirmarExclusaoAgendamento")
+  .addEventListener("click", confirmarExclusaoAgendamento);
+
+document.getElementById("cancelarExclusaoAgendamento")
+  .addEventListener("click", fecharModalExcluirAgendamento);
+
+function cancelarEdicaoAgendamento(){
+
+  agendamentoEmEdicao = null;
+
+  document.getElementById("clienteAgendamento").value = "";
+  document.getElementById("dataAgendamento").value = "";
+  document.getElementById("horaAgendamento").value = "";
+  document.getElementById("assuntoAgendamento").value = "";
+  document.getElementById("observacaoAgendamento").value = "";
+
+  document.getElementById("avisoNoHorario").checked = true;
+  document.getElementById("avisoUmDiaAntes").checked = false;
+
+  document.getElementById("areaStatusEdicao").style.display = "none";
+
+  document.getElementById("botaoSalvarAgendamento").textContent =
+    "Salvar Agendamento";
+
+  document.getElementById("botaoCancelarEdicao").style.display =
+    "none";
+
+}
 async function carregar(){
 
   const res = await fetch("/api/lembretes");
@@ -417,62 +770,50 @@ async function carregar(){
   const dados = await res.json();
 
 
-  const lista = document.getElementById("lista");
-
   const listaAgendamentos =
     document.getElementById("listaAgendamentos");
 
-
-  lista.innerHTML = "";
+  if(!listaAgendamentos) return;
 
   listaAgendamentos.innerHTML = "";
-
-
-  const lembretes =
-    dados.filter(l => l.categoria !== "agendamento");
 
   const agendamentos =
     dados.filter(l => l.categoria === "agendamento");
 
+  agendamentosCarregados = agendamentos;
 
-  if(lembretes.length === 0){
+  const seletorMensagem =
+    document.getElementById("agendamentoMensagem");
 
-    lista.innerHTML =
-      "<p>Nenhum lembrete cadastrado.</p>";
+  if(seletorMensagem){
 
-  }else{
+    const selecionado = seletorMensagem.value;
 
-    lembretes.forEach(l => {
+    seletorMensagem.innerHTML =
+      '<option value="">Selecione um agendamento</option>';
 
-      lista.innerHTML += `
+    agendamentos.forEach(a => {
 
-<div class="item">
+      const opcao = document.createElement("option");
 
-<h3>${l.titulo}</h3>
+      opcao.value = a._id;
 
-<p>${l.descricao || ""}</p>
+      const data = a.data
+        ? new Date(a.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })
+        : "Sem data";
 
-<p>
-👤 ${l.cliente || "Sem cliente"}
-</p>
+      opcao.textContent =
+        `${a.cliente || "Cliente"} - ${data} - ${a.hora || "--:--"}`;
 
-<p>
-📅 ${new Date(l.data).toLocaleDateString("pt-BR")}
-${l.hora || ""}
-</p>
-
-<p class="status ${l.status}">
-Status: ${l.status}
-</p>
-
-</div>
-
-`;
+      seletorMensagem.appendChild(opcao);
 
     });
 
-  }
+    if(agendamentos.some(a => a._id === selecionado)){
+      seletorMensagem.value = selecionado;
+    }
 
+  }
 
   if(agendamentos.length === 0){
 
@@ -520,7 +861,7 @@ ${a.telefone
 
 <p>
 <strong>Data:</strong>
-${new Date(a.data).toLocaleDateString("pt-BR")}
+${new Date(a.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
 &nbsp;
 <strong>Hora:</strong>
 ${a.hora || "--:--"}
@@ -534,6 +875,22 @@ ${a.observacaoAgendamento
 <p class="status ${a.status}">
 Status: ${nomeStatus}
 </p>
+
+<button
+  type="button"
+  onclick="editarAgendamento('${a._id}')"
+  style="margin-top:12px;"
+>
+✏️ Editar
+</button>
+
+<button
+  type="button"
+  onclick="excluirAgendamento('${a._id}')"
+  style="margin-top:12px;margin-left:8px;background:#dc2626;"
+>
+🗑️ Excluir
+</button>
 
 </div>
 
@@ -632,12 +989,23 @@ async function salvarAgendamento(){
 
   };
 
+  if(agendamentoEmEdicao){
+    dados.status =
+      document.getElementById("statusEdicaoAgendamento").value;
+  }
+
 
   try{
 
-    const res = await fetch("/api/lembretes",{
+    const editando = Boolean(agendamentoEmEdicao);
 
-      method:"POST",
+    const url = editando
+      ? "/api/lembretes/" + encodeURIComponent(agendamentoEmEdicao)
+      : "/api/lembretes";
+
+    const res = await fetch(url,{
+
+      method: editando ? "PUT" : "POST",
 
       headers:{
         "Content-Type":"application/json"
@@ -659,17 +1027,14 @@ async function salvarAgendamento(){
     }
 
 
-    alert("Agendamento criado com sucesso!");
+    alert(editando
+      ? "Agendamento atualizado com sucesso!"
+      : "Agendamento criado com sucesso!"
+    );
 
+    cancelarEdicaoAgendamento();
 
-    document.getElementById("clienteAgendamento").value="";
-    document.getElementById("dataAgendamento").value="";
-    document.getElementById("horaAgendamento").value="";
-    document.getElementById("assuntoAgendamento").value="";
-    document.getElementById("observacaoAgendamento").value="";
-
-
-    carregar();
+    await carregar();
 
 
   }catch(err){
@@ -752,7 +1117,402 @@ alert("Erro ao criar lembrete");
 
 
 
+async function salvarMensagemProgramada(){
+
+  const lembreteId =
+    document.getElementById("agendamentoMensagem").value;
+
+  const tipo =
+    document.getElementById("tipoMensagemProgramada").value;
+
+  const data =
+    document.getElementById("dataMensagemProgramada").value;
+
+  const hora =
+    document.getElementById("horaMensagemProgramada").value;
+
+  const mensagem =
+    document.getElementById("textoMensagemProgramada").value.trim();
+
+  if(!lembreteId){
+    alert("Selecione um agendamento.");
+    return;
+  }
+
+  if(!data || !hora){
+    alert("Informe a data e a hora da mensagem.");
+    return;
+  }
+
+  if(!mensagem){
+    alert("Informe o texto da mensagem.");
+    return;
+  }
+
+  const dataHora = new Date(data + "T" + hora);
+
+  if(Number.isNaN(dataHora.getTime())){
+    alert("Data ou hora invalida.");
+    return;
+  }
+
+  const agendamento =
+    agendamentosCarregados.find(a => a._id === lembreteId);
+
+  if(!agendamento){
+    alert("Agendamento nao encontrado.");
+    return;
+  }
+
+  const dataAgendamento = agendamento.data
+    ? new Date(agendamento.data).toLocaleDateString("pt-BR", {
+        timeZone:"UTC"
+      })
+    : "";
+
+  const mensagemFinal = mensagem
+    .replace(/\{cliente\}/gi, agendamento.cliente || "")
+    .replace(/\{data\}/gi, dataAgendamento)
+    .replace(/\{hora\}/gi, agendamento.hora || "");
+
+  try{
+
+    const res = await fetch("/api/mensagens-programadas", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      credentials:"include",
+      body:JSON.stringify({
+        lembreteId,
+        tipo,
+        mensagem:mensagemFinal,
+        dataHoraProgramada:dataHora.toISOString()
+      })
+    });
+
+    const resultado = await res.json();
+
+    if(!res.ok){
+      throw new Error(resultado.message || "Erro ao programar mensagem.");
+    }
+
+    alert("Mensagem programada com sucesso!");
+
+    document.getElementById("dataMensagemProgramada").value = "";
+    document.getElementById("horaMensagemProgramada").value = "";
+    document.getElementById("textoMensagemProgramada").value = "";
+
+    await carregarMensagensProgramadas();
+
+  }catch(err){
+    alert(err.message);
+  }
+
+}
+function escaparTextoMensagem(valor){
+  return String(valor ?? "").replace(/[&<>"']/g, caractere => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[caractere]);
+}
+
+async function carregarMensagensProgramadas(){
+
+  const lista = document.getElementById("listaMensagensProgramadas");
+
+  if(!lista) return;
+
+  lista.textContent = "Carregando mensagens...";
+
+  try{
+
+    const res = await fetch("/api/mensagens-programadas", {
+      credentials:"include"
+    });
+
+    if(!res.ok){
+      throw new Error("Não foi possível consultar as mensagens.");
+    }
+
+    const mensagens = await res.json();
+
+    if(!Array.isArray(mensagens)){
+      throw new Error("Resposta inválida do servidor.");
+    }
+
+    lista.innerHTML = "";
+
+    if(mensagens.length === 0){
+      lista.textContent = "Nenhuma mensagem programada.";
+      return;
+    }
+
+    mensagens.forEach(m => {
+
+      const item = document.createElement("div");
+      item.className = "item";
+
+      const data = new Date(m.dataHoraProgramada);
+
+      const dataFormatada = Number.isNaN(data.getTime())
+        ? "Data inválida"
+        : data.toLocaleString("pt-BR", {
+            dateStyle:"short",
+            timeStyle:"short"
+          });
+
+      const status = m.status === "enviada"
+        ? "Enviada"
+        : m.status === "cancelada"
+          ? "Cancelada"
+          : "Programada";
+
+      const dataEnvio = m.enviadaEm
+        ? new Date(m.enviadaEm)
+        : null;
+
+      const envioFormatado = dataEnvio &&
+        !Number.isNaN(dataEnvio.getTime())
+          ? dataEnvio.toLocaleString("pt-BR", {
+              dateStyle:"short",
+              timeStyle:"short"
+            })
+          : "";
+
+      item.innerHTML = `
+        <h3>${escaparTextoMensagem(m.cliente || "Cliente")}</h3>
+
+        <p><strong>Tipo:</strong>
+          ${escaparTextoMensagem(m.tipo || "")}
+        </p>
+
+        <p><strong>Telefone:</strong>
+          ${escaparTextoMensagem(m.telefone || "Não informado")}
+        </p>
+
+        <p><strong>Data e hora:</strong>
+          ${escaparTextoMensagem(dataFormatada)}
+        </p>
+
+        <p><strong>Situação:</strong>
+          ${escaparTextoMensagem(status)}
+        </p>
+
+        ${m.status === "enviada" && envioFormatado
+          ? `<p><strong>Enviada em:</strong> ${escaparTextoMensagem(envioFormatado)}</p>`
+          : ""}
+
+        <p><strong>Mensagem:</strong></p>
+
+        <p style="white-space:pre-wrap;overflow-wrap:anywhere;">${escaparTextoMensagem(m.mensagem || "")}</p>
+      `;
+
+      if(m.status === "programada"){
+
+        const botaoWhatsApp = document.createElement("button");
+
+        botaoWhatsApp.type = "button";
+        botaoWhatsApp.textContent = "Enviar pelo WhatsApp";
+        botaoWhatsApp.style.marginTop = "12px";
+        botaoWhatsApp.style.background = "#16a34a";
+
+        botaoWhatsApp.addEventListener("click", () => {
+
+          let telefone = String(m.telefone || "").replace(/\D/g, "");
+
+          if(telefone.length === 10 || telefone.length === 11){
+            telefone = "55" + telefone;
+          }
+
+          if(!/^55\d{10,11}$/.test(telefone)){
+            alert("Telefone invalido. Corrija o cadastro do cliente.");
+            return;
+          }
+
+          const agendamento = agendamentosCarregados.find(
+            a => String(a._id) === String(m.lembreteId)
+          );
+
+          let mensagem = String(m.mensagem || "");
+
+          const nomeCliente = agendamento?.cliente || m.cliente || "";
+
+          let dataAgendamento = "";
+          let horaAgendamento = "";
+
+          if(agendamento){
+
+            if(agendamento.data){
+              const data = new Date(agendamento.data);
+
+              if(!Number.isNaN(data.getTime())){
+                dataAgendamento = data.toLocaleDateString("pt-BR", {
+                  timeZone:"UTC"
+                });
+              }
+            }
+
+            horaAgendamento = agendamento.hora || "";
+          }
+
+          if(
+            (/\{data\}/i.test(mensagem) && !dataAgendamento) ||
+            (/\{hora\}/i.test(mensagem) && !horaAgendamento)
+          ){
+            alert("Nao foi possivel recuperar a data ou hora do agendamento original. Revise esta mensagem antes de enviar.");
+            return;
+          }
+
+          mensagem = mensagem
+            .replace(/\{cliente\}/gi, nomeCliente)
+            .replace(/\{data\}/gi, dataAgendamento)
+            .replace(/\{hora\}/gi, horaAgendamento);
+
+          if(/\{(?:cliente|data|hora)\}/i.test(mensagem)){
+            alert("Existem campos da mensagem que nao foram preenchidos.");
+            return;
+          }
+
+          const url = "https://wa.me/" + telefone +
+            "?text=" + encodeURIComponent(mensagem);
+
+          window.open(url, "_blank", "noopener,noreferrer");
+
+        });
+
+        item.appendChild(botaoWhatsApp);
+
+        const botaoEditar = document.createElement("button");
+
+        botaoEditar.type = "button";
+        botaoEditar.textContent = "Editar Mensagem";
+        botaoEditar.style.marginTop = "12px";
+        botaoEditar.style.marginLeft = "8px";
+
+        botaoEditar.addEventListener("click", async () => {
+
+          const novoTexto = prompt(
+            "Edite o texto da mensagem:",
+            m.mensagem || ""
+          );
+
+          if(novoTexto === null) return;
+
+          if(!novoTexto.trim()){
+            alert("A mensagem nao pode ficar vazia.");
+            return;
+          }
+
+          try{
+
+            const resposta = await fetch(
+              "/api/mensagens-programadas/" + encodeURIComponent(m._id),
+              {
+                method:"PUT",
+                credentials:"include",
+                headers:{
+                  "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                  mensagem:novoTexto.trim()
+                })
+              }
+            );
+
+            const resultado = await resposta.json();
+
+            if(!resposta.ok){
+              throw new Error(
+                resultado.message || "Erro ao editar mensagem."
+              );
+            }
+
+            alert("Mensagem atualizada com sucesso!");
+
+            await carregarMensagensProgramadas();
+
+          }catch(erro){
+            alert(erro.message);
+          }
+
+        });
+
+        item.appendChild(botaoEditar);
+
+        const botaoConfirmar = document.createElement("button");
+
+        botaoConfirmar.type = "button";
+        botaoConfirmar.textContent = "Confirmar Envio";
+        botaoConfirmar.style.marginTop = "12px";
+        botaoConfirmar.style.marginLeft = "8px";
+
+        botaoConfirmar.addEventListener("click", async () => {
+
+          const confirmou = confirm(
+            "Voce realmente enviou esta mensagem pelo WhatsApp ao cliente?\n\n" +
+            "Confirme somente depois de concluir o envio."
+          );
+
+          if(!confirmou) return;
+
+          botaoConfirmar.disabled = true;
+
+          try{
+
+            const resposta = await fetch(
+              "/api/mensagens-programadas/" +
+              encodeURIComponent(m._id) +
+              "/confirmar-envio",
+              {
+                method:"PATCH",
+                credentials:"include"
+              }
+            );
+
+            const tipoResposta = resposta.headers.get("content-type") || "";
+
+            if(!tipoResposta.includes("application/json")){
+              throw new Error("O servidor nao retornou uma resposta JSON valida.");
+            }
+
+            const resultado = await resposta.json();
+
+            if(!resposta.ok){
+              throw new Error(
+                resultado.message || "Erro ao confirmar envio."
+              );
+            }
+
+            alert("Envio confirmado e registrado com sucesso!");
+
+            await carregarMensagensProgramadas();
+
+          }catch(erro){
+
+            botaoConfirmar.disabled = false;
+            alert(erro.message);
+
+          }
+
+        });
+
+        item.appendChild(botaoConfirmar);
+
+      }
+
+      lista.appendChild(item);
+
+    });
+
+  }catch(err){
+    lista.textContent = err.message;
+  }
+
+}
 carregarClientesAgendamento();
+carregarMensagensProgramadas();
 
 carregar();
 

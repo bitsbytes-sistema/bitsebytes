@@ -162,49 +162,127 @@ router.post("/", auth, async(req,res)=>{
 
 /* ===================== ATUALIZAR ===================== */
 
-router.put("/:id", auth, async(req,res)=>{
-
-  try{
-
+router.put("/:id", auth, async (req, res) => {
+  try {
     const lembrete = await Lembrete.findOne({
-
-      _id:req.params.id,
-
-      companyId:req.session.user.companyId
-
+      _id: req.params.id,
+      companyId: req.session.user.companyId,
+      categoria: "agendamento"
     });
 
-
-    if(!lembrete){
-
+    if (!lembrete) {
       return res.status(404).json({
-        error:"not_found"
+        error: "not_found",
+        message: "Agendamento nao encontrado."
       });
-
     }
 
+    const {
+      clienteId,
+      assuntoServico,
+      observacaoAgendamento,
+      data,
+      hora,
+      dataHoraAgendamento,
+      avisoNoHorario,
+      avisoUmDiaAntes,
+      status
+    } = req.body;
 
-    Object.assign(lembrete, req.body);
+    if (!clienteId || !Cliente.db.base.Types.ObjectId.isValid(clienteId)) {
+      return res.status(400).json({
+        message: "Selecione um cliente valido."
+      });
+    }
 
+    const cliente = await Cliente.findOne({
+      _id: clienteId,
+      companyId: req.session.user.companyId
+    });
+
+    if (!cliente) {
+      return res.status(404).json({
+        message: "Cliente nao encontrado nesta empresa."
+      });
+    }
+
+    if (
+      typeof assuntoServico !== "string" ||
+      !assuntoServico.trim() ||
+      typeof data !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(data) ||
+      typeof hora !== "string" ||
+      !/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)
+    ) {
+      return res.status(400).json({
+        message: "Informe servico, data e hora validos."
+      });
+    }
+
+    const dataValida = new Date(data + "T12:00:00Z");
+
+    if (
+      Number.isNaN(dataValida.getTime()) ||
+      dataValida.toISOString().slice(0, 10) !== data
+    ) {
+      return res.status(400).json({
+        message: "Data invalida."
+      });
+    }
+
+    const momento = new Date(dataHoraAgendamento);
+
+    if (
+      !dataHoraAgendamento ||
+      Number.isNaN(momento.getTime())
+    ) {
+      return res.status(400).json({
+        message: "Data e hora do aviso invalidas."
+      });
+    }
+
+    const statusPermitidos = [
+      "agendado",
+      "confirmado",
+      "concluido",
+      "cancelado"
+    ];
+
+    if (status !== undefined && !statusPermitidos.includes(status)) {
+      return res.status(400).json({
+        message: "Status invalido."
+      });
+    }
+
+    lembrete.clienteId = cliente._id;
+    lembrete.cliente = cliente.nome;
+    lembrete.telefone = cliente.telefone || "";
+    lembrete.titulo = assuntoServico.trim();
+    lembrete.assuntoServico = assuntoServico.trim();
+    lembrete.descricao = String(observacaoAgendamento || "");
+    lembrete.observacaoAgendamento = String(observacaoAgendamento || "");
+    lembrete.data = data;
+    lembrete.hora = hora;
+    lembrete.dataHoraAgendamento = momento;
+    lembrete.avisoNoHorario = avisoNoHorario === true;
+    lembrete.avisoUmDiaAntes = avisoUmDiaAntes === true;
+
+    if (status !== undefined) {
+      lembrete.status = status;
+    }
 
     await lembrete.save();
 
-
     res.json(lembrete);
 
-
-  }catch(err){
-
-    console.log(err);
-
+  } catch (err) {
+    console.error("Erro ao atualizar agendamento:", err);
     res.status(500).json({
-      error:true
+      error: true,
+      message: "Erro ao atualizar agendamento."
     });
-
   }
-
 });
-
 
 /* ===================== EXCLUIR ===================== */
 

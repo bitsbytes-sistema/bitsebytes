@@ -147,27 +147,39 @@
 
   function mostrarAviso(notificacao){
 
-    const anterior =
-      document.getElementById(
-        "bitsbytes-aviso-agendamento"
-      );
+    let area =
+      document.getElementById("bitsbytes-area-avisos");
 
-    if(anterior){
-      anterior.remove();
+    if(!area){
+
+      area = document.createElement("div");
+      area.id = "bitsbytes-area-avisos";
+
+      area.style.cssText = [
+        "position:fixed",
+        "top:20px",
+        "right:20px",
+        "width:min(380px,calc(100vw - 40px))",
+        "max-height:calc(100vh - 40px)",
+        "overflow-y:auto",
+        "display:flex",
+        "flex-direction:column",
+        "gap:12px",
+        "z-index:999999"
+      ].join(";");
+
+      document.body.appendChild(area);
     }
 
 
     const aviso =
       document.createElement("div");
 
-    aviso.id =
-      "bitsbytes-aviso-agendamento";
+    aviso.className = "bitsbytes-aviso-agendamento";
 
     aviso.style.cssText = [
-      "position:fixed",
-      "top:20px",
-      "right:20px",
-      "width:min(380px,calc(100vw - 40px))",
+      "width:100%",
+      "box-sizing:border-box",
       "background:#ffffff",
       "color:#111827",
       "border:1px solid #d1d5db",
@@ -228,7 +240,7 @@
     aviso.appendChild(mensagem);
     aviso.appendChild(fechar);
 
-    document.body.appendChild(aviso);
+    area.appendChild(aviso);
 
   }
 

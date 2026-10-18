@@ -181,4 +181,162 @@ router.post("/", auth, async(req,res)=>{
 });
 
 
+/* ===================== CONFIRMAR ENVIO MANUAL ===================== */
+
+router.patch("/:id/confirmar-envio", auth, async(req,res)=>{
+
+  try{
+
+    const id = req.params.id;
+
+    if(!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400).json({
+        error:"id_invalido",
+        message:"Identificador de mensagem invalido."
+      });
+    }
+
+    const mensagem = await MensagemProgramada.findOneAndUpdate(
+      {
+        _id:id,
+        companyId:req.session.user.companyId,
+        status:"programada"
+      },
+      {
+        $set:{
+          status:"enviada",
+          enviadaEm:new Date()
+        }
+      },
+      {
+        new:true,
+        runValidators:true
+      }
+    );
+
+    if(!mensagem){
+
+      const existente = await MensagemProgramada.findOne({
+        _id:id,
+        companyId:req.session.user.companyId
+      });
+
+      if(!existente){
+        return res.status(404).json({
+          error:"mensagem_nao_encontrada",
+          message:"Mensagem nao encontrada."
+        });
+      }
+
+      return res.status(409).json({
+        error:"status_invalido",
+        message:"Esta mensagem nao esta pendente de envio."
+      });
+
+    }
+
+    return res.json({
+      success:true,
+      message:"Envio manual confirmado com sucesso.",
+      mensagem
+    });
+
+  }catch(err){
+
+    console.error("Erro ao confirmar envio manual:",err);
+
+    return res.status(500).json({
+      error:true,
+      message:"Erro ao confirmar envio."
+    });
+
+  }
+
+});
+/* ===================== EDITAR MENSAGEM PROGRAMADA ===================== */
+
+router.put("/:id", auth, async(req,res)=>{
+
+  try{
+
+    const id = req.params.id;
+    const { mensagem } = req.body || {};
+
+    if(!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400).json({
+        error:"id_invalido",
+        message:"Identificador invalido."
+      });
+    }
+
+    if(typeof mensagem !== "string" || !mensagem.trim()){
+      return res.status(400).json({
+        error:"mensagem_invalida",
+        message:"Informe o texto da mensagem."
+      });
+    }
+
+    if(mensagem.trim().length > 5000){
+      return res.status(400).json({
+        error:"mensagem_muito_longa",
+        message:"A mensagem deve ter no maximo 5000 caracteres."
+      });
+    }
+
+    const atualizada = await MensagemProgramada.findOneAndUpdate(
+      {
+        _id:id,
+        companyId:req.session.user.companyId,
+        status:"programada"
+      },
+      {
+        $set:{
+          mensagem:mensagem.trim()
+        }
+      },
+      {
+        new:true,
+        runValidators:true
+      }
+    );
+
+    if(!atualizada){
+
+      const existente = await MensagemProgramada.findOne({
+        _id:id,
+        companyId:req.session.user.companyId
+      });
+
+      if(!existente){
+        return res.status(404).json({
+          error:"mensagem_nao_encontrada",
+          message:"Mensagem nao encontrada."
+        });
+      }
+
+      return res.status(409).json({
+        error:"mensagem_bloqueada",
+        message:"Somente mensagens programadas podem ser editadas."
+      });
+
+    }
+
+    return res.json({
+      success:true,
+      message:"Mensagem atualizada com sucesso.",
+      mensagem:atualizada
+    });
+
+  }catch(err){
+
+    console.error("Erro ao editar mensagem:",err);
+
+    return res.status(500).json({
+      error:true,
+      message:"Erro ao atualizar mensagem."
+    });
+
+  }
+
+});
 module.exports = router;

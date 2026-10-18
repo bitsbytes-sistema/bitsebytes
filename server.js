@@ -5342,6 +5342,15 @@ app.put("/api/tickets/:id/checklist-entrega", auth, requirePermissao("chamados")
       });
     }
 
+    /* PROTECAO: CHECKLIST DE ENTREGA BLOQUEADO EM OS FINALIZADA */
+    if (String(ticket.status || "").toLowerCase() === "finalizado") {
+      return res.status(409).json({
+        ok: false,
+        error: "checklist_entrega_os_finalizada",
+        message: "O Checklist de Entrega não pode ser alterado em uma OS finalizada."
+      });
+    }
+
     /* PROTECAO: TECNICO SOMENTE NA OS ATRIBUIDA */
     const perfilAtual = String(
       req.usuarioAtual?.role || req.session.user?.role || ""

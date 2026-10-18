@@ -4680,6 +4680,48 @@ function abrirChecklistEntrega(id){
   observacoes.value =
     checklist.observacoes || "";
 
+  const finalizado =
+    String(chamado.status || "").toLowerCase() === "finalizado";
+
+  if (finalizado) {
+    const statusChecklist = {
+      ok: { texto: "OK", icone: "✅" },
+      defeito: { texto: "Com defeito", icone: "❌" },
+      nao_testado: { texto: "Não testado", icone: "⚪" },
+      nao_aplica: { texto: "Não se aplica", icone: "➖" }
+    };
+
+    area.querySelectorAll('input[type="radio"]').forEach(input => {
+      if (!input.checked) {
+        input.closest("label")?.remove();
+      } else {
+        const status = statusChecklist[input.value];
+
+        if (status) {
+          const label = input.closest("label");
+          if (label) {
+            label.textContent = `${status.icone} ${status.texto}`;
+            label.style.fontWeight = "700";
+            label.style.color = "#0f172a";
+            label.style.cursor = "default";
+          }
+        }
+      }
+    });
+  }
+
+  modal.querySelectorAll("input, textarea, select").forEach(campo => {
+    campo.disabled = finalizado;
+  });
+
+  const botaoSalvar =
+    document.getElementById("btnSalvarChecklistEntrega");
+
+  if (botaoSalvar) {
+    botaoSalvar.style.display = finalizado ? "none" : "";
+    botaoSalvar.disabled = finalizado;
+  }
+
   modal.style.display = "flex";
 }
 

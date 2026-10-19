@@ -8635,6 +8635,26 @@ return res.status(404).send(
 const company = await Company.findById(
 req.session.user.companyId
 );
+const tituloOSConfigurado = String(
+  company?.ordemServicoConfig?.titulo || "ORDEM DE SERVIÇO - ENTRADA"
+).replace(/[<>&"']/g, "");
+
+const subtituloOSConfigurado = String(
+  company?.ordemServicoConfig?.subtitulo || ""
+).replace(/[<>&"']/g, "");
+
+
+const layoutCabecalhoOS = ["padrao", "compacto", "centralizado"].includes(
+  company?.ordemServicoConfig?.layoutCabecalho
+)
+  ? company.ordemServicoConfig.layoutCabecalho
+  : "padrao";
+
+const posicaoLogoOS = ["esquerda", "centro", "direita"].includes(
+  company?.ordemServicoConfig?.posicaoLogo
+)
+  ? company.ordemServicoConfig.posicaoLogo
+  : "esquerda";
 
 const logoPath = path.join(
   __dirname,
@@ -8645,7 +8665,7 @@ const logoPath = path.join(
 
 let logoHTML = "";
 
-if(fs.existsSync(logoPath)){
+if(company?.ordemServicoConfig?.mostrarLogo !== false && fs.existsSync(logoPath)){
 
   const logoBase64 = fs.readFileSync(
     logoPath,
@@ -8657,7 +8677,7 @@ if(fs.existsSync(logoPath)){
   <img 
   src="data:image/png;base64,${logoBase64}"
   style="
-  width:80px;
+  width:${layoutCabecalhoOS === "compacto" ? "60px" : "80px"};
   height:auto;
   "
   />
@@ -8933,7 +8953,7 @@ padding-bottom:10px;
 
 .logo img{
 
-width:80px;
+width:${layoutCabecalhoOS === "compacto" ? "60px" : "80px"};
 
 height:auto;
 
@@ -9039,7 +9059,7 @@ text-align:center;
 <body>
 
 
-<div class="header">
+<div class="header" style="${layoutCabecalhoOS === "centralizado" ? "flex-direction:column; text-align:center;" : posicaoLogoOS === "centro" ? "flex-direction:column; text-align:center;" : posicaoLogoOS === "direita" ? "flex-direction:row-reverse;" : ""} ${layoutCabecalhoOS === "compacto" ? "gap:8px; padding-bottom:5px;" : ""}">
 
 <div class="logo">
 
@@ -9048,7 +9068,7 @@ ${logoHTML}
 </div>
 
 
-<div class="company">
+<div class="company" style="${company?.ordemServicoConfig?.mostrarDadosEmpresa === false ? "display:none;" : ""}">
 
 <h1>
 ${company.name}
@@ -9074,7 +9094,11 @@ ${company.address || ""}
 
 <div class="title">
 
-ORDEM DE SERVIÇO - ENTRADA
+${tituloOSConfigurado}
+
+${subtituloOSConfigurado
+  ? `<div style="font-size:12px; margin-top:5px; font-weight:normal;">${subtituloOSConfigurado}</div>`
+  : ""}
 
 </div>
 

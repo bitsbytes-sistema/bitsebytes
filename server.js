@@ -7470,92 +7470,184 @@ body{
   page-break-inside:avoid;
 }
 
+
+/* Divisorias exclusivas dos dados do cliente */
+.grid-cliente{
+  grid-template-columns:1fr 1fr;
+}
+
+.grid-cliente > .item{
+  min-width:0;
+  padding:12px 14px;
+}
+
+.grid-cliente > .item:nth-child(odd){
+  border-right:1px solid #dbe5ef;
+}
+
+.grid-cliente > .item:nth-child(-n+2){
+  border-bottom:1px solid #dbe5ef;
+}
 </style>
 
 </head>
 
 <body>
 
-<div class="header">
+<div class="header" style="align-items:center; border-bottom:2px solid #07569b; padding-bottom:12px; margin-bottom:14px;">
 
-  <div class="empresa">
+  <div style="text-align:left;">
 
-    <h1>
-      ${company?.name || "Bits & Bytes Tecnology"}
-    </h1>
-
-    <p>
-      ${company?.phone || ""}
-    </p>
-
-    <p>
-      ${company?.email || ""}
-    </p>
-
-    <p>
-      ${company?.address || ""}
-    </p>
-
-  </div>
-
-  <div class="documento">
-
-    <h2>
+    <h2 style="font-size:29px; font-weight:800; letter-spacing:-0.5px; color:#0f172a; margin:0;">
       DIAGNÓSTICO TÉCNICO
     </h2>
 
-    <div>
-      OS #${ticket.numeroOS || ""}
-    </div>
+    <p style="font-size:12px; letter-spacing:1px; color:#07569b; margin:5px 0 0;">
+      DOCUMENTO DE ANÁLISE PRÉ-SERVIÇO
+    </p>
 
-    <div>
-      ${new Date().toLocaleDateString(
-        "pt-BR",
-        {
+  </div>
+
+  <div class="diagnostico-os-card" style="
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border:1px solid #cbdfee;
+    border-radius:9px;
+    background:#f8fbff;
+    padding:11px 15px;
+    white-space:nowrap;
+  ">
+
+    <svg width="29" height="34" viewBox="0 0 24 24"
+         fill="none" stroke="#07569b" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <path d="M14 2v6h6M8 13h8M8 17h8"/>
+    </svg>
+
+    <div style="text-align:center;">
+      <div style="font-size:16px; font-weight:800; color:#0f172a;">
+        OS Nº ${ticket.numeroOS || ""}
+      </div>
+      <div style="font-size:11px; margin-top:5px; color:#475569;">
+        Data: ${new Date().toLocaleDateString("pt-BR", {
           timeZone:"America/Cuiaba"
-        }
-      )}
+        })}
+      </div>
     </div>
 
   </div>
 
 </div>
 
-
 <div class="box">
 
-  <h3>Dados do Cliente</h3>
+  <h3 style="
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#eaf3fb;
+  color:#0b3765;
+  padding:0 12px 0 0;
+  border-radius:6px;
+  border-bottom:none;
+  overflow:hidden;
+">
+  <span style="
+    background:#07569b;
+    color:#ffffff;
+    padding:10px 14px;
+    font-size:15px;
+    font-weight:bold;
+  ">01</span>
+  <span>DADOS DO CLIENTE</span>
+  <svg width="18" height="18" viewBox="0 0 24 24"
+       fill="#07569b" stroke="#07569b" stroke-width="1.5"
+       stroke-linecap="round" stroke-linejoin="round"
+       style="margin-left:auto; flex-shrink:0;">
+    <circle cx="12" cy="7" r="4"/>
+    <path d="M4 21v-2a8 8 0 0 1 16 0v2z"/>
+  </svg></h3>
 
-  <div class="grid">
+  <div class="grid grid-cliente" style="gap:0;">
 
-    <div class="item">
-      <span class="label">Cliente:</span>
-      ${ticket.cliente || ""}
+  <div class="item" style="display:flex; align-items:center; gap:9px; margin:0;">
+    <svg class="icone-cliente" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#07569b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4 21v-2a8 8 0 0 1 16 0v2"/>
+    </svg>
+    <div>
+      <div class="label">Cliente:</div>
+      <div>${ticket.cliente || ""}</div>
     </div>
+  </div>
 
-    <div class="item">
-      <span class="label">Telefone:</span>
-      ${ticket.telefone || ""}
+  <div class="item" style="display:flex; align-items:center; gap:9px; margin:0;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#07569b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+      <path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.7L7 10a16 16 0 0 0 7 7l1.6-2a2 2 0 0 1 1.7-.6l3 .5a2 2 0 0 1 1.7 2z"/>
+    </svg>
+    <div>
+      <div class="label">Telefone:</div>
+      <div>${ticket.telefone || ""}</div>
     </div>
+  </div>
 
-    <div class="item">
-      <span class="label">CPF/CNPJ:</span>
-      ${ticket.cpfcnpj || ""}
+  <div class="item" style="display:flex; align-items:center; gap:9px; margin:0;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#07569b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+      <rect x="3" y="5" width="18" height="14" rx="2"/>
+      <circle cx="9" cy="11" r="2"/>
+      <path d="M6 16c0-2 6-2 6 0M15 10h3M15 14h3"/>
+    </svg>
+    <div>
+      <div class="label">CPF/CNPJ:</div>
+      <div>${ticket.cpfcnpj || ""}</div>
     </div>
+  </div>
 
-    <div class="item">
-      <span class="label">Equipamento:</span>
-      ${ticket.equipamento || ""}
+  <div class="item" style="display:flex; align-items:center; gap:9px; margin:0;">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#07569b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+      <rect x="3" y="4" width="18" height="13" rx="2"/>
+      <path d="M8 21h8M12 17v4"/>
+    </svg>
+    <div>
+      <div class="label">Equipamento:</div>
+      <div>${ticket.equipamento || ""}</div>
     </div>
-
   </div>
 
 </div>
 
+</div>
 
 <div class="box">
 
-  <h3>Problema Relatado pelo Cliente</h3>
+  <h3 style="
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#eaf3fb;
+  color:#0b3765;
+  padding:0 12px 0 0;
+  border-radius:6px;
+  border-bottom:none;
+  overflow:hidden;
+">
+  <span style="
+    background:#07569b;
+    color:#ffffff;
+    padding:10px 14px;
+    font-size:15px;
+    font-weight:bold;
+  ">02</span>
+  <span>PROBLEMA RELATADO PELO CLIENTE</span>
+  <svg width="18" height="18" viewBox="0 0 24 24"
+       fill="none" stroke="#07569b" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round"
+       style="margin-left:auto; flex-shrink:0;">
+    <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9l-6-6H8z"/>
+    <path d="M14 3v6h6M8 13h8M8 17h6"/>
+  </svg></h3>
 
   <div class="texto">
     ${ticket.problema || "Não informado"}
@@ -7566,7 +7658,32 @@ body{
 
 <div class="box">
 
-  <h3>Diagnóstico Técnico</h3>
+  <h3 style="
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#eaf3fb;
+  color:#0b3765;
+  padding:0 12px 0 0;
+  border-radius:6px;
+  border-bottom:none;
+  overflow:hidden;
+">
+  <span style="
+    background:#07569b;
+    color:#ffffff;
+    padding:10px 14px;
+    font-size:15px;
+    font-weight:bold;
+  ">03</span>
+  <span>DIAGNÓSTICO TÉCNICO</span>
+  <svg width="18" height="18" viewBox="0 0 24 24"
+       fill="#07569b" stroke="#07569b" stroke-width="1"
+       stroke-linejoin="round"
+       style="margin-left:auto; flex-shrink:0;">
+    <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06A1.7 1.7 0 0 0 15.74 18a1.7 1.7 0 0 0-1.04 1.56V21h-3v-1.44A1.7 1.7 0 0 0 10.66 18a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7 14.34a1.7 1.7 0 0 0-1.56-1.04H4v-3h1.44A1.7 1.7 0 0 0 7 9.26a1.7 1.7 0 0 0-.34-1.88L6.6 7.32 8.72 5.2l.06.06A1.7 1.7 0 0 0 10.66 5a1.7 1.7 0 0 0 1.04-1.56V2h3v1.44A1.7 1.7 0 0 0 15.74 5a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.12 2.12-.06.06A1.7 1.7 0 0 0 19.4 8.66a1.7 1.7 0 0 0 1.56 1.04H22v3h-1.04A1.7 1.7 0 0 0 19.4 15z"/>
+    <circle cx="13.2" cy="11.5" r="3.2" fill="#eaf3fb" stroke="none"/>
+  </svg></h3>
 
   <div class="texto">
     ${ticket.diagnosticoPreServico || "Não informado"}
@@ -7577,7 +7694,31 @@ body{
 
 <div class="box">
 
-  <h3>Serviço Recomendado</h3>
+  <h3 style="
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#eaf3fb;
+  color:#0b3765;
+  padding:0 12px 0 0;
+  border-radius:6px;
+  border-bottom:none;
+  overflow:hidden;
+">
+  <span style="
+    background:#07569b;
+    color:#ffffff;
+    padding:10px 14px;
+    font-size:15px;
+    font-weight:bold;
+  ">04</span>
+  <span>SERVIÇO RECOMENDADO</span>
+  <svg width="18" height="18" viewBox="0 0 24 24"
+       fill="none" stroke="#07569b" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round"
+       style="margin-left:auto; flex-shrink:0;">
+    <path d="M14.7 6.3a5 5 0 0 0-6.4 6.4L3 18a2.1 2.1 0 0 0 3 3l5.3-5.3a5 5 0 0 0 6.4-6.4L14 13l-3-3 3.7-3.7z"/>
+  </svg></h3>
 
   <div class="texto">
     ${ticket.servicoRecomendado || "Não informado"}
@@ -7588,7 +7729,34 @@ body{
 
 <div class="box">
 
-  <h3>Peças / Componentes Recomendados</h3>
+  <h3 style="
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#eaf3fb;
+  color:#0b3765;
+  padding:0 12px 0 0;
+  border-radius:6px;
+  border-bottom:none;
+  overflow:hidden;
+">
+  <span style="
+    background:#07569b;
+    color:#ffffff;
+    padding:10px 14px;
+    font-size:15px;
+    font-weight:bold;
+  ">05</span>
+  <span>PEÇAS / COMPONENTES RECOMENDADOS</span>
+  <svg width="18" height="18" viewBox="0 0 24 24"
+     fill="none" stroke="#07569b" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round"
+     style="margin-left:auto; flex-shrink:0;">
+  <rect x="5" y="5" width="14" height="14" rx="2" fill="#07569b"/>
+  <rect x="9" y="9" width="6" height="6" rx="1" fill="#eaf3fb" stroke="none"/>
+  <path d="M9 1v4M15 1v4M9 19v4M15 19v4"/>
+  <path d="M1 9h4M1 15h4M19 9h4M19 15h4"/>
+</svg></h3>
 
   <div class="texto">
     ${ticket.pecasRecomendadas || "Não informado"}
@@ -7597,40 +7765,147 @@ body{
 </div>
 
 
-<div class="box">
+<div class="box" style="break-before:page; page-break-before:always;">
 
-  <h3>Condições do Serviço</h3>
+  <h3 style="
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#eaf3fb;
+  color:#0b3765;
+  padding:0 12px 0 0;
+  border-radius:6px;
+  border-bottom:none;
+  overflow:hidden;
+">
+  <span style="
+    background:#07569b;
+    color:#ffffff;
+    padding:10px 14px;
+    font-size:15px;
+    font-weight:bold;
+  ">06</span>
+  <span>CONDIÇÕES DO SERVIÇO</span>
+  <svg width="18" height="18" viewBox="0 0 24 24"
+       fill="none" stroke="#07569b" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round"
+       style="margin-left:auto; flex-shrink:0;">
+    <circle cx="12" cy="12" r="9" fill="#07569b"/>
+    <path d="M12 6v12M15 9.5c-.6-1-1.7-1.5-3-1.5-1.7 0-3 1-3 2.3 0 3.4 6 1.2 6 4.3 0 1.4-1.3 2.4-3 2.4-1.3 0-2.4-.5-3-1.5"
+          stroke="#ffffff" stroke-width="1.7"/>
+  </svg></h3>
 
-  <div class="grid">
+  <div class="grid" style="gap:12px;">
 
-    <div class="item">
-      <span class="label">Valor:</span>
+  <div class="item" style="background:#eef6fd; border:1px solid #cbdff0; border-radius:7px; padding:14px; margin:0;">
+        <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:42px; height:42px; display:flex; align-items:center; justify-content:center; background:#dceefa; border-radius:7px; flex-shrink:0;">
+        <svg width="28" height="28" viewBox="0 0 24 24"
+             fill="none" stroke="#07569b" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="8" ry="3"/>
+          <path d="M4 5v5c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/>
+          <path d="M4 10v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5"/>
+          <path d="M4 15v4c0 1.7 3.6 3 8 3s8-1.3 8-3v-4"/>
+        </svg>
+      </div>
+      <div><div style="font-size:11px; color:#475569; margin-bottom:7px;">Valor estimado</div>
+    <div style="font-size:20px; font-weight:bold; color:#0b3765;">
       ${formatarValor(ticket.valorDiagnostico)}
     </div>
+      </div>
+    </div>
+  </div>
 
-    <div class="item">
-      <span class="label">Prazo estimado:</span>
+  <div class="item" style="background:#f8fbff; border:1px solid #cbdff0; border-radius:7px; padding:14px; margin:0;">
+        <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:42px; height:42px; display:flex; align-items:center; justify-content:center; background:#dceefa; border-radius:7px; flex-shrink:0;">
+        <svg width="28" height="28" viewBox="0 0 24 24"
+             fill="none" stroke="#07569b" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="5" width="18" height="16" rx="2"/>
+          <path d="M7 3v4M17 3v4M3 10h18"/>
+          <path d="M8 14h2M14 14h2M8 18h2M14 18h2"/>
+        </svg>
+      </div>
+      <div><div style="font-size:11px; color:#475569; margin-bottom:7px;">Prazo estimado</div>
+    <div style="font-size:15px; font-weight:bold; color:#0f172a;">
       ${ticket.prazoEstimado || "Não informado"}
     </div>
+      </div>
+    </div>
+  </div>
 
-    <div class="item">
-      <span class="label">Técnico responsável:</span>
+  <div class="item" style="background:#f8fbff; border:1px solid #cbdff0; border-radius:7px; padding:14px; margin:0;">
+        <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:42px; height:42px; display:flex; align-items:center; justify-content:center; background:#dceefa; border-radius:7px; flex-shrink:0;">
+        <svg width="28" height="28" viewBox="0 0 24 24"
+             fill="#07569b" stroke="#07569b" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="7" r="4"/>
+          <path d="M4 21v-2a8 8 0 0 1 16 0v2z"/>
+        </svg>
+      </div>
+      <div><div style="font-size:11px; color:#475569; margin-bottom:7px;">Técnico responsável</div>
+    <div style="font-size:14px; font-weight:bold; color:#0f172a;">
       ${ticket.tecnicoDiagnostico || "Não informado"}
     </div>
+      </div>
+    </div>
+  </div>
 
-    <div class="item">
-      <span class="label">Situação:</span>
+  <div class="item" style="background:#f8fbff; border:1px solid #cbdff0; border-radius:7px; padding:14px; margin:0;">
+        <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:42px; height:42px; display:flex; align-items:center; justify-content:center; background:#dceefa; border-radius:7px; flex-shrink:0;">
+        <svg width="28" height="28" viewBox="0 0 24 24"
+             fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" fill="#07569b"/>
+          <path d="M7 12l3.5 3.5L17 9"
+                stroke="#ffffff" stroke-width="2.5"/>
+        </svg>
+      </div>
+      <div><div style="font-size:11px; color:#475569; margin-bottom:7px;">Situação</div>
+    <div style="font-size:14px; font-weight:bold; color:#0b3765;">
       ${formatarSituacao(ticket.situacaoDiagnostico)}
     </div>
-
+      </div>
+    </div>
   </div>
 
 </div>
 
+</div>
 
 <div class="box">
 
-  <h3>Observações</h3>
+  <h3 style="
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#eaf3fb;
+  color:#0b3765;
+  padding:0 12px 0 0;
+  border-radius:6px;
+  border-bottom:none;
+  overflow:hidden;
+">
+  <span style="
+    background:#07569b;
+    color:#ffffff;
+    padding:10px 14px;
+    font-size:15px;
+    font-weight:bold;
+  ">07</span>
+  <span>OBSERVAÇÕES</span>
+  <svg width="18" height="18" viewBox="0 0 24 24"
+       fill="none" stroke-linecap="round" stroke-linejoin="round"
+       style="margin-left:auto; flex-shrink:0;">
+    <path d="M4 4h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 3v-3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
+          fill="#07569b"/>
+    <circle cx="7" cy="11.5" r="1" fill="#ffffff"/>
+    <circle cx="12" cy="11.5" r="1" fill="#ffffff"/>
+    <circle cx="17" cy="11.5" r="1" fill="#ffffff"/>
+  </svg></h3>
 
   <div class="texto">
 ${ticket.observacoesDiagnostico || "Nenhuma observação"}
@@ -7639,22 +7914,41 @@ ${ticket.observacoesDiagnostico || "Nenhuma observação"}
 </div>
 
 
-<div class="assinaturas">
+<div class="assinaturas" style="gap:16px; margin-top:200px;">
 
-  <div class="assinatura">
-    Técnico responsável
+  <div style="
+    border:1px solid #d7e5f2;
+    border-radius:8px;
+    padding:16px 14px 12px;
+    text-align:center;
+    break-inside:avoid;
+  ">
+    <div style="height:120px;"></div>
+    <div style="border-top:1px solid #64748b; margin-bottom:8px;"></div>
+    <div style="font-weight:bold; color:#0b3765;">Técnico responsável</div>
+    <div style="font-size:11px; color:#64748b; margin-top:4px;">
+      ${ticket.tecnicoDiagnostico || "Não informado"}
+    </div>
   </div>
 
-  <div class="assinatura">
-    Cliente
+  <div style="
+    border:1px solid #d7e5f2;
+    border-radius:8px;
+    padding:16px 14px 12px;
+    text-align:center;
+    break-inside:avoid;
+  ">
+    <div style="height:120px;"></div>
+    <div style="border-top:1px solid #64748b; margin-bottom:8px;"></div>
+    <div style="font-weight:bold; color:#0b3765;">Cliente</div>
+    <div style="font-size:11px; color:#64748b; margin-top:4px;">
+      ${ticket.cliente || "Não informado"}
+    </div>
   </div>
 
 </div>
 
 
-<div class="footer">
-  Documento de diagnóstico técnico pré-serviço
-</div>
 
 </body>
 
@@ -7702,6 +7996,40 @@ ${ticket.observacoesDiagnostico || "Nenhuma observação"}
         format:"A4",
 
         printBackground:true,
+
+        displayHeaderFooter:true,
+
+        headerTemplate:'<span></span>',
+
+        footerTemplate:`
+  <div class="rodape-diagnostico-azul" style="
+    width:100%;
+    margin:0 12mm;
+    padding-top:5px;
+    border-top:1px solid #07569b;
+    font-family:Arial,sans-serif;
+    font-size:8px;
+    color:#07569b;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  ">
+    <span style="display:flex; align-items:center; gap:5px;">
+      <svg width="11" height="12" viewBox="0 0 24 24"
+           fill="none" stroke="#07569b" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <path d="M14 2v6h6M8 13h8M8 17h8"/>
+      </svg>
+      <span>Documento de diagnóstico técnico pré-serviço</span>
+    </span>
+    <span>
+      Página <span class="pageNumber"></span>
+      de <span class="totalPages"></span>
+    </span>
+  </div>
+`,
+
 
         margin:{
   top:"10mm",

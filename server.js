@@ -6676,7 +6676,7 @@ app.get("/api/tickets/:id/whatsapp-acompanhamento", auth, requirePermissao("cham
     });
 
     const msg = encodeURIComponent(
-`Bits & Bytes Assistência Técnica
+`Bits & Bytes Tecnology Assistência Técnica
 
 ORDEM DE SERVIÇO:
 ${ticket.numeroOS}
@@ -6937,7 +6937,7 @@ app.put("/api/tickets/:id", auth, requirePermissao("chamados"), async (req, res)
 
 
       const msg = encodeURIComponent(
-`Bits & Bytes Assistência Técnica
+`Bits & Bytes Tecnology Assistência Técnica
 
 ORDEM DE SERVIÇO:
 ${ticket.numeroOS}
@@ -8675,7 +8675,7 @@ catch (err) {
 
       const msg = encodeURIComponent(
 
-`Bits & Bytes Assistência Técnica
+`Bits & Bytes Tecnology Assistência Técnica
 
 ORDEM DE SERVIÇO:
 ${ticket.numeroOS}
